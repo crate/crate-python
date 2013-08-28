@@ -1,6 +1,6 @@
 
 from setuptools import setup
-import crate 
+import crate
 import os
 
 
@@ -15,14 +15,13 @@ setup(
     version=crate.__version__,
     author='Lovely Systems',
     author_email='office@lovelysystems.com',
-    package_dir = {'':'src'},
+    package_dir={'': 'src'},
     description=crate.__doc__.strip(),
     long_description=readme,
     platforms=['any'],
     packages=['crate'],
-    extras_require = dict(
-        test = ['zope.testrunner'],
-        testing = ['lovely.testlayers', 'zc.customdoctests']),
-    install_requires = [
+    extras_require=dict(
+        test=['lovely.testlayers']),
+    install_requires=[
         'requests']
 )

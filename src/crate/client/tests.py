@@ -1,7 +1,5 @@
 import unittest
 import doctest
-import subprocess
-import zc.customdoctests
 from crate.testing.layer import CrateLayer
 import os
 
@@ -14,13 +12,6 @@ def crate_path(*parts):
     return docs_path('..', '..', 'parts', 'crate', *parts)
 
 
-def transform(s):
-    return (r'import subprocess;print subprocess.check_output(r"""%s""",stderr=subprocess.STDOUT,shell=True)' % s) + '\n'
-
-parser = zc.customdoctests.DocTestParser(
-    ps1='sh\$', comment_prefix='#', transform=transform)
-
-
 empty_layer = CrateLayer('crate',
                          crate_home=crate_path(),
                          crate_exec=crate_path('bin', 'crate'),
@@ -30,7 +21,7 @@ empty_layer = CrateLayer('crate',
 def test_suite():
     suite = unittest.TestSuite()
 
-    s = doctest.DocFileSuite('../../../docs/index.txt', parser=parser,
+    s = doctest.DocFileSuite('../../../docs/index.txt',
                              optionflags=doctest.NORMALIZE_WHITESPACE |
                              doctest.ELLIPSIS)
     s.layer = empty_layer

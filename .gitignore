@@ -1,0 +1,5 @@
+bin/
+parts/
+develop-eggs/
+.installed.cfg
+crate.egg-info

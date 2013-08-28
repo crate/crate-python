@@ -21,7 +21,8 @@ setup(
     platforms=['any'],
     packages=['crate'],
     extras_require = dict(
-        test = ['zope.testrunner']),
+        test = ['zope.testrunner'],
+        testing = ['lovely.testlayers', 'zc.customdoctests']),
     install_requires = [
         'requests']
 )

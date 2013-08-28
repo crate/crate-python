@@ -2,7 +2,6 @@ from lovely.testlayers import server, layer
 import os
 import signal
 
-here = os.path.dirname(__file__)
 
 class CrateLayer(server.ServerLayer, layer.WorkDirectoryLayer):
     """this layer starts a crate server

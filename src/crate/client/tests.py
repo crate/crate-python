@@ -5,15 +5,13 @@ import zc.customdoctests
 from crate.testing.layer import CrateLayer
 import os
 
-here = os.path.dirname(__file__)
-
 
 def docs_path(*parts):
-    return os.path.join(os.path.dirname(os.path.dirname(here)), *parts)
+    return os.path.join(os.path.dirname(os.path.dirname(__file__)), *parts)
 
 
 def crate_path(*parts):
-    return docs_path('parts', 'crate', *parts)
+    return docs_path('..', '..', 'parts', 'crate', *parts)
 
 
 def transform(s):
@@ -32,7 +30,7 @@ empty_layer = CrateLayer('crate',
 def test_suite():
     suite = unittest.TestSuite()
 
-    s = doctest.DocFileSuite('client/test.txt', parser=parser,
+    s = doctest.DocFileSuite('../../../docs/index.txt', parser=parser,
                              optionflags=doctest.NORMALIZE_WHITESPACE |
                              doctest.ELLIPSIS)
     s.layer = empty_layer

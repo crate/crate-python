@@ -27,8 +27,7 @@ class CrateLayer(server.ServerLayer, layer.WorkDirectoryLayer):
                  port=9295,
                  keepRunning=False,
                  transport_port=None,
-                 crate_exec=None
-                ):
+                 crate_exec=None):
         self.keepRunning = keepRunning
         crate_home = os.path.abspath(crate_home)
         servers = ['localhost:%s' % port]
@@ -52,8 +51,7 @@ class CrateLayer(server.ServerLayer, layer.WorkDirectoryLayer):
             )
         if transport_port:
             start_cmd += ('-Des.transport.tcp.port=%s' % transport_port,)
-        super(CrateLayer, self).__init__(name, servers=servers,
-                                      start_cmd=start_cmd)
+        super(CrateLayer, self).__init__(name, servers=servers, start_cmd=start_cmd)
 
     def stop(self):
         # override because if we use proc.kill the terminal gets poisioned
@@ -65,14 +63,3 @@ class CrateLayer(server.ServerLayer, layer.WorkDirectoryLayer):
         wd = self.wdPath()
         self.start_cmd = self.start_cmd + ('-Des.path.data="%s"' % wd,)
         super(CrateLayer, self).start()
-
-
-    def makeSnapshot(self, ident):
-        self.es.flush()
-        super(CrateLayer, self).makeSnapshot(ident)
-
-    def restoreSnapshot(self, ident):
-        self.stop()
-        super(CrateLayer, self).restoreSnapshot(ident)
-        self.start()
-

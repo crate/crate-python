@@ -16,13 +16,6 @@ class Connection(object):
     def commit(self):
         pass
 
-    def _connect(self, hosts):
-        pass
-
-    def _endpoint(self):
-        pass
-
 
 def connect(servers=None, crate_client=None):
     return Connection(servers, crate_client)
-

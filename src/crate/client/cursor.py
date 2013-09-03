@@ -56,33 +56,19 @@ class Cursor():
 
     def commit(self):
         """
-        Transactions not supported, nothing to do here.
+        Transactions are not supported, so 'commit' is not implemented yet.
         """
         pass
 
     def setinputsizes(self, sizes):
         """
-        This can be used before a call to .execute*() to predefine memory areas
-        for the operation's parameters.
-        sizes is specified as a sequence — one item for each input parameter.
-        The item should be a Type Object that corresponds to the input that will be used,
-        or it should be an integer specifying the maximum length of a string parameter.
-        If the item is None, then no predefined memory area will be reserved for
-        that column (this is useful to avoid predefined areas for large inputs).
-        This method would be used before the .execute*() method is invoked.
-        Implementations are free to have this method do nothing and users are
-        free to not use it.
+        'setinputsizes' is not supported.
         """
         pass
 
     def setoutputsize(self, size, column=None):
         """
-        Set a column buffer size for fetches of large columns (e.g. LONGs, BLOBs, etc.).
-        The column is specified as an index into the result sequence.
-        Not specifying the column will set the default size for all large columns in the cursor.
-        This method would be used before the .execute*() method is invoked.
-        Implementations are free to have this method do nothing and users are free to not use
-        it.
+        'setoutputsize' is not supported.
         """
         pass
 

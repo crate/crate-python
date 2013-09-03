@@ -17,5 +17,5 @@ class Connection(object):
         pass
 
 
-def connect(servers=None, crate_client=None):
-    return Connection(servers, crate_client)
+def connect(servers=None, client=None):
+    return Connection(servers, client)

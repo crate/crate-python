@@ -16,6 +16,7 @@ class Cursor():
         self._closed = False
 
     def executemany(self, sql):
+        # TODO: implement ``executemany()``
         raise NotImplementedError
 
     def fetchone(self):
@@ -56,19 +57,19 @@ class Cursor():
 
     def commit(self):
         """
-        Transactions are not supported, so 'commit' is not implemented yet.
+        Transactions are not supported, so ``commit`` is not implemented.
         """
         pass
 
     def setinputsizes(self, sizes):
         """
-        'setinputsizes' is not supported.
+        Not supported method.
         """
         pass
 
     def setoutputsize(self, size, column=None):
         """
-        'setoutputsize' is not supported.
+        Not supported method.
         """
         pass
 

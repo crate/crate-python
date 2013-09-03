@@ -1,10 +1,5 @@
 import unittest
 import doctest
-import os
-import requests
-import json
-from crate.testing.layer import CrateLayer
-from urlparse import urljoin
 
 
 class ClientMocked(object):
@@ -19,7 +14,6 @@ class ClientMocked(object):
         self.response = response
 
 
-
 def setUp(test):
     test.globs['connection_client'] = ClientMocked()
 
@@ -28,6 +22,7 @@ def test_suite():
     suite = unittest.TestSuite()
 
     s = doctest.DocFileSuite('cursor.txt',
+                             'connection.txt',
                              setUp=setUp,
                              optionflags=doctest.NORMALIZE_WHITESPACE |
                              doctest.ELLIPSIS)

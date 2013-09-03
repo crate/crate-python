@@ -9,11 +9,16 @@ class Cursor():
         self.arraysize = 1
         self.connection = connection
         self._closed = True
+        self._result = None
 
     def execute(self, sql):
-        self._result = self.connection.client.sql(sql)
-        self.rows = iter(self._result["rows"])
-        self._closed = False
+        if not self.connection._closed:
+            self._result = self.connection.client.sql(sql)
+            if "rows" in self._result:
+                self.rows = iter(self._result["rows"])
+                self._closed = False
+        else:
+            raise ProgrammingError
 
     def executemany(self, sql):
         # TODO: implement ``executemany()``
@@ -55,12 +60,6 @@ class Cursor():
         self._closed = True
         self._result = None
 
-    def commit(self):
-        """
-        Transactions are not supported, so ``commit`` is not implemented.
-        """
-        pass
-
     def setinputsizes(self, sizes):
         """
         Not supported method.
@@ -75,9 +74,13 @@ class Cursor():
 
     @property
     def rowcount(self):
-        if not self._closed:
-            return len(self._result["rows"])
-        return -1
+        if (
+            self._closed
+            or not self._result
+            or "rows" not in self._result
+        ):
+            return -1
+        return len(self._result["rows"])
 
     def _next(self):
         if not self._closed:

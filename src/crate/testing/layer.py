@@ -1,10 +1,11 @@
 from lovely.testlayers import server, layer
 import os
 import signal
+import requests
 
 
 class CrateLayer(server.ServerLayer, layer.WorkDirectoryLayer):
-    """this layer starts a crate server
+    """this layer starts a crate server.
 
     Parameters:
         name : layer name, is also used as the cluser name
@@ -48,7 +49,7 @@ class CrateLayer(server.ServerLayer, layer.WorkDirectoryLayer):
             '-Des.discovery.zen.ping.multicast.enabled=false',
             '-Des.config=%s' % crate_config,
             '-Des.path.conf=%s' % os.path.dirname(crate_config),
-            )
+        )
         if transport_port:
             start_cmd += ('-Des.transport.tcp.port=%s' % transport_port,)
         super(CrateLayer, self).__init__(name, servers=servers, start_cmd=start_cmd)
@@ -63,3 +64,10 @@ class CrateLayer(server.ServerLayer, layer.WorkDirectoryLayer):
         wd = self.wdPath()
         self.start_cmd = self.start_cmd + ('-Des.path.data="%s"' % wd,)
         super(CrateLayer, self).start()
+        # since crate 0.10.0 http may be ready before the cluster is fully available
+        # block here so that early requests after the layer starts don't result in 503
+        try:
+            requests.get(self.crate_servers[0] + '/_cluster/health?wait_for_status=green')
+        except Exception:
+            self.stop()
+            raise

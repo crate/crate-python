@@ -8,7 +8,8 @@ def read(path):
 
 long_description = (
     read('README.rst')
-    + '\n'
+    + '\n' +
+    read('src/crate/client/index.txt')
 )
 
 # import VERSION

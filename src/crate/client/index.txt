@@ -1,0 +1,67 @@
+==================
+Crate Client Usage
+==================
+
+Connect to a Database
+=====================
+
+Before we can start we have to import the crate client::
+
+    >>> from crate import client
+
+The client provides a ``connect()`` function which is 
+used to establish a connection::
+
+    >>> host = '127.0.0.1:9200'
+    >>> connection = client.connect([host])
+
+It's also possible to make a connection to multiple
+hosts. If a server does not respond, the request is
+automatically routed to the next server::
+
+    >>> invalid_host = 'not_responding_host:9200'
+    >>> connection = client.connect([host, invalid_host])
+
+Selecting Some Data
+===================
+
+To execute a command we use the cursor provided by
+the connection::
+
+    >>> cursor = connection.cursor()
+    >>> cursor.execute("SELECT name FROM locations")
+
+To retrieve a row we can use one of the cursor's
+fetch functions (described below)::
+
+fetchone()
+----------
+
+``fetchone()`` with each call returns the next row
+from the results::
+
+    >>> cursor.fetchone()
+
+If no more data is available, an empty result is returned::
+
+    >>> cursor.fetchone()
+
+fetchmany()
+-----------
+
+``fetch_many()`` returns a list of all remaining rows,
+containing no more than the specified size of rows::
+
+    >>> cursor.fetchmany(2)
+
+fetchall()
+----------
+
+``fetchall()`` returns a list of all remaining rows:: 
+    
+    >>> cursor.fetchall()
+
+Closing the Connection
+======================
+
+    >>> cursor.close()

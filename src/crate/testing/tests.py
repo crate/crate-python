@@ -22,7 +22,7 @@ def test_crate_layer():
     ...                          crate_exec=crate_path('bin', 'crate'),
     ...                          port=19200,)
     >>> crate_layer.start()
-    >>> res = requests.get('http://127.0.0.1:19200/_stat')
+    >>> res = requests.get('http://127.0.0.1:19200/_stats')
     >>> res.status_code
     200
     >>> crate_layer.stop()

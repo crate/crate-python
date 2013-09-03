@@ -12,15 +12,19 @@ Before we can start we have to import the crate client::
 The client provides a ``connect()`` function which is 
 used to establish a connection::
 
-    >>> host = '127.0.0.1:9200'
-    >>> connection = client.connect([host])
+    >>> connection = client.connect([crate_host])
 
 It's also possible to make a connection to multiple
 hosts. If a server does not respond, the request is
 automatically routed to the next server::
 
     >>> invalid_host = 'not_responding_host:9200'
-    >>> connection = client.connect([host, invalid_host])
+    >>> connection = client.connect([crate_host, invalid_host])
+
+It's possible to define a default timeout value in seconds for all servers using the optional
+parameter ``timeout``::
+
+    >>> connection = client.connect([crate_host, invalid_host], timeout=5)
 
 Selecting Some Data
 ===================
@@ -32,7 +36,7 @@ the connection::
     >>> cursor.execute("SELECT name FROM locations")
 
 To retrieve a row we can use one of the cursor's
-fetch functions (described below)::
+fetch functions (described below).
 
 fetchone()
 ----------
@@ -40,10 +44,14 @@ fetchone()
 ``fetchone()`` with each call returns the next row
 from the results::
 
-    >>> cursor.fetchone()
+    >>> result = cursor.fetchone()
+    >>> pprint(result)
+    {u'name': u'Aldebaran'}
 
 If no more data is available, an empty result is returned::
 
+    >>> while cursor.fetchone():
+    ...     pass
     >>> cursor.fetchone()
 
 fetchmany()
@@ -52,14 +60,29 @@ fetchmany()
 ``fetch_many()`` returns a list of all remaining rows,
 containing no more than the specified size of rows::
 
-    >>> cursor.fetchmany(2)
+    >>> cursor.execute("SELECT name FROM locations")
+    >>> result = cursor.fetchmany(2)
+    >>> pprint(result)
+    [{u'name': u'Aldebaran'}, {u'name': u'Argabuthon'}]
 
 fetchall()
 ----------
 
 ``fetchall()`` returns a list of all remaining rows:: 
     
-    >>> cursor.fetchall()
+    >>> cursor.execute("SELECT name FROM locations")
+    >>> result = cursor.fetchall()
+    >>> pprint(result)
+    [{u'name': u'Aldebaran'},
+     {u'name': u'Argabuthon'},
+     {u'name': u'Bartledan'},
+     {u'name': u'Algol'},
+     {u'name': u''},
+     {u'name': u'North West Ripple'},
+     {u'name': u'Alpha Centauri'},
+     {u'name': None},
+     {u'name': u'Outer Eastern Rim'},
+     {u'name': u'Altair'}]
 
 Closing the Connection
 ======================

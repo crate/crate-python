@@ -4,6 +4,8 @@ HTTP DB Connection Client
 
 The crate HTTP client class implements the DB API connection client.
 
+Server configuration
+====================
 A list of servers to use is required while creating an instance of the http client::
 
     >>> server = "127.0.0.1:{port}".format(port=crate_port)
@@ -29,7 +31,8 @@ Its also possible to pass a single server as a string::
 
     >>> http_client = HttpClient(server)
 
-
+SQL Statements
+==============
 Issue a select statement against our with test data pre-filled crate instance::
 
     >>> result = http_client.sql('select name from locations')
@@ -46,6 +49,8 @@ Issue a select statement against our with test data pre-filled crate instance::
                {u'name': u'Altair'}]}
 
 
+Error Handling
+==============
 It's possible to define a HTTP timeout in seconds on client instantiation, so a timeout exception
 is raised when timeout is reached::
 

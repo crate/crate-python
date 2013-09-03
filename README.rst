@@ -1,13 +1,42 @@
-===================
-Crate Python Client
-===================
+
+.. image:: http://www.crate-technology.com/assets/img/logo.png 
+   :width: 155px
+   :height: 45px
+   :alt: Crate-Technology 
+   :target: http://www.crate-technology.com/
+
+Overview
+========
 
 The crate client distribution is a nativ python
 client offering tools for interacting with the
-crate database.
+crate server.
 
-For details about usage, please refer to the 
-documentation found under the ``docs`` directory.
+Installation
+============
 
-Developer specific documentation can be found
-in the ``DEVELOP.rst`` document.
+Installing via pip
+------------------
+
+To install the crate client via `pip
+<https://pypi.python.org/pypi/pip>`_
+use the following command::
+
+    $ pip install crate
+
+To update use::
+    
+    $ pip install -U crate
+
+Installing via easy_install
+---------------------------
+
+If you prefer easy_install which is provided by
+`setuptools <https://pypi.python.org/pypi/setuptools/1.1>`_
+use the following command::
+
+    $ easy_install crate
+
+To update use::
+
+    $ easy_install -U crate

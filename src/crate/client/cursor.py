@@ -1,0 +1,115 @@
+# -*- encoding: utf-8 -*-
+
+from .exceptions import ProgrammingError
+
+
+class Cursor():
+
+    def __init__(self, connection):
+        self.arraysize = 1
+        self.connection = connection
+        self._closed = True
+
+    def execute(self, sql):
+        self._result = self.connection.client.sql(sql)
+        self.rows = iter(self._result["rows"])
+        self._closed = False
+
+    def executemany(self, sql):
+        raise NotImplementedError
+
+    def fetchone(self):
+        return self.next()
+
+    def next(self):
+        try:
+            return self._next()
+        except StopIteration:
+            return None
+
+    def fetchmany(self, count=None):
+        if count is None:
+            count = self.arraysize
+        if count == 0:
+            return self.fetchall()
+        result = []
+        for i in range(count):
+            try:
+                result.append(self._next())
+            except StopIteration:
+                pass
+        return result
+
+    def fetchall(self):
+        result = []
+        iterate = True
+        while iterate:
+            try:
+                result.append(self._next())
+            except StopIteration:
+                iterate = False
+        return result
+
+    def close(self):
+        self._closed = True
+        self._result = None
+
+    def commit(self):
+        """
+        Transactions not supported, nothing to do here.
+        """
+        pass
+
+    def setinputsizes(self, sizes):
+        """
+        This can be used before a call to .execute*() to predefine memory areas
+        for the operation's parameters.
+        sizes is specified as a sequence — one item for each input parameter.
+        The item should be a Type Object that corresponds to the input that will be used,
+        or it should be an integer specifying the maximum length of a string parameter.
+        If the item is None, then no predefined memory area will be reserved for
+        that column (this is useful to avoid predefined areas for large inputs).
+        This method would be used before the .execute*() method is invoked.
+        Implementations are free to have this method do nothing and users are
+        free to not use it.
+        """
+        pass
+
+    def setoutputsize(self, size, column=None):
+        """
+        Set a column buffer size for fetches of large columns (e.g. LONGs, BLOBs, etc.).
+        The column is specified as an index into the result sequence.
+        Not specifying the column will set the default size for all large columns in the cursor.
+        This method would be used before the .execute*() method is invoked.
+        Implementations are free to have this method do nothing and users are free to not use
+        it.
+        """
+        pass
+
+    @property
+    def rowcount(self):
+        if not self._closed:
+            return len(self._result["rows"])
+        return -1
+
+    def _next(self):
+        if not self._closed:
+            return self.rows.next()
+        else:
+            raise ProgrammingError
+
+    @property
+    def description(self):
+        if self._closed:
+            return
+
+        description = []
+        for col in self._result["cols"]:
+            description.append((col,
+                                None,
+                                None,
+                                None,
+                                None,
+                                None,
+                                None))
+        return tuple(description)

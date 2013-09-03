@@ -1,0 +1,172 @@
+======
+Cursor
+======
+
+    >>> from crate import client as cl
+
+    >>> client.response = {"rows":[ [ "North West Ripple", 1 ], [ "Arkintoofle Minor", 3 ], [ "Alpha Centauri", 3 ] ], "cols":[ "name", "position" ]}
+
+    >>> connection = cl.connect(crate_client=client)
+    >>> cursor = connection.cursor()
+
+    The attribute is -1 in case no .execute has been performed on the cursor
+    >>> cursor.rowcount
+    -1
+
+We don't need a sql statement for the execute because
+the client response is mocked::
+
+fetchone()
+==========
+
+Calling fetchone() on the cursor object the first time after an
+execute returns the first row::
+
+    >>> cursor.execute('')
+
+    >>> cursor.fetchone()
+    ['North West Ripple', 1]
+
+Each call to fetchone() increments the cursor and returns the
+next row::
+
+    >>> cursor.fetchone()
+    ['Arkintoofle Minor', 3]
+
+One more iteration::
+
+    >>> cursor.next()
+    ['Alpha Centauri', 3]
+
+The iteration is stopped after the last row is returned.
+A further call to fetchone() returns an empty result:
+
+    >>> cursor.fetchone()
+
+fetchmany()
+===========
+
+fetchmany() takes an argument which specifies the number of rows
+we want to fetch::
+
+    >>> cursor.execute('')
+
+    >>> cursor.fetchmany(2)
+    [['North West Ripple', 1], ['Arkintoofle Minor', 3]]
+
+If the specified number of rows not being available, fewer rows may 
+returned::
+
+    >>> cursor.fetchmany(2)
+    [['Alpha Centauri', 3]]
+
+    >>> cursor.execute('')
+
+If no numper of rows are specified it defaults to the current
+cursor.arraysize::
+
+    >>> cursor.arraysize
+    1
+
+    >>> cursor.fetchmany()
+    [['North West Ripple', 1]]
+
+    >>> cursor.execute('')
+    >>> cursor.arraysize = 2
+    >>> cursor.fetchmany()
+    [['North West Ripple', 1], ['Arkintoofle Minor', 3]]
+
+If zero number of rows are specified, all rows left are
+returned::
+
+    >>> cursor.fetchmany(0)
+    [['Alpha Centauri', 3]]
+
+fetchall()
+==========
+
+fetchall() fetches all (remaining) rows of a query result:: 
+
+    >>> cursor.execute('')
+
+    >>> cursor.fetchall()
+    [['North West Ripple', 1], ['Arkintoofle Minor', 3], ['Alpha Centauri', 3]]
+
+Since all data was fetched 'None' is returned by fetchone()::
+
+    >>> cursor.fetchone()
+
+And each other call returns an empty sequence::
+
+    >>> cursor.fetchmany(2)
+    []
+
+    >>> cursor.fetchmany()
+    []
+
+    >>> cursor.fetchall()
+    []
+
+description
+===========
+
+    >>> cursor.description
+    (('name', None, None, None, None, None, None), ('position', None, None, None, None, None, None))
+
+rowcount
+========
+
+The rowcount property specifies the number of rows that the last .execute produced::
+
+    >>> cursor.execute('')
+    >>> cursor.rowcount
+    3
+
+The attribute is -1 in case close has been performed on the cursor::
+
+    >>> cursor.close()
+    >>> cursor.rowcount
+    -1
+
+executemany
+===========
+
+Since executemany() is not implemented yet an 'NotImplementedError' is
+raised::
+
+    >>> cursor.executemany('')
+    Traceback (most recent call last):
+    ...
+    NotImplementedError
+
+close()
+=======
+
+After closig a cursor the connection will be unusable. If any
+operation is attempted with the closed connection an 'ProgrammingError'
+exception will be raised::
+
+    >>> cursor.execute('')
+    >>> cursor.fetchone()
+    ['North West Ripple', 1]
+
+    >>> cursor.close()
+    >>> cursor.fetchone()
+    Traceback (most recent call last):
+    ...
+    ProgrammingError
+
+    >>> cursor.fetchmany()
+    Traceback (most recent call last):
+    ...
+    ProgrammingError
+
+    >>> cursor.fetchall()
+    Traceback (most recent call last):
+    ...
+    ProgrammingError
+
+    >>> cursor.next()
+    Traceback (most recent call last):
+    ...
+    ProgrammingError

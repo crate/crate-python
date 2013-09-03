@@ -5,3 +5,5 @@ develop-eggs/
 crate.egg-info
 dist
 build
+*.pyc
+.idea/

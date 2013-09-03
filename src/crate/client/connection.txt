@@ -6,7 +6,7 @@ Connection
 
 We create a new connection object::
 
-    >>> connection = connect(client=connection_client)
+    >>> connection = connect("dummy server")
 
 Calling the ``cursor()`` function on the connection will
 return a cursor object::
@@ -42,7 +42,7 @@ raise a 'ProgrammingError'::
     ...
     ProgrammingError
 
-    >>> connection = connect(client=connection_client)
+    >>> connection = connect("dummy server")
     >>> cursor = connection.cursor()
     >>> cursor.rowcount
     -1

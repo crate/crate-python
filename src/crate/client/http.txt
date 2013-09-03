@@ -8,28 +8,27 @@ Server configuration
 ====================
 A list of servers to use is required while creating an instance of the http client::
 
-    >>> server = "127.0.0.1:{port}".format(port=crate_port)
-    >>> http_client = HttpClient([server])
+    >>> http_client = HttpClient([crate_host])
 
 When using a list of servers, the servers are selected by round-robin::
 
-    >>> server2 = "cratedb.org:9999"
-    >>> server3 = "crate-tech.org:9999"
-    >>> http_client = HttpClient([server, server2, server3])
+    >>> crate_host2 = "invalid_host:9999"
+    >>> crate_host3 = "even_more_invalid_host:9999"
+    >>> http_client = HttpClient([crate_host, crate_host2, crate_host3])
     >>> http_client.servers
-    ['127.0.0.1:9295', 'cratedb.org:9999', 'crate-tech.org:9999']
+    ['127.0.0.1:9295', 'invalid_host:9999', 'even_more_invalid_host:9999']
 
     >>> http_client._roundrobin()
     >>> http_client.servers
-    ['cratedb.org:9999', 'crate-tech.org:9999', '127.0.0.1:9295']
+    ['invalid_host:9999', 'even_more_invalid_host:9999', '127.0.0.1:9295']
 
     >>> http_client._roundrobin()
     >>> http_client.servers
-    ['crate-tech.org:9999', '127.0.0.1:9295', 'cratedb.org:9999']
+    ['even_more_invalid_host:9999', '127.0.0.1:9295', 'invalid_host:9999']
 
 Its also possible to pass a single server as a string::
 
-    >>> http_client = HttpClient(server)
+    >>> http_client = HttpClient(crate_host)
 
 SQL Statements
 ==============
@@ -54,7 +53,7 @@ Error Handling
 It's possible to define a HTTP timeout in seconds on client instantiation, so a timeout exception
 is raised when timeout is reached::
 
-    >>> http_client = HttpClient(server, timeout=0.001)
+    >>> http_client = HttpClient(crate_host, timeout=0.001)
     >>> http_client.sql('select name from locations')
     Traceback (most recent call last):
     ...

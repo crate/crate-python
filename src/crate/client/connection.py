@@ -1,12 +1,14 @@
 
 from .cursor import Cursor
 from .exceptions import ProgrammingError
-
+from .http import Client
 
 class Connection(object):
 
-    def __init__(self, servers, client):
-        self.client = client
+    _client_impl = Client
+
+    def __init__(self, servers, timeout):
+        self.client = self._client_impl(servers, timeout=timeout)
         self._closed = False
         self._cursor = Cursor(self)
 
@@ -30,5 +32,5 @@ class Connection(object):
             raise ProgrammingError
 
 
-def connect(servers=None, client=None):
-    return Connection(servers, client)
+def connect(servers, timeout=None):
+    return Connection(servers, timeout)

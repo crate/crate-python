@@ -13,10 +13,11 @@ class Client(object):
 
     sql_path = '_sql'
 
-    def __init__(self, servers):
+    def __init__(self, servers, timeout=None):
         if isinstance(servers, types.StringTypes):
             servers = [servers]
         self.servers = servers
+        self.http_timeout = timeout
 
     def sql(self, stmt):
         """
@@ -50,7 +51,7 @@ class Client(object):
             try:
                 # build uri and send http request
                 uri = "http://{server}/{path}".format(server=server, path=path)
-                response = requests.request(method, uri, data=json.dumps(data))
+                response = requests.request(method, uri, data=json.dumps(data), timeout=self.http_timeout)
             except requests.RequestException, exc:
                 # if this is the last server raise exception, otherwise try next
                 # TODO: discuss this behaviour

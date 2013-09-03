@@ -2,15 +2,12 @@
 HTTP DB Connection Client
 =========================
 
-
-
 The crate HTTP client class implements the DB API connection client.
 
 A list of servers to use is required while creating an instance of the http client::
 
     >>> server = "127.0.0.1:{port}".format(port=crate_port)
     >>> http_client = HttpClient([server])
-
 
 When using a list of servers, the servers are selected by round-robin::
 
@@ -47,3 +44,13 @@ Issue a select statement against our with test data pre-filled crate instance::
                {u'name': None},
                {u'name': u'Outer Eastern Rim'},
                {u'name': u'Altair'}]}
+
+
+It's possible to define a HTTP timeout in seconds on client instantiation, so a timeout exception
+is raised when timeout is reached::
+
+    >>> http_client = HttpClient(server, timeout=0.001)
+    >>> http_client.sql('select name from locations')
+    Traceback (most recent call last):
+    ...
+    Timeout: HTTPConnectionPool(host='...', port=...): Request timed out. (timeout=0.001)

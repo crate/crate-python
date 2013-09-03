@@ -1,5 +1,5 @@
 
-from setuptools import setup
+from setuptools import setup, find_packages
 import os
 
 
@@ -8,17 +8,15 @@ def read(path):
 
 long_description = (
     read('README.rst')
-    + '\n' +
-    read('src/crate/client/client.txt')
-    + '\n')
+    + '\n'
+)
 
-packages = [
-    'crate',
-    'crate.client'
-]
+# import VERSION
+execfile("src/crate/client/__version__.py")
 
 setup(
     name='crate',
+    version=VERSION,
     url='https://github.com/crate/crate-python',
     author='Lovely Systems',
     author_email='office@lovelysystems.com',
@@ -26,9 +24,11 @@ setup(
     description='Crate client',
     long_description=long_description,
     platforms=['any'],
-    packages=packages,
+    packages=find_packages(),
     extras_require=dict(
-        test=['lovely.testlayers']),
+        test=['lovely.testlayers']
+    ),
     install_requires=[
-        'requests']
+        'requests'
+    ]
 )

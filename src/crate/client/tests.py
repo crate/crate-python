@@ -3,7 +3,6 @@ from pprint import pprint
 import unittest
 import doctest
 import requests
-import time
 from crate.testing.layer import CrateLayer
 from crate.testing.tests import crate_path, docs_path
 
@@ -23,7 +22,7 @@ class ClientMocked(object):
 
 
 def setUpMocked(test):
-    Connection._client_impl = ClientMocked
+    test.globs['client_class_mocked'] = ClientMocked
 
 
 crate_port = 9295
@@ -46,7 +45,7 @@ def setUpWithCrateLayer(test):
     with open(docs_path('testing', 'cratesetup', 'data', 'test_a.json')) as s:
         requests.post('/'.join([crate_uri, '_bulk']), data=(s.read()))
     # refresh index
-    requests.post('/'.join([crate_uri, 'locations', '_refresh']), data=(s.read()))
+    requests.post('/'.join([crate_uri, 'locations', '_refresh']))
 
 def tearDownWithCrateLayer(test):
     # clear testing data

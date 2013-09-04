@@ -5,10 +5,9 @@ from .http import Client
 
 class Connection(object):
 
-    _client_impl = Client
-
-    def __init__(self, servers, timeout):
-        self.client = self._client_impl(servers, timeout=timeout)
+    def __init__(self, servers, timeout=None, client_class=None):
+        client_class = client_class and client_class or Client
+        self.client = client_class(servers, timeout=timeout)
         self._closed = False
         self._cursor = Cursor(self)
 
@@ -32,5 +31,5 @@ class Connection(object):
             raise ProgrammingError
 
 
-def connect(servers, timeout=None):
-    return Connection(servers, timeout)
+def connect(servers, timeout=None, client_class=None):
+    return Connection(servers, timeout, client_class)

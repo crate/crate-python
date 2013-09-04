@@ -6,7 +6,7 @@ Connection
 
 We create a new connection object::
 
-    >>> connection = connect("dummy server")
+    >>> connection = connect("dummy server", client_class=client_class_mocked)
 
 Calling the ``cursor()`` function on the connection will
 return a cursor object::

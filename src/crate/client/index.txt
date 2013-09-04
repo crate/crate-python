@@ -26,23 +26,33 @@ servers using the optional parameter ``timeout``::
 
     >>> connection = client.connect([crate_host, invalid_host], timeout=5)
 
+It's possible to define an own connection client class and pass it to the ``connect`` method::
+
+    >>> class MyConnectionClient:
+    ...     def __init__(self, servers, timeout=None):
+    ...         pass
+    ...     def sql(self, stmt=None):
+    ...         pass
+    >>> connection = client.connect([crate_host, invalid_host], client_class=MyConnectionClient)
+
+Create connection with default client again::
+
+    >>> connection = client.connect(crate_host)
+
 Selecting Some Data
 ===================
 
-To execute a command we use the cursor provided by
-the connection::
+To execute a command we use the cursor provided by the connection::
 
     >>> cursor = connection.cursor()
     >>> cursor.execute("SELECT name FROM locations")
 
-To retrieve a row we can use one of the cursor's
-fetch functions (described below).
+To retrieve a row we can use one of the cursor's fetch functions (described below).
 
 fetchone()
 ----------
 
-``fetchone()`` with each call returns the next row
-from the results::
+``fetchone()`` with each call returns the next row from the results::
 
     >>> result = cursor.fetchone()
     >>> pprint(result)

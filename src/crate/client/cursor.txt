@@ -4,7 +4,7 @@ Cursor
 
     >>> from crate.client import connect
 
-    >>> connection = connect('dummy server')
+    >>> connection = connect('dummy server', client_class=client_class_mocked)
     >>> cursor = connection.cursor()
 
 The attribute is -1 in case no ``execute()`` has been performed on the cursor.

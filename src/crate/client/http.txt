@@ -1,8 +1,6 @@
-=========================
-HTTP DB Connection Client
-=========================
-
-The crate HTTP client class implements the DB API connection client.
+=================
+HTTP Crate Client
+=================
 
 Server configuration
 ====================

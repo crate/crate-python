@@ -1,2 +1,4 @@
-include *.txt *.rst
 include LICENSE
+include *.rst
+recursive-include src *.txt *.rst *.json
+global-exclude *.pyc

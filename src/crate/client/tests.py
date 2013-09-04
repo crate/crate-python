@@ -22,7 +22,7 @@ class ClientMocked(object):
 
 
 def setUpMocked(test):
-    test.globs['client_class_mocked'] = ClientMocked
+    test.globs['ClientMocked'] = ClientMocked
 
 
 crate_port = 9295

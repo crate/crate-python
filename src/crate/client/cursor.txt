@@ -23,16 +23,14 @@ to execute::
 fetchone()
 ==========
 
-Calling ``fetchone()`` on the cursor object the first time after an
-execute returns the first row::
+Calling ``fetchone()`` on the cursor object the first time after an execute returns the first row::
 
     >>> cursor.execute('')
 
     >>> cursor.fetchone()
     ['North West Ripple', 1]
 
-Each call to ``fetchone()`` increments the cursor and returns the
-next row::
+Each call to ``fetchone()`` increments the cursor and returns the next row::
 
     >>> cursor.fetchone()
     ['Arkintoofle Minor', 3]
@@ -50,24 +48,21 @@ A further call to ``fetchone()`` returns an empty result:
 fetchmany()
 ===========
 
-``fetchmany()`` takes an argument which specifies the number of rows
-we want to fetch::
+``fetchmany()`` takes an argument which specifies the number of rows we want to fetch::
 
     >>> cursor.execute('')
 
     >>> cursor.fetchmany(2)
     [['North West Ripple', 1], ['Arkintoofle Minor', 3]]
 
-If the specified number of rows not being available, fewer rows may 
-returned::
+If the specified number of rows not being available, fewer rows may returned::
 
     >>> cursor.fetchmany(2)
     [['Alpha Centauri', 3]]
 
     >>> cursor.execute('')
 
-If no number of rows are specified it defaults to the current
-cursor.arraysize::
+If no number of rows are specified it defaults to the current cursor.arraysize::
 
     >>> cursor.arraysize
     1
@@ -80,8 +75,7 @@ cursor.arraysize::
     >>> cursor.fetchmany()
     [['North West Ripple', 1], ['Arkintoofle Minor', 3]]
 
-If zero number of rows are specified, all rows left are
-returned::
+If zero number of rows are specified, all rows left are returned::
 
     >>> cursor.fetchmany(0)
     [['Alpha Centauri', 3]]
@@ -146,9 +140,8 @@ raised::
 close()
 =======
 
-After closing a cursor the connection will be unusable. If any
-operation is attempted with the closed connection an 'ProgrammingError'
-exception will be raised::
+After closing a cursor the connection will be unusable. If any operation is attempted with the
+closed connection an ``ProgrammingError`` exception will be raised::
 
     >>> cursor.execute('')
     >>> cursor.fetchone()

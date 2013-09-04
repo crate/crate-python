@@ -67,16 +67,16 @@ If no more data is available, an empty result is returned::
 fetchmany()
 -----------
 
-``fetch_many()`` returns a list of all remaining rows,
-containing no more than the specified size of rows::
+``fetch_many()`` returns a list of all remaining rows, containing no more than the specified
+size of rows::
 
     >>> cursor.execute("SELECT name FROM locations")
     >>> result = cursor.fetchmany(2)
     >>> pprint(result)
     [[u'Algol'], [u'Folfanga']]
 
-If a size is not given, the cursor's arraysize, which defaults to '1',
-determines the number of rows to be fetched::
+If a size is not given, the cursor's arraysize, which defaults to '1', determines the number
+of rows to be fetched::
 
     >>> cursor.fetchmany()
     [[u'Aldebaran']]
@@ -109,9 +109,8 @@ fetchall()
 Cursor Description
 ==================
 
-The ``description`` property of the cursor returns a sequence of 7-item
-sequences containing the column name as first parameter. Just the name
-field is supported, all other fields are 'None':: 
+The ``description`` property of the cursor returns a sequence of 7-item sequences containing the
+column name as first parameter. Just the name field is supported, all other fields are 'None'::
 
     >>> cursor.execute("SELECT * FROM locations")
     >>> result = cursor.fetchone()
@@ -138,8 +137,7 @@ The following command closes the cursor::
     >>> cursor.close()
 
 If a cursor is closed, it will be unusable from this point forward.
-If any operation is attempted to a closed cursor an ``ProgrammingError``
-will be raised::
+If any operation is attempted to a closed cursor an ``ProgrammingError`` will be raised::
 
     >>> cursor.fetchone()
     Traceback (most recent call last):
@@ -153,9 +151,8 @@ The following command closes the connection::
 
     >>> connection.close()
 
-If a connection is closed, it will be unusable from this point forward.
-If any operation is attempted to a closed connection an ``ProgrammingError``
-will be raised::
+If a connection is closed, it will be unusable from this point frward.
+If any operation is attempted to a closed connection an ``ProgrammingError`` will be raised::
 
     >>> cursor = connection.cursor() 
     Traceback (most recent call last):

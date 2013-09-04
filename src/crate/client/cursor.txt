@@ -132,7 +132,7 @@ executemany
 Since ``executemany()`` is not implemented yet an 'NotImplementedError' is
 raised::
 
-    >>> cursor.executemany('')
+    >>> cursor.executemany('', None)
     Traceback (most recent call last):
     ...
     NotImplementedError

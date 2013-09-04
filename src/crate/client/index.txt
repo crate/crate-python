@@ -161,12 +161,19 @@ The following command closes the connection::
 
     >>> connection.close()
 
-If a connection is closed, it will be unusable from this point frward.
+If a connection is closed, it will be unusable from this point forward.
 If any operation is attempted to a closed connection an ``ProgrammingError`` will be raised::
+
+    >>> cursor.execute("SELECT * FROM locations")
+    Traceback (most recent call last):
+    ...
+    ProgrammingError
 
     >>> cursor = connection.cursor() 
     Traceback (most recent call last):
     ...
     ProgrammingError
+
+
 
 

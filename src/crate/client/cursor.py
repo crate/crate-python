@@ -2,7 +2,35 @@
 
 from .exceptions import ProgrammingError
 
+def check_connection(f):
+    """
+    Method decorator for checking if the ``Connection`` was closed.
+    If so raise a ``ProgrammingError``.
+    """
+    def wrapper(*args):
+        cursor = args[0]
+        # special case for __init__
+        if not hasattr(cursor, 'connection'):
+            if args[1]._closed:
+                raise ProgrammingError
+        elif cursor.connection._closed:
+            raise ProgrammingError
+        return f(*args)
+    return wrapper
 
+def for_all_methods(decorator, exclude=()):
+    """
+    Class decorator for applying a method decorator to all method except those
+    passed by ``exclude`` argument.
+    """
+    def decorate(cls):
+        for attr in cls.__dict__:
+            if callable(getattr(cls, attr)) and attr not in exclude:
+                setattr(cls, attr, decorator(getattr(cls, attr)))
+        return cls
+    return decorate
+
+@for_all_methods(check_connection)
 class Cursor():
 
     def __init__(self, connection):

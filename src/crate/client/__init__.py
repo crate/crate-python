@@ -1,3 +1,4 @@
+from .connection import connect
 
 apilevel = "2.0"
 
@@ -5,4 +6,3 @@ apilevel = "2.0"
 threadsafety = 1
 paramstyle = "qmark"
 
-from .connection import connect

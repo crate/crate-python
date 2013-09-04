@@ -45,9 +45,8 @@ def setUpWithCrateLayer(test):
         requests.put('/'.join([crate_uri, 'locations']), data=json.loads(s.read()))
     with open(docs_path('testing', 'cratesetup', 'data', 'test_a.json')) as s:
         requests.post('/'.join([crate_uri, '_bulk']), data=(s.read()))
-
-    # wait a little for data indexing
-    time.sleep(1)
+    # refresh index
+        requests.post('/'.join([crate_uri, 'locations', '_refresh']), data=(s.read()))
 
 def tearDownWithCrateLayer(test):
     # clear testing data

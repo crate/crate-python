@@ -15,7 +15,7 @@ class Client(object):
 
     sql_path = '_sql'
 
-    retry_interval = 60
+    retry_interval = 30
 
     def __init__(self, servers, timeout=None):
         if isinstance(servers, types.StringTypes):

@@ -25,11 +25,21 @@ setup(
     description='Crate client',
     long_description=long_description,
     platforms=['any'],
+    license='Apache License 2.0',
+    keywords='crate db api',
     packages=find_packages(),
     extras_require=dict(
         test=['lovely.testlayers']
     ),
     install_requires=[
         'requests'
-    ]
+    ],
+    classifiers=[
+        'Development Status :: 2 - Pre-Alpha',
+        'Intended Audience :: Developers',
+        'License :: OSI Approved :: Apache Software License',
+        'Operating System :: OS Independent',
+        'Programming Language :: Python',
+        'Topic :: Database'
+    ],
 )

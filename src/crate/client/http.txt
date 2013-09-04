@@ -4,6 +4,7 @@ HTTP Crate Client
 
 Server configuration
 ====================
+
 A list of servers can be passed while creating an instance of the http client::
 
     >>> http_client = HttpClient([crate_host])
@@ -61,6 +62,7 @@ inactive one::
 
 SQL Statements
 ==============
+
 Issue a select statement against our with test data pre-filled crate instance::
 
     >>> http_client = HttpClient(crate_host)
@@ -81,6 +83,7 @@ Issue a select statement against our with test data pre-filled crate instance::
 
 Error Handling
 ==============
+
 It's possible to define a HTTP timeout in seconds on client instantiation, so a timeout exception
 is raised when timeout is reached::
 

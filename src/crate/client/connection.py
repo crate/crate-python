@@ -11,16 +11,20 @@ class Connection(object):
         else:
             self.client = Client(servers, timeout=timeout)
         self._closed = False
-        self._cursor = Cursor(self)
 
     def cursor(self):
+        """
+        Return a new Cursor Object using the connection.
+        """
         if not self._closed:
-            return self._cursor
+            return Cursor(self)
         else:
             raise ProgrammingError
 
     def close(self):
-        self._cursor.close()
+        """
+        Close the connection now
+        """
         self._closed = True
 
     def commit(self):

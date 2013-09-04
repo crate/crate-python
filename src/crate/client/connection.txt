@@ -25,7 +25,7 @@ Now we close the connection::
 
 The connection will be unusable from this point. Any
 operation attempted with the closed connection will
-raise a 'ProgrammingError'::
+raise a ``ProgrammingError``::
 
     >>> cursor = connection.cursor()
     Traceback (most recent call last):

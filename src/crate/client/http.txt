@@ -63,7 +63,7 @@ Issue a select statement against our with test data pre-filled crate instance::
     >>> pprint(result)
     {u'cols': [u'name'],
      u'rows': [[u'Algol'],
-               [u''],
+               [u'Folfanga'],
                [u'Aldebaran'],
                [u'Argabuthon'],
                [u'Bartledan'],

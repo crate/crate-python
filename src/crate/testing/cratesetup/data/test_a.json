@@ -21,7 +21,7 @@
 { "index" : { "_index" : "locations", "_type" : "default", "_id" : "11" } }
 { "name": "Bartledan", "date":"2013-07-16", "kind": "Planet", "position": 4, "description": "An Earthlike planet on which Arthur Dent lived for a short time, Bartledan is inhabited by Bartledanians, a race that appears human but only physically."}
 { "index" : { "_index" : "locations", "_type" : "default", "_id" : "12" } }
-{ "name": "", "date":"2013-07-16", "kind": "Planet", "position": 5, "description": "This Planet doesn't really exist"}
+{ "name": "Folfanga", "date":"2013-07-16", "kind": "Star System", "position": 5, "description": "Folfanga is a star system, the fourth planet of which is inhabited by a species of small slug, of the genus A-Rth-Urp-Hil-Ipdenu."}
 { "index" : { "_index" : "locations", "_type" : "default", "_id" : "13" } }
 { "name": null, "date":"2013-07-16", "kind": "Galaxy", "position": 6, "description": "The end of the Galaxy."}
 { "index" : { "_index" : "locations", "_type" : "default", "_id" : "13" } }

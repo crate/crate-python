@@ -12,7 +12,7 @@ Before we can start we have to import the crate client::
 The client provides a ``connect()`` function which is 
 used to establish a connection::
 
-    >>> connection = client.connect('crate_host')
+    >>> connection = client.connect(crate_host)
 
 It's also possible to make a connection to multiple
 hosts. If a server does not respond, the request is
@@ -63,7 +63,7 @@ containing no more than the specified size of rows::
     >>> cursor.execute("SELECT name FROM locations")
     >>> result = cursor.fetchmany(2)
     >>> pprint(result)
-    [[u'Algol'], [u'']]
+    [[u'Algol'], [u'Folfanga']]
 
 If a size is not given, the cursor's arraysize, which defaults to '1',
 determines the number of rows to be fetched::
@@ -86,7 +86,7 @@ fetchall()
     >>> result = cursor.fetchall()
     >>> pprint(result)
     [[u'Algol'],
-     [u''],
+     [u'Folfanga'],
      [u'Aldebaran'],
      [u'Argabuthon'],
      [u'Bartledan'],
@@ -95,6 +95,30 @@ fetchall()
      [u'Arkintoofle Minor'],
      [u'Outer Eastern Rim'],
      [u'Altair']]
+
+Cursor Description
+==================
+
+The ``description`` property of the cursor returns a sequence of 7-item
+sequences containing the column name as first parameter. Just the name
+field is supported, all other fields are 'None':: 
+
+    >>> cursor.execute("SELECT * FROM locations")
+    >>> result = cursor.fetchone()
+    >>> pprint(result)
+    [u'2013-07-16',
+     u'Algol is the home of the Algolian Suntiger, ...',
+     u'Star System',
+     u'Algol',
+     2]
+
+    >>> result = cursor.description
+    >>> pprint(result)
+    ((u'date', None, None, None, None, None, None),
+     (u'description', None, None, None, None, None, None),
+     (u'kind', None, None, None, None, None, None),
+     (u'name', None, None, None, None, None, None),
+     (u'position', None, None, None, None, None, None))
 
 Closing the Cursor
 ==================
@@ -127,3 +151,5 @@ will be raised::
     Traceback (most recent call last):
     ...
     ProgrammingError
+
+

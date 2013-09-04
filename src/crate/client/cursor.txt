@@ -20,8 +20,6 @@ to execute::
     ...     "cols":[ "name", "position" ]
     ... })
 
-
-
 fetchone()
 ==========
 

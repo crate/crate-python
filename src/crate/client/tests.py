@@ -39,9 +39,9 @@ def setUpWithCrateLayer(test):
     test.globs['pprint'] = pprint
 
     # load testing data into crate
-    with open(docs_path('testing', 'cratesetup', 'mappings', 'test_a.json')) as s:
+    with open(docs_path('testing', 'testdata', 'mappings', 'test_a.json')) as s:
         requests.put('/'.join([crate_uri, 'locations']), data=json.loads(s.read()))
-    with open(docs_path('testing', 'cratesetup', 'data', 'test_a.json')) as s:
+    with open(docs_path('testing', 'testdata', 'data', 'test_a.json')) as s:
         requests.post('/'.join([crate_uri, '_bulk']), data=(s.read()))
     # refresh index
     requests.post('/'.join([crate_uri, 'locations', '_refresh']))

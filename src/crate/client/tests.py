@@ -1,29 +1,30 @@
 import unittest
 import doctest
-from crate.testing.layer import CrateLayer
-import os
 
 
-def docs_path(*parts):
-    return os.path.join(os.path.dirname(os.path.dirname(__file__)), *parts)
+class ClientMocked(object):
+
+    def __init__(self):
+        self.response = {}
+
+    def sql(self, stmt=None):
+        return self.response
+
+    def set_next_response(self, response):
+        self.response = response
 
 
-def crate_path(*parts):
-    return docs_path('..', '..', 'parts', 'crate', *parts)
-
-
-empty_layer = CrateLayer('crate',
-                         crate_home=crate_path(),
-                         crate_exec=crate_path('bin', 'crate'),
-                         port=9200,)
+def setUp(test):
+    test.globs['connection_client'] = ClientMocked()
 
 
 def test_suite():
     suite = unittest.TestSuite()
 
-    s = doctest.DocFileSuite('../../../docs/index.txt',
+    s = doctest.DocFileSuite('cursor.txt',
+                             'connection.txt',
+                             setUp=setUp,
                              optionflags=doctest.NORMALIZE_WHITESPACE |
                              doctest.ELLIPSIS)
-    s.layer = empty_layer
     suite.addTest(s)
     return suite

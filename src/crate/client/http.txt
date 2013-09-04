@@ -4,13 +4,20 @@ HTTP Crate Client
 
 Server configuration
 ====================
-A list of servers to use is required while creating an instance of the http client::
+A list of servers can be passed while creating an instance of the http client::
 
     >>> http_client = HttpClient([crate_host])
 
 Its also possible to pass a single server as a string::
 
     >>> http_client = HttpClient(crate_host)
+
+If no ``server` argument (or no argument at all) is passed, the default one ``127.0.0.1:9200``
+is used::
+
+    >>> http_client = HttpClient()
+    >>> http_client._active_servers
+    ['127.0.0.1:9200']
 
 When using a list of servers, the servers are selected by round-robin::
 

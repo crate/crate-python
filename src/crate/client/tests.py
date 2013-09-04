@@ -6,12 +6,11 @@ import requests
 from crate.testing.layer import CrateLayer
 from crate.testing.tests import crate_path, docs_path
 
-from .connection import Connection
 from . import http
 
 class ClientMocked(object):
 
-    def __init__(self, servers=None, timeout=None):
+    def __init__(self):
         self.response = {}
 
     def sql(self, stmt=None):
@@ -22,7 +21,7 @@ class ClientMocked(object):
 
 
 def setUpMocked(test):
-    test.globs['ClientMocked'] = ClientMocked
+    test.globs['connection_client_mocked'] = ClientMocked()
 
 
 crate_port = 9295

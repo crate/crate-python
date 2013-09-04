@@ -9,31 +9,41 @@ Before we can start we have to import the crate client::
 
     >>> from crate import client
 
-The client provides a ``connect()`` function which is 
-used to establish a connection::
+The client provides a ``connect()`` function which is used to establish a connection, the first
+argument is threat as the server to connect to::
 
     >>> connection = client.connect(crate_host)
 
-It's also possible to make a connection to multiple
-hosts. If a server does not respond, the request is
-automatically routed to the next server::
+Servers can also be passed by named argument::
+
+    >>> connection = client.connect(servers=crate_host)
+
+It's also possible to make a connection to multiple hosts. If a server does not respond,
+the request is automatically routed to the next server::
 
     >>> invalid_host = 'not_responding_host:9200'
     >>> connection = client.connect([crate_host, invalid_host])
 
-It's possible to define a default timeout value in seconds for all
-servers using the optional parameter ``timeout``::
+If no ``servers`` are given, the default one ``127.0.0.1:9200`` is used::
+
+    >>> connection = client.connect()
+    >>> connection.client._active_servers
+    ['127.0.0.1:9200']
+
+It's possible to define a default timeout value in seconds for all servers using the optional
+parameter ``timeout``::
 
     >>> connection = client.connect([crate_host, invalid_host], timeout=5)
 
-It's possible to define an own connection client class and pass it to the ``connect`` method::
+It's possible to define an own connection client class and pass its instance to the
+``connect`` method::
 
     >>> class MyConnectionClient:
-    ...     def __init__(self, servers, timeout=None):
+    ...     def __init__(self):
     ...         pass
     ...     def sql(self, stmt=None):
     ...         pass
-    >>> connection = client.connect([crate_host, invalid_host], client_class=MyConnectionClient)
+    >>> connection = client.connect([crate_host, invalid_host], client=MyConnectionClient())
 
 Create connection with default client again::
 

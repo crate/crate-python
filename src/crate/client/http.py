@@ -17,7 +17,11 @@ class Client(object):
 
     retry_interval = 30
 
-    def __init__(self, servers, timeout=None):
+    default_server = "127.0.0.1:9200"
+
+    def __init__(self, servers=None, timeout=None):
+        if not servers:
+            servers = self.default_server
         if isinstance(servers, types.StringTypes):
             servers = [servers]
         self._active_servers = servers

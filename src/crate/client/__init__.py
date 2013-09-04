@@ -1,8 +1,6 @@
 from .connection import connect
 
 apilevel = "2.0"
-
-#TODO: correct values after finshed implementation 
-threadsafety = 1
-paramstyle = "qmark"
+threadsafety = 2
+paramstyle = "pyformat"
 

@@ -1,4 +1,5 @@
 # -*- encoding: utf-8 -*-
+from functools import wraps
 
 from .exceptions import ProgrammingError
 
@@ -7,6 +8,7 @@ def check_connection(f):
     Method decorator for checking if the ``Connection`` was closed.
     If so raise a ``ProgrammingError``.
     """
+    @wraps(f)
     def wrapper(*args):
         cursor = args[0]
         # special case for __init__
@@ -31,7 +33,7 @@ def for_all_methods(decorator, exclude=()):
     return decorate
 
 @for_all_methods(check_connection)
-class Cursor():
+class Cursor(object):
 
     def __init__(self, connection):
         self.arraysize = 1
@@ -41,6 +43,8 @@ class Cursor():
 
     def execute(self, sql):
         """
+        execute(self, sql)
+
         Prepare and execute a database operation (query or command).
         """
         self._result = self.connection.client.sql(sql)
@@ -50,6 +54,8 @@ class Cursor():
 
     def executemany(self, sql, seq_of_parameters):
         """
+        executemany(self, sql, seq_of_parameters)
+
         Prepare a database operation (query or command) and then execute it against all parameter
         sequences or mappings found in the sequence ``seq_of_parameters``.
         """
@@ -58,6 +64,8 @@ class Cursor():
 
     def fetchone(self):
         """
+        fetchone(self)
+
         Fetch the next row of a query result set, returning a single sequence, or None when no
         more data is available.
         Alias for ``next()``.
@@ -66,6 +74,8 @@ class Cursor():
 
     def next(self):
         """
+        next(self)
+
         Fetch the next row of a query result set, returning a single sequence, or None when no
         more data is available.
         """
@@ -76,6 +86,8 @@ class Cursor():
 
     def fetchmany(self, count=None):
         """
+        fetchmany(self, count=None)
+
         Fetch the next set of rows of a query result, returning a sequence of sequences
         (e.g. a list of tuples). An empty sequence is returned when no more rows are available.
         """
@@ -93,6 +105,8 @@ class Cursor():
 
     def fetchall(self):
         """
+        fetchall(self)
+
         Fetch all (remaining) rows of a query result, returning them as a sequence of sequences
         (e.g. a list of tuples). Note that the cursor's arraysize attribute can affect the
         performance of this operation.
@@ -108,6 +122,8 @@ class Cursor():
 
     def close(self):
         """
+        close(self)
+
         Close the cursor now
         """
         self._closed = True
@@ -115,12 +131,16 @@ class Cursor():
 
     def setinputsizes(self, sizes):
         """
+        setinputsizes(self, sizes)
+
         Not supported method.
         """
         pass
 
     def setoutputsize(self, size, column=None):
         """
+        setoutputsize(self, size, column=None)
+
         Not supported method.
         """
         pass
@@ -130,7 +150,7 @@ class Cursor():
         """
         This read-only attribute specifies the number of rows that the last .execute*() produced
         (for DQL statements like ``SELECT``) or affected (for DML statements like ``UPDATE``
-         or ``INSERT``).
+        or ``INSERT``).
         """
         if (
             self._closed

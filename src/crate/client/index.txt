@@ -46,7 +46,7 @@ from the results::
 
     >>> result = cursor.fetchone()
     >>> pprint(result)
-    {u'name': u'Aldebaran'}
+    [u'Algol']
 
 If no more data is available, an empty result is returned::
 
@@ -63,19 +63,19 @@ containing no more than the specified size of rows::
     >>> cursor.execute("SELECT name FROM locations")
     >>> result = cursor.fetchmany(2)
     >>> pprint(result)
-    [{u'name': u'Aldebaran'}, {u'name': u'Argabuthon'}]
+    [[u'Algol'], [u'']]
 
 If a size is not given, the cursor's arraysize, which defaults to '1',
 determines the number of rows to be fetched::
 
     >>> cursor.fetchmany()
-    [{u'name': u'Bartledan'}]
+    [[u'Aldebaran']]
 
 It's also possible to change the cursors arraysize to an other value::
 
     >>> cursor.arraysize = 3
     >>> cursor.fetchmany()
-    [{u'name': u'Algol'}, {u'name': u''}, {u'name': u'North West Ripple'}]
+    [[u'Argabuthon'], [u'Bartledan'], [u'Galactic Sector QQ7 Active J Gamma']]
 
 fetchall()
 ----------
@@ -85,16 +85,16 @@ fetchall()
     >>> cursor.execute("SELECT name FROM locations")
     >>> result = cursor.fetchall()
     >>> pprint(result)
-    [{u'name': u'Aldebaran'},
-     {u'name': u'Argabuthon'},
-     {u'name': u'Bartledan'},
-     {u'name': u'Algol'},
-     {u'name': u''},
-     {u'name': u'North West Ripple'},
-     {u'name': u'Alpha Centauri'},
-     {u'name': None},
-     {u'name': u'Outer Eastern Rim'},
-     {u'name': u'Altair'}]
+    [[u'Algol'],
+     [u''],
+     [u'Aldebaran'],
+     [u'Argabuthon'],
+     [u'Bartledan'],
+     [u'Galactic Sector QQ7 Active J Gamma'],
+     [u'Allosimanius Syneca'],
+     [u'Arkintoofle Minor'],
+     [u'Outer Eastern Rim'],
+     [u'Altair']]
 
 Closing the Cursor
 ==================

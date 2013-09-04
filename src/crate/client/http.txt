@@ -61,16 +61,17 @@ Issue a select statement against our with test data pre-filled crate instance::
     >>> http_client = HttpClient(crate_host)
     >>> result = http_client.sql('select name from locations')
     >>> pprint(result)
-    {u'rows': [{u'name': u'Aldebaran'},
-               {u'name': u'Argabuthon'},
-               {u'name': u'Bartledan'},
-               {u'name': u'Algol'},
-               {u'name': u''},
-               {u'name': u'North West Ripple'},
-               {u'name': u'Alpha Centauri'},
-               {u'name': None},
-               {u'name': u'Outer Eastern Rim'},
-               {u'name': u'Altair'}]}
+    {u'cols': [u'name'],
+     u'rows': [[u'Algol'],
+               [u''],
+               [u'Aldebaran'],
+               [u'Argabuthon'],
+               [u'Bartledan'],
+               [u'Galactic Sector QQ7 Active J Gamma'],
+               [u'Allosimanius Syneca'],
+               [u'Arkintoofle Minor'],
+               [u'Outer Eastern Rim'],
+               [u'Altair']]}
 
 
 Error Handling

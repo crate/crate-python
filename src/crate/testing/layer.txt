@@ -1,0 +1,36 @@
+================
+Crate Test Layer
+================
+
+This layer starts and stops a ``Crate`` instance on a give port and a given crate node name::
+
+    >>> from crate.testing.layer import CrateLayer
+    >>> import random
+
+    >>> port = 9295
+
+    >>> layer =  CrateLayer('crate',
+    ...                     crate_home=crate_path(),
+    ...                     crate_exec=crate_path('bin', 'crate'),
+    ...                     port=port,)
+
+Lets start the layer::
+
+    >>> layer.start()
+
+
+Now we can access the ``Crate`` instance on the defined port::
+
+    >>> import requests
+
+    >>> stats_uri = "http://127.0.0.1:{0}/_stats".format(port)
+    >>> response = requests.get(stats_uri)
+    >>> response.status_code
+    200
+
+
+The layer can be shutdown using its ``stop()`` method::
+
+    >>> layer.stop()
+
+

@@ -14,10 +14,13 @@ class Client(object):
     """
 
     sql_path = '_sql'
+    """Crate URI path for issuing SQL statements."""
 
     retry_interval = 30
+    """Retry interval for failed servers in seconds."""
 
     default_server = "127.0.0.1:9200"
+    """Default server to use if no servers are given on instantiation."""
 
     def __init__(self, servers=None, timeout=None):
         if not servers:

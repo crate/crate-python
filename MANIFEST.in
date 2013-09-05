@@ -1,4 +1,4 @@
 include LICENSE
 include *.rst
-recursive-include src *.txt *.rst *.json
-global-exclude *.pyc
+recursive-include src *.txt *.rst
+recursive-exclude src tests*.py

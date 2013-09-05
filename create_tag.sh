@@ -33,7 +33,7 @@ then
 fi
 
 # check if tag to create has already been created
-VERSION=$('./bin/py setup.py --version')
+VERSION=`./bin/py setup.py --version`
 EXISTS=`git tag | grep $VERSION`
 
 if [ "$VERSION" == "$EXISTS" ]

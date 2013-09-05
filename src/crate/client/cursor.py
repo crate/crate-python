@@ -1,52 +1,29 @@
 # -*- encoding: utf-8 -*-
+from functools import wraps
 
 from .exceptions import ProgrammingError
 
-def check_connection(f):
-    """
-    Method decorator for checking if the ``Connection`` was closed.
-    If so raise a ``ProgrammingError``.
-    """
-    def wrapper(*args):
-        cursor = args[0]
-        # special case for __init__
-        if not hasattr(cursor, 'connection'):
-            if args[1]._closed:
-                raise ProgrammingError
-        elif cursor.connection._closed:
-            raise ProgrammingError
-        return f(*args)
-    return wrapper
-
-def for_all_methods(decorator, exclude=()):
-    """
-    Class decorator for applying a method decorator to all method except those
-    passed by ``exclude`` argument.
-    """
-    def decorate(cls):
-        for attr in cls.__dict__:
-            if callable(getattr(cls, attr)) and attr not in exclude:
-                setattr(cls, attr, decorator(getattr(cls, attr)))
-        return cls
-    return decorate
-
-@for_all_methods(check_connection)
-class Cursor():
+class Cursor(object):
 
     def __init__(self, connection):
         self.arraysize = 1
         self.connection = connection
-        self._closed = True
+        self._closed = False
         self._result = None
 
     def execute(self, sql):
         """
         Prepare and execute a database operation (query or command).
         """
+        if self.connection._closed:
+            raise ProgrammingError("Connection closed")
+
+        if self._closed:
+            raise ProgrammingError("Cursor closed")
+
         self._result = self.connection.client.sql(sql)
         if "rows" in self._result:
             self.rows = iter(self._result["rows"])
-            self._closed = False
 
     def executemany(self, sql, seq_of_parameters):
         """
@@ -130,7 +107,7 @@ class Cursor():
         """
         This read-only attribute specifies the number of rows that the last .execute*() produced
         (for DQL statements like ``SELECT``) or affected (for DML statements like ``UPDATE``
-         or ``INSERT``).
+        or ``INSERT``).
         """
         if (
             self._closed
@@ -147,7 +124,7 @@ class Cursor():
         if not self._closed:
             return self.rows.next()
         else:
-            raise ProgrammingError
+            raise ProgrammingError("Cursor closed")
 
     @property
     def description(self):

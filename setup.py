@@ -27,7 +27,8 @@ setup(
     platforms=['any'],
     license='Apache License 2.0',
     keywords='crate db api',
-    packages=find_packages(),
+    packages=find_packages('src'),
+    namespace_packages = ['crate'],
     extras_require=dict(
         test=['lovely.testlayers']
     ),

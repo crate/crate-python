@@ -19,7 +19,7 @@ class Connection(object):
         if not self._closed:
             return Cursor(self)
         else:
-            raise ProgrammingError
+            raise ProgrammingError("Connection closed")
 
     def close(self):
         """
@@ -34,7 +34,7 @@ class Connection(object):
         if not self._closed:
             pass
         else:
-            raise ProgrammingError
+            raise ProgrammingError("Connection closed")
 
 
 def connect(servers=None, timeout=None, client=None):

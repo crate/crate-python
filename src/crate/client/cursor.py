@@ -3,59 +3,30 @@ from functools import wraps
 
 from .exceptions import ProgrammingError
 
-def check_connection(f):
-    """
-    Method decorator for checking if the ``Connection`` was closed.
-    If so raise a ``ProgrammingError``.
-    """
-    @wraps(f)
-    def wrapper(*args):
-        cursor = args[0]
-        # special case for __init__
-        if not hasattr(cursor, 'connection'):
-            if args[1]._closed:
-                raise ProgrammingError
-        elif cursor.connection._closed:
-            raise ProgrammingError
-        return f(*args)
-    return wrapper
-
-def for_all_methods(decorator, exclude=()):
-    """
-    Class decorator for applying a method decorator to all method except those
-    passed by ``exclude`` argument.
-    """
-    def decorate(cls):
-        for attr in cls.__dict__:
-            if callable(getattr(cls, attr)) and attr not in exclude:
-                setattr(cls, attr, decorator(getattr(cls, attr)))
-        return cls
-    return decorate
-
-@for_all_methods(check_connection)
 class Cursor(object):
 
     def __init__(self, connection):
         self.arraysize = 1
         self.connection = connection
-        self._closed = True
+        self._closed = False
         self._result = None
 
     def execute(self, sql):
         """
-        execute(self, sql)
-
         Prepare and execute a database operation (query or command).
         """
+        if self.connection._closed:
+            raise ProgrammingError("Connection closed")
+
+        if self._closed:
+            raise ProgrammingError("Cursor closed")
+
         self._result = self.connection.client.sql(sql)
         if "rows" in self._result:
             self.rows = iter(self._result["rows"])
-            self._closed = False
 
     def executemany(self, sql, seq_of_parameters):
         """
-        executemany(self, sql, seq_of_parameters)
-
         Prepare a database operation (query or command) and then execute it against all parameter
         sequences or mappings found in the sequence ``seq_of_parameters``.
         """
@@ -64,8 +35,6 @@ class Cursor(object):
 
     def fetchone(self):
         """
-        fetchone(self)
-
         Fetch the next row of a query result set, returning a single sequence, or None when no
         more data is available.
         Alias for ``next()``.
@@ -74,8 +43,6 @@ class Cursor(object):
 
     def next(self):
         """
-        next(self)
-
         Fetch the next row of a query result set, returning a single sequence, or None when no
         more data is available.
         """
@@ -86,8 +53,6 @@ class Cursor(object):
 
     def fetchmany(self, count=None):
         """
-        fetchmany(self, count=None)
-
         Fetch the next set of rows of a query result, returning a sequence of sequences
         (e.g. a list of tuples). An empty sequence is returned when no more rows are available.
         """
@@ -105,8 +70,6 @@ class Cursor(object):
 
     def fetchall(self):
         """
-        fetchall(self)
-
         Fetch all (remaining) rows of a query result, returning them as a sequence of sequences
         (e.g. a list of tuples). Note that the cursor's arraysize attribute can affect the
         performance of this operation.
@@ -122,8 +85,6 @@ class Cursor(object):
 
     def close(self):
         """
-        close(self)
-
         Close the cursor now
         """
         self._closed = True
@@ -131,16 +92,12 @@ class Cursor(object):
 
     def setinputsizes(self, sizes):
         """
-        setinputsizes(self, sizes)
-
         Not supported method.
         """
         pass
 
     def setoutputsize(self, size, column=None):
         """
-        setoutputsize(self, size, column=None)
-
         Not supported method.
         """
         pass
@@ -167,7 +124,7 @@ class Cursor(object):
         if not self._closed:
             return self.rows.next()
         else:
-            raise ProgrammingError
+            raise ProgrammingError("Cursor closed")
 
     @property
     def description(self):

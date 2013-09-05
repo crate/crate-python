@@ -147,12 +147,12 @@ The following command closes the cursor::
     >>> cursor.close()
 
 If a cursor is closed, it will be unusable from this point forward.
-If any operation is attempted to a closed cursor an ``ProgrammingError`` will be raised::
+If any operation is attempted to a closed cursor an ``ProgrammingError`` will be raised.
 
-    >>> cursor.fetchone()
+    >>> cursor.execute("SELECT * FROM locations")
     Traceback (most recent call last):
     ...
-    ProgrammingError
+    ProgrammingError: Cursor closed
 
 Closing the Connection
 ======================
@@ -162,17 +162,18 @@ The following command closes the connection::
     >>> connection.close()
 
 If a connection is closed, it will be unusable from this point forward.
-If any operation is attempted to a closed connection an ``ProgrammingError`` will be raised::
+If any operation using the connection is attempted to a closed connection an ``ProgrammingError``
+will be raised::
 
     >>> cursor.execute("SELECT * FROM locations")
     Traceback (most recent call last):
     ...
-    ProgrammingError
+    ProgrammingError: Connection closed
 
     >>> cursor = connection.cursor() 
     Traceback (most recent call last):
     ...
-    ProgrammingError
+    ProgrammingError: Connection closed
 
 
 

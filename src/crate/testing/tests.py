@@ -2,8 +2,6 @@ import unittest
 import doctest
 import os
 
-from .layer import CrateLayer
-
 
 def docs_path(*parts):
     return os.path.join(os.path.dirname(os.path.dirname(__file__)), *parts)

@@ -143,6 +143,7 @@ close()
 After closing a cursor the connection will be unusable. If any operation is attempted with the
 closed connection an ``ProgrammingError`` exception will be raised::
 
+    >>> cursor = connection.cursor()
     >>> cursor.execute('')
     >>> cursor.fetchone()
     ['North West Ripple', 1]
@@ -151,19 +152,19 @@ closed connection an ``ProgrammingError`` exception will be raised::
     >>> cursor.fetchone()
     Traceback (most recent call last):
     ...
-    ProgrammingError
+    ProgrammingError: Cursor closed
 
     >>> cursor.fetchmany()
     Traceback (most recent call last):
     ...
-    ProgrammingError
+    ProgrammingError: Cursor closed
 
     >>> cursor.fetchall()
     Traceback (most recent call last):
     ...
-    ProgrammingError
+    ProgrammingError: Cursor closed
 
     >>> cursor.next()
     Traceback (most recent call last):
     ...
-    ProgrammingError
+    ProgrammingError: Cursor closed

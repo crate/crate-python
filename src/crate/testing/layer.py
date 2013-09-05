@@ -23,13 +23,19 @@ class CrateLayer(server.ServerLayer, layer.WorkDirectoryLayer):
 
     def __init__(self,
                  name,
-                 crate_home,
+                 crate_home=None,
                  crate_config=None,
                  port=9295,
                  keepRunning=False,
                  transport_port=None,
                  crate_exec=None):
         self.keepRunning = keepRunning
+        if not crate_home:
+            if not os.environ.has_key('CRATE_HOME'):
+                raise ValueError("The crate home directory must either be set as the environment"
+                    " variable 'CRATE_HOME' or given as argument 'crate_home'"
+                )
+            crate_home = os.environ['CRATE_HOME']
         crate_home = os.path.abspath(crate_home)
         servers = ['localhost:%s' % port]
         self.crate_servers = ['http://localhost:%s' % port]

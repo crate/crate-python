@@ -2,34 +2,69 @@
 Crate Test Layer
 ================
 
-This layer starts and stops a ``Crate`` instance on a give port and a given crate node name::
+This layer starts and stops a ``Crate`` server instance with given node name.
+
+Layer setup
+===========
+
+The home directory of the ``Crate`` server is read from the environment variable ``CRATE_HOME``
+by default::
 
     >>> from crate.testing.layer import CrateLayer
-    >>> import random
+
+    >>> layer = CrateLayer('crate')
+
+Its also possible to pass the crate home directory via the argument ``crate_home``, this precede
+the environment variable::
+
+    >>> import os
+
+    >>> layer = CrateLayer('crate', os.environ['CRATE_HOME'])
+
+If no ``CRATE_HOME`` environment variable is set and no ``crate_home`` argument is passed, a
+``ValueError`` exception is raised::
+
+    >>> crate_home_env = os.environ['CRATE_HOME']
+    >>> del os.environ['CRATE_HOME']
+    >>> layer = CrateLayer('crate')
+    Traceback (most recent call last):
+    ...
+    ValueError: The crate home directory must either be set as the environment variable 'CRATE_HOME' or given as argument 'crate_home'
+
+Re-add the environment variable so following tests will succeed::
+
+    >>> os.environ['CRATE_HOME'] = crate_home_env
+
+Using the ``port`` argument a custom port can be defined, otherwise defaults to ``9295``.
 
     >>> port = 9295
+    >>> layer = CrateLayer('crate', port=port)
 
-    >>> layer =  CrateLayer('crate',
-    ...                     crate_home=crate_path(),
-    ...                     crate_exec=crate_path('bin', 'crate'),
-    ...                     port=port,)
 
-Lets start the layer::
+Startup and Shutdown
+====================
+
+They layer starts up using its ``start()`` method::
 
     >>> layer.start()
 
+The layer can be shutdown using its ``stop()`` method::
 
-Now we can access the ``Crate`` instance on the defined port::
+    >>> layer.stop()
+
+
+Accessing the server's HTTP API
+===============================
+
+After a successful startup the ``Crate`` instance can be accessed on the defined port::
+
+    >>> layer.start()
 
     >>> import requests
-
     >>> stats_uri = "http://127.0.0.1:{0}/_stats".format(port)
     >>> response = requests.get(stats_uri)
     >>> response.status_code
     200
-
-
-The layer can be shutdown using its ``stop()`` method::
 
     >>> layer.stop()
 

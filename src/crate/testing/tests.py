@@ -11,7 +11,7 @@ def crate_path(*parts):
 
 
 def setUp(test):
-    test.globs['crate_path'] = crate_path
+    os.environ['CRATE_HOME'] = crate_path()
 
 
 def test_suite():

@@ -7,3 +7,4 @@ dist
 build
 *.pyc
 .idea/
+.tox/

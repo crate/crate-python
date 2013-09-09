@@ -1,6 +1,7 @@
 
 from setuptools import setup, find_packages
 import os
+import re
 
 
 def read(path):
@@ -12,12 +13,17 @@ long_description = (
     read('src/crate/client/index.txt')
 )
 
-# import VERSION
-execfile("src/crate/client/__version__.py")
+versionf_content = open("src/crate/client/__init__.py").read()
+version_rex = r'^__version__ = [\'"]([^\'"]*)[\'"]$'
+m = re.search(version_rex, versionf_content, re.M)
+if m:
+    version = m.group(1)
+else:
+    raise RuntimeError('Unable to find version string')
 
 setup(
     name='crate',
-    version=VERSION,
+    version=version,
     url='https://github.com/crate/crate-python',
     author='Crate Technology GmbH',
     author_email='office@crate-technology.com',
@@ -28,9 +34,10 @@ setup(
     license='Apache License 2.0',
     keywords='crate db api',
     packages=find_packages('src'),
-    namespace_packages = ['crate'],
+    namespace_packages=['crate'],
     extras_require=dict(
-        test=['lovely.testlayers']
+        test=['lovely.testlayers',
+              'zope.testing']
     ),
     install_requires=[
         'requests'

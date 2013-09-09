@@ -1,12 +1,15 @@
 import json
-from pprint import pprint
 import unittest
+from pprint import pprint
 import doctest
 import requests
+import re
 from crate.testing.layer import CrateLayer
 from crate.testing.tests import crate_path, docs_path
+from zope.testing.renormalizing import RENormalizing
 
 from . import http
+
 
 class ClientMocked(object):
 
@@ -25,13 +28,14 @@ def setUpMocked(test):
 
 
 crate_port = 9295
-crate_layer =  CrateLayer('crate',
-                    crate_home=crate_path(),
-                    crate_exec=crate_path('bin', 'crate'),
-                    port=crate_port,)
+crate_layer = CrateLayer('crate',
+                         crate_home=crate_path(),
+                         crate_exec=crate_path('bin', 'crate'),
+                         port=crate_port,)
 
 crate_host = "127.0.0.1:{port}".format(port=crate_port)
 crate_uri = "http://%s" % crate_host
+
 
 def setUpWithCrateLayer(test):
     test.globs['HttpClient'] = http.Client
@@ -46,28 +50,43 @@ def setUpWithCrateLayer(test):
     # refresh index
     requests.post('/'.join([crate_uri, 'locations', '_refresh']))
 
+
 def tearDownWithCrateLayer(test):
     # clear testing data
-
     requests.delete('/'.join([crate_uri, 'locations']))
 
 
 def test_suite():
     suite = unittest.TestSuite()
+    flags = (doctest.NORMALIZE_WHITESPACE | doctest.ELLIPSIS)
+    checker = RENormalizing([
+        # python 3 drops the u" prefix on unicode strings
+        (re.compile(r"u('[^']*')"), r"\1"),
 
-    s = doctest.DocFileSuite('cursor.txt',
-                             'connection.txt',
-                             setUp=setUpMocked,
-                             optionflags=doctest.NORMALIZE_WHITESPACE |
-                             doctest.ELLIPSIS)
+        # python 3 includes module name in exceptions
+        (re.compile(r"crate.client.exceptions.ProgrammingError:"),
+         "ProgrammingError:"),
+        (re.compile(r"crate.client.exceptions.ConnectionError:"),
+         "ConnectionError:"),
+    ])
+
+    s = doctest.DocFileSuite(
+        'cursor.txt',
+        'connection.txt',
+        checker=checker,
+        setUp=setUpMocked,
+        optionflags=flags
+    )
     suite.addTest(s)
 
-    s = doctest.DocFileSuite('http.txt',
-                             'index.txt',
-                             setUp=setUpWithCrateLayer,
-                             tearDown=tearDownWithCrateLayer,
-                             optionflags=doctest.NORMALIZE_WHITESPACE |
-                             doctest.ELLIPSIS)
+    s = doctest.DocFileSuite(
+        'http.txt',
+        'index.txt',
+        checker=checker,
+        setUp=setUpWithCrateLayer,
+        tearDown=tearDownWithCrateLayer,
+        optionflags=flags
+    )
     s.layer = crate_layer
     suite.addTest(s)
 

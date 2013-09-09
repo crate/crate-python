@@ -1,12 +1,17 @@
-from datetime import datetime
 import json
 import logging
-from operator import itemgetter
 import requests
-import types
+import sys
+from datetime import datetime
+from operator import itemgetter
+
 from crate.client.exceptions import ConnectionError
 
 logger = logging.getLogger(__name__)
+
+if sys.version_info[0] > 2:
+    basestring = str
+
 
 class Client(object):
     """
@@ -25,12 +30,11 @@ class Client(object):
     def __init__(self, servers=None, timeout=None):
         if not servers:
             servers = self.default_server
-        if isinstance(servers, types.StringTypes):
+        if isinstance(servers, basestring):
             servers = [servers]
         self._active_servers = servers
         self._http_timeout = timeout
         self._inactive_servers = []
-
 
     def sql(self, stmt):
         """
@@ -39,7 +43,7 @@ class Client(object):
         if stmt is None:
             return None
 
-        if not isinstance(stmt, types.StringTypes):
+        if not isinstance(stmt, basestring):
             raise ValueError("stmt is not a string type")
 
         content = self._request('POST', self.sql_path, dict(stmt=stmt))
@@ -58,14 +62,18 @@ class Client(object):
             try:
                 # build uri and send http request
                 uri = "http://{server}/{path}".format(server=server, path=path)
-                response = requests.request(method, uri, data=json.dumps(data), timeout=self._http_timeout)
-            except (requests.ConnectionError, requests.Timeout, requests.TooManyRedirects), exc:
+                response = requests.request(method, uri, data=json.dumps(data),
+                                            timeout=self._http_timeout)
+            except (requests.ConnectionError, requests.Timeout,
+                    requests.TooManyRedirects) as ex:
                 # drop server from active ones
-                self._drop_server(server, exc.message)
+                ex_message = hasattr(ex, 'message') and ex.message or str(ex)
+                self._drop_server(server, ex_message)
                 # if this is the last server raise exception, otherwise try next
                 if not self._active_servers:
-                    raise ConnectionError("No more Servers available, exception from last server: %s"
-                                          % exc.message)
+                    raise ConnectionError(
+                        ("No more Servers available, "
+                         "exception from last server: %s") % ex_message)
             else:
                 # raise error if occurred, otherwise nothing is raised
                 response.raise_for_status()

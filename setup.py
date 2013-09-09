@@ -13,7 +13,7 @@ long_description = (
     read('src/crate/client/index.txt')
 )
 
-versionf_content = open("src/crate/client/__version__.py").read()
+versionf_content = open("src/crate/client/__init__.py").read()
 version_rex = r'^__version__ = [\'"]([^\'"]*)[\'"]$'
 m = re.search(version_rex, versionf_content, re.M)
 if m:

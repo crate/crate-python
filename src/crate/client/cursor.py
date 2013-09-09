@@ -122,7 +122,7 @@ class Cursor(object):
         Return the next row of a query result set, respecting if cursor was closed.
         """
         if not self._closed:
-            return self.rows.next()
+            return next(self.rows)
         else:
             raise ProgrammingError("Cursor closed")
 

@@ -1,2 +1,4 @@
-# do not add any other code into this file, because this is execed by setup
-VERSION="0.0.3"
+# version string read from setup.py using a regex. Take care not to break the
+# regex!
+
+__version__ = "0.0.3"

@@ -35,6 +35,7 @@ setup(
     install_requires=[
         'requests'
     ],
+    package_data={'': ['*.txt']},
     classifiers=[
         'Development Status :: 2 - Pre-Alpha',
         'Intended Audience :: Developers',

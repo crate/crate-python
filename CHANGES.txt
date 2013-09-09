@@ -2,6 +2,11 @@
 Changes for crate
 =================
 
+Unreleased
+==========
+
+ - text files are now also included in binary egg distributions
+
 2013/09/05 0.0.2
 ================
 

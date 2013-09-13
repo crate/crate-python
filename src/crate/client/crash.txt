@@ -1,0 +1,33 @@
+===========
+Crate Shell
+===========
+
+The shell provides a CLI for CRATE.
+
+If the crate package was installed using `pip` the shell can be started by
+invoking `crash` in a terminal.
+
+`crash` by default will try to connect to `localhost:9200`. To connect to
+another host use the `connect` commmand inside the shell or use the `--hosts`
+argument when launching the shell::
+
+    >>> cmd.onecmd('connect ' + crate_host)
+
+Once the shell is connected, SQL statements can be executed simply by entering
+them without any special arguments like this::
+
+    >>> cmd.onecmd('select name, kind from locations')
+    +------------------------------------+-------------+
+    | name                               | kind        |
+    +------------------------------------+-------------+
+    | Algol                              | Star System |
+    | Folfanga                           | Star System |
+    | Aldebaran                          | Star System |
+    | Argabuthon                         | Planet      |
+    | Bartledan                          | Planet      |
+    | Galactic Sector QQ7 Active J Gamma | Galaxy      |
+    | Allosimanius Syneca                | Planet      |
+    | Arkintoofle Minor                  | Planet      |
+    | Outer Eastern Rim                  | Galaxy      |
+    | Altair                             | Star System |
+    +------------------------------------+-------------+

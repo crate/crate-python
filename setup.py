@@ -35,12 +35,18 @@ setup(
     keywords='crate db api',
     packages=find_packages('src'),
     namespace_packages=['crate'],
+    entry_points={
+        'console_scripts': [
+            'crash = crate.client.crash:main',
+        ],
+    },
     extras_require=dict(
         test=['lovely.testlayers',
               'zope.testing']
     ),
     install_requires=[
-        'requests'
+        'requests',
+        'PrettyTable'
     ],
     package_data={'': ['*.txt']},
     classifiers=[

@@ -2,6 +2,8 @@
 from .cursor import Cursor
 from .exceptions import ProgrammingError
 from .http import Client
+from .blob import BlobContainer
+
 
 class Connection(object):
 
@@ -35,6 +37,14 @@ class Connection(object):
             pass
         else:
             raise ProgrammingError("Connection closed")
+
+    def get_blob_container(self, container_name):
+        """ Retrieve a BlobContainer for `container_name`
+
+        :param container_name: the name of the BLOB container.
+        :returns: a :class:ContainerObject
+        """
+        return BlobContainer(container_name, self)
 
 
 def connect(servers=None, timeout=None, client=None):

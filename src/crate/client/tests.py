@@ -47,6 +47,16 @@ def setUpWithCrateLayer(test):
         requests.put('/'.join([crate_uri, 'locations']), data=json.loads(s.read()))
     with open(docs_path('testing', 'testdata', 'data', 'test_a.json')) as s:
         requests.post('/'.join([crate_uri, '_bulk']), data=(s.read()))
+
+    blob_idx_settings = {
+        'number_of_shards': 1,
+        'number_of_replicas': 0,
+        'blobs': {
+            'enabled': True
+        }
+    }
+    requests.post('/'.join([crate_uri, 'myfiles']),
+                  data=json.dumps(blob_idx_settings))
     # refresh index
     requests.post('/'.join([crate_uri, 'locations', '_refresh']))
 
@@ -82,6 +92,7 @@ def test_suite():
     s = doctest.DocFileSuite(
         'http.txt',
         'index.txt',
+        'blobs.txt',
         checker=checker,
         setUp=setUpWithCrateLayer,
         tearDown=tearDownWithCrateLayer,

@@ -52,7 +52,7 @@ class Client(object):
 
         return content
 
-    def _request(self, method, path, data):
+    def _request(self, method, path, data=None):
         """
         Issue request against the crate HTTP API.
         """
@@ -62,7 +62,9 @@ class Client(object):
             try:
                 # build uri and send http request
                 uri = "http://{server}/{path}".format(server=server, path=path)
-                response = requests.request(method, uri, data=json.dumps(data),
+                if data:
+                    data = json.dumps(data)
+                response = requests.request(method, uri, data=data,
                                             timeout=self._http_timeout)
             except (requests.ConnectionError, requests.Timeout,
                     requests.TooManyRedirects) as ex:

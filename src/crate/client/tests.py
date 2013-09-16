@@ -9,6 +9,7 @@ from crate.testing.tests import crate_path, docs_path
 from zope.testing.renormalizing import RENormalizing
 
 from . import http
+from .crash import CrateCmd
 
 
 class ClientMocked(object):
@@ -41,6 +42,7 @@ def setUpWithCrateLayer(test):
     test.globs['HttpClient'] = http.Client
     test.globs['crate_host'] = crate_host
     test.globs['pprint'] = pprint
+    test.globs['cmd'] = CrateCmd()
 
     # load testing data into crate
     with open(docs_path('testing', 'testdata', 'mappings', 'test_a.json')) as s:
@@ -82,6 +84,7 @@ def test_suite():
     s = doctest.DocFileSuite(
         'http.txt',
         'index.txt',
+        'crash.txt',
         checker=checker,
         setUp=setUpWithCrateLayer,
         tearDown=tearDownWithCrateLayer,

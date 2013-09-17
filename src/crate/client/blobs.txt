@@ -1,0 +1,90 @@
+==============
+Crate BLOB API
+==============
+
+The Crate client library provides an API to access the powerful Blob storage
+capabilities of the Crate server.
+
+First, a connection object is required. This can be retrieved by importing the
+client module and then connecting to one or more crate server::
+
+    >>> from crate import client
+    >>> connection = client.connect(crate_host)
+
+Every table which has Blob support enabled, may act as a container for
+Blobs. The ``BlobContainer`` object for a specific table can be
+retrieved like this::
+
+    >>> blob_container = connection.get_blob_container('myfiles')
+    >>> blob_container
+    <BlobContainer 'myfiles'>
+
+The returned container object can now be used to manage the contained
+Blobs.
+
+Uploading Blobs
+===============
+
+To upload a Blob the ``put`` method can be used. This method takes a
+file like object and an optional SHA-1 digest as argument.
+
+In this example we upload a file without specifying the SHA-1 digest::
+
+    >>> from tempfile import TemporaryFile
+    >>> f = TemporaryFile()
+    >>> f.write("this is the content of the file")
+    >>> f.flush()
+
+The actual ``put`` - it returns the computed SHA-1 digest upon completion.
+
+    >>> print blob_container.put(f)
+    6d46af79aa5113bd7e6a67fae9ab5228648d3f81
+
+.. note::
+
+  Omitting the SHA-1 digest results in one extra read of the file
+  contents to compute the digest before the actual upload
+  starts. Therefore, if the application already has a SHA-1 digest for
+  the content, or is able to compute the digest on another read
+  upfront, providing the digest will lead to better performance.
+
+Here is another example, which provides the digest in the call::
+
+    >>> f.seek(0)
+    >>> blob_container.put(f, digest='6d46af79aa5113bd7e6a67fae9ab5228648d3f81')
+    False
+
+.. note::
+
+  The above call returned ``False`` because the object already
+  existed. Since the digest is already known by the caller and it makes no
+  sense to return it again, a boolean gets returned which indicates if
+  the Blob was newly created or not.
+
+Retrieving Blobs
+================
+
+Retrieving a blob can be done by using the ``get`` method like this::
+
+    >>> res = blob_container.get('6d46af79aa5113bd7e6a67fae9ab5228648d3f81')
+
+The result is a generator object which returns one chunk per iteration.
+
+    >>> print res.next()
+    this is the content of the file
+
+It is also possible to check if a blob exists like this::
+
+    >>> blob_container.exists('6d46af79aa5113bd7e6a67fae9ab5228648d3f81')
+    True
+
+Deleting Blobs
+==============
+
+To delete a blob just call the ``delete`` method, the resulting boolean
+states whether a blob existed under the given digest or not::
+
+    >>> blob_container.delete('6d46af79aa5113bd7e6a67fae9ab5228648d3f81')
+    True
+
+

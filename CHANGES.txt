@@ -5,6 +5,8 @@ Changes for crate
 Unreleased
 ==========
 
+ - basic Blob-Client-API implemented
+
 2013/09/09 0.0.3
 ================
 

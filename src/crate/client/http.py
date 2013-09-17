@@ -5,7 +5,7 @@ import sys
 from datetime import datetime
 from operator import itemgetter
 
-from crate.client.exceptions import ConnectionError
+from crate.client.exceptions import ConnectionError, DigestNotFoundException
 
 logger = logging.getLogger(__name__)
 
@@ -46,26 +46,72 @@ class Client(object):
         if not isinstance(stmt, basestring):
             raise ValueError("stmt is not a string type")
 
-        content = self._request('POST', self.sql_path, dict(stmt=stmt))
-
+        content = self._json_request('POST', self.sql_path, data=dict(stmt=stmt))
         logger.debug("JSON response for stmt(%s): %s", stmt, content)
 
         return content
 
-    def _request(self, method, path, data=None):
-        """
-        Issue request against the crate HTTP API.
-        """
+    def _blob_path(self, table, digest=None):
+        path = table + '/_blobs/'
+        if digest:
+            path += digest
+        return path
 
+    def blob_put(self, table, digest, data):
+        """
+        Stores the contents of the file like @data object in a blob under the given table and
+        digest.
+        """
+        response =  self._request('PUT', self._blob_path(table, digest), data=data)
+        if response.status_code == 201:
+            return True
+        elif response.status_code == 409:
+            return False
+        response.raise_for_status()
+
+    def blob_del(self, table, digest):
+        """
+        Deletes the blob with given digest under the given table.
+        """
+        response =  self._request('DELETE', self._blob_path(table, digest))
+        if response.status_code == 204:
+            return True
+        elif response.status_code == 404:
+            return False
+        response.raise_for_status()
+
+
+    def blob_get(self, table, digest, chunk_size=1024*128):
+        """
+        Returns a file like object representing the contents of the blob with the given
+        digest.
+        """
+        response = self._request('GET', self._blob_path(table, digest), stream=True)
+
+        if response.status_code == 404:
+            raise DigestNotFoundException(table, digest)
+        response.raise_for_status()
+        return response.iter_content(chunk_size=chunk_size)
+
+    def blob_exists(self, table, digest):
+        """
+        Returns true if the blob with the given digest exists under the given table.
+        """
+        response = self._request('HEAD', self._blob_path(table, digest))
+        if response.status_code == 200:
+            return True
+        elif response.status_code == 404:
+            return False
+        response.raise_for_status()
+
+
+    def _request(self, method, path, **kwargs):
         while True:
             server = self._get_server()
             try:
                 # build uri and send http request
                 uri = "http://{server}/{path}".format(server=server, path=path)
-                if data:
-                    data = json.dumps(data)
-                response = requests.request(method, uri, data=data,
-                                            timeout=self._http_timeout)
+                return requests.request(method, uri, timeout=self._http_timeout, **kwargs)
             except (requests.ConnectionError, requests.Timeout,
                     requests.TooManyRedirects) as ex:
                 # drop server from active ones
@@ -75,14 +121,24 @@ class Client(object):
                 if not self._active_servers:
                     raise ConnectionError(
                         ("No more Servers available, "
-                         "exception from last server: %s") % ex_message)
-            else:
-                # raise error if occurred, otherwise nothing is raised
-                response.raise_for_status()
+                        "exception from last server: %s") % ex_message)
 
-                # return parsed json response
-                return response.json(cls=DateTimeDecoder)
 
+    def _json_request(self, method, path, data=None):
+        """
+        Issue request against the crate HTTP API.
+        """
+
+        if data:
+            data = json.dumps(data)
+        response = self._request(method, path, data=data)
+
+        # raise error if occurred, otherwise nothing is raised
+        response.raise_for_status()
+        # return parsed json response
+        if len(response.content)>0:
+            return response.json(cls=DateTimeDecoder)
+        return response.content
 
     def _get_server(self):
         """

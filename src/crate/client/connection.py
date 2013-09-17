@@ -1,4 +1,3 @@
-
 from .cursor import Cursor
 from .exceptions import ProgrammingError
 from .http import Client

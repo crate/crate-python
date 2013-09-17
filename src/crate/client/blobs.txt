@@ -2,7 +2,7 @@
 Crate BLOB API
 ==============
 
-The Crate client library provides an API to access the powerful BLOB storage
+The Crate client library provides an API to access the powerful Blob storage
 capabilities of the Crate server.
 
 First, a connection object is required. This can be retrieved by importing the
@@ -11,44 +11,80 @@ client module and then connecting to one or more crate server::
     >>> from crate import client
     >>> connection = client.connect(crate_host)
 
-The connection object can then be used to retrieve a BLOB container. A BLOB
-container is a special kind of table that can contain files. On these
-containers it is possible to define the number of shards and replicas.
-
-To access a container the connection object provides a `get_blob_container`
-method::
+Every table which has Blob support enabled, may act as a container for
+Blobs. The ``BlobContainer`` object for a specific table can be
+retrieved like this::
 
     >>> blob_container = connection.get_blob_container('myfiles')
     >>> blob_container
     <BlobContainer 'myfiles'>
 
-This container object can now be used to either get statistics about the
-stored files, to download, upload or delete files::
+The returned container object can now be used to manage the contained
+Blobs.
 
-    >>> blob_container.stats()
+Uploading Blobs
+===============
 
-To upload a file the `.put()` method can be used. The method takes either a
-file like object, a generator or the file content as string.
+To upload a Blob the ``put`` method can be used. This method takes a
+file like object and an optional SHA-1 digest as argument.
 
-.. doctest::
-    :hide:
+In this example we upload a file without specifying the SHA-1 digest::
 
-    >>> from tempfile import mkstemp
-    >>> from os import fdopen
-    >>> tmp_file = mkstemp()
-    >>> tmp_file_name = tmp_file[1]
-    >>> tmp_file_obj = fdopen(tmp_file[0])
-    >>> tmp_file_obj.write('aaaa')
-    >>> tmp_file_obj.close()
+    >>> from tempfile import TemporaryFile
+    >>> f = TemporaryFile()
+    >>> f.write("this is the content of the file")
+    >>> f.flush()
 
-Using file like objects or a generator is recommended since then it is possible
-to stream the files without reading them into memory::
+The actual ``put`` - it returns the computed SHA-1 digest upon completion.
 
-    >>> f = open(tmp_file_name)
-    >>> blob_container.put(f)
-    ASDF
+    >>> print blob_container.put(f)
+    6d46af79aa5113bd7e6a67fae9ab5228648d3f81
 
-The client will then compute then compute the `SHA-1` hash of the file which is
-required by the Crate server to store the file. And then upload the file using
-that hash. If the upload was succesful the hash is then returned. If it failed
-`None` is returned instead.
+.. note::
+
+  Omitting the SHA-1 digest results in one extra read of the file
+  contents to compute the digest before the actual upload
+  starts. Therefore, if the application already has a SHA-1 digest for
+  the content, or is able to compute the digest on another read
+  upfront, providing the digest will lead to better performance.
+
+Here is another example, wich provides the digest in the call::
+
+    >>> f.seek(0)
+    >>> blob_container.put(f, digest='6d46af79aa5113bd7e6a67fae9ab5228648d3f81')
+    False
+
+.. note::
+
+  The above call returned ``False`` because the object already
+  existed. Since the digest is already known by the caller and it makes no
+  sense to return it again, a boolean gets returned which indicates if
+  the Blob was newly created or not.
+
+Retrieving Blobs
+================
+
+Retrieving a blob can be done by using the ``get`` method like this::
+
+    >>> res = blob_container.get('6d46af79aa5113bd7e6a67fae9ab5228648d3f81')
+
+The result is a generator object which returns one chunk per iteration.
+
+    >>> print res.next()
+    this is the content of the file
+
+It is also possible to check if a blob exists like this::
+
+    >>> blob_container.exists('6d46af79aa5113bd7e6a67fae9ab5228648d3f81')
+    True
+
+Deleting Blobs
+==============
+
+To delet a blob just call the ``delete`` method, the resulting boolean
+states weather a blob existed under the given digest or not::
+
+    >>> blob_container.delete('6d46af79aa5113bd7e6a67fae9ab5228648d3f81')
+    True
+
+

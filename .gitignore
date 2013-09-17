@@ -8,3 +8,5 @@ build
 *.pyc
 .idea/
 .tox/
+*.iml
+*.DS_Store

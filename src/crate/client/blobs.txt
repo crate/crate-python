@@ -48,7 +48,7 @@ The actual ``put`` - it returns the computed SHA-1 digest upon completion.
   the content, or is able to compute the digest on another read
   upfront, providing the digest will lead to better performance.
 
-Here is another example, wich provides the digest in the call::
+Here is another example, which provides the digest in the call::
 
     >>> f.seek(0)
     >>> blob_container.put(f, digest='6d46af79aa5113bd7e6a67fae9ab5228648d3f81')
@@ -81,8 +81,8 @@ It is also possible to check if a blob exists like this::
 Deleting Blobs
 ==============
 
-To delet a blob just call the ``delete`` method, the resulting boolean
-states weather a blob existed under the given digest or not::
+To delete a blob just call the ``delete`` method, the resulting boolean
+states whether a blob existed under the given digest or not::
 
     >>> blob_container.delete('6d46af79aa5113bd7e6a67fae9ab5228648d3f81')
     True

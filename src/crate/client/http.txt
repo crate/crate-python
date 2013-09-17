@@ -80,6 +80,64 @@ Issue a select statement against our with test data pre-filled crate instance::
                [u'Outer Eastern Rim'],
                [u'Altair']]}
 
+Blobs
+=====
+
+Check if a blob exists::
+
+    >>> http_client.blob_exists('myfiles', '040f06fd774092478d450774f5ba30c5da78acc8')
+    False
+
+Trying to get a non-existing blob throws an exception::
+
+    >>> http_client.blob_get('myfiles', '040f06fd774092478d450774f5ba30c5da78acc8')
+    Traceback (most recent call last):
+    ...
+    DigestNotFoundException: myfiles/040f06fd774092478d450774f5ba30c5da78acc8
+
+Creating a new blob - this method returns True if the blob was newly
+created, false if it already exists::
+
+    >>> from StringIO import StringIO
+    >>> f = StringIO('content')
+    >>> f.seek(0)
+    >>> http_client.blob_put(
+    ...     'myfiles', '040f06fd774092478d450774f5ba30c5da78acc8', f)
+    True
+
+    >>> f.seek(0)
+    >>> http_client.blob_put(
+    ...     'myfiles', '040f06fd774092478d450774f5ba30c5da78acc8', f)
+    False
+
+The blob should now exist::
+
+    >>> http_client.blob_exists('myfiles', '040f06fd774092478d450774f5ba30c5da78acc8')
+    True
+
+Blobs are returned as generators, generating a chunk on each call::
+
+    >>> g = http_client.blob_get('myfiles', '040f06fd774092478d450774f5ba30c5da78acc8')
+    >>> g.next()
+    'content'
+
+The chunk_size can be set explicitly on get::
+
+    >>> g = http_client.blob_get(
+    ...     'myfiles', '040f06fd774092478d450774f5ba30c5da78acc8', 5)
+    >>> g.next()
+    'conte'
+    >>> g.next()
+    'nt'
+
+Deleting a blob - this method returns true if the blob existed::
+
+    >>> http_client.blob_del('myfiles', '040f06fd774092478d450774f5ba30c5da78acc8')
+    True
+
+    >>> http_client.blob_del('myfiles', '040f06fd774092478d450774f5ba30c5da78acc8')
+    False
+
 
 Error Handling
 ==============

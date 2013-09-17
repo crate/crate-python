@@ -16,12 +16,13 @@ class BlobContainer(object):
         f.seek(0)
         m = hashlib.sha1()
         while True:
-            d = f.read()
+            d = f.read(1024*32)
             if d:
                 m.update(d)
             else:
-                f.seek(0)
-                return m.hexdigest()
+                break
+        f.seek(0)
+        return m.hexdigest()
 
     def put(self, f, digest=None):
         if digest:

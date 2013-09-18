@@ -1,0 +1,58 @@
+==================
+SQLAlchemy Dialect
+==================
+
+Using the connection to execute a select statement::
+
+    >>> result = connection.execute('select name from locations')
+    >>> result.rowcount
+    10
+
+    >>> result.first()
+    (u'Algol',)
+
+Using the ORM to query the locations::
+
+    >>> locations = session.query(Location)
+    >>> [l.name for l in locations][:5]
+    [u'Algol', u'Folfanga', u'Aldebaran', u'Argabuthon', u'Bartledan']
+
+With limit and offset::
+
+    >>> locations = session.query(Location).offset(1).limit(4)
+    >>> [l.name for l in locations]
+    [u'Folfanga', u'Aldebaran', u'Argabuthon', u'Bartledan']
+
+With filter::
+
+    >>> location = session.query(Location).filter_by(name='Algol').one()
+    >>> location.name
+    u'Algol'
+
+Order by::
+
+    >>> locations = session.query(Location).order_by(desc(Location.name))
+    >>> locations = locations.limit(2)
+    >>> [l.name for l in locations]
+    [u'Outer Eastern Rim', u'North West Ripple']
+
+
+Insert a new location::
+
+    >>> location = Location()
+    >>> location.name = 'Earth'
+    >>> location.kind = 'Planet'
+
+    >>> session.add(location)
+    >>> session.commit()
+
+Currently refresh option is missing, therefore sleep for now::
+
+    >>> from time import sleep
+    >>> sleep(1)
+
+Inserted location is available::
+
+    >>> location = session.query(Location).filter_by(name='Earth').one()
+    >>> location.name
+    u'Earth'

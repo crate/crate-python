@@ -1,3 +1,5 @@
+from __future__ import absolute_import
+
 import json
 import unittest
 import doctest
@@ -13,6 +15,7 @@ from . import http
 from .crash import CrateCmd
 from .test_cursor import CursorTest
 from .test_http import HttpClientTest
+from .sqlalchemy.test import SqlAlchemyTest
 from .compat import cprint
 
 
@@ -75,6 +78,29 @@ def setUpWithCrateLayer(test):
     requests.post('/'.join([crate_uri, 'locations', '_refresh']))
 
 
+def setUpCrateLayerAndSqlAlchemy(test):
+    setUpWithCrateLayer(test)
+    from sqlalchemy import create_engine, String, Column, desc
+    from sqlalchemy.ext.declarative import declarative_base
+    from sqlalchemy.orm import sessionmaker
+
+    engine = create_engine('crate://{0}'.format(crate_host))
+    Base = declarative_base()
+
+    class Location(Base):
+        __tablename__ = 'locations'
+        name = Column(String, primary_key=True)
+        kind = Column(String)
+
+    Session = sessionmaker(engine)
+    session = Session()
+    test.globs['engine'] = engine
+    test.globs['connection'] = engine.connect()
+    test.globs['Location'] = Location
+    test.globs['session'] = session
+    test.globs['desc'] = desc
+
+
 def tearDownWithCrateLayer(test):
     # clear testing data
     requests.delete('/'.join([crate_uri, 'locations']))
@@ -106,8 +132,18 @@ def test_suite():
     suite.addTest(s)
     suite.addTest(unittest.makeSuite(CursorTest))
     suite.addTest(unittest.makeSuite(HttpClientTest))
+    suite.addTest(unittest.makeSuite(SqlAlchemyTest))
     suite.addTest(doctest.DocTestSuite('crate.client.connection'))
 
+    s = doctest.DocFileSuite(
+        'sqlalchemy/itests.txt',
+        checker=checker,
+        setUp=setUpCrateLayerAndSqlAlchemy,
+        tearDown=tearDownWithCrateLayer,
+        optionflags=flags
+    )
+    s.layer = crate_layer
+    suite.addTest(s)
     s = doctest.DocFileSuite(
         'http.txt',
         '../../../docs/client.txt',

@@ -4,6 +4,9 @@ from .exceptions import ProgrammingError
 
 
 class Cursor(object):
+
+    lastrowid = None  # currently not supported
+
     def __init__(self, connection):
         self.arraysize = 1
         self.connection = connection

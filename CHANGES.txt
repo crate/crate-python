@@ -5,6 +5,11 @@ Changes for crate
 Unreleased
 ==========
 
+2013/09/18 0.0.5
+================
+
+ - added qmark parameter substitution support
+
  - basic Blob-Client-API implemented
 
 2013/09/16 0.0.4

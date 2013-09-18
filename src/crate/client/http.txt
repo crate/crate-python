@@ -98,14 +98,15 @@ Trying to get a non-existing blob throws an exception::
 Creating a new blob - this method returns True if the blob was newly
 created, false if it already exists::
 
-    >>> from StringIO import StringIO
-    >>> f = StringIO('content')
-    >>> f.seek(0)
+    >>> from tempfile import TemporaryFile
+    >>> f = TemporaryFile()
+    >>> _ = f.write(b'content')
+    >>> _ = f.seek(0)
     >>> http_client.blob_put(
     ...     'myfiles', '040f06fd774092478d450774f5ba30c5da78acc8', f)
     True
 
-    >>> f.seek(0)
+    >>> _ = f.seek(0)
     >>> http_client.blob_put(
     ...     'myfiles', '040f06fd774092478d450774f5ba30c5da78acc8', f)
     False
@@ -118,17 +119,18 @@ The blob should now exist::
 Blobs are returned as generators, generating a chunk on each call::
 
     >>> g = http_client.blob_get('myfiles', '040f06fd774092478d450774f5ba30c5da78acc8')
-    >>> g.next()
-    'content'
+    >>> print(next(g))
+    content
 
 The chunk_size can be set explicitly on get::
 
     >>> g = http_client.blob_get(
     ...     'myfiles', '040f06fd774092478d450774f5ba30c5da78acc8', 5)
-    >>> g.next()
-    'conte'
-    >>> g.next()
-    'nt'
+    >>> print(next(g))
+    conte
+
+    >>> print(next(g))
+    nt
 
 Deleting a blob - this method returns true if the blob existed::
 

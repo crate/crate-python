@@ -13,6 +13,7 @@ from . import http
 from .crash import CrateCmd
 from .test_cursor import CursorTest
 from .test_http import HttpClientTest
+from .compat import cprint
 
 
 class ClientMocked(object):
@@ -45,6 +46,7 @@ def setUpWithCrateLayer(test):
     test.globs['crate_host'] = crate_host
     test.globs['pprint'] = pprint
     test.globs['cmd'] = CrateCmd()
+    test.globs['print'] = cprint
 
     # load testing data into crate
     with open(docs_path('testing/testdata/mappings/test_a.json')) as s:
@@ -90,6 +92,8 @@ def test_suite():
          "ProgrammingError:"),
         (re.compile(r"crate.client.exceptions.ConnectionError:"),
          "ConnectionError:"),
+        (re.compile(r"crate.client.exceptions.DigestNotFoundException:"),
+         "DigestNotFoundException:"),
     ])
 
     s = doctest.DocFileSuite(

@@ -1,9 +1,15 @@
-from __future__ import absolute_import
-from exceptions import StandardError
+
+from .compat import StandardError
 
 
 class Error(StandardError):
-    pass
+
+    def __init__(self, msg=None):
+        # for py33 compat.
+        # The Exception base class doesn't set the message attribute
+        if msg:
+            self.message = msg
+        super(Error, self).__init__(msg)
 
 
 class Warning(StandardError):
@@ -59,5 +65,3 @@ class BlobException(Exception):
 
 class DigestNotFoundException(BlobException):
     pass
-
-

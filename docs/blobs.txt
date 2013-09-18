@@ -32,12 +32,12 @@ In this example we upload a file without specifying the SHA-1 digest::
 
     >>> from tempfile import TemporaryFile
     >>> f = TemporaryFile()
-    >>> f.write("this is the content of the file")
+    >>> _ = f.write(b"this is the content of the file")
     >>> f.flush()
 
 The actual ``put`` - it returns the computed SHA-1 digest upon completion::
 
-    >>> print blob_container.put(f)
+    >>> print(blob_container.put(f))
     6d46af79aa5113bd7e6a67fae9ab5228648d3f81
 
 .. note::
@@ -50,7 +50,7 @@ The actual ``put`` - it returns the computed SHA-1 digest upon completion::
 
 Here is another example, which provides the digest in the call::
 
-    >>> f.seek(0)
+    >>> _ = f.seek(0)
     >>> blob_container.put(f, digest='6d46af79aa5113bd7e6a67fae9ab5228648d3f81')
     False
 
@@ -70,7 +70,7 @@ Retrieving a blob can be done by using the ``get`` method like this::
 
 The result is a generator object which returns one chunk per iteration::
 
-    >>> print res.next()
+    >>> print(next(res))
     this is the content of the file
 
 It is also possible to check if a blob exists like this::

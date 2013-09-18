@@ -2,12 +2,12 @@
 from __future__ import absolute_import
 import sys
 
-py2k = True
+py2 = True
 if sys.version_info[0] > 2:
-    py2k = False
+    py2 = False
 
 
-if py2k:
+if py2:
     from exceptions import StandardError
 
     def cprint(s):

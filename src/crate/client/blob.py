@@ -48,7 +48,6 @@ class BlobContainer(object):
         else:
             return actual_digest
 
-
     def get(self, digest):
         """
         Return the contents of a blob
@@ -77,5 +76,4 @@ class BlobContainer(object):
         return self.conn.client.blob_exists(self.container_name, digest)
 
     def __repr__(self):
-        return "<BlobContainer '{}'>".format(self.container_name)
-
+        return "<BlobContainer '{0}'>".format(self.container_name)

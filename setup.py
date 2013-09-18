@@ -1,7 +1,17 @@
 
 from setuptools import setup, find_packages
+import sys
 import os
 import re
+
+
+requirements = [
+    'requests',
+    'PrettyTable'
+]
+
+if (2, 6) == sys.version_info[:2]:
+    requirements.append('argparse')
 
 
 def read(path):
@@ -47,10 +57,7 @@ setup(
               'mock',
               'zope.testing']
     ),
-    install_requires=[
-        'requests',
-        'PrettyTable'
-    ],
+    install_requires=requirements,
     package_data={'': ['*.txt']},
     classifiers=[
         'Development Status :: 2 - Pre-Alpha',

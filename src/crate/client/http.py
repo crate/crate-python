@@ -139,7 +139,7 @@ class Client(object):
         response.raise_for_status()
         # return parsed json response
         if len(response.content) > 0:
-            return response.json(cls=DateTimeDecoder)
+            return response.json()
         return response.content
 
     def _get_server(self):
@@ -189,26 +189,3 @@ class Client(object):
         Very simple round-robin implementation
         """
         self._active_servers.append(self._active_servers.pop(0))
-
-
-class DateTimeDecoder(json.JSONDecoder):
-    """
-    JSON decoder which is trying to convert datetime strings to datetime objects
-
-    taken from: https://gist.github.com/abhinav-upadhyay/5300137
-    """
-
-    def __init__(self, *args, **kargs):
-        json.JSONDecoder.__init__(self, object_hook=self.dict_to_object,
-                                  *args, **kargs)
-
-    def dict_to_object(self, d):
-        if '__type__' not in d:
-            return d
-
-        type = d.pop('__type__')
-        try:
-            dateobj = datetime(**d)
-            return dateobj
-        except:
-            d['__type__'] = type

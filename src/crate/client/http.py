@@ -53,7 +53,7 @@ class Client(object):
             'stmt': stmt
         }
         if parameters:
-            data['args'] = list(parameters)
+            data['args'] = parameters
         logger.debug(
             'Sending request to %s with payload: %s', self.sql_path, data)
         content = self._json_request('POST', self.sql_path, data=data)

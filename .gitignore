@@ -6,7 +6,8 @@ crate.egg-info
 dist
 build
 *.pyc
-.idea/
+.idea/workspace.xml
+.idea/tasks.xml
+.idea/libraries/
 .tox/
-*.iml
 *.DS_Store

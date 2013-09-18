@@ -1,0 +1,20 @@
+==================
+Advanced API Usage
+==================
+
+Client Mocking
+--------------
+
+For testing purposes it is often useful to replace the client used for
+communication with the crate server with a stub or mock.
+
+This can be done by passing a object of the Client class when calling the
+`connect` method::
+
+    >>> from crate import client
+    >>> class MyConnectionClient:
+    ...     def __init__(self):
+    ...         pass
+    ...     def sql(self, stmt=None, parameters=None):
+    ...         pass
+    >>> connection = client.connect([crate_host], client=MyConnectionClient())

@@ -1,16 +1,21 @@
 
-.. image:: http://www.crate-technology.com/assets/img/logo.png 
+.. image:: http://www.crate-technology.com/assets/img/logo.png
    :width: 155px
    :height: 45px
-   :alt: Crate-Technology 
+   :alt: Crate-Technology
    :target: http://www.crate-technology.com/
 
 Overview
 ========
 
-The crate client distribution is a nativ python
-client offering tools for interacting with the
-crate server.
+This is the database adapter for the crate database. Its main feature is a
+implementation of the Python `DB API 2.0
+<http://www.python.org/dev/peps/pep-0249/>`_ specification. Take a look at the
+`client docs <docs/client.txt>`_ for usage information.
+
+In addition the client library also exposes some features of crate like blob
+support as a more convenient high level API since SQL isn't well suited to blob
+handling. See `the blob docs <docs/blobs.txt>`_ for more details.
 
 Installation
 ============
@@ -18,14 +23,13 @@ Installation
 Installing via pip
 ------------------
 
-To install the crate client via `pip
-<https://pypi.python.org/pypi/pip>`_
-use the following command::
+To install the crate client via `pip <https://pypi.python.org/pypi/pip>`_ use
+the following command::
 
     $ pip install crate
 
 To update use::
-    
+
     $ pip install -U crate
 
 Installing via easy_install

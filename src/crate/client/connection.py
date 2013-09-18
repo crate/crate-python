@@ -44,6 +44,24 @@ class Connection(object):
         """
         return BlobContainer(container_name, self)
 
+    def __repr__(self):
+        return '<Connection {}>'.format(repr(self.client))
+
 
 def connect(servers=None, timeout=None, client=None):
+    """ Create a :class:Connection object
+
+    :param servers:
+        either a string in the form of '<hostname>:<port>'
+        or a list of servers in the form of ['<hostname>:<port>', '...']
+    :param timeout:
+        (optional)
+        define the retry timeout for unreachable servers in seconds
+    :param client:
+        (optional - for testing)
+        client used to communicate with crate.
+
+    >>> connect(['host1:9200', 'host2:9200'])
+    <Connection <Client ['host1:9200', 'host2:9200']>>
+    """
     return Connection(servers=servers, timeout=timeout, client=client)

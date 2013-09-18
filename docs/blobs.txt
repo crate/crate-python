@@ -35,7 +35,7 @@ In this example we upload a file without specifying the SHA-1 digest::
     >>> f.write("this is the content of the file")
     >>> f.flush()
 
-The actual ``put`` - it returns the computed SHA-1 digest upon completion.
+The actual ``put`` - it returns the computed SHA-1 digest upon completion::
 
     >>> print blob_container.put(f)
     6d46af79aa5113bd7e6a67fae9ab5228648d3f81
@@ -68,7 +68,7 @@ Retrieving a blob can be done by using the ``get`` method like this::
 
     >>> res = blob_container.get('6d46af79aa5113bd7e6a67fae9ab5228648d3f81')
 
-The result is a generator object which returns one chunk per iteration.
+The result is a generator object which returns one chunk per iteration::
 
     >>> print res.next()
     this is the content of the file
@@ -86,5 +86,3 @@ states whether a blob existed under the given digest or not::
 
     >>> blob_container.delete('6d46af79aa5113bd7e6a67fae9ab5228648d3f81')
     True
-
-

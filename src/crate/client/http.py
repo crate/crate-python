@@ -6,7 +6,8 @@ from operator import itemgetter
 
 import requests
 
-from crate.client.exceptions import ConnectionError, DigestNotFoundException
+from crate.client.exceptions import (
+    ConnectionError, DigestNotFoundException, ProgrammingError)
 
 
 logger = logging.getLogger(__name__)
@@ -38,7 +39,7 @@ class Client(object):
         self._http_timeout = timeout
         self._inactive_servers = []
 
-    def sql(self, stmt):
+    def sql(self, stmt, parameters=None):
         """
         Execute SQL stmt against the crate server.
         """
@@ -48,7 +49,14 @@ class Client(object):
         if not isinstance(stmt, basestring):
             raise ValueError("stmt is not a string type")
 
-        content = self._json_request('POST', self.sql_path, data=dict(stmt=stmt))
+        data = {
+            'stmt': stmt
+        }
+        if parameters:
+            data['args'] = parameters
+        logger.debug(
+            'Sending request to %s with payload: %s', self.sql_path, data)
+        content = self._json_request('POST', self.sql_path, data=data)
         logger.debug("JSON response for stmt(%s): %s", stmt, content)
 
         return content
@@ -61,15 +69,15 @@ class Client(object):
 
     def blob_put(self, table, digest, data):
         """
-        Stores the contents of the file like @data object in a blob under the given table and
-        digest.
+        Stores the contents of the file like @data object in a blob under the
+        given table and digest.
         """
         response = self._request('PUT', self._blob_path(table, digest), data=data)
         if response.status_code == 201:
             return True
         elif response.status_code == 409:
             return False
-        response.raise_for_status()
+        self._raise_for_status(response)
 
     def blob_del(self, table, digest):
         """
@@ -80,7 +88,7 @@ class Client(object):
             return True
         elif response.status_code == 404:
             return False
-        response.raise_for_status()
+        self._raise_for_status(response)
 
 
     def blob_get(self, table, digest, chunk_size=1024 * 128):
@@ -92,7 +100,7 @@ class Client(object):
 
         if response.status_code == 404:
             raise DigestNotFoundException(table, digest)
-        response.raise_for_status()
+        self._raise_for_status(response)
         return response.iter_content(chunk_size=chunk_size)
 
     def blob_exists(self, table, digest):
@@ -104,8 +112,7 @@ class Client(object):
             return True
         elif response.status_code == 404:
             return False
-        response.raise_for_status()
-
+        self._raise_for_status(response)
 
     def _request(self, method, path, **kwargs):
         while True:
@@ -124,7 +131,21 @@ class Client(object):
                     raise ConnectionError(
                         ("No more Servers available, "
                          "exception from last server: %s") % ex_message)
+            except requests.HTTPError as e:
+                if hasattr(e, 'response') and e.response:
+                    raise ProgrammingError(e.response.content)
+                raise ProgrammingError()
 
+    def _raise_for_status(self, response):
+        """ make sure that only crate.exceptions are raised that are defined in
+        the DB-API specification """
+
+        try:
+            response.raise_for_status()
+        except requests.exceptions.HTTPError as e:
+            if hasattr(e, 'response') and e.response:
+                raise ProgrammingError(e.response.content)
+            raise ProgrammingError()
 
     def _json_request(self, method, path, data=None):
         """
@@ -136,10 +157,10 @@ class Client(object):
         response = self._request(method, path, data=data)
 
         # raise error if occurred, otherwise nothing is raised
-        response.raise_for_status()
+        self._raise_for_status(response)
         # return parsed json response
         if len(response.content) > 0:
-            return response.json(cls=DateTimeDecoder)
+            return response.json()
         return response.content
 
     def _get_server(self):
@@ -190,25 +211,5 @@ class Client(object):
         """
         self._active_servers.append(self._active_servers.pop(0))
 
-
-class DateTimeDecoder(json.JSONDecoder):
-    """
-    JSON decoder which is trying to convert datetime strings to datetime objects
-
-    taken from: https://gist.github.com/abhinav-upadhyay/5300137
-    """
-
-    def __init__(self, *args, **kargs):
-        json.JSONDecoder.__init__(self, object_hook=self.dict_to_object,
-                                  *args, **kargs)
-
-    def dict_to_object(self, d):
-        if '__type__' not in d:
-            return d
-
-        type = d.pop('__type__')
-        try:
-            dateobj = datetime(**d)
-            return dateobj
-        except:
-            d['__type__'] = type
+    def __repr__(self):
+        return '<Client {}>'.format(str(self._active_servers))

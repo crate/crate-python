@@ -10,7 +10,9 @@ def read(path):
 long_description = (
     read('README.rst')
     + '\n' +
-    read('src/crate/client/index.txt')
+    read('docs/client.txt')
+    + '\n' +
+    read('docs/blobs.txt')
 )
 
 versionf_content = open("src/crate/client/__init__.py").read()
@@ -42,6 +44,7 @@ setup(
     },
     extras_require=dict(
         test=['lovely.testlayers',
+              'mock',
               'zope.testing']
     ),
     install_requires=[

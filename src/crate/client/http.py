@@ -1,11 +1,13 @@
 import json
 import logging
-import requests
 import sys
 from datetime import datetime
 from operator import itemgetter
 
+import requests
+
 from crate.client.exceptions import ConnectionError, DigestNotFoundException
+
 
 logger = logging.getLogger(__name__)
 
@@ -62,7 +64,7 @@ class Client(object):
         Stores the contents of the file like @data object in a blob under the given table and
         digest.
         """
-        response =  self._request('PUT', self._blob_path(table, digest), data=data)
+        response = self._request('PUT', self._blob_path(table, digest), data=data)
         if response.status_code == 201:
             return True
         elif response.status_code == 409:
@@ -73,7 +75,7 @@ class Client(object):
         """
         Deletes the blob with given digest under the given table.
         """
-        response =  self._request('DELETE', self._blob_path(table, digest))
+        response = self._request('DELETE', self._blob_path(table, digest))
         if response.status_code == 204:
             return True
         elif response.status_code == 404:
@@ -81,7 +83,7 @@ class Client(object):
         response.raise_for_status()
 
 
-    def blob_get(self, table, digest, chunk_size=1024*128):
+    def blob_get(self, table, digest, chunk_size=1024 * 128):
         """
         Returns a file like object representing the contents of the blob with the given
         digest.
@@ -121,7 +123,7 @@ class Client(object):
                 if not self._active_servers:
                     raise ConnectionError(
                         ("No more Servers available, "
-                        "exception from last server: %s") % ex_message)
+                         "exception from last server: %s") % ex_message)
 
 
     def _json_request(self, method, path, data=None):
@@ -136,7 +138,7 @@ class Client(object):
         # raise error if occurred, otherwise nothing is raised
         response.raise_for_status()
         # return parsed json response
-        if len(response.content)>0:
+        if len(response.content) > 0:
             return response.json(cls=DateTimeDecoder)
         return response.content
 
@@ -176,10 +178,10 @@ class Client(object):
             pass
         else:
             self._inactive_servers.append({
-                    'server': server,
-                    'message': message,
-                    'timestamp': datetime.now()
-                })
+                'server': server,
+                'message': message,
+                'timestamp': datetime.now()
+            })
             logger.warning("Removed server %s from active pool", server)
 
     def _roundrobin(self):
@@ -187,7 +189,6 @@ class Client(object):
         Very simple round-robin implementation
         """
         self._active_servers.append(self._active_servers.pop(0))
-
 
 
 class DateTimeDecoder(json.JSONDecoder):
@@ -199,7 +200,7 @@ class DateTimeDecoder(json.JSONDecoder):
 
     def __init__(self, *args, **kargs):
         json.JSONDecoder.__init__(self, object_hook=self.dict_to_object,
-                             *args, **kargs)
+                                  *args, **kargs)
 
     def dict_to_object(self, d):
         if '__type__' not in d:

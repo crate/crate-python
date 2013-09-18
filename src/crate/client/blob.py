@@ -2,7 +2,6 @@ import hashlib
 
 
 class BlobContainer(object):
-
     """ class that represents a blob collection in crate.
 
     can be used to download, upload and delete blobs
@@ -16,7 +15,7 @@ class BlobContainer(object):
         f.seek(0)
         m = hashlib.sha1()
         while True:
-            d = f.read(1024*32)
+            d = f.read(1024 * 32)
             if d:
                 m.update(d)
             else:

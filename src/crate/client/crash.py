@@ -1,4 +1,3 @@
-
 """
 crate cli
 
@@ -9,6 +8,8 @@ import os
 import sys
 import select
 import readline
+
+
 assert readline  # imported so that cmd gains history-editing functionality
 from cmd import Cmd
 from argparse import ArgumentParser
@@ -20,7 +21,6 @@ from requests.exceptions import HTTPError
 
 
 class CrateCmd(Cmd):
-
     prompt = 'cr> '
 
     def __init__(self, *args):

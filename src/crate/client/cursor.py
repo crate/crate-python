@@ -1,10 +1,9 @@
 # -*- encoding: utf-8 -*-
-from functools import wraps
 
 from .exceptions import ProgrammingError
 
-class Cursor(object):
 
+class Cursor(object):
     def __init__(self, connection):
         self.arraysize = 1
         self.connection = connection
@@ -110,8 +109,8 @@ class Cursor(object):
         or ``INSERT``).
         """
         if (
-            self._closed
-            or not self._result
+                    self._closed
+                or not self._result
             or "rows" not in self._result
         ):
             return -1

@@ -5,7 +5,6 @@ from .blob import BlobContainer
 
 
 class Connection(object):
-
     def __init__(self, servers=None, timeout=None, client=None):
         if client:
             self.client = client

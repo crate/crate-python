@@ -48,15 +48,14 @@ class ConnectionError(OperationalError):
     pass
 
 
-
 class BlobException(Exception):
-
     def __init__(self, table, digest):
         self.table = table
         self.digest = digest
 
     def __str__(self):
         return "{table}/{digest}".format(table=self.table, digest=self.digest)
+
 
 class DigestNotFoundException(BlobException):
     pass

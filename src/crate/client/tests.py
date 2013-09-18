@@ -2,18 +2,18 @@ import json
 import unittest
 from pprint import pprint
 import doctest
-import requests
 import re
-from crate.testing.layer import CrateLayer
-from crate.testing.tests import crate_path, docs_path
+
+import requests
 from zope.testing.renormalizing import RENormalizing
 
+from crate.testing.layer import CrateLayer
+from crate.testing.tests import crate_path, docs_path
 from . import http
 from .crash import CrateCmd
 
 
 class ClientMocked(object):
-
     def __init__(self):
         self.response = {}
 
@@ -32,7 +32,7 @@ crate_port = 9295
 crate_layer = CrateLayer('crate',
                          crate_home=crate_path(),
                          crate_exec=crate_path('bin', 'crate'),
-                         port=crate_port,)
+                         port=crate_port)
 
 crate_host = "127.0.0.1:{port}".format(port=crate_port)
 crate_uri = "http://%s" % crate_host

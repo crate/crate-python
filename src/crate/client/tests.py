@@ -12,6 +12,7 @@ from crate.testing.tests import crate_path, docs_path
 from . import http
 from .crash import CrateCmd
 from .test_cursor import CursorTest
+from .test_http import HttpClientTest
 
 
 class ClientMocked(object):
@@ -100,6 +101,7 @@ def test_suite():
     )
     suite.addTest(s)
     suite.addTest(unittest.makeSuite(CursorTest))
+    suite.addTest(unittest.makeSuite(HttpClientTest))
     suite.addTest(doctest.DocTestSuite('crate.client.connection'))
 
     s = doctest.DocFileSuite(

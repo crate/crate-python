@@ -6,7 +6,8 @@ from operator import itemgetter
 
 import requests
 
-from crate.client.exceptions import ConnectionError, DigestNotFoundException
+from crate.client.exceptions import (
+    ConnectionError, DigestNotFoundException, ProgrammingError)
 
 
 logger = logging.getLogger(__name__)
@@ -76,7 +77,7 @@ class Client(object):
             return True
         elif response.status_code == 409:
             return False
-        response.raise_for_status()
+        self._raise_for_status(response)
 
     def blob_del(self, table, digest):
         """
@@ -87,7 +88,7 @@ class Client(object):
             return True
         elif response.status_code == 404:
             return False
-        response.raise_for_status()
+        self._raise_for_status(response)
 
 
     def blob_get(self, table, digest, chunk_size=1024 * 128):
@@ -99,7 +100,7 @@ class Client(object):
 
         if response.status_code == 404:
             raise DigestNotFoundException(table, digest)
-        response.raise_for_status()
+        self._raise_for_status(response)
         return response.iter_content(chunk_size=chunk_size)
 
     def blob_exists(self, table, digest):
@@ -111,8 +112,7 @@ class Client(object):
             return True
         elif response.status_code == 404:
             return False
-        response.raise_for_status()
-
+        self._raise_for_status(response)
 
     def _request(self, method, path, **kwargs):
         while True:
@@ -131,7 +131,21 @@ class Client(object):
                     raise ConnectionError(
                         ("No more Servers available, "
                          "exception from last server: %s") % ex_message)
+            except requests.HTTPError as e:
+                if hasattr(e, 'response') and e.response:
+                    raise ProgrammingError(e.response.content)
+                raise ProgrammingError()
 
+    def _raise_for_status(self, response):
+        """ make sure that only crate.exceptions are raised that are defined in
+        the DB-API specification """
+
+        try:
+            response.raise_for_status()
+        except requests.exceptions.HTTPError as e:
+            if hasattr(e, 'response') and e.response:
+                raise ProgrammingError(e.response.content)
+            raise ProgrammingError()
 
     def _json_request(self, method, path, data=None):
         """
@@ -143,7 +157,7 @@ class Client(object):
         response = self._request(method, path, data=data)
 
         # raise error if occurred, otherwise nothing is raised
-        response.raise_for_status()
+        self._raise_for_status(response)
         # return parsed json response
         if len(response.content) > 0:
             return response.json()

@@ -38,7 +38,7 @@ class Client(object):
         self._http_timeout = timeout
         self._inactive_servers = []
 
-    def sql(self, stmt):
+    def sql(self, stmt, parameters=None):
         """
         Execute SQL stmt against the crate server.
         """
@@ -48,7 +48,14 @@ class Client(object):
         if not isinstance(stmt, basestring):
             raise ValueError("stmt is not a string type")
 
-        content = self._json_request('POST', self.sql_path, data=dict(stmt=stmt))
+        data = {
+            'stmt': stmt
+        }
+        if parameters:
+            data['args'] = list(parameters)
+        logger.debug(
+            'Sending request to %s with payload: %s', self.sql_path, data)
+        content = self._json_request('POST', self.sql_path, data=data)
         logger.debug("JSON response for stmt(%s): %s", stmt, content)
 
         return content
@@ -61,8 +68,8 @@ class Client(object):
 
     def blob_put(self, table, digest, data):
         """
-        Stores the contents of the file like @data object in a blob under the given table and
-        digest.
+        Stores the contents of the file like @data object in a blob under the
+        given table and digest.
         """
         response = self._request('PUT', self._blob_path(table, digest), data=data)
         if response.status_code == 201:
@@ -189,3 +196,6 @@ class Client(object):
         Very simple round-robin implementation
         """
         self._active_servers.append(self._active_servers.pop(0))
+
+    def __repr__(self):
+        return '<Client {}>'.format(str(self._active_servers))

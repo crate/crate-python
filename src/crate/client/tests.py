@@ -1,8 +1,8 @@
 import json
 import unittest
-from pprint import pprint
 import doctest
 import re
+from pprint import pprint
 
 import requests
 from zope.testing.renormalizing import RENormalizing
@@ -11,13 +11,14 @@ from crate.testing.layer import CrateLayer
 from crate.testing.tests import crate_path, docs_path
 from . import http
 from .crash import CrateCmd
+from .test_cursor import CursorTest
 
 
 class ClientMocked(object):
     def __init__(self):
         self.response = {}
 
-    def sql(self, stmt=None):
+    def sql(self, stmt=None, parameters=None):
         return self.response
 
     def set_next_response(self, response):
@@ -45,8 +46,16 @@ def setUpWithCrateLayer(test):
     test.globs['cmd'] = CrateCmd()
 
     # load testing data into crate
-    with open(docs_path('testing', 'testdata', 'mappings', 'test_a.json')) as s:
-        requests.put('/'.join([crate_uri, 'locations']), data=json.loads(s.read()))
+    with open(docs_path('testing/testdata/mappings/test_a.json')) as s:
+        data = {
+            "mappings": json.loads(s.read()),
+            "settings": {
+                "number_of_replicas": 0
+            }
+        }
+        resp = requests.put('/'.join([crate_uri, 'locations']),
+                            data=json.dumps(data))
+        assert resp.status_code == 200
     with open(docs_path('testing', 'testdata', 'data', 'test_a.json')) as s:
         requests.post('/'.join([crate_uri, '_bulk']), data=(s.read()))
 
@@ -90,11 +99,14 @@ def test_suite():
         optionflags=flags
     )
     suite.addTest(s)
+    suite.addTest(unittest.makeSuite(CursorTest))
+    suite.addTest(doctest.DocTestSuite('crate.client.connection'))
 
     s = doctest.DocFileSuite(
         'http.txt',
-        'index.txt',
-        'blobs.txt',
+        '../../../docs/client.txt',
+        '../../../docs/advanced_usage.txt',
+        '../../../docs/blobs.txt',
         'crash.txt',
         checker=checker,
         setUp=setUpWithCrateLayer,

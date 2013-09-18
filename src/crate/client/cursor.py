@@ -10,7 +10,7 @@ class Cursor(object):
         self._closed = False
         self._result = None
 
-    def execute(self, sql):
+    def execute(self, sql, parameters=None):
         """
         Prepare and execute a database operation (query or command).
         """
@@ -20,7 +20,7 @@ class Cursor(object):
         if self._closed:
             raise ProgrammingError("Cursor closed")
 
-        self._result = self.connection.client.sql(sql)
+        self._result = self.connection.client.sql(sql, parameters)
         if "rows" in self._result:
             self.rows = iter(self._result["rows"])
 

@@ -212,4 +212,4 @@ class Client(object):
         self._active_servers.append(self._active_servers.pop(0))
 
     def __repr__(self):
-        return '<Client {}>'.format(str(self._active_servers))
+        return '<Client {0}>'.format(str(self._active_servers))

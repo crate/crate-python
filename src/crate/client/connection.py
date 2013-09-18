@@ -45,7 +45,7 @@ class Connection(object):
         return BlobContainer(container_name, self)
 
     def __repr__(self):
-        return '<Connection {}>'.format(repr(self.client))
+        return '<Connection {0}>'.format(repr(self.client))
 
 
 def connect(servers=None, timeout=None, client=None):

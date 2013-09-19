@@ -143,9 +143,10 @@ class Client(object):
         try:
             response.raise_for_status()
         except requests.exceptions.HTTPError as e:
-            if hasattr(e, 'response') and e.response:
-                raise ProgrammingError(e.response.content)
-            raise ProgrammingError()
+            if hasattr(e, 'response'):
+                raise ProgrammingError(
+                    e.response.json().get('error', {}).get('message', ''))
+            raise ProgrammingError(str(e))
 
     def _json_request(self, method, path, data=None):
         """

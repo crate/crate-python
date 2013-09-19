@@ -16,8 +16,7 @@ from argparse import ArgumentParser
 
 from prettytable import PrettyTable
 from crate import client
-from crate.client.exceptions import ConnectionError
-from requests.exceptions import HTTPError
+from crate.client.exceptions import ConnectionError, Error, Warning
 
 
 class CrateCmd(Cmd):
@@ -44,8 +43,11 @@ class CrateCmd(Cmd):
         except ConnectionError:
             print(
                 'Use "connect <hostname:port>" to connect to a server first')
-        except HTTPError as e:
-            print(e.response.json().get('error', ''))
+        except (Error, Warning) as e:
+            if hasattr(e, 'message'):
+                print(e.message)
+            else:
+                print(e)
         return False
 
     def pprint(self, rows):
@@ -59,6 +61,9 @@ class CrateCmd(Cmd):
 
     def cols(self):
         return [c[0] for c in self.cursor.description]
+
+    def do_EOF(self, arg):
+        sys.exit(0)
 
     def do_select(self, statement):
         """execute a SQL select statement

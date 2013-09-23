@@ -51,11 +51,15 @@ setup(
         'console_scripts': [
             'crash = crate.client.crash:main',
         ],
+        'sqlalchemy.dialects': [
+            'crate = crate.client.sqlalchemy:CrateDialect'
+        ]
     },
     extras_require=dict(
         test=['lovely.testlayers',
               'mock',
-              'zope.testing']
+              'zope.testing'],
+        sqlalchemy=['sqlalchemy']
     ),
     install_requires=requirements,
     package_data={'': ['*.txt']},

@@ -26,10 +26,14 @@ class CrateDialect(default.DefaultDialect):
         pass
 
     def connect(self, host=None, port=None, *args, **kwargs):
-        server = '{0}:{1}'.format(host or 'localhost', port or '9200')
+        server = None
+        if host:
+            server = '{0}:{1}'.format(host, port or '9200')
         if 'servers' in kwargs:
             server = kwargs.pop('servers')
-        return self.dbapi.connect(servers=server, **kwargs)
+        if server:
+            return self.dbapi.connect(servers=server, **kwargs)
+        return self.dbapi.connect(**kwargs)
 
     @classmethod
     def dbapi(cls):

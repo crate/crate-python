@@ -1,0 +1,67 @@
+==================
+SQLAlchemy Support
+==================
+
+Since most people prefer to use an ORM the `crate` client library provides
+support for SQLAlchemy out of the box.
+
+The Dialect is installed and registered by default (e.g. if `crate` was
+installed using pip) and can be used without further configuration.
+
+Connection String
+-----------------
+
+In SQLAlchemy a connection is established using the `create_engine` function.
+This function takes a connection string that varies from database to database.
+
+In order to connect to a crate cluster the following connection strings are
+valid::
+
+    >>> sa.create_engine('crate://')
+    Engine(crate://)
+
+This will connect to the default server ('127.0.0.1:9200'). In order to
+connect to a different server the following syntax can be used::
+
+    >>> sa.create_engine('crate://otherserver:9200')
+    Engine(crate://otherserver:9200)
+
+Since Crate is a clustered database that usually consists of multiple server it
+is recommended to connect to all of them. This enables the DB-API layer to use
+round-robin to distribute the load and skip a server if it becomes unavailable.
+
+The `connect_args` parameter has to be used to do so::
+
+    >>> sa.create_engine('crate://', connect_args={
+    ...     'servers': ['host1:9200', 'host2:9200']
+    ... })
+    Engine(crate://)
+
+
+Supported Operations and Limitations
+====================================
+
+Currently Crate only implements a subset of the `SQL` standard. Therefore many
+operations that SQLAlchemy provides are currently not supported.
+
+An overview of supported operations::
+
+ - simple select statements including filter operations, limit and offset. But
+   without joins or subselects. Order by is also supported.
+ - Inserting new rows.
+
+Unlike other databases that are usually used with SQLAlchemy, Crate isn't a
+RDBMS but instead is document oriented with `eventual consistency
+<http://en.wikipedia.org/wiki/Eventual_consistency>`_.
+
+This means that there is no transaction support and the database should be
+modeled without relationships.
+
+In SQLAlchemy a `Session` object is used to query the database. This `Session`
+object contains a `rollback` method that in `Crate` won't do anything at all.
+Similar the `commit` method will only `flush` but not actually commit, as there
+is no commit in crate.
+
+Please refer to the `SQLAlchemy documentation
+<http://docs.sqlalchemy.org/en/rel_0_8/orm/tutorial.html#adding-new-objects>`_
+for more information about the session management and the concept of `flush`.

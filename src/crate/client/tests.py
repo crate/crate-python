@@ -80,25 +80,24 @@ def setUpWithCrateLayer(test):
 
 def setUpCrateLayerAndSqlAlchemy(test):
     setUpWithCrateLayer(test)
-    from sqlalchemy import create_engine, String, Column, desc
+    import sqlalchemy as sa
     from sqlalchemy.ext.declarative import declarative_base
     from sqlalchemy.orm import sessionmaker
 
-    engine = create_engine('crate://{0}'.format(crate_host))
+    engine = sa.create_engine('crate://{0}'.format(crate_host))
     Base = declarative_base()
 
     class Location(Base):
         __tablename__ = 'locations'
-        name = Column(String, primary_key=True)
-        kind = Column(String)
+        name = sa.Column(sa.String, primary_key=True)
+        kind = sa.Column(sa.String)
 
     Session = sessionmaker(engine)
     session = Session()
+    test.globs['sa'] = sa
     test.globs['engine'] = engine
-    test.globs['connection'] = engine.connect()
     test.globs['Location'] = Location
     test.globs['session'] = session
-    test.globs['desc'] = desc
 
 
 def tearDownWithCrateLayer(test):
@@ -152,6 +151,16 @@ def test_suite():
         'crash.txt',
         checker=checker,
         setUp=setUpWithCrateLayer,
+        tearDown=tearDownWithCrateLayer,
+        optionflags=flags
+    )
+    s.layer = crate_layer
+    suite.addTest(s)
+
+    s = doctest.DocFileSuite(
+        '../../../docs/sqlalchemy.txt',
+        checker=checker,
+        setUp=setUpCrateLayerAndSqlAlchemy,
         tearDown=tearDownWithCrateLayer,
         optionflags=flags
     )

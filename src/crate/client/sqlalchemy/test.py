@@ -14,7 +14,7 @@ class SqlAlchemyTest(TestCase):
     def test_default_connection(self):
         engine = create_engine('crate://')
         conn = engine.raw_connection()
-        self.assertEquals("<Connection <Client ['localhost:9200']>>",
+        self.assertEquals("<Connection <Client ['127.0.0.1:9200']>>",
                           repr(conn.connection))
 
     def test_connection_server(self):

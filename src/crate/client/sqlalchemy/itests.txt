@@ -2,6 +2,8 @@
 SQLAlchemy Dialect
 ==================
 
+    >>> connection = engine.connect()
+
 Using the connection to execute a select statement::
 
     >>> result = connection.execute('select name from locations')
@@ -31,7 +33,7 @@ With filter::
 
 Order by::
 
-    >>> locations = session.query(Location).order_by(desc(Location.name))
+    >>> locations = session.query(Location).order_by(sa.desc(Location.name))
     >>> locations = locations.limit(2)
     >>> [l.name for l in locations]
     [u'Outer Eastern Rim', u'North West Ripple']
@@ -44,7 +46,7 @@ Insert a new location::
     >>> location.kind = 'Planet'
 
     >>> session.add(location)
-    >>> session.commit()
+    >>> session.flush()
 
 Currently refresh option is missing, therefore sleep for now::
 

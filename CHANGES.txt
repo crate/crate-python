@@ -5,6 +5,8 @@ Changes for crate
 Unreleased
 ==========
 
+ - add support for sqlalchemy including complex types
+
  - error handling improvements in crash
 
 2013/09/18 0.0.5

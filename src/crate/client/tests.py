@@ -15,7 +15,7 @@ from . import http
 from .crash import CrateCmd
 from .test_cursor import CursorTest
 from .test_http import HttpClientTest
-from .sqlalchemy.test import SqlAlchemyTest
+from .sqlalchemy.test import tests as sqlalchemy_tests
 from .compat import cprint
 
 
@@ -89,6 +89,16 @@ def setUpCrateLayerAndSqlAlchemy(test):
             "mapper": {
                 "dynamic": True
             }
+        },
+        "mappings": {
+            "default": {
+                "properties": {
+                    "id": {
+                        "type": "string",
+                        "index": "not_analyzed"
+                    }
+                }
+            }
         }
     }
     requests.put('{0}/characters'.format(crate_uri), data=json.dumps(data))
@@ -141,7 +151,7 @@ def test_suite():
     suite.addTest(s)
     suite.addTest(unittest.makeSuite(CursorTest))
     suite.addTest(unittest.makeSuite(HttpClientTest))
-    suite.addTest(unittest.makeSuite(SqlAlchemyTest))
+    suite.addTest(sqlalchemy_tests)
     suite.addTest(doctest.DocTestSuite('crate.client.connection'))
 
     s = doctest.DocFileSuite(

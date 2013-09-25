@@ -65,3 +65,67 @@ is no commit in crate.
 Please refer to the `SQLAlchemy documentation
 <http://docs.sqlalchemy.org/en/rel_0_8/orm/tutorial.html#adding-new-objects>`_
 for more information about the session management and the concept of `flush`.
+
+Complex Types
+=============
+
+In a document oriented database it is a common pattern to store complex objects
+within a single field. For such cases the `crate` package provides the `Dict`
+type::
+
+    >>> from crate.client.sqlalchemy.types import Dict
+    >>> from uuid import uuid4
+
+    >>> def gen_key():
+    ...     return str(uuid4())
+
+    >>> class Character(Base):
+    ...     __tablename__ = 'characters'
+    ...     id = sa.Column(sa.String, primary_key=True, default=gen_key)
+    ...     name = sa.Column(sa.String)
+    ...     details = sa.Column(Dict)
+
+    >>> arthur = Character(name='Arthur Dent')
+    >>> arthur.details = {}
+    >>> arthur.details['gender'] = 'male'
+    >>> arthur.details['species'] = 'human'
+    >>> session.add(arthur)
+
+    >>> trillian = Character(name='Tricia McMillan')
+    >>> trillian.details = {}
+    >>> trillian.details['gender'] = 'female'
+    >>> trillian.details['species'] = 'human'
+    >>> trillian.details['female_only_attribute'] = 1
+    >>> session.add(trillian)
+    >>> session.flush()
+
+Note that the 'gender' and 'species' attributes weren't defined in the schema
+above. And Trillian contains an additional property that Arthur doesn't have.
+
+TODO: refresh::
+
+    >>> from time import sleep
+    >>> sleep(2)
+
+    >>> query = session.query(Character).order_by(Character.name)
+    >>> [(c.name, c.details['gender']) for c in query]
+    [('Arthur Dent', 'male'), ('Tricia McMillan', 'female')]
+
+It is then also possible to filter by these attributes::
+
+    >>> query = session.query(Character.name)
+    >>> query.filter(Character.details['gender'] == 'male').all()
+
+In addition to that it is also possible to select just a part of the details
+property::
+
+    >>> session.query(Character.details['gender']).all()
+
+.. note::
+
+    In the example above the `Character` class extends the `Base` class which
+    was created using `declarative_base(bind=engine)`.
+    
+    Usually `declarative_base` can be called without passing the engine, but
+    then the `Dict` column type can't be used because SQLAlchemy won't utilize
+    the Crate specific compiler.

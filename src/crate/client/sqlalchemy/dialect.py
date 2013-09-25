@@ -1,10 +1,12 @@
 
 from __future__ import absolute_import
 from sqlalchemy.engine import default
+from .compiler import CrateCompiler
 
 
 class CrateDialect(default.DefaultDialect):
     name = 'crate'
+    statement_compiler = CrateCompiler
 
     def __init__(self, *args, **kwargs):
         super(CrateDialect, self).__init__(*args, **kwargs)

@@ -84,8 +84,17 @@ def setUpCrateLayerAndSqlAlchemy(test):
     from sqlalchemy.ext.declarative import declarative_base
     from sqlalchemy.orm import sessionmaker
 
+    data = {
+        "settings": {
+            "mapper": {
+                "dynamic": True
+            }
+        }
+    }
+    requests.put('{0}/characters'.format(crate_uri), data=json.dumps(data))
+
     engine = sa.create_engine('crate://{0}'.format(crate_host))
-    Base = declarative_base()
+    Base = declarative_base(bind=engine)
 
     class Location(Base):
         __tablename__ = 'locations'
@@ -97,6 +106,7 @@ def setUpCrateLayerAndSqlAlchemy(test):
     test.globs['sa'] = sa
     test.globs['engine'] = engine
     test.globs['Location'] = Location
+    test.globs['Base'] = Base
     test.globs['session'] = session
 
 

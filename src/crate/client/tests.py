@@ -15,7 +15,7 @@ from . import http
 from .crash import CrateCmd
 from .test_cursor import CursorTest
 from .test_http import HttpClientTest
-from .sqlalchemy.test import SqlAlchemyTest
+from .sqlalchemy.test import tests as sqlalchemy_tests
 from .compat import cprint
 
 
@@ -84,6 +84,25 @@ def setUpCrateLayerAndSqlAlchemy(test):
     from sqlalchemy.ext.declarative import declarative_base
     from sqlalchemy.orm import sessionmaker
 
+    data = {
+        "settings": {
+            "mapper": {
+                "dynamic": True
+            }
+        },
+        "mappings": {
+            "default": {
+                "properties": {
+                    "id": {
+                        "type": "string",
+                        "index": "not_analyzed"
+                    }
+                }
+            }
+        }
+    }
+    requests.put('{0}/characters'.format(crate_uri), data=json.dumps(data))
+
     engine = sa.create_engine('crate://{0}'.format(crate_host))
     Base = declarative_base()
 
@@ -97,6 +116,7 @@ def setUpCrateLayerAndSqlAlchemy(test):
     test.globs['sa'] = sa
     test.globs['engine'] = engine
     test.globs['Location'] = Location
+    test.globs['Base'] = Base
     test.globs['session'] = session
 
 
@@ -131,7 +151,7 @@ def test_suite():
     suite.addTest(s)
     suite.addTest(unittest.makeSuite(CursorTest))
     suite.addTest(unittest.makeSuite(HttpClientTest))
-    suite.addTest(unittest.makeSuite(SqlAlchemyTest))
+    suite.addTest(sqlalchemy_tests)
     suite.addTest(doctest.DocTestSuite('crate.client.connection'))
 
     s = doctest.DocFileSuite(

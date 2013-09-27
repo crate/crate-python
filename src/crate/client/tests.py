@@ -104,7 +104,7 @@ def setUpCrateLayerAndSqlAlchemy(test):
     requests.put('{0}/characters'.format(crate_uri), data=json.dumps(data))
 
     engine = sa.create_engine('crate://{0}'.format(crate_host))
-    Base = declarative_base(bind=engine)
+    Base = declarative_base()
 
     class Location(Base):
         __tablename__ = 'locations'

@@ -7,9 +7,8 @@ import sqlalchemy as sa
 from sqlalchemy.sql import select
 from sqlalchemy.orm import Session
 from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy.ext.mutable import MutableDict
 
-from .types import Dict
+from .types import Craty
 from ..cursor import Cursor
 
 
@@ -56,70 +55,74 @@ class SqlAlchemyDictTypeTest(TestCase):
         metadata = sa.MetaData()
         self.mytable = sa.Table('mytable', metadata,
                                 sa.Column('name', sa.String),
-                                sa.Column('data', Dict))
+                                sa.Column('data', Craty))
+
+    def assertSQL(self, expected_str, actual_expr):
+        self.assertEquals(expected_str, str(actual_expr).replace('\n', ''))
 
     def setUpCharacter(self):
         Base = declarative_base(bind=self.engine)
+
         class Character(Base):
             __tablename__ = 'characters'
             name = sa.Column(sa.String, primary_key=True)
-            data = sa.Column(MutableDict.as_mutable(Dict))
+            age = sa.Column(sa.Integer)
+            data = sa.Column(Craty)
         self.Character = Character
 
     def test_select_with_dict_column(self):
         mytable = self.mytable
-        s = select([mytable.c.data['x']], bind=self.engine)
-        self.assertEquals(
+        self.assertSQL(
             "SELECT mytable.data['x'] AS anon_1 FROM mytable",
-            str(s).replace('\n', '')
+            select([mytable.c.data['x']], bind=self.engine)
         )
 
     def test_select_with_dict_column_where_clause(self):
         mytable = self.mytable
         s = select([mytable.c.data], bind=self.engine).\
             where(mytable.c.data['x'] == 1)
-        self.assertEquals(
+        self.assertSQL(
             "SELECT mytable.data FROM mytable WHERE mytable.data['x'] = ?",
-            str(s).replace('\n', '')
+            s
         )
 
     def test_select_with_dict_column_nested_where(self):
         mytable = self.mytable
         s = select([mytable.c.name], bind=self.engine)
         s = s.where(mytable.c.data['x']['y'] == 1)
-        self.assertEquals(
+        self.assertSQL(
             "SELECT mytable.name FROM mytable WHERE mytable.data['x']['y'] = ?",
-            str(s).replace('\n', '')
+            s
         )
 
     def test_select_with_dict_column_where_clause_gt(self):
         mytable = self.mytable
         s = select([mytable.c.data], bind=self.engine).\
             where(mytable.c.data['x'] > 1)
-        self.assertEquals(
+        self.assertSQL(
             "SELECT mytable.data FROM mytable WHERE mytable.data['x'] > ?",
-            str(s).replace('\n', '')
+            s
         )
 
     def test_select_with_dict_column_where_clause_other_col(self):
         mytable = self.mytable
         s = select([mytable.c.name], bind=self.engine)
         s = s.where(mytable.c.data['x'] == mytable.c.name)
-        self.assertEquals(
+        self.assertSQL(
             "SELECT mytable.name FROM mytable WHERE mytable.data['x'] = mytable.name",
-            str(s).replace('\n', '')
+            s
         )
 
     def test_update_with_dict_column(self):
         mytable = self.mytable
-        stmt = mytable.update().\
+        stmt = mytable.update(bind=self.engine).\
             where(mytable.c.name == 'Arthur Dent').\
             values({
                 "data['x']": "Trillian"
             })
-        self.assertEquals(
-            "UPDATE foo",
-            str(stmt)
+        self.assertSQL(
+            "UPDATE mytable SET data['x'] = ? WHERE mytable.name = ?",
+            stmt
         )
 
     def setUp_fake_cursor(self):
@@ -165,12 +168,152 @@ class SqlAlchemyDictTypeTest(TestCase):
         sess.add(char)
         sess.commit()
         char.data['x'] = 1
+        char.data['y'] = 2
         sess.commit()
         fake_cursor.execute.assert_called_with(
-            "UPDATE characters SET data['x']=? WHERE characters.name = ?",
-            (1, 'Trillian')
+            ("UPDATE characters SET data['y'] = ?, data['x'] = ? "
+             "WHERE characters.name = ?"),
+            (2, 1, 'Trillian')
         )
 
+    @patch('crate.client.connection.Cursor', FakeCursor)
+    def test_partial_dict_update_only_one_key_changed(self):
+        """
+        if only one attribute of Craty is changed the update should only update
+        that attribute not all attributes of Craty
+        """
+        self.setUpCharacter()
+        self.setUp_fake_cursor()
+        fake_cursor.fetchall.return_value = [
+            ('Trillian', dict(x=1, y=2))
+        ]
+
+        sess = Session()
+        char = self.Character(name='Trillian')
+        char.data = dict(x=1, y=2)
+        sess.add(char)
+        sess.commit()
+        char.data['y'] = 3
+        sess.commit()
+        fake_cursor.execute.assert_called_with(
+            ("UPDATE characters SET data['y'] = ? "
+             "WHERE characters.name = ?"),
+            (3, 'Trillian')
+        )
+
+    @patch('crate.client.connection.Cursor', FakeCursor)
+    def test_partial_dict_update_with_regular_column(self):
+        self.setUpCharacter()
+        self.setUp_fake_cursor()
+
+        sess = Session()
+        char = self.Character(name='Trillian')
+        sess.add(char)
+        sess.commit()
+        char.data['x'] = 1
+        char.age = 20
+        sess.commit()
+        fake_cursor.execute.assert_called_with(
+            ("UPDATE characters SET characters.age = ?, data['x'] = ? "
+             "WHERE characters.name = ?"),
+            (20, 1, 'Trillian')
+        )
+
+    @patch('crate.client.connection.Cursor', FakeCursor)
+    def test_partial_dict_update_with_delitem(self):
+        self.setUpCharacter()
+        self.setUp_fake_cursor()
+        fake_cursor.fetchall.return_value = [('Trillian', {'x': 1})]
+
+        sess = Session()
+        char = self.Character(name='Trillian')
+        char.data = {'x': 1}
+        sess.add(char)
+        sess.commit()
+        del char.data['x']
+        self.assertTrue(char in sess.dirty)
+        sess.commit()
+        fake_cursor.execute.assert_called_with(
+            ("UPDATE characters SET data['x'] = ? "
+             "WHERE characters.name = ?"),
+            (None, 'Trillian')
+        )
+
+    @patch('crate.client.connection.Cursor', FakeCursor)
+    def test_partial_dict_update_with_delitem_setitem(self):
+        """ test that the change tracking doesn't get messed up
+
+        delitem -> setitem
+        """
+        self.setUpCharacter()
+        self.setUp_fake_cursor()
+        fake_cursor.fetchall.return_value = [('Trillian', {'x': 1})]
+
+        sess = Session()
+        char = self.Character(name='Trillian')
+        char.data = {'x': 1}
+        sess.add(char)
+        sess.commit()
+        del char.data['x']
+        char.data['x'] = 4
+        self.assertTrue(char in sess.dirty)
+        sess.commit()
+        fake_cursor.execute.assert_called_with(
+            ("UPDATE characters SET data['x'] = ? "
+             "WHERE characters.name = ?"),
+            (4, 'Trillian')
+        )
+
+    @patch('crate.client.connection.Cursor', FakeCursor)
+    def test_partial_dict_update_with_setitem_delitem(self):
+        """ test that the change tracking doesn't get messed up
+
+        setitem -> delitem
+        """
+        self.setUpCharacter()
+        self.setUp_fake_cursor()
+        fake_cursor.fetchall.return_value = [('Trillian', {'x': 1})]
+
+        sess = Session()
+        char = self.Character(name='Trillian')
+        char.data = {'x': 1}
+        sess.add(char)
+        sess.commit()
+        char.data['x'] = 4
+        del char.data['x']
+        self.assertTrue(char in sess.dirty)
+        sess.commit()
+        fake_cursor.execute.assert_called_with(
+            ("UPDATE characters SET data['x'] = ? "
+             "WHERE characters.name = ?"),
+            (None, 'Trillian')
+        )
+
+    @patch('crate.client.connection.Cursor', FakeCursor)
+    def test_partial_dict_update_with_setitem_delitem_setitem(self):
+        """ test that the change tracking doesn't get messed up
+
+        setitem -> delitem -> setitem
+        """
+        self.setUpCharacter()
+        self.setUp_fake_cursor()
+        fake_cursor.fetchall.return_value = [('Trillian', {'x': 1})]
+
+        sess = Session()
+        char = self.Character(name='Trillian')
+        char.data = {'x': 1}
+        sess.add(char)
+        sess.commit()
+        char.data['x'] = 4
+        del char.data['x']
+        char.data['x'] = 3
+        self.assertTrue(char in sess.dirty)
+        sess.commit()
+        fake_cursor.execute.assert_called_with(
+            ("UPDATE characters SET data['x'] = ? "
+             "WHERE characters.name = ?"),
+            (3, 'Trillian')
+        )
 
 tests = TestSuite()
 tests.addTest(makeSuite(SqlAlchemyConnectionTest))

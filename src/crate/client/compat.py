@@ -9,11 +9,13 @@ if sys.version_info[0] > 2:
 
 if py2:
     from exceptions import StandardError
+    xrange = xrange
 
     def cprint(s):
         print(s)
 else:
     StandardError = Exception
+    xrange = range
 
     def cprint(s):
         if isinstance(s, bytes):

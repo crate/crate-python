@@ -5,6 +5,8 @@ Changes for crate
 Unreleased
 ==========
 
+ - make http-client thread-safe
+
  - add support for sqlalchemy including complex types
 
  - error handling improvements in crash

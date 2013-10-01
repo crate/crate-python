@@ -125,7 +125,7 @@ class Client(object):
             try:
                 # build uri and send http request
                 uri = "http://{server}/{path}".format(server=server, path=path)
-                response =  requests.request(method, uri, timeout=self._http_timeout, **kwargs)
+                response = requests.request(method, uri, timeout=self._http_timeout, **kwargs)
                 # reset local server, so next request will use new one
                 self._local.server = server = None
                 return response
@@ -192,19 +192,16 @@ class Client(object):
                         self._active_servers.append(server)
                         logger.warn("Restored server %s into active pool", server)
 
-
             # if none is old enough, use oldest
             if not self._active_servers:
                 ts, server, message = heapq.heappop(self._inactive_servers)
                 self._active_servers.append(server)
                 logger.info("Restored server %s into active pool", server)
 
-
             server = self._active_servers[0]
             self._roundrobin()
 
             return server
-
 
     def _drop_server(self, server, message):
         """
@@ -219,7 +216,6 @@ class Client(object):
                 heapq.heappush(self._inactive_servers, (time(), server,
                                                         message))
                 logger.warning("Removed server %s from active pool", server)
-
 
     def _roundrobin(self):
         """

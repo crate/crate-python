@@ -5,6 +5,8 @@ Changes for crate
 Unreleased
 ==========
 
+ - the `Date` and `DateTime` sqlalchemy types are now supported.
+
  - make http-client thread-safe
 
 2013/10/01 0.0.6

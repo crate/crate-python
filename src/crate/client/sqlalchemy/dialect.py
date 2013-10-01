@@ -1,12 +1,51 @@
 
 from __future__ import absolute_import
+from datetime import datetime, date
+
 from sqlalchemy.engine import default
+from sqlalchemy import types as sqltypes
+
 from .compiler import CrateCompiler
+
+
+class Date(sqltypes.Date):
+    def bind_processor(self, dialect):
+        def process(value):
+            assert isinstance(value, date)
+            return value.strftime('%Y-%m-%d')
+        return process
+
+    def result_processor(self, dialect, coltype):
+        def process(value):
+            if value:
+                return datetime.strptime(value, '%Y-%m-%dT%H:%M:%S.%fZ')
+        return process
+
+
+class DateTime(sqltypes.DateTime):
+    def bind_processor(self, dialect):
+        def process(value):
+            assert isinstance(value, datetime)
+            return value.strftime('%Y-%m-%dT%H:%M:%S.%fZ')
+        return process
+
+    def result_processor(self, dialect, coltype):
+        def process(value):
+            if value:
+                return datetime.strptime(value, '%Y-%m-%dT%H:%M:%S.%fZ')
+        return process
+
+
+colspecs = {
+    sqltypes.DateTime: DateTime,
+    sqltypes.Date: Date
+}
 
 
 class CrateDialect(default.DefaultDialect):
     name = 'crate'
     statement_compiler = CrateCompiler
+    colspecs = colspecs
 
     def __init__(self, *args, **kwargs):
         super(CrateDialect, self).__init__(*args, **kwargs)

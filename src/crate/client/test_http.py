@@ -4,7 +4,7 @@ from threading import Thread, Event
 import time
 from random import SystemRandom
 
-from requests.exceptions import HTTPError, ConnectionError
+from requests.exceptions import HTTPError, ConnectionError as RequestsConnectionError
 
 from .http import Client
 from .exceptions import ConnectionError, ProgrammingError
@@ -30,7 +30,7 @@ _rnd = SystemRandom(time.time())
 def fail_sometimes_fake_request(*args, **kwargs):
     mock_response = MagicMock()
     if int(_rnd.random()*100) % 3 == 0:
-        raise ConnectionError()
+        raise RequestsConnectionError()
     else:
         return mock_response
 
@@ -88,7 +88,7 @@ class ThreadSafeHttpClientTest(TestCase):
         for x in xrange(self.num_commands):
             try:
                 _ = self.client._request('GET', "/")
-            except ConnectionError:
+            except RequestsConnectionError:
                 pass
             self.assertEquals(
                 len(self.servers),

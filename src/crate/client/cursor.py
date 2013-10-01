@@ -4,7 +4,10 @@ from .exceptions import ProgrammingError
 
 
 class Cursor(object):
-
+    """
+    not thread-safe by intention
+    should not be shared between different threads
+    """
     lastrowid = None  # currently not supported
 
     def __init__(self, connection):

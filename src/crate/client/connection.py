@@ -31,9 +31,7 @@ class Connection(object):
         """
         Transactions are not supported, so ``commit`` is not implemented.
         """
-        if not self._closed:
-            pass
-        else:
+        if self._closed:
             raise ProgrammingError("Connection closed")
 
     def get_blob_container(self, container_name):

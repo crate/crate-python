@@ -5,6 +5,8 @@ Changes for crate
 Unreleased
 ==========
 
+ - make http-client thread-safe
+
 2013/10/01 0.0.6
 ================
 

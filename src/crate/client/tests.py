@@ -14,7 +14,7 @@ from crate.testing.tests import crate_path, docs_path
 from . import http
 from .crash import CrateCmd
 from .test_cursor import CursorTest
-from .test_http import HttpClientTest
+from .test_http import HttpClientTest, ThreadSafeHttpClientTest
 from .sqlalchemy.test import tests as sqlalchemy_tests
 from .compat import cprint
 
@@ -151,6 +151,7 @@ def test_suite():
     suite.addTest(s)
     suite.addTest(unittest.makeSuite(CursorTest))
     suite.addTest(unittest.makeSuite(HttpClientTest))
+    suite.addTest(unittest.makeSuite(ThreadSafeHttpClientTest))
     suite.addTest(sqlalchemy_tests)
     suite.addTest(doctest.DocTestSuite('crate.client.connection'))
 

@@ -6,18 +6,8 @@ import requests
 
 
 class CrateLayer(server.ServerLayer, layer.WorkDirectoryLayer):
-    """this layer starts a crate server.
-
-    Parameters:
-        name : layer name, is also used as the cluser name
-        crate_home : path to home directory of the crate installation
-        port : port on which crate should run
-        index : a mapping containing the settings of the indices to be created
-        keepRunning : do not shut down the crate instance for every
-                      single test instead just delete all indices
-        transport_port: port on which transport layer for crate should run
-        crate_exec : alternative executable command
-        crate_config : alternative crate config file location
+    """
+    this layer starts a crate server.
     """
 
     wdClean = True
@@ -30,6 +20,16 @@ class CrateLayer(server.ServerLayer, layer.WorkDirectoryLayer):
                  keepRunning=False,
                  transport_port=None,
                  crate_exec=None):
+        """
+        :param name: layer name, is also used as the cluser name
+        :param crate_home: path to home directory of the crate installation
+        :param port: port on which crate should run
+        :param keepRunning: do not shut down the crate instance for every
+                            single test instead just delete all indices
+        :param transport_port: port on which transport layer for crate should run
+        :param crate_exec: alternative executable command
+        :param crate_config: alternative crate config file location
+        """
         self.keepRunning = keepRunning
         crate_home = os.path.abspath(crate_home)
         servers = ['localhost:%s' % port]

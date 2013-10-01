@@ -180,7 +180,7 @@ class Client(object):
         """
         with self._lock:
             inactive_server_count = len(self._inactive_servers)
-            for i in range(0, inactive_server_count):
+            for i in range(inactive_server_count):
                 try:
                     ts, server, message = heapq.heappop(self._inactive_servers)
                 except IndexError:

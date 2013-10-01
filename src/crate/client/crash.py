@@ -89,6 +89,14 @@ class CrateCmd(Cmd):
         """
         self.execute('delete ' + statement)
 
+    def do_update(self, statement):
+        """execute a SQL update statement
+
+        E.g.:
+            "update from locations set name = 'newName' where name = 'Algol'
+        """
+        self.execute('update ' + statement)
+
     def do_exit(self, *args):
         """exit the shell"""
         sys.exit()

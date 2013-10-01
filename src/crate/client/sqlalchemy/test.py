@@ -170,11 +170,21 @@ class SqlAlchemyDictTypeTest(TestCase):
         char.data['x'] = 1
         char.data['y'] = 2
         sess.commit()
-        fake_cursor.execute.assert_called_with(
-            ("UPDATE characters SET data['y'] = ?, data['x'] = ? "
-             "WHERE characters.name = ?"),
-            (2, 1, 'Trillian')
-        )
+
+        # on python 3 dicts aren't sorted so the order if x or y is updated
+        # first isn't deterministic
+        try:
+            fake_cursor.execute.assert_called_with(
+                ("UPDATE characters SET data['y'] = ?, data['x'] = ? "
+                "WHERE characters.name = ?"),
+                (2, 1, 'Trillian')
+            )
+        except AssertionError:
+            fake_cursor.execute.assert_called_with(
+                ("UPDATE characters SET data['x'] = ?, data['y'] = ? "
+                "WHERE characters.name = ?"),
+                (1, 2, 'Trillian')
+            )
 
     @patch('crate.client.connection.Cursor', FakeCursor)
     def test_partial_dict_update_only_one_key_changed(self):

@@ -8,6 +8,7 @@ from requests.exceptions import HTTPError, ConnectionError as RequestsConnection
 
 from .http import Client
 from .exceptions import ConnectionError, ProgrammingError
+from .compat import xrange
 
 
 def fake_request(*args, **kwargs):
@@ -87,7 +88,7 @@ class ThreadSafeHttpClientTest(TestCase):
         self.event.wait()  # wait for the others
         for x in xrange(self.num_commands):
             try:
-                _ = self.client._request('GET', "/")
+                self.client._request('GET', "/")
             except RequestsConnectionError:
                 pass
             self.assertEquals(
@@ -105,7 +106,8 @@ class ThreadSafeHttpClientTest(TestCase):
         indeed thread-safe in all cases, it can only show that it's withstands this scenario.
         """
         pool = [
-            Thread(target=self._run, name=unicode(x)) for x in xrange(self.num_threads)
+            Thread(target=self._run, name=str(x))
+            for x in xrange(self.num_threads)
         ]
         for thread in pool:
             thread.start()
@@ -116,7 +118,4 @@ class ThreadSafeHttpClientTest(TestCase):
                 thread = pool.pop()
                 thread.join(self.thread_timeout)
             except IndexError:
-                print "done"
                 break
-
-

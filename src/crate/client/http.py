@@ -1,8 +1,9 @@
+import heapq
 import json
 import logging
 import sys
-from datetime import datetime
-from operator import itemgetter
+from time import time
+import threading
 
 import requests
 
@@ -38,6 +39,8 @@ class Client(object):
         self._active_servers = servers
         self._http_timeout = timeout
         self._inactive_servers = []
+        self._lock = threading.RLock()
+        self._local = threading.local()
 
     def sql(self, stmt, parameters=None):
         """
@@ -115,17 +118,23 @@ class Client(object):
         self._raise_for_status(response)
 
     def _request(self, method, path, **kwargs):
+        server = getattr(self._local, "server", None)
         while True:
-            server = self._get_server()
+            if not server:
+                self._local.server = server = self._get_server()
             try:
                 # build uri and send http request
                 uri = "http://{server}/{path}".format(server=server, path=path)
-                return requests.request(method, uri, timeout=self._http_timeout, **kwargs)
+                response =  requests.request(method, uri, timeout=self._http_timeout, **kwargs)
+                # reset local server, so next request will use new one
+                self._local.server = server = None
+                return response
             except (requests.ConnectionError, requests.Timeout,
                     requests.TooManyRedirects) as ex:
                 # drop server from active ones
                 ex_message = hasattr(ex, 'message') and ex.message or str(ex)
                 self._drop_server(server, ex_message)
+                self._local.server = server = None
                 # if this is the last server raise exception, otherwise try next
                 if not self._active_servers:
                     raise ConnectionError(
@@ -169,42 +178,48 @@ class Client(object):
         Get server to use for request.
         Also process inactive server list, re-add them after given interval.
         """
-        if self._inactive_servers:
-            sorted_inactive_servers = sorted(self._inactive_servers, key=itemgetter('timestamp'))
+        with self._lock:
+            inactive_server_count = len(self._inactive_servers)
+            for i in range(0, inactive_server_count):
+                try:
+                    ts, server, message = heapq.heappop(self._inactive_servers)
+                except IndexError:
+                    pass
+                else:
+                    if (ts + self.retry_interval) > time():  # Not yet, put it back
+                        heapq.heappush(self._inactive_servers, (ts, server, message))
+                    else:
+                        self._active_servers.append(server)
+                        logger.warn("Restored server %s into active pool", server)
 
-            # first, check for failed servers older than ``interval``
-            for server_data in sorted_inactive_servers:
-                delta = datetime.now() - server_data.get('timestamp')
-                if delta.seconds >= self.retry_interval:
-                    self._active_servers.append(server_data.get('server'))
-                    logger.info("Restored server %s into active pool", server_data.get('server'))
 
-            # if no one is old enough, use oldest
+            # if none is old enough, use oldest
             if not self._active_servers:
-                server_to_add = sorted_inactive_servers.pop(0).get('server')
-                self._active_servers.append(server_to_add)
-                logger.info("Restored server %s into active pool", server_to_add)
+                ts, server, message = heapq.heappop(self._inactive_servers)
+                self._active_servers.append(server)
+                logger.info("Restored server %s into active pool", server)
 
-        server = self._active_servers[0]
-        self._roundrobin()
 
-        return server
+            server = self._active_servers[0]
+            self._roundrobin()
+
+            return server
+
 
     def _drop_server(self, server, message):
         """
         Drop server from active list and adds it to the inactive ones.
         """
-        try:
-            self._active_servers.remove(server)
-        except ValueError:
-            pass
-        else:
-            self._inactive_servers.append({
-                'server': server,
-                'message': message,
-                'timestamp': datetime.now()
-            })
-            logger.warning("Removed server %s from active pool", server)
+        with self._lock:
+            try:
+                self._active_servers.remove(server)
+            except ValueError:
+                pass
+            else:
+                heapq.heappush(self._inactive_servers, (time(), server,
+                                                        message))
+                logger.warning("Removed server %s from active pool", server)
+
 
     def _roundrobin(self):
         """

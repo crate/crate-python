@@ -5,6 +5,11 @@ Changes for crate
 Unreleased
 ==========
 
+2013/10/02 0.0.7
+================
+
+ - rowcount in results of update-requests gives affected rows
+
  - the `Date` and `DateTime` sqlalchemy types are now supported.
 
  - make http-client thread-safe

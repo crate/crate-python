@@ -1,6 +1,6 @@
 import time
 import sys
-from Queue import Queue
+from .compat import Queue
 from random import SystemRandom
 import traceback
 from unittest import TestCase
@@ -87,7 +87,7 @@ class ThreadSafeHttpClientTest(TestCase):
         self.client = Client(self.servers)
         self.client.retry_interval = 0.0001  # faster retry
         self.event = Event()
-        self.err_queue = Queue()
+        self.err_queue = Queue.Queue()
         super(ThreadSafeHttpClientTest, self).__init__(*args, **kwargs)
 
     def _run(self):

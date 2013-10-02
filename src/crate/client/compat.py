@@ -14,6 +14,7 @@ if py2:
     def cprint(s):
         print(s)
 
+    import Queue
 else:
     StandardError = Exception
     xrange = range
@@ -22,7 +23,8 @@ else:
         if isinstance(s, bytes):
             s = s.decode('utf-8')
         print(s)
+
     import queue
-    sys.modules["Queue"] = queue
+    Queue = queue
 
 assert StandardError

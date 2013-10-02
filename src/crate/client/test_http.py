@@ -1,10 +1,14 @@
+import time
+import sys
+from Queue import Queue
+from random import SystemRandom
+import traceback
 from unittest import TestCase
 from mock import patch, MagicMock
 from threading import Thread, Event
-import time
-from random import SystemRandom
 
 from requests.exceptions import HTTPError, ConnectionError as RequestsConnectionError
+
 
 from .http import Client
 from .exceptions import ConnectionError, ProgrammingError
@@ -29,7 +33,7 @@ def fake_request_lazy_raise(*args, **kwargs):
 _rnd = SystemRandom(time.time())
 def fail_sometimes_fake_request(*args, **kwargs):
     mock_response = MagicMock()
-    if int(_rnd.random()*100) % 3 == 0:
+    if int(_rnd.random()*100) % 10 == 0:
         raise RequestsConnectionError()
     else:
         return mock_response
@@ -80,20 +84,29 @@ class ThreadSafeHttpClientTest(TestCase):
 
     def __init__(self, *args, **kwargs):
         self.client = Client(self.servers)
+        self.client.retry_interval = 0.0001  # faster retry
         self.event = Event()
+        self.err_queue = Queue()
         super(ThreadSafeHttpClientTest, self).__init__(*args, **kwargs)
 
     def _run(self):
         self.event.wait()  # wait for the others
+        expected_num_servers = len(self.servers)
         for x in xrange(self.num_commands):
             try:
                 _ = self.client._request('GET', "/")
             except RequestsConnectionError:
                 pass
-            self.assertEquals(
-                len(self.servers),
-                len(self.client._active_servers) + len(self.client._inactive_servers)
-            )
+            try:
+                with self.client._lock:
+                    num_servers = len(self.client._active_servers) + len(self.client._inactive_servers)
+                self.assertEquals(
+                    expected_num_servers,
+                    num_servers,
+                    "expected %d but got %d" % (expected_num_servers, num_servers)
+                )
+            except AssertionError as e:
+                self.err_queue.put(sys.exc_info())
 
     @patch("requests.request", fail_sometimes_fake_request)
     def test_client_threaded(self):
@@ -102,7 +115,7 @@ class ThreadSafeHttpClientTest(TestCase):
         with some requests failing.
 
         **ATTENTION:** this test is probabilistic and does not ensure that the client is
-        indeed thread-safe in all cases, it can only show that it's withstands this scenario.
+        indeed thread-safe in all cases, it can only show that it withstands this scenario.
         """
         pool = [
             Thread(target=self._run, name=unicode(x)) for x in xrange(self.num_threads)
@@ -119,4 +132,12 @@ class ThreadSafeHttpClientTest(TestCase):
                 print "done"
                 break
 
-
+        if not self.err_queue.empty():
+            self.assertTrue(
+                False,
+                "".join(
+                    traceback.format_exception(
+                        *self.err_queue.get(block=False)
+                    )
+                )
+            )

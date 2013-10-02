@@ -87,3 +87,31 @@ Date should have been set at the insert due to default value via python method::
 
     >>> (now - location.datetime).seconds < 4
     True
+
+Update one Location via raw sql::
+
+    >>> result = connection.execute("update locations set name='Mother Earth' where name='Earth'")
+    >>> result.rowcount
+    1
+
+Update multiple Locations::
+
+    >>> for x in range(10):
+    ...     loc = Location()
+    ...     loc.name = 'Ort %d' % x
+    ...     loc.kind = 'Update'
+    ...     session.add(loc)
+    ...     session.flush()
+
+    >>> sleep(1)  # give crate some time to settle
+
+    >>> result = connection.execute("update locations set name='Kein Ort, nirgends.' where kind='Update'")
+    >>> result.rowcount
+    10
+
+Check that number of affected documents of update without ``where-clause`` matches number of all
+documents in the table::
+
+    >>> result = connection.execute(u"update locations set name='Überall'")
+    >>> result.rowcount == connection.execute("select * from locations limit 100").rowcount
+    True

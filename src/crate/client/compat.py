@@ -15,6 +15,7 @@ if py2:
         print(s)
 
     import Queue
+    queue = Queue
 else:
     StandardError = Exception
     xrange = range
@@ -25,6 +26,5 @@ else:
         print(s)
 
     import queue
-    Queue = queue
 
 assert StandardError

@@ -22,5 +22,7 @@ else:
         if isinstance(s, bytes):
             s = s.decode('utf-8')
         print(s)
+    import queue
+    sys.modules["Queue"] = queue
 
 assert StandardError

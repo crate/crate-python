@@ -36,7 +36,7 @@ class Client(object):
             servers = self.default_server
         if isinstance(servers, basestring):
             servers = [servers]
-        self._active_servers = [server for server in servers]
+        self._active_servers = list(servers)
         self._http_timeout = timeout
         self._inactive_servers = []
         self._lock = threading.RLock()

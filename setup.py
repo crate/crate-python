@@ -6,7 +6,7 @@ import re
 
 
 requirements = [
-    'requests==1.2.3',
+    'requests',
     'PrettyTable'
 ]
 

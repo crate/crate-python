@@ -13,6 +13,9 @@ if py2:
 
     def cprint(s):
         print(s)
+
+    import Queue
+    queue = Queue
 else:
     StandardError = Exception
     xrange = range
@@ -22,5 +25,6 @@ else:
             s = s.decode('utf-8')
         print(s)
 
+    import queue
 
 assert StandardError

@@ -110,6 +110,7 @@ column name as first parameter. Just the name field is supported, all other fiel
     >>> result = cursor.fetchone()
     >>> pprint(result)
     [u'2013-07-16T00:00:00.000Z',
+     None,
      u'Algol is the home of the Algolian Suntiger, ...',
      u'Star System',
      u'Algol',
@@ -118,6 +119,7 @@ column name as first parameter. Just the name field is supported, all other fiel
     >>> result = cursor.description
     >>> pprint(result)
     ((u'date', None, None, None, None, None, None),
+     (u'datetime', None, None, None, None, None, None),
      (u'description', None, None, None, None, None, None),
      (u'kind', None, None, None, None, None, None),
      (u'name', None, None, None, None, None, None),

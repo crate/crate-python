@@ -15,6 +15,10 @@
                 "type": "date",
                 "store": true
             },
+            "datetime": {
+                "type": "date",
+                "store": true
+            },
             "kind": {
                 "type": "string",
                 "index": "not_analyzed",

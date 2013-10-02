@@ -5,6 +5,7 @@ import unittest
 import doctest
 import re
 from pprint import pprint
+from datetime import datetime, date
 
 import requests
 from zope.testing.renormalizing import RENormalizing
@@ -110,6 +111,8 @@ def setUpCrateLayerAndSqlAlchemy(test):
         __tablename__ = 'locations'
         name = sa.Column(sa.String, primary_key=True)
         kind = sa.Column(sa.String)
+        date = sa.Column(sa.Date, default=date.today)
+        datetime = sa.Column(sa.DateTime, default=datetime.utcnow)
 
     Session = sessionmaker(engine)
     session = Session()
@@ -118,6 +121,7 @@ def setUpCrateLayerAndSqlAlchemy(test):
     test.globs['Location'] = Location
     test.globs['Base'] = Base
     test.globs['session'] = session
+    test.globs['Session'] = Session
 
 
 def tearDownWithCrateLayer(test):

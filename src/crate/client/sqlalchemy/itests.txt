@@ -58,3 +58,32 @@ Inserted location is available::
     >>> location = session.query(Location).filter_by(name='Earth').one()
     >>> location.name
     u'Earth'
+
+Create a new session to clear SQLAlchemy's internal state::
+
+    >>> session = Session()
+
+Retrieve the location from the new session to make sure that all values are
+loaded from the database::
+
+    >>> location = session.query(Location).filter_by(name='Earth').one()
+    >>> location.name
+    u'Earth'
+
+Date should have been set at the insert due to default value via python method::
+
+    >>> from datetime import datetime
+    >>> now = datetime.utcnow()
+    >>> dt = location.date
+
+    >>> dt.year == now.year
+    True
+
+    >>> dt.month == now.month
+    True
+
+    >>> dt.day == now.day
+    True
+
+    >>> (now - location.datetime).seconds < 4
+    True

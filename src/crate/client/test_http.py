@@ -1,6 +1,10 @@
 import time
 import sys
-from Queue import Queue
+from .compat import py2
+if py2:
+    from Queue import Queue
+else:
+    from queue import Queue
 from random import SystemRandom
 import traceback
 from unittest import TestCase

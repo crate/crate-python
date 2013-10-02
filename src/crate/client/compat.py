@@ -13,6 +13,7 @@ if py2:
 
     def cprint(s):
         print(s)
+
 else:
     StandardError = Exception
     xrange = range
@@ -21,6 +22,5 @@ else:
         if isinstance(s, bytes):
             s = s.decode('utf-8')
         print(s)
-
 
 assert StandardError

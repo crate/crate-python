@@ -168,3 +168,4 @@ closed connection an ``ProgrammingError`` exception will be raised::
     Traceback (most recent call last):
     ...
     ProgrammingError: Cursor closed
+

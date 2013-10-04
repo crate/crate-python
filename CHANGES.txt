@@ -5,6 +5,9 @@ Changes for crate
 Unreleased
 ==========
 
+2013/10/04 0.0.8
+================
+
  - fixed an error with the `Craty` type and SQLAlchemy's ORM where the `update`
    statement wasn't correctly generated.
 

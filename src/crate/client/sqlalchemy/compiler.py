@@ -15,15 +15,23 @@ def rewrite_update(clauseelement, multiparams, params):
     but crate supports
 
         "col['x'] = ?, col['y'] = ?", (1, 2)
+
+    by using the `Craty` (`MutableDict`) type.
+    The update statement is only rewritten if a item of the MutableDict was
+    changed.
     """
 
     newmultiparams = []
     for params in multiparams:
         newparams = {}
         for key, val in params.items():
-            if not isinstance(val, MutableDict):
+            if (
+                not isinstance(val, MutableDict) or
+                (not any(val._changed_keys) and not any(val._deleted_keys))
+            ):
                 newparams[key] = val
                 continue
+
             for subkey, subval in val.items():
                 if subkey in val._changed_keys:
                     newparams["{0}['{1}']".format(key, subkey)] = subval

@@ -11,22 +11,32 @@ from .compiler import CrateCompiler
 class Date(sqltypes.Date):
     def bind_processor(self, dialect):
         def process(value):
-            assert isinstance(value, date)
-            return value.strftime('%Y-%m-%d')
+            if value is not None:
+                assert isinstance(value, date)
+                return value.strftime('%Y-%m-%d')
         return process
 
     def result_processor(self, dialect, coltype):
         def process(value):
             if value:
-                return datetime.strptime(value, '%Y-%m-%dT%H:%M:%S.%fZ')
+                try:
+                    # the value is saved 'as-is' on insert. If for example
+                    # datetime.today() was used to generate the value, it will
+                    # include time information. If just date.today() was used
+                    # it won't. Therefore both variants have to be tried.
+                    return datetime.strptime(value, '%Y-%m-%d')
+                except ValueError:
+                    return datetime.strptime(value, '%Y-%m-%dT%H:%M:%S.%fZ')
         return process
 
 
 class DateTime(sqltypes.DateTime):
     def bind_processor(self, dialect):
         def process(value):
-            assert isinstance(value, datetime)
-            return value.strftime('%Y-%m-%dT%H:%M:%S.%fZ')
+            if value is not None:
+                assert isinstance(value, datetime)
+                return value.strftime('%Y-%m-%dT%H:%M:%S.%fZ')
+            return value
         return process
 
     def result_processor(self, dialect, coltype):

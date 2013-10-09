@@ -59,14 +59,9 @@ Inserted location is available::
     >>> location.name
     u'Earth'
 
-Create a new session to clear SQLAlchemy's internal state::
+Retrieve the location from the database::
 
-    >>> session = Session()
-
-Retrieve the location from the new session to make sure that all values are
-loaded from the database::
-
-    >>> location = session.query(Location).filter_by(name='Earth').one()
+    >>> session.refresh(location)
     >>> location.name
     u'Earth'
 
@@ -86,6 +81,34 @@ Date should have been set at the insert due to default value via python method::
     True
 
     >>> (now - location.datetime).seconds < 4
+    True
+
+the location also has a date and datetime property which both are nullable and
+aren't set when the row is inserted as there is no default method::
+
+    >>> location.nullable_datetime is None
+    True
+
+    >>> location.nullable_date is None
+    True
+
+The datetime and date can be set using a update statement::
+
+    >>> location.nullable_date = datetime.today()
+    >>> location.nullable_datetime = datetime.utcnow()
+    >>> session.flush()
+    >>> sleep(1.1)  # wait for index refresh
+
+Reload the object from the db::
+
+    >>> session.refresh(location)
+
+And verify that the date and datetime was persisted::
+
+    >>> location.nullable_datetime is not None
+    True
+
+    >>> location.nullable_date is not None
     True
 
 Update one Location via raw sql::

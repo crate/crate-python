@@ -13,6 +13,7 @@
             },
             "date": {
                 "type": "date",
+                "format": "YYYY-MM-dd",
                 "store": true
             },
             "datetime": {

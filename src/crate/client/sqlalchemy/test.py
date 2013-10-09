@@ -48,6 +48,36 @@ class SqlAlchemyConnectionTest(TestCase):
             repr(conn.connection))
 
 
+@patch('crate.client.connection.Cursor', FakeCursor)
+class SqlAlchemyDateAndDateTimeTest(TestCase):
+
+    def setUp(self):
+        self.engine = sa.create_engine('crate://')
+        Base = declarative_base(bind=self.engine)
+
+        class Character(Base):
+            __tablename__ = 'characters'
+            name = sa.Column(sa.String, primary_key=True)
+            date = sa.Column(sa.Date)
+
+        fake_cursor.description = (
+            ('characters_name', None, None, None, None, None, None),
+            ('characters_date', None, None, None, None, None, None)
+        )
+        self.session = Session()
+        self.Character = Character
+
+    def test_date_can_handle_datetime(self):
+        """ date type should also be able to handle iso datetime strings.
+
+        this verifies that the fallback in the Date result_processor works.
+        """
+        fake_cursor.fetchall.return_value = [
+            ('Trillian', '2013-07-16T00:00:00.000Z')
+        ]
+        self.session.query(self.Character).first()
+
+
 class SqlAlchemyDictTypeTest(TestCase):
 
     def setUp(self):
@@ -331,3 +361,4 @@ class SqlAlchemyDictTypeTest(TestCase):
 tests = TestSuite()
 tests.addTest(makeSuite(SqlAlchemyConnectionTest))
 tests.addTest(makeSuite(SqlAlchemyDictTypeTest))
+tests.addTest(makeSuite(SqlAlchemyDateAndDateTimeTest))

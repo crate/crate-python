@@ -109,7 +109,7 @@ column name as first parameter. Just the name field is supported, all other fiel
     >>> cursor.execute("SELECT * FROM locations")
     >>> result = cursor.fetchone()
     >>> pprint(result)
-    [u'2013-07-16T00:00:00.000Z',
+    [u'2013-07-16',
      None,
      u'Algol is the home of the Algolian Suntiger, ...',
      u'Star System',

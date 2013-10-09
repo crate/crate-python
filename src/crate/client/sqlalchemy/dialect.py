@@ -1,11 +1,15 @@
 
 from __future__ import absolute_import
+import logging
 from datetime import datetime, date
 
 from sqlalchemy.engine import default
 from sqlalchemy import types as sqltypes
 
 from .compiler import CrateCompiler
+
+
+log = logging.getLogger(__name__)
 
 
 class Date(sqltypes.Date):
@@ -20,12 +24,14 @@ class Date(sqltypes.Date):
         def process(value):
             if value:
                 try:
-                    # the value is saved 'as-is' on insert. If for example
-                    # datetime.today() was used to generate the value, it will
-                    # include time information. If just date.today() was used
-                    # it won't. Therefore both variants have to be tried.
                     return datetime.strptime(value, '%Y-%m-%d')
                 except ValueError:
+                    # Crate doesn't really have datetime or date types but a
+                    # timestamp type. The "date" format itself isn't
+                    # necessarily enforced (at least as of 0.14.0). If another
+                    # client inserts a value that does contain time information
+                    # it will be stored and returned on future requests.
+                    log.warning('Received datetime but expected date')
                     return datetime.strptime(value, '%Y-%m-%dT%H:%M:%S.%fZ')
         return process
 

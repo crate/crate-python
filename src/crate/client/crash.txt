@@ -12,6 +12,7 @@ another host use the `connect` commmand inside the shell or use the `--hosts`
 argument when launching the shell::
 
     >>> cmd.onecmd('connect ' + crate_host)
+    CONNECT OK (0.00 sec)
 
 Once the shell is connected, SQL statements can be executed simply by entering
 them without any special arguments like this::
@@ -31,3 +32,4 @@ them without any special arguments like this::
     | Outer Eastern Rim                  | Galaxy      |
     | Altair                             | Star System |
     +------------------------------------+-------------+
+    SELECT 10 rows in set (0.00 sec)

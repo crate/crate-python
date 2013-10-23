@@ -13,6 +13,7 @@ import readline
 assert readline  # imported so that cmd gains history-editing functionality
 from cmd import Cmd
 from argparse import ArgumentParser
+from time import time
 
 from prettytable import PrettyTable
 from crate import client
@@ -21,25 +22,40 @@ from crate.client.exceptions import ConnectionError, Error, Warning
 
 class CrateCmd(Cmd):
     prompt = 'cr> '
+    line_delimiter = ';'
+    multi_line_prompt = '... '
 
-    def __init__(self, *args):
-        Cmd.__init__(self, *args)
+    keywords = ["table", "index",
+                "from", "into", "where", "values", "and", "or", "set", "with", "by", "using"
+                "integer", "string", "float", "double", "short", "long", "byte", "timestamp",
+                "replicas", "clustered"]
+
+
+    def __init__(self, stdin=None, stdout=None):
+        Cmd.__init__(self, "tab", stdin, stdout)
         self.conn = client.connect()
         self.cursor = self.conn.cursor()
 
     def do_connect(self, server):
         """connect to one or more server with "connect servername:port" """
+        time_start = time()
         self.conn = client.connect(server)
         self.cursor = self.conn.cursor()
+        duration = time()-time_start
+        self.print_success("connect", duration)
 
     def execute_query(self, statement):
-        if self.execute(statement):
+        duration = self.execute(statement)
+        if duration:
             self.pprint(self.cursor.fetchall())
+            self.print_rows_selected(self.cursor.rowcount, duration)
 
     def execute(self, statement):
         try:
+            time_start = time()
             self.cursor.execute(statement)
-            return True
+            duration = time()-time_start
+            return duration
         except ConnectionError:
             print(
                 'Use "connect <hostname:port>" to connect to a server first')
@@ -77,25 +93,56 @@ class CrateCmd(Cmd):
         """execute a SQL insert statement
 
         E.g.:
-            "insert into locations (name) values ('Algol')
+            "insert into locations (name) values ('Algol')"
         """
-        self.execute('insert ' + statement)
+        duration = self.execute('insert ' + statement)
+        if duration:
+            self.print_rows_affected("insert", self.cursor.rowcount, duration)
 
     def do_delete(self, statement):
         """execute a SQL delete statement
 
         E.g.:
-            "delete from locations where name = 'Algol'
+            "delete from locations where name = 'Algol'"
         """
-        self.execute('delete ' + statement)
+        duration = self.execute('delete ' + statement)
+        if duration:
+            self.print_rows_affected("delete", self.cursor.rowcount, duration)
 
     def do_update(self, statement):
         """execute a SQL update statement
 
         E.g.:
-            "update from locations set name = 'newName' where name = 'Algol'
+            "update from locations set name = 'newName' where name = 'Algol'"
         """
-        self.execute('update ' + statement)
+        duration = self.execute('update ' + statement)
+        if duration:
+            self.print_rows_affected("update", self.cursor.rowcount, duration)
+
+    def do_create(self, statement):
+        """execute a SQL create statement
+
+        E.g.:
+            "create table locations (id integer, name string)"
+        """
+        duration = self.execute('create ' + statement)
+        if duration:
+            self.print_success("create", duration)
+
+
+    def do_crate(self, statement):
+        """alias for ``do_create``"""
+        self.do_create(statement)
+
+    def do_drop(self, statement):
+        """execute a SQL drop statement
+
+        E.g.:
+            "drop table locations"
+        """
+        duration = self.execute('drop ' + statement)
+        if duration:
+            self.print_success("drop", duration)
 
     def do_exit(self, *args):
         """exit the shell"""
@@ -105,6 +152,93 @@ class CrateCmd(Cmd):
         """exit the shell"""
         sys.exit()
 
+    def print_rows_affected(self, command, rowcount=0, duration=0.00):
+        """print success status with rows affected and query duration"""
+        print "{0} OK, {1} row{2} affected ({3:.2f} sec)".format(
+            command.upper(), rowcount, "s"[rowcount==1:], duration)
+
+    def print_rows_selected(self, rowcount=0, duration=0.00):
+        """print count of rows in result set and query duration"""
+        print "SELECT {0} row{1} in set ({2:.2f} sec)".format(
+            rowcount, "s"[rowcount==1:], duration)
+
+    def print_success(self, command, duration=0.00):
+        """print success status only and duration"""
+        print "{0} OK ({1:.2f} sec)".format(command.upper(), duration)
+
+    def cmdloop(self, intro=None):
+        """Repeatedly issue a prompt, accept input, parse an initial prefix
+        off the received input, and dispatch to action methods, passing them
+        the remainder of the line as argument.
+
+        """
+
+        self.preloop()
+        if self.use_rawinput and self.completekey:
+            try:
+                import rlcompleter
+                self.old_completer = readline.get_completer()
+                readline.set_completer(self.complete)
+                if 'libedit' in readline.__doc__:
+                    readline.parse_and_bind("bind ^I rl_complete")
+                else:
+                    readline.parse_and_bind("tab: complete")
+            except ImportError:
+                pass
+        try:
+            if intro is not None:
+                self.intro = intro
+            if self.intro:
+                self.stdout.write(str(self.intro)+"\n")
+            stop = None
+            multi_lines = []
+            prompt = self.prompt
+            while not stop:
+                if self.cmdqueue:
+                    line = self.cmdqueue.pop(0)
+                else:
+                    if self.use_rawinput:
+                        try:
+                            line = raw_input(prompt)
+                        except EOFError:
+                            line = 'EOF'
+                    else:
+                        self.stdout.write(prompt)
+                        self.stdout.flush()
+                        line = self.stdin.readline()
+                        if not len(line):
+                            line = 'EOF'
+                        else:
+                            line = line.rstrip('\r\n')
+                    if line[-1:] != self.line_delimiter:
+                        multi_lines.append(line)
+                        prompt = self.multi_line_prompt
+                    else:
+                        multi_lines.append(line.rstrip(self.line_delimiter))
+                        line = " ".join(multi_lines)
+                        multi_lines = []
+                        prompt = self.prompt
+                if not multi_lines:
+                    line = self.precmd(line)
+                    stop = self.onecmd(line)
+                    stop = self.postcmd(stop, line)
+            self.postloop()
+        finally:
+            if self.use_rawinput and self.completekey:
+                try:
+                    import readline
+                    readline.set_completer(self.old_completer)
+                except ImportError:
+                    pass
+
+    def completedefault(self, text, line, begidx, endidx):
+        """Method called to complete an input line when no command-specific
+        complete_*() method is available.
+
+        """
+        mline = line.split(' ')[-1]
+        offs = len(mline) - len(text)
+        return [s[offs:] for s in self.keywords if s.startswith(mline)]
 
 def main():
     parser = ArgumentParser(description='crate shell')

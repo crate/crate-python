@@ -35,6 +35,7 @@ class CrateCmd(Cmd):
         Cmd.__init__(self, "tab", stdin, stdout)
         self.conn = client.connect()
         self.cursor = self.conn.cursor()
+        self.partial_lines = []
 
     def do_connect(self, server):
         """connect to one or more server with "connect servername:port" """
@@ -191,7 +192,6 @@ class CrateCmd(Cmd):
             if self.intro:
                 self.stdout.write(str(self.intro)+"\n")
             stop = None
-            multi_lines = []
             prompt = self.prompt
             while not stop:
                 if self.cmdqueue:
@@ -210,15 +210,16 @@ class CrateCmd(Cmd):
                             line = 'EOF'
                         else:
                             line = line.rstrip('\r\n')
-                    if line[-1:] != self.line_delimiter:
-                        multi_lines.append(line)
-                        prompt = self.multi_line_prompt
-                    else:
-                        multi_lines.append(line.rstrip(self.line_delimiter))
-                        line = " ".join(multi_lines)
-                        multi_lines = []
-                        prompt = self.prompt
-                if not multi_lines:
+                    if (line or self.partial_lines) and line != 'EOF':
+                        if line[-1:] != self.line_delimiter:
+                            self.partial_lines.append(line)
+                            prompt = self.multi_line_prompt
+                        else:
+                            self.partial_lines.append(line.rstrip(self.line_delimiter))
+                            line = " ".join(self.partial_lines)
+                            self.partial_lines = []
+                            prompt = self.prompt
+                if not self.partial_lines or line == 'EOF':
                     line = self.precmd(line)
                     stop = self.onecmd(line)
                     stop = self.postcmd(stop, line)
@@ -238,6 +239,19 @@ class CrateCmd(Cmd):
         mline = line.split(' ')[-1]
         offs = len(mline) - len(text)
         return [s[offs:] for s in self.keywords if s.startswith(mline)]
+
+    def emptyline(self):
+        """Called when an empty line is entered in response to the prompt.
+        """
+        pass
+
+
+    def do_exit(self, s):
+        self.stdout.write("Bye\n")
+        return True
+
+    do_EOF = do_exit
+
 
 def main():
     parser = ArgumentParser(description='crate shell')

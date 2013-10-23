@@ -5,6 +5,9 @@ Changes for crate
 Unreleased
 ==========
 
+2013/10/23 0.1.0
+================
+
  - the `crash` crate cli supports multiple line commands and auto-completion now,
    commands are delimited by a semi-colon.
 

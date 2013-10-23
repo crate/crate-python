@@ -154,17 +154,17 @@ class CrateCmd(Cmd):
 
     def print_rows_affected(self, command, rowcount=0, duration=0.00):
         """print success status with rows affected and query duration"""
-        print "{0} OK, {1} row{2} affected ({3:.2f} sec)".format(
-            command.upper(), rowcount, "s"[rowcount==1:], duration)
+        print("{0} OK, {1} row{2} affected ({3:.2f} sec)".format(
+            command.upper(), rowcount, "s"[rowcount==1:], duration))
 
     def print_rows_selected(self, rowcount=0, duration=0.00):
         """print count of rows in result set and query duration"""
-        print "SELECT {0} row{1} in set ({2:.2f} sec)".format(
-            rowcount, "s"[rowcount==1:], duration)
+        print("SELECT {0} row{1} in set ({2:.2f} sec)".format(
+            rowcount, "s"[rowcount==1:], duration))
 
     def print_success(self, command, duration=0.00):
         """print success status only and duration"""
-        print "{0} OK ({1:.2f} sec)".format(command.upper(), duration)
+        print("{0} OK ({1:.2f} sec)".format(command.upper(), duration))
 
     def cmdloop(self, intro=None):
         """Repeatedly issue a prompt, accept input, parse an initial prefix
@@ -226,7 +226,6 @@ class CrateCmd(Cmd):
         finally:
             if self.use_rawinput and self.completekey:
                 try:
-                    import readline
                     readline.set_completer(self.old_completer)
                 except ImportError:
                     pass

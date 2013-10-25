@@ -18,6 +18,7 @@ from time import time
 from prettytable import PrettyTable
 from crate import client
 from crate.client.exceptions import ConnectionError, Error, Warning
+from crate.client.compat import raw_input
 
 
 class CrateCmd(Cmd):

@@ -10,6 +10,7 @@ if sys.version_info[0] > 2:
 if py2:
     from exceptions import StandardError
     xrange = xrange
+    raw_input = raw_input
 
     def cprint(s):
         print(s)
@@ -19,6 +20,7 @@ if py2:
 else:
     StandardError = Exception
     xrange = range
+    raw_input = input
 
     def cprint(s):
         if isinstance(s, bytes):
@@ -26,5 +28,6 @@ else:
         print(s)
 
     import queue
+    assert queue
 
 assert StandardError

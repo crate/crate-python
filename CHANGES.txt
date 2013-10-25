@@ -5,6 +5,8 @@ Changes for crate
 Unreleased
 ==========
 
+ - fixed python3.3 compatibility issue in crash
+
 2013/10/23 0.1.0
 ================
 

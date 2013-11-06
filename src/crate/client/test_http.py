@@ -15,29 +15,33 @@ from .exceptions import ConnectionError, ProgrammingError
 from .compat import xrange
 
 
-def fake_request(*args, **kwargs):
-    mock_response = MagicMock()
-    mock_response.content = "this shouldn't be raised"
-    raise HTTPError(response=mock_response)
-
-
-def fake_request_lazy_raise(*args, **kwargs):
-    mock_response = MagicMock()
-    mock_response.content = "this shouldn't be raised"
-
-    def raise_for_status():
+class FakeSession(MagicMock):
+    def request(self, *args, **kwargs):
+        mock_response = MagicMock()
+        mock_response.content = "this shouldn't be raised"
         raise HTTPError(response=mock_response)
-    mock_response.raise_for_status = raise_for_status
-    return mock_response
 
 
-_rnd = SystemRandom(time.time())
-def fail_sometimes_fake_request(*args, **kwargs):
-    mock_response = MagicMock()
-    if int(_rnd.random()*100) % 10 == 0:
-        raise RequestsConnectionError()
-    else:
+class FakeSessionLazyRaise(MagicMock):
+    def request(self, *args, **kwargs):
+        mock_response = MagicMock()
+        mock_response.content = "this shouldn't be raised"
+
+        def raise_for_status():
+            raise HTTPError(response=mock_response)
+        mock_response.raise_for_status = raise_for_status
         return mock_response
+
+
+class FakeSessionFailSometimes(MagicMock):
+    _rnd = SystemRandom(time.time())
+
+    def request(self, *args, **kwargs):
+        mock_response = MagicMock()
+        if int(self._rnd.random()*100) % 10 == 0:
+            raise RequestsConnectionError()
+        else:
+            return mock_response
 
 
 class HttpClientTest(TestCase):
@@ -46,12 +50,12 @@ class HttpClientTest(TestCase):
         client = Client()
         self.assertRaises(ConnectionError, client.sql, 'select 1')
 
-    @patch('requests.request', fake_request)
+    @patch('requests.sessions.Session', FakeSession)
     def test_http_error_is_re_raised(self):
         client = Client()
         self.assertRaises(ProgrammingError, client.sql, 'select 1')
 
-    @patch('requests.request', fake_request)
+    @patch('requests.sessions.Session', FakeSession)
     def test_programming_error_contains_http_error_response_content(self):
         client = Client()
         try:
@@ -61,7 +65,7 @@ class HttpClientTest(TestCase):
         else:
             self.assertTrue(False)
 
-    @patch('requests.request', fake_request_lazy_raise)
+    @patch('requests.sessions.Session', FakeSessionLazyRaise)
     def test_http_error_is_re_raised_in_raise_for_status(self):
         client = Client()
         self.assertRaises(ProgrammingError, client.sql, 'select 1')
@@ -86,6 +90,7 @@ class ThreadSafeHttpClientTest(TestCase):
     def __init__(self, *args, **kwargs):
         self.client = Client(self.servers)
         self.client.retry_interval = 0.0001  # faster retry
+        self.client._session = FakeSessionFailSometimes()  # patch the clients session
         self.event = Event()
         self.err_queue = queue.Queue()
         super(ThreadSafeHttpClientTest, self).__init__(*args, **kwargs)
@@ -109,7 +114,7 @@ class ThreadSafeHttpClientTest(TestCase):
             except AssertionError as e:
                 self.err_queue.put(sys.exc_info())
 
-    @patch("requests.request", fail_sometimes_fake_request)
+
     def test_client_threaded(self):
         """
         Testing if lists of servers is handled correctly when client is used from multiple threads

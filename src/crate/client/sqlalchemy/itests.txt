@@ -8,7 +8,7 @@ Using the connection to execute a select statement::
 
     >>> result = connection.execute('select name from locations')
     >>> result.rowcount
-    10
+    13
 
     >>> result.first()
     (u'Algol',)
@@ -16,13 +16,13 @@ Using the connection to execute a select statement::
 Using the ORM to query the locations::
 
     >>> locations = session.query(Location)
-    >>> [l.name for l in locations][:5]
+    >>> [l.name for l in locations if l is not None][:5]
     [u'Algol', u'Folfanga', u'Aldebaran', u'Argabuthon', u'Bartledan']
 
 With limit and offset::
 
     >>> locations = session.query(Location).offset(1).limit(4)
-    >>> [l.name for l in locations]
+    >>> [l.name for l in locations if l is not None]
     [u'Folfanga', u'Aldebaran', u'Argabuthon', u'Bartledan']
 
 With filter::

@@ -31,5 +31,8 @@ them without any special arguments like this::
     | Arkintoofle Minor                  | Planet      |
     | Outer Eastern Rim                  | Galaxy      |
     | Altair                             | Star System |
+    | North West Ripple                  | Galaxy      |
+    | Alpha Centauri                     | Star System |
+    | NULL                               | Galaxy      |
     +------------------------------------+-------------+
-    SELECT 10 rows in set (... sec)
+    SELECT 13 rows in set (... sec)

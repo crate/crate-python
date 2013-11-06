@@ -41,6 +41,7 @@ class Client(object):
         self._inactive_servers = []
         self._lock = threading.RLock()
         self._local = threading.local()
+        self._session = requests.session()
 
     def sql(self, stmt, parameters=None):
         """
@@ -125,7 +126,7 @@ class Client(object):
             try:
                 # build uri and send http request
                 uri = "http://{server}/{path}".format(server=server, path=path)
-                response = requests.request(method, uri, timeout=self._http_timeout, **kwargs)
+                response = self._session.request(method, uri, timeout=self._http_timeout, **kwargs)
                 # reset local server, so next request will use new one
                 self._local.server = server = None
                 return response

@@ -89,16 +89,19 @@ fetchall()
     >>> cursor.execute("SELECT name FROM locations")
     >>> result = cursor.fetchall()
     >>> pprint(result)
-    [[u'Algol'],
-     [u'Folfanga'],
-     [u'Aldebaran'],
-     [u'Argabuthon'],
-     [u'Bartledan'],
-     [u'Galactic Sector QQ7 Active J Gamma'],
-     [u'Allosimanius Syneca'],
-     [u'Arkintoofle Minor'],
-     [u'Outer Eastern Rim'],
-     [u'Altair']]
+    [['Algol'],
+     ['Folfanga'],
+     ['Aldebaran'],
+     ['Argabuthon'],
+     ['Bartledan'],
+     ['Galactic Sector QQ7 Active J Gamma'],
+     ['Allosimanius Syneca'],
+     ['Arkintoofle Minor'],
+     ['Outer Eastern Rim'],
+     ['Altair'],
+     ['North West Ripple'],
+     ['Alpha Centauri'],
+     [None]]
 
 Cursor Description
 ==================

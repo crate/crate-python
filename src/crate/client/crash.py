@@ -3,6 +3,7 @@ crate cli
 
 can be used to query crate using SQL
 """
+import inspect
 
 import os
 import sys
@@ -25,12 +26,12 @@ class CrateCmd(Cmd):
     prompt = 'cr> '
     line_delimiter = ';'
     multi_line_prompt = '... '
+    NULL = "NULL"
 
     keywords = ["table", "index",
                 "from", "into", "where", "values", "and", "or", "set", "with", "by", "using"
                 "integer", "string", "float", "double", "short", "long", "byte", "timestamp",
                 "replicas", "clustered"]
-
 
     def __init__(self, stdin=None, stdout=None):
         Cmd.__init__(self, "tab", stdin, stdout)
@@ -74,14 +75,18 @@ class CrateCmd(Cmd):
         for col in cols:
             table.align[col] = "l"
         for row in rows:
-            table.add_row(row)
+            table.add_row(map(self._transform_field, row))
         print(table)
+
+    def _transform_field(self, field):
+        """transform field for displaying"""
+        if field is None:
+            return self.NULL
+        else:
+            return field
 
     def cols(self):
         return [c[0] for c in self.cursor.description]
-
-    def do_EOF(self, arg):
-        sys.exit(0)
 
     def do_select(self, statement):
         """execute a SQL select statement
@@ -148,11 +153,15 @@ class CrateCmd(Cmd):
 
     def do_exit(self, *args):
         """exit the shell"""
-        sys.exit()
+        self.stdout.write("Bye\n")
+        sys.exit(0)
 
     def do_quit(self, *args):
         """exit the shell"""
-        sys.exit()
+        self.stdout.write("Bye\n")
+        sys.exit(0)
+
+    do_EOF = do_exit
 
     def print_rows_affected(self, command, rowcount=0, duration=0.00):
         """print success status with rows affected and query duration"""
@@ -246,12 +255,11 @@ class CrateCmd(Cmd):
         """
         pass
 
-
-    def do_exit(self, s):
-        self.stdout.write("Bye\n")
-        return True
-
-    do_EOF = do_exit
+# uppercase commands
+for name, attr in inspect.getmembers(CrateCmd, lambda attr: inspect.ismethod(attr)):
+    if name.startswith("do_"):
+        cmd_name = name.split("do_")[-1]
+        setattr(CrateCmd, "do_{0}".format(cmd_name.upper()), attr)
 
 
 def main():

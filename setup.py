@@ -6,7 +6,7 @@ import re
 
 
 requirements = [
-    'requests',
+    'requests==2.0.1',
     'PrettyTable'
 ]
 
@@ -58,7 +58,8 @@ setup(
     extras_require=dict(
         test=['lovely.testlayers',
               'mock',
-              'zope.testing'],
+              'zope.testing',
+              'zc.customdoctests==1.0.1'],
         sqlalchemy=['sqlalchemy']
     ),
     install_requires=requirements,

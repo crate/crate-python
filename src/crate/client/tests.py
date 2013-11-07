@@ -16,7 +16,7 @@ from crate.testing.tests import crate_path, docs_path
 from . import http
 from .crash import CrateCmd
 from .test_cursor import CursorTest
-from .test_http import HttpClientTest, ThreadSafeHttpClientTest
+from .test_http import HttpClientTest, ThreadSafeHttpClientTest, KeepAliveClientTest
 from .sqlalchemy.test import tests as sqlalchemy_tests
 from .compat import cprint
 
@@ -166,6 +166,7 @@ def test_suite():
     suite.addTest(s)
     suite.addTest(unittest.makeSuite(CursorTest))
     suite.addTest(unittest.makeSuite(HttpClientTest))
+    suite.addTest(unittest.makeSuite(KeepAliveClientTest))
     suite.addTest(unittest.makeSuite(ThreadSafeHttpClientTest))
     suite.addTest(sqlalchemy_tests)
     suite.addTest(doctest.DocTestSuite('crate.client.connection'))
@@ -179,6 +180,7 @@ def test_suite():
     )
     s.layer = crate_layer
     suite.addTest(s)
+
     s = doctest.DocFileSuite(
         'http.txt',
         '../../../docs/client.txt',

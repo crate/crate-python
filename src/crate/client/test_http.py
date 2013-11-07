@@ -1,3 +1,4 @@
+import json
 import time
 import sys
 from .compat import queue
@@ -6,34 +7,33 @@ import traceback
 from unittest import TestCase
 from mock import patch, MagicMock
 from threading import Thread, Event
+from multiprocessing import Process
 
 from requests.exceptions import HTTPError, ConnectionError as RequestsConnectionError
 
 
 from .http import Client
 from .exceptions import ConnectionError, ProgrammingError
-from .compat import xrange
+from .compat import xrange, BaseHTTPServer
 
 
-class FakeSession(MagicMock):
-    def request(self, *args, **kwargs):
-        mock_response = MagicMock()
-        mock_response.content = "this shouldn't be raised"
+def fake_request(*args, **kwargs):
+    mock_response = MagicMock()
+    mock_response.content = "this shouldn't be raised"
+    raise HTTPError(response=mock_response)
+
+
+def fake_request_lazy_raise(*args, **kwargs):
+    mock_response = MagicMock()
+    mock_response.content = "this shouldn't be raised"
+
+    def raise_for_status():
         raise HTTPError(response=mock_response)
+    mock_response.raise_for_status = raise_for_status
+    return mock_response
 
 
-class FakeSessionLazyRaise(MagicMock):
-    def request(self, *args, **kwargs):
-        mock_response = MagicMock()
-        mock_response.content = "this shouldn't be raised"
-
-        def raise_for_status():
-            raise HTTPError(response=mock_response)
-        mock_response.raise_for_status = raise_for_status
-        return mock_response
-
-
-class FakeSessionFailSometimes(MagicMock):
+class FakeSessionFailSometimes(object):
     _rnd = SystemRandom(time.time())
 
     def request(self, *args, **kwargs):
@@ -50,12 +50,12 @@ class HttpClientTest(TestCase):
         client = Client()
         self.assertRaises(ConnectionError, client.sql, 'select 1')
 
-    @patch('requests.sessions.Session', FakeSession)
+    @patch('requests.sessions.Session.request', fake_request)
     def test_http_error_is_re_raised(self):
         client = Client()
         self.assertRaises(ProgrammingError, client.sql, 'select 1')
 
-    @patch('requests.sessions.Session', FakeSession)
+    @patch('requests.sessions.Session.request', fake_request)
     def test_programming_error_contains_http_error_response_content(self):
         client = Client()
         try:
@@ -65,7 +65,7 @@ class HttpClientTest(TestCase):
         else:
             self.assertTrue(False)
 
-    @patch('requests.sessions.Session', FakeSessionLazyRaise)
+    @patch('requests.sessions.Session.request', fake_request_lazy_raise)
     def test_http_error_is_re_raised_in_raise_for_status(self):
         client = Client()
         self.assertRaises(ProgrammingError, client.sql, 'select 1')
@@ -114,7 +114,6 @@ class ThreadSafeHttpClientTest(TestCase):
             except AssertionError as e:
                 self.err_queue.put(sys.exc_info())
 
-
     def test_client_threaded(self):
         """
         Testing if lists of servers is handled correctly when client is used from multiple threads
@@ -147,3 +146,62 @@ class ThreadSafeHttpClientTest(TestCase):
                     )
                 )
             )
+
+
+class ClientAddressRequestHandler(BaseHTTPServer.BaseHTTPRequestHandler):
+    """
+    http handler for use with BaseHTTPServer
+
+    returns client host and port in crate-conform-responses
+    """
+    protocol_version = 'HTTP/1.1'
+
+    def do_GET(self):
+        content_length = self.headers.get("content-length")
+        if content_length:
+            self.rfile.read(int(content_length))
+        response = json.dumps({
+            "cols": ["host", "port"],
+            "rows": [
+                self.client_address[0],
+                self.client_address[1]
+            ],
+            "rowCount": 1,
+        })
+        self.send_response(200)
+        self.send_header("Content-Length", len(response))
+        self.send_header("Content-Type", "application/json; charset=UTF-8")
+        self.end_headers()
+        self.wfile.write(response)
+
+    do_POST = do_PUT = do_DELETE = do_HEAD = do_GET
+
+
+class KeepAliveClientTest(TestCase):
+
+    server_address = ("127.0.0.1", 65535)
+
+    def __init__(self, *args, **kwargs):
+        super(KeepAliveClientTest, self).__init__(*args, **kwargs)
+        self.server_process = Process(target=self._run_server)
+        self.client = Client(["%s:%d" % self.server_address])
+
+    def setUp(self):
+        super(KeepAliveClientTest, self).setUp()
+        self.server_process.start()
+        time.sleep(.10)
+
+    def tearDown(self):
+        self.server_process.terminate()
+        super(KeepAliveClientTest, self).tearDown()
+
+    def _run_server(self):
+        self.server = BaseHTTPServer.HTTPServer(self.server_address, ClientAddressRequestHandler)
+        self.server.handle_request()
+
+    def test_client_keepalive(self):
+        for x in range(10):
+            result = self.client.sql("select * from fake")
+
+            another_result = self.client.sql("select again from fake")
+            self.assertDictEqual(result, another_result)

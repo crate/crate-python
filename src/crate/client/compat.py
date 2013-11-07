@@ -17,6 +17,9 @@ if py2:
 
     import Queue
     queue = Queue
+
+    import BaseHTTPServer
+
 else:
     StandardError = Exception
     xrange = range
@@ -29,5 +32,8 @@ else:
 
     import queue
     assert queue
+
+    import http.server
+    BaseHTTPServer = http.server
 
 assert StandardError

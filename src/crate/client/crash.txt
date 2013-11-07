@@ -11,13 +11,13 @@ invoking `crash` in a terminal.
 another host use the `connect` commmand inside the shell or use the `--hosts`
 argument when launching the shell::
 
-    >>> cmd.onecmd('connect ' + crate_host)
+    cr> connect 127.0.0.1:9295
     CONNECT OK (... sec)
 
 Once the shell is connected, SQL statements can be executed simply by entering
 them without any special arguments like this::
 
-    >>> cmd.onecmd('select name, kind from locations')
+    cr> SELECT name, kind from locations
     +------------------------------------+-------------+
     | name                               | kind        |
     +------------------------------------+-------------+

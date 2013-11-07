@@ -22,7 +22,7 @@ from .compat import cprint
 
 
 def crash_transform(s):
-    return 'cmd.onecmd("""{}""");'.format(s.strip())
+    return 'cmd.onecmd("""{0}""");'.format(s.strip())
 
 
 crash_parser = zc.customdoctests.DocTestParser(

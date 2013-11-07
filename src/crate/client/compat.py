@@ -20,6 +20,9 @@ if py2:
 
     import BaseHTTPServer
 
+    def to_bytes(data, *args, **kwargs):
+        return data
+
 else:
     StandardError = Exception
     xrange = range
@@ -35,5 +38,6 @@ else:
 
     import http.server
     BaseHTTPServer = http.server
+    to_bytes = bytes
 
 assert StandardError

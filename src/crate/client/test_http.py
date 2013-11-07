@@ -14,23 +14,25 @@ from requests.exceptions import HTTPError, ConnectionError as RequestsConnection
 
 from .http import Client
 from .exceptions import ConnectionError, ProgrammingError
-from .compat import xrange, BaseHTTPServer
+from .compat import xrange, BaseHTTPServer, to_bytes
 
 
-def fake_request(*args, **kwargs):
-    mock_response = MagicMock()
-    mock_response.content = "this shouldn't be raised"
-    raise HTTPError(response=mock_response)
-
-
-def fake_request_lazy_raise(*args, **kwargs):
-    mock_response = MagicMock()
-    mock_response.content = "this shouldn't be raised"
-
-    def raise_for_status():
+class FakeSession(object):
+    def request(self, *args, **kwargs):
+        mock_response = MagicMock()
+        mock_response.content = "this shouldn't be raised"
         raise HTTPError(response=mock_response)
-    mock_response.raise_for_status = raise_for_status
-    return mock_response
+
+
+class FakeSessionLazyRaise(object):
+    def request(*args, **kwargs):
+        mock_response = MagicMock()
+        mock_response.content = "this shouldn't be raised"
+
+        def raise_for_status():
+            raise HTTPError(response=mock_response)
+        mock_response.raise_for_status = raise_for_status
+        return mock_response
 
 
 class FakeSessionFailSometimes(object):
@@ -50,12 +52,12 @@ class HttpClientTest(TestCase):
         client = Client()
         self.assertRaises(ConnectionError, client.sql, 'select 1')
 
-    @patch('requests.sessions.Session.request', fake_request)
+    @patch('requests.sessions.Session', FakeSession)
     def test_http_error_is_re_raised(self):
         client = Client()
         self.assertRaises(ProgrammingError, client.sql, 'select 1')
 
-    @patch('requests.sessions.Session.request', fake_request)
+    @patch('requests.sessions.Session', FakeSession)
     def test_programming_error_contains_http_error_response_content(self):
         client = Client()
         try:
@@ -65,7 +67,7 @@ class HttpClientTest(TestCase):
         else:
             self.assertTrue(False)
 
-    @patch('requests.sessions.Session.request', fake_request_lazy_raise)
+    @patch('requests.sessions.Session', FakeSessionLazyRaise)
     def test_http_error_is_re_raised_in_raise_for_status(self):
         client = Client()
         self.assertRaises(ProgrammingError, client.sql, 'select 1')
@@ -172,7 +174,7 @@ class ClientAddressRequestHandler(BaseHTTPServer.BaseHTTPRequestHandler):
         self.send_header("Content-Length", len(response))
         self.send_header("Content-Type", "application/json; charset=UTF-8")
         self.end_headers()
-        self.wfile.write(response)
+        self.wfile.write(to_bytes(response, 'UTF-8'))
 
     do_POST = do_PUT = do_DELETE = do_HEAD = do_GET
 
@@ -204,4 +206,4 @@ class KeepAliveClientTest(TestCase):
             result = self.client.sql("select * from fake")
 
             another_result = self.client.sql("select again from fake")
-            self.assertDictEqual(result, another_result)
+            self.assertEqual(result, another_result)

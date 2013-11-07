@@ -75,7 +75,7 @@ class CrateCmd(Cmd):
         for col in cols:
             table.align[col] = "l"
         for row in rows:
-            table.add_row(map(self._transform_field, row))
+            table.add_row(list(map(self._transform_field, row)))
         print(table)
 
     def _transform_field(self, field):
@@ -256,7 +256,7 @@ class CrateCmd(Cmd):
         pass
 
 # uppercase commands
-for name, attr in inspect.getmembers(CrateCmd, lambda attr: inspect.ismethod(attr)):
+for name, attr in inspect.getmembers(CrateCmd, lambda attr: inspect.ismethod(attr) or inspect.isfunction(attr)):
     if name.startswith("do_"):
         cmd_name = name.split("do_")[-1]
         setattr(CrateCmd, "do_{0}".format(cmd_name.upper()), attr)

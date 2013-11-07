@@ -5,6 +5,10 @@ Changes for crate
 Unreleased
 ==========
 
+
+2013/11/07 0.1.1
+================
+
  - http keepalive support
 
  - uppercase command support for crash

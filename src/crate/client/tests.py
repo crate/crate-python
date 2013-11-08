@@ -102,6 +102,9 @@ def setUpCrateLayerAndSqlAlchemy(test):
         },
         "mappings": {
             "default": {
+                "_meta": {
+                    "primary_keys": "id"
+                },
                 "properties": {
                     "id": {
                         "type": "string",

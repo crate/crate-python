@@ -46,9 +46,10 @@ operations that SQLAlchemy provides are currently not supported.
 
 An overview of supported operations::
 
- - simple select statements including filter operations, limit and offset. But
-   without joins or subselects. Order by is also supported.
+ - Simple select statements including filter operations, limit and offset,
+   group by and order by. But without joins or subselects
  - Inserting new rows.
+ - Updating rows.
 
 Unlike other databases that are usually used with SQLAlchemy, Crate isn't a
 RDBMS but instead is document oriented with `eventual consistency
@@ -71,7 +72,7 @@ Complex Types
 
 In a document oriented database it is a common pattern to store complex objects
 within a single field. For such cases the `crate` package provides the `Craty`
-type.
+type. The `Craty` type can be seen as some kind of dictionary or map like type.
 
 Below is a schema definition using `SQLAlchemy's declarative approach
 <http://docs.sqlalchemy.org/en/rel_0_8/orm/extensions/declarative.html>`_::
@@ -137,3 +138,52 @@ possible::
     >>> query = session.query(Character.name)
     >>> query.filter(Character.details['gender'] == 'male').all()
     [('Arthur Dent',)]
+
+Updating Complex Types
+----------------------
+
+The SQLAlchemy Crate dialect supports change tracking deep down the nested
+levels of a `Craty` type field. For example the following query will only
+update the `gender` key. The `species` key which is on the same level will be
+left untouched.
+
+    >>> char = session.query(Character).filter_by(name='Arthur Dent').one()
+    >>> char.details['gender'] = 'manly man'
+    >>> session.commit()
+    >>> session.refresh(char)
+
+    >>> char.details
+    {u'gender': u'manly man', u'species': u'human'}
+
+Count and Group By
+==================
+
+SQLAlchemy supports different approaches to issue a query with a count
+aggregate function. Take a look at the `Counting section in the tutorial
+<http://docs.sqlalchemy.org/en/rel_0_8/orm/tutorial.html#counting`_ for a full
+overview.
+
+Crate currently doesn't support all variants as it can't handle the sub-queries
+yet.
+
+This means that queries with count have to be written in one of the following
+ways::
+
+    >>> session.query(sa.func.count(Character.id)).scalar()
+    2
+
+    >>> session.query(sa.func.count('*')).select_from(Character).scalar()
+    2
+
+.. note::
+
+    The column that is passed to the count method has to be the primary key.
+    Other columns won't work.
+
+Using the `group_by` clause is similar::
+
+    >>> session.query(sa.func.count(Character.id), Character.name) \
+    ...     .group_by(Character.name) \
+    ...     .order_by(sa.desc(sa.func.count(Character.id))) \
+    ...     .order_by(Character.name).all()
+    [(1, u'Arthur Dent'), (1, u'Tricia McMillan')]

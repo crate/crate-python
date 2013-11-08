@@ -5,6 +5,9 @@ Changes for crate
 Unreleased
 ==========
 
+2013/11/08 0.1.2
+================
+
  - documented SQLAlchemy count() and group_by() support.
 
 2013/11/07 0.1.1

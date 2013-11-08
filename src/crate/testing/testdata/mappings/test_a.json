@@ -2,37 +2,30 @@
     "default": {
         "_id": {
             "type": "string",
-            "index": "not_analyzed",
-            "store": "true"
+            "index": "not_analyzed"
         },
         "properties": {
             "name": {
                 "type": "string",
-                "index": "not_analyzed",
-                "store": true
+                "index": "not_analyzed"
             },
             "date": {
                 "type": "date",
-                "format": "YYYY-MM-dd",
-                "store": true
+                "format": "YYYY-MM-dd"
             },
             "datetime": {
-                "type": "date",
-                "store": true
+                "type": "date"
             },
             "kind": {
                 "type": "string",
-                "index": "not_analyzed",
-                "store": true
+                "index": "not_analyzed"
             },
             "position": {
-                "type": "integer",
-                "store": true
+                "type": "integer"
             },
             "description": {
                 "type": "string",
-                "index": "analyzed",
-                "store": true
+                "index": "analyzed"
             }
         }
     }

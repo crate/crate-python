@@ -5,6 +5,9 @@ Changes for crate
 Unreleased
 ==========
 
+ - fixed sqlalchemy datetime parsing that didn't work with crate >= 0.18.4 due
+   to the fixed datetime mapping.
+
 2013/11/08 0.1.2
 ================
 

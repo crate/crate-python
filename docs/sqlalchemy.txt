@@ -152,8 +152,11 @@ left untouched.
     >>> session.commit()
     >>> session.refresh(char)
 
-    >>> char.details
-    {u'gender': u'manly man', u'species': u'human'}
+    >>> char.details['gender']
+    u'manly man'
+    
+    >>> char.details['species']
+    u'human'
 
 Count and Group By
 ==================

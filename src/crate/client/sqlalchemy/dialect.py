@@ -22,17 +22,26 @@ class Date(sqltypes.Date):
 
     def result_processor(self, dialect, coltype):
         def process(value):
-            if value:
-                try:
-                    return datetime.strptime(value, '%Y-%m-%d')
-                except ValueError:
-                    # Crate doesn't really have datetime or date types but a
-                    # timestamp type. The "date" format itself isn't
-                    # necessarily enforced (at least as of 0.14.0). If another
-                    # client inserts a value that does contain time information
-                    # it will be stored and returned on future requests.
-                    log.warning('Received datetime but expected date')
-                    return datetime.strptime(value, '%Y-%m-%dT%H:%M:%S.%fZ')
+            if not value:
+                return
+            try:
+                return datetime.utcfromtimestamp(value / 1e3)
+            except TypeError:
+                pass
+
+            # Crate doesn't really have datetime or date types but a
+            # timestamp type. The "date" mapping (conversion to long)
+            # is only applied if the schema definition for the column exists
+            # and if the sql insert statement was used.
+            # In case of dynamic mapping or using the rest indexing endpoint
+            # the date will be returned in the format it was inserted.
+            log.warning(
+                "Received timestamp isn't a long value."
+                "Trying to parse as date string and then as datetime string")
+            try:
+                return datetime.strptime(value, '%Y-%m-%d')
+            except ValueError:
+                return datetime.strptime(value, '%Y-%m-%dT%H:%M:%S.%fZ')
         return process
 
 
@@ -47,8 +56,26 @@ class DateTime(sqltypes.DateTime):
 
     def result_processor(self, dialect, coltype):
         def process(value):
-            if value:
+            if not value:
+                return
+            try:
+                return datetime.utcfromtimestamp(value / 1e3)
+            except TypeError:
+                pass
+
+            # Crate doesn't really have datetime or date types but a
+            # timestamp type. The "date" mapping (conversion to long)
+            # is only applied if the schema definition for the column exists
+            # and if the sql insert statement was used.
+            # In case of dynamic mapping or using the rest indexing endpoint
+            # the date will be returned in the format it was inserted.
+            log.warning(
+                "Received timestamp isn't a long value."
+                "Trying to parse as datetime string and then as date string")
+            try:
                 return datetime.strptime(value, '%Y-%m-%dT%H:%M:%S.%fZ')
+            except ValueError:
+                return datetime.strptime(value, '%Y-%m-%d')
         return process
 
 

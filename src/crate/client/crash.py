@@ -151,6 +151,16 @@ class CrateCmd(Cmd):
         if duration:
             self.print_success("drop", duration)
 
+    def do_copy(self, statement):
+        """execute a SQL copy statement
+
+        E.g.:
+            "copy locations from 'path/to/import/data.json'"
+        """
+        duration = self.execute('copy ' + statement)
+        if duration:
+            self.print_success("copy", duration)
+
     def do_exit(self, *args):
         """exit the shell"""
         self.stdout.write("Bye\n")

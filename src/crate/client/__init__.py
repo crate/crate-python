@@ -3,7 +3,7 @@ from .exceptions import Error
 
 # version string read from setup.py using a regex. Take care not to break the
 # regex!
-__version__ = "0.1.3"
+__version__ = "0.1.4"
 
 apilevel = "2.0"
 threadsafety = 2

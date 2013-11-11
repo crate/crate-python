@@ -54,6 +54,7 @@ class CrateLayer(server.ServerLayer, layer.WorkDirectoryLayer):
         if transport_port:
             start_cmd += ('-Des.transport.tcp.port=%s' % transport_port,)
         super(CrateLayer, self).__init__(name, servers=servers, start_cmd=start_cmd)
+        self.setUpWD()
 
     def stop(self):
         # override because if we use proc.kill the terminal gets poisioned
@@ -61,7 +62,6 @@ class CrateLayer(server.ServerLayer, layer.WorkDirectoryLayer):
         self.process.wait()
 
     def start(self):
-        self.setUpWD()
         wd = self.wdPath()
         self.start_cmd = self.start_cmd + ('-Des.path.data="%s"' % wd,)
         super(CrateLayer, self).start()

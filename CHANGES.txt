@@ -5,6 +5,8 @@ Changes for crate
 Unreleased
 ==========
 
+ - crate layer: set working directory on layer instantiation instead of start hook
+
 2013/11/08 0.1.3
 ================
 

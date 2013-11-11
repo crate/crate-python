@@ -14,6 +14,12 @@ This layer starts and stops a ``Crate`` instance on a give port and a given crat
     ...                     crate_exec=crate_path('bin', 'crate'),
     ...                     port=port,)
 
+The working directory is defined on layer instantiation.
+It is sometimes required to know it before starting the layer::
+
+    >>> layer.wdPath()
+    '.../crate.testing.layer.CrateLayer.crate/work'
+
 Lets start the layer::
 
     >>> layer.start()

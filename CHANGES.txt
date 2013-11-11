@@ -5,6 +5,9 @@ Changes for crate
 Unreleased
 ==========
 
+2013/11/11 0.1.5
+================
+
  - Added SQL ``copy`` command support to `crash` crate cli
 
 2013/11/11 0.1.4

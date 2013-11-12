@@ -42,8 +42,7 @@ class CrateCmd(Cmd):
     def do_connect(self, server):
         """connect to one or more server with "connect servername:port[,servername:port[...]]" """
         time_start = time()
-        servers = [s.strip() for s in server.split(",")]
-        self.conn = client.connect(servers=servers)
+        self.conn = client.connect(servers=server)
         self.cursor = self.conn.cursor()
         duration = time()-time_start
         self.print_success("connect", duration)

@@ -9,7 +9,7 @@ import os
 import sys
 import select
 import readline
-
+import atexit
 
 assert readline  # imported so that cmd gains history-editing functionality
 from cmd import Cmd
@@ -273,15 +273,28 @@ for name, attr in inspect.getmembers(CrateCmd, lambda attr: inspect.ismethod(att
         setattr(CrateCmd, "do_{0}".format(cmd_name.upper()), attr)
 
 
+DEFAULT_HISTORY_FILE = '~/.crash_history'
+
+
 def main():
     parser = ArgumentParser(description='crate shell')
     parser.add_argument('-v', '--verbose', action='count',
                         help='use -v to get debug output')
+    parser.add_argument('--history', type=str, help='the history file to use', default=DEFAULT_HISTORY_FILE)
     parser.add_argument('-s', '--statement', type=str,
                         help='execute sql statement')
     parser.add_argument('--hosts', type=str,
                         help='connect to crate hosts')
     args = parser.parse_args()
+
+    # read and write history file
+    history_file_path = os.path.expanduser(args.history)
+    try:
+        readline.read_history_file(history_file_path)
+    except IOError as e:
+        pass
+    atexit.register(readline.write_history_file, history_file_path)
+
     cmd = CrateCmd()
     if args.hosts:
         cmd.do_connect(args.hosts)

@@ -5,6 +5,8 @@ Changes for crate
 Unreleased
 ==========
 
+ - Added support for multiple hosts for ``crash --hosts ...`` and the connect cmd
+
 2013/11/11 0.1.5
 ================
 

@@ -6,9 +6,9 @@ import re
 
 
 requirements = [
-    'requests>=2.0.1,<=3.0',
-    'PrettyTable>=0.7,<=0.8',
-    'appdirs>=1.2,<=2.0',
+    'requests>=2.0.1,<3.0',
+    'PrettyTable>=0.7,<0.8',
+    'appdirs>=1.2,<2.0',
 ]
 
 if (2, 6) == sys.version_info[:2]:
@@ -61,7 +61,7 @@ setup(
               'mock>=1.0.1',
               'zope.testing',
               'zc.customdoctests>=1.0.1'],
-        sqlalchemy=['sqlalchemy>=0.8.2,<=0.9']
+        sqlalchemy=['sqlalchemy>=0.8.2,<0.9']
     ),
     install_requires=requirements,
     package_data={'': ['*.txt']},

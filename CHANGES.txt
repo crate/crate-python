@@ -5,6 +5,9 @@ Changes for crate
 Unreleased
 ==========
 
+2013/11/13 0.1.6
+================
+
  - Fix: show rows affected at `crash` on ``copy`` command
 
  - Added persistent history stored in platform dependent app-dir

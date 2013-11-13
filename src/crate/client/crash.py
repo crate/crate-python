@@ -162,7 +162,7 @@ class CrateCmd(Cmd):
         """
         duration = self.execute('copy ' + statement)
         if duration:
-            self.print_success("copy", duration)
+            self.print_rows_affected("copy", self.cursor.rowcount, duration)
 
     def do_exit(self, *args):
         """exit the shell"""

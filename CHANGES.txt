@@ -5,6 +5,8 @@ Changes for crate
 Unreleased
 ==========
 
+ - Fix: show rows affected at `crash` on ``copy`` command
+
  - Added persistent history stored in platform dependent app-dir
 
  - Added support for multiple hosts for ``crash --hosts ...`` and the connect cmd

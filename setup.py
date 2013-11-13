@@ -7,11 +7,12 @@ import re
 
 requirements = [
     'requests==2.0.1',
-    'PrettyTable'
+    'PrettyTable==0.7.2',
+    'appdirs==1.2.0',
 ]
 
 if (2, 6) == sys.version_info[:2]:
-    requirements.append('argparse')
+    requirements.append('argparse==1.2.1')
 
 
 def read(path):
@@ -57,10 +58,10 @@ setup(
     },
     extras_require=dict(
         test=['lovely.testlayers',
-              'mock',
+              'mock==1.0.1',
               'zope.testing',
               'zc.customdoctests==1.0.1'],
-        sqlalchemy=['sqlalchemy']
+        sqlalchemy=['sqlalchemy==0.8.2']
     ),
     install_requires=requirements,
     package_data={'': ['*.txt']},

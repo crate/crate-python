@@ -35,7 +35,7 @@ class Client(object):
         if not servers:
             servers = self.default_server
         if isinstance(servers, basestring):
-            servers = servers.split(",")
+            servers = servers.split()
         self._active_servers = list(servers)
         self._http_timeout = timeout
         self._inactive_servers = []

@@ -9,9 +9,11 @@ import os
 import sys
 import select
 import readline
-import atexit
-
 assert readline  # imported so that cmd gains history-editing functionality
+
+import atexit
+from appdirs import user_data_dir
+
 from cmd import Cmd
 from argparse import ArgumentParser
 from time import time
@@ -40,10 +42,11 @@ class CrateCmd(Cmd):
         self.partial_lines = []
 
     def do_connect(self, server):
-        """connect to one or more server with "connect servername:port[,servername:port[...]]" """
+        """connect to one or more server with "connect servername:port[ servername:port [...]]" """
         time_start = time()
         self.conn = client.connect(servers=server)
         self.cursor = self.conn.cursor()
+
         duration = time()-time_start
         self.print_success("connect", duration)
 
@@ -272,22 +275,26 @@ for name, attr in inspect.getmembers(CrateCmd, lambda attr: inspect.ismethod(att
         setattr(CrateCmd, "do_{0}".format(cmd_name.upper()), attr)
 
 
-DEFAULT_HISTORY_FILE = '~/.crash_history'
+USER_DATA_DIR = user_data_dir("Crate", "Crate")
+HISTORY_FILE_NAME = 'crash_history'
+HISTORY_PATH = os.path.join(USER_DATA_DIR, HISTORY_FILE_NAME)
 
 
 def main():
     parser = ArgumentParser(description='crate shell')
     parser.add_argument('-v', '--verbose', action='count',
                         help='use -v to get debug output')
-    parser.add_argument('--history', type=str, help='the history file to use', default=DEFAULT_HISTORY_FILE)
+    parser.add_argument('--history', type=str, help='the history file to use', default=HISTORY_PATH)
     parser.add_argument('-s', '--statement', type=str,
                         help='execute sql statement')
-    parser.add_argument('--hosts', type=str,
-                        help='connect to crate hosts')
+    parser.add_argument('--hosts', type=str, nargs='*',
+                        help='connect to crate hosts', metavar='HOST')
     args = parser.parse_args()
 
     # read and write history file
-    history_file_path = os.path.expanduser(args.history)
+    history_file_path = args.history
+    if not os.path.exists(USER_DATA_DIR):
+        os.makedirs(USER_DATA_DIR)
     try:
         readline.read_history_file(history_file_path)
     except IOError as e:

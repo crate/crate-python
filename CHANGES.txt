@@ -5,6 +5,10 @@ Changes for crate
 Unreleased
 ==========
 
+ - Added persistent history stored in platform dependent app-dir
+
+ - Added support for multiple hosts for ``crash --hosts ...`` and the connect cmd
+
 2013/11/11 0.1.5
 ================
 

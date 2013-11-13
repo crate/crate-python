@@ -72,6 +72,19 @@ class HttpClientTest(TestCase):
         client = Client()
         self.assertRaises(ProgrammingError, client.sql, 'select 1')
 
+    def test_connect(self):
+        client = Client(servers="localhost:9200 localhost:9201")
+        self.assertEqual(client._active_servers, ["localhost:9200", "localhost:9201"])
+
+        client = Client(servers="localhost:9200")
+        self.assertEqual(client._active_servers, ["localhost:9200"])
+
+        client = Client(servers=["localhost:9200"])
+        self.assertEqual(client._active_servers, ["localhost:9200"])
+
+        client = Client(servers=["localhost:9200", "127.0.0.1:9201"])
+        self.assertEqual(client._active_servers, ["localhost:9200", "127.0.0.1:9201"])
+
 
 class ThreadSafeHttpClientTest(TestCase):
     """

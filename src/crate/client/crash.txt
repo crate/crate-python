@@ -8,7 +8,7 @@ If the crate package was installed using `pip` the shell can be started by
 invoking `crash` in a terminal.
 
 `crash` by default will try to connect to `localhost:9200`. To connect to
-another host use the `connect` commmand inside the shell or use the `--hosts`
+another host use the `connect` command inside the shell or use the `--hosts`
 argument when launching the shell::
 
     cr> connect 127.0.0.1:9295

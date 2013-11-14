@@ -11,6 +11,7 @@ if py2:
     from exceptions import StandardError
     xrange = xrange
     raw_input = raw_input
+    unicode = unicode
 
     def cprint(s):
         print(s)
@@ -27,6 +28,7 @@ else:
     StandardError = Exception
     xrange = range
     raw_input = input
+    unicode = str
 
     def cprint(s):
         if isinstance(s, bytes):

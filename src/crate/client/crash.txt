@@ -9,9 +9,46 @@ invoking `crash` in a terminal.
 
 `crash` by default will try to connect to `localhost:9200`. To connect to
 another host use the `connect` command inside the shell or use the `--hosts`
-argument when launching the shell::
+argument when launching the shell.
+
+When you connect to a server that is not reachable or whose hostname cannot be resolved
+you will get an error::
+
+    cr> connect 127.0.0.1:65535
+    +-----------------+-----------+-----------+--------------------+
+    | host            | node_name | connected | message            |
+    +-----------------+-----------+-----------+--------------------+
+    | 127.0.0.1:65535 | NULL      | FALSE     | Connection refused |
+    +-----------------+-----------+-----------+--------------------+
+    CONNECT ERROR (... sec)
+
+    cr> connect non-existent.lol:9200
+    +-----------------------+-----------+-----------+--------------------------------+
+    | host                  | node_name | connected | message                        |
+    +-----------------------+-----------+-----------+--------------------------------+
+    | non-existent.lol:9200 | NULL      | FALSE     | Hostname could no be resolved. |
+    +-----------------------+-----------+-----------+--------------------------------+
+    CONNECT ERROR (... sec)
+
+Successful connects will give you some information about the servers you connect to::
 
     cr> connect 127.0.0.1:9295
+    +----------------+-----------+-----------+---------+
+    | host           | node_name | connected | message |
+    +----------------+-----------+-----------+---------+
+    | 127.0.0.1:9295 | crate     | TRUE      | OK      |
+    +----------------+-----------+-----------+---------+
+    CONNECT OK (... sec)
+
+If you connect to more than one server, every server has to be reachable::
+
+    cr> CONNECT 127.0.0.1:9295 localhost:9295
+    +----------------+-----------+-----------+---------+
+    | host           | node_name | connected | message |
+    +----------------+-----------+-----------+---------+
+    | 127.0.0.1:9295 | crate     | TRUE      | OK      |
+    | localhost:9295 | crate     | TRUE      | OK      |
+    +----------------+-----------+-----------+---------+
     CONNECT OK (... sec)
 
 Once the shell is connected, SQL statements can be executed simply by entering

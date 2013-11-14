@@ -21,7 +21,7 @@ from time import time
 from prettytable import PrettyTable
 from crate import client
 from crate.client.exceptions import ConnectionError, Error, Warning
-from crate.client.compat import raw_input
+from crate.client.compat import raw_input, unicode
 
 
 class CrateCmd(Cmd):
@@ -46,9 +46,24 @@ class CrateCmd(Cmd):
         time_start = time()
         self.conn = client.connect(servers=server)
         self.cursor = self.conn.cursor()
-
+        results = []
+        failed = 0
+        for server in self.conn.client.servers:
+            try:
+                server_infos = self.conn.client.server_infos(server)
+            except ConnectionError as e:
+                failed += 1
+                results.append([server, None, False, e.message])
+            else:
+                results.append(
+                    server_infos + (True, "OK", )
+                )
         duration = time()-time_start
-        self.print_success("connect", duration)
+        self.pprint(results, ["host", "node_name", "connected", "message"])
+        if failed == len(results):
+            self.print_error("connect", duration)
+        else:
+            self.print_success("connect", duration=duration)
 
     def execute_query(self, statement):
         duration = self.execute(statement)
@@ -72,8 +87,9 @@ class CrateCmd(Cmd):
                 print(e)
         return False
 
-    def pprint(self, rows):
-        cols = self.cols()
+    def pprint(self, rows, cols=None):
+        if cols is None:
+            cols = self.cols()
         table = PrettyTable(cols)
         for col in cols:
             table.align[col] = "l"
@@ -85,6 +101,8 @@ class CrateCmd(Cmd):
         """transform field for displaying"""
         if field is None:
             return self.NULL
+        elif isinstance(field, bool):
+            return "TRUE" if field else "FALSE"
         else:
             return field
 
@@ -189,6 +207,11 @@ class CrateCmd(Cmd):
     def print_success(self, command, duration=0.00):
         """print success status only and duration"""
         print("{0} OK ({1:.2f} sec)".format(command.upper(), duration))
+
+    def print_error(self, command, duration=0.00, exception=None):
+        if exception is not None:
+            print("{0}: {1}".format(exception.__class__.__name__, exception.message))
+        print("{0} ERROR ({1:.1f} sec)".format(command.upper(), duration))
 
     def cmdloop(self, intro=None):
         """Repeatedly issue a prompt, accept input, parse an initial prefix

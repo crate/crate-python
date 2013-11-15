@@ -5,14 +5,17 @@ Changes for crate
 Unreleased
 ==========
 
+ - crash: check if given servers are available
+   and retrieve some basic information on connect command
+
 2013/11/13 0.1.6
 ================
 
  - Fix: show rows affected at `crash` on ``copy`` command
 
- - Added persistent history stored in platform dependent app-dir
+ - crash: Added persistent history stored in platform dependent app-dir
 
- - Added support for multiple hosts for ``crash --hosts ...`` and the connect cmd
+ - crash: Added support for multiple hosts for ``crash --hosts ...`` and the connect cmd
 
 2013/11/11 0.1.5
 ================

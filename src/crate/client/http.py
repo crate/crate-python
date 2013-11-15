@@ -1,3 +1,4 @@
+from _socket import gaierror
 import heapq
 import json
 import logging
@@ -65,6 +66,18 @@ class Client(object):
 
         return content
 
+    def server_infos(self, server):
+        try:
+            response = self._do_request(server, 'GET', '/')
+            content = response.json()
+        except requests.ConnectionError as e:
+            if isinstance(e.args[0].reason, gaierror):
+                raise ConnectionError("Hostname could no be resolved.")
+            else:
+                raise ConnectionError(e.args[0].reason.strerror)
+        node_name = content.get("name")
+        return server, node_name
+
     def _blob_path(self, table, digest=None):
         path = table + '/_blobs/'
         if digest:
@@ -93,7 +106,6 @@ class Client(object):
         elif response.status_code == 404:
             return False
         self._raise_for_status(response)
-
 
     def blob_get(self, table, digest, chunk_size=1024 * 128):
         """
@@ -124,9 +136,7 @@ class Client(object):
             if not server:
                 self._local.server = server = self._get_server()
             try:
-                # build uri and send http request
-                uri = "http://{server}/{path}".format(server=server, path=path)
-                response = self._session.request(method, uri, timeout=self._http_timeout, **kwargs)
+                response = self._do_request(server, method, path, **kwargs)
                 # reset local server, so next request will use new one
                 self._local.server = server = None
                 return response
@@ -145,6 +155,11 @@ class Client(object):
                 if hasattr(e, 'response') and e.response:
                     raise ProgrammingError(e.response.content)
                 raise ProgrammingError()
+
+    def _do_request(self, server, method, path, **kwargs):
+        """do the actual request to a chosen server"""
+        uri = "http://{server}/{path}".format(server=server, path=path)
+        return self._session.request(method, uri, timeout=self._http_timeout, **kwargs)
 
     def _raise_for_status(self, response):
         """ make sure that only crate.exceptions are raised that are defined in
@@ -203,6 +218,12 @@ class Client(object):
             self._roundrobin()
 
             return server
+
+    @property
+    def active_servers(self):
+        """get the active servers for this client"""
+        with self._lock:
+            return list(self._active_servers)
 
     def _drop_server(self, server, message):
         """

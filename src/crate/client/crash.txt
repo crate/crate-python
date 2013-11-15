@@ -40,15 +40,16 @@ Successful connects will give you some information about the servers you connect
     +----------------+-----------+-----------+---------+
     CONNECT OK (... sec)
 
-If you connect to more than one server, every server has to be reachable::
+If you connect to more than one server, the command will succeed
+if at least one server is reachable::
 
-    cr> CONNECT 127.0.0.1:9295 localhost:9295
-    +----------------+-----------+-----------+---------+
-    | host           | node_name | connected | message |
-    +----------------+-----------+-----------+---------+
-    | 127.0.0.1:9295 | crate     | TRUE      | OK      |
-    | localhost:9295 | crate     | TRUE      | OK      |
-    +----------------+-----------+-----------+---------+
+    cr> CONNECT 127.0.0.1:9295 non-existent.lol:9295
+    +-----------------------+-----------+-----------+--------------------------------+
+    | host                  | node_name | connected | message                        |
+    +-----------------------+-----------+-----------+--------------------------------+
+    | 127.0.0.1:9295        | crate     | TRUE      | OK                             |
+    | non-existent.lol:9295 | NULL      | FALSE     | Hostname could no be resolved. |
+    +-----------------------+-----------+-----------+--------------------------------+
     CONNECT OK (... sec)
 
 Once the shell is connected, SQL statements can be executed simply by entering

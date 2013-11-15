@@ -48,7 +48,7 @@ class CrateCmd(Cmd):
         self.cursor = self.conn.cursor()
         results = []
         failed = 0
-        for server in self.conn.client.servers:
+        for server in self.conn.client.active_servers:
             try:
                 server_infos = self.conn.client.server_infos(server)
             except ConnectionError as e:

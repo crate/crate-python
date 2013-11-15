@@ -220,8 +220,8 @@ class Client(object):
             return server
 
     @property
-    def servers(self):
-        """get the servers for this client"""
+    def active_servers(self):
+        """get the active servers for this client"""
         with self._lock:
             return list(self._active_servers)
 

@@ -189,6 +189,15 @@ def test_suite():
         '../../../docs/client.txt',
         '../../../docs/advanced_usage.txt',
         '../../../docs/blobs.txt',
+        checker=checker,
+        setUp=setUpWithCrateLayer,
+        tearDown=tearDownWithCrateLayer,
+        optionflags=flags
+    )
+    s.layer = crate_layer
+    suite.addTest(s)
+
+    s = doctest.DocFileSuite(
         'crash.txt',
         checker=checker,
         setUp=setUpWithCrateLayer,

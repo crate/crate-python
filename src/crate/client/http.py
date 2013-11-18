@@ -9,7 +9,7 @@ import threading
 import requests
 
 from crate.client.exceptions import (
-    ConnectionError, DigestNotFoundException, ProgrammingError)
+    ConnectionError, DigestNotFoundException, ProgrammingError, BlobsDisabledException)
 
 
 logger = logging.getLogger(__name__)
@@ -94,6 +94,8 @@ class Client(object):
             return True
         elif response.status_code == 409:
             return False
+        elif response.status_code == 400:
+            raise BlobsDisabledException(table, digest)
         self._raise_for_status(response)
 
     def blob_del(self, table, digest):

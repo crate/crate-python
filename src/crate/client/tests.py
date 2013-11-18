@@ -157,6 +157,8 @@ def test_suite():
          "ConnectionError:"),
         (re.compile(r"crate.client.exceptions.DigestNotFoundException:"),
          "DigestNotFoundException:"),
+        (re.compile(r"crate.client.exceptions.BlobsDisabledException:"),
+         "BlobsDisabledException:"),
     ])
 
     s = doctest.DocFileSuite(

@@ -144,6 +144,14 @@ Deleting a blob - this method returns true if the blob existed::
     >>> http_client.blob_del('myfiles', '040f06fd774092478d450774f5ba30c5da78acc8')
     False
 
+Uploading a blob to a table with disabled blob support throws an exception::
+
+    >>> _ = f.seek(0)
+    >>> http_client.blob_put(
+    ...     'locations', '040f06fd774092478d450774f5ba30c5da78acc8', f)
+    Traceback (most recent call last):
+    ...
+    BlobsDisabledException: locations/040f06fd774092478d450774f5ba30c5da78acc8
 
 Error Handling
 ==============

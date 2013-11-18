@@ -65,3 +65,6 @@ class BlobException(Exception):
 
 class DigestNotFoundException(BlobException):
     pass
+
+class BlobsDisabledException(BlobException):
+    pass

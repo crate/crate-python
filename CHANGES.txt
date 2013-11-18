@@ -5,6 +5,8 @@ Changes for crate
 Unreleased
 ==========
 
+ - Fix: raise concrete exception while uploading blobs to an index with disabled blobs support
+
  - crash: check if given servers are available
    and retrieve some basic information on connect command
 

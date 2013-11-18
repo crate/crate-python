@@ -7,6 +7,7 @@ from sqlalchemy.engine import default
 from sqlalchemy import types as sqltypes
 
 from .compiler import CrateCompiler
+from crate.client.exceptions import TimezoneUnawareException
 
 
 log = logging.getLogger(__name__)
@@ -50,6 +51,8 @@ class DateTime(sqltypes.DateTime):
         def process(value):
             if value is not None:
                 assert isinstance(value, datetime)
+                if value.tzinfo is not None:
+                    raise TimezoneUnawareException("Timezone aware datetime objects are not supported")
                 return value.strftime('%Y-%m-%dT%H:%M:%S.%fZ')
             return value
         return process

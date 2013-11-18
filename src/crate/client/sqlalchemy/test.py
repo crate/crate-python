@@ -1,12 +1,15 @@
 
 from __future__ import absolute_import
+from datetime import datetime, tzinfo, timedelta
 from unittest import TestCase, TestSuite, makeSuite
 from mock import patch, MagicMock
 
 import sqlalchemy as sa
+from sqlalchemy.exc import DBAPIError
 from sqlalchemy.sql import select
 from sqlalchemy.orm import Session
 from sqlalchemy.ext.declarative import declarative_base
+from crate.client.exceptions import TimezoneUnawareException
 
 from .types import Craty
 from ..cursor import Cursor
@@ -59,6 +62,7 @@ class SqlAlchemyDateAndDateTimeTest(TestCase):
             __tablename__ = 'characters'
             name = sa.Column(sa.String, primary_key=True)
             date = sa.Column(sa.Date)
+            timestamp = sa.Column(sa.DateTime)
 
         fake_cursor.description = (
             ('characters_name', None, None, None, None, None, None),
@@ -76,6 +80,18 @@ class SqlAlchemyDateAndDateTimeTest(TestCase):
             ('Trillian', '2013-07-16T00:00:00.000Z')
         ]
         self.session.query(self.Character).first()
+
+    def test_data_cannot_handle_tz_aware_datetime(self):
+        class CST(tzinfo):
+            def utcoffset(self, date_time):
+                return timedelta(seconds = -3600)
+            def dst(self, date_time):
+                return timedelta(seconds = -7200)
+        character = self.Character()
+        character.name = "Athur"
+        character.timestamp = datetime(2009, 5, 13, 19, 19, 30, tzinfo=CST())
+        self.session.add(character)
+        self.assertRaises(DBAPIError, self.session.commit)
 
 
 class SqlAlchemyDictTypeTest(TestCase):

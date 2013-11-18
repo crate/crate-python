@@ -68,3 +68,6 @@ class DigestNotFoundException(BlobException):
 
 class BlobsDisabledException(BlobException):
     pass
+
+class TimezoneUnawareException(Error):
+    pass

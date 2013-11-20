@@ -5,6 +5,8 @@ Changes for crate
 Unreleased
 ==========
 
+ - Added `readline` as a requirement package on OS X (Darwin), fixes umlauts problem.
+
  - Fix sqlalchemy: raise exception if timezone aware datetime is saved
 
  - Fix: raise concrete exception while uploading blobs to an index with disabled blobs support

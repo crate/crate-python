@@ -14,6 +14,8 @@ requirements = [
 if (2, 6) == sys.version_info[:2]:
     requirements.append('argparse>=1.2.1')
 
+if sys.platform == 'darwin':
+    requirements.append('readline>=6.2.4.1')
 
 def read(path):
     return open(os.path.join(os.path.dirname(__file__), path)).read()

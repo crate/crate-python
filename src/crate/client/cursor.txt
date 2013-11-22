@@ -7,17 +7,23 @@ Cursor
     >>> connection = connect(client=connection_client_mocked)
     >>> cursor = connection.cursor()
 
-The attribute is -1 in case no ``execute()`` has been performed on the cursor.
+The rowcount and duration attribute is -1 in case no ``execute()`` has been performed on the cursor.
 
     >>> cursor.rowcount
     -1
+
+    >>> cursor.duration
+    -1
+
 
 Hardcode the next response of the mocked connection client, so we won't need a sql statement
 to execute::
 
     >>> connection.client.set_next_response({
     ...     "rows":[ [ "North West Ripple", 1 ], [ "Arkintoofle Minor", 3 ], [ "Alpha Centauri", 3 ] ],
-    ...     "cols":[ "name", "position" ]
+    ...     "cols":[ "name", "position" ],
+    ...     "rowcount":3,
+    ...     "duration":123
     ... })
 
 fetchone()
@@ -124,6 +130,23 @@ The attribute is -1 in case close has been performed on the cursor::
 
     >>> cursor.close()
     >>> cursor.rowcount
+    -1
+
+duration
+========
+
+The ``duration`` property specifies the server-side duration in milliseconds of the last query
+issued by ``execute()``::
+
+    >>> cursor = connection.cursor()
+    >>> cursor.execute('')
+    >>> cursor.duration
+    123
+
+The attribute is -1 in case close has been performed on the cursor::
+
+    >>> cursor.close()
+    >>> cursor.duration
     -1
 
 executemany

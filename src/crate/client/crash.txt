@@ -20,7 +20,7 @@ you will get an error::
     +-----------------+-----------+-----------+--------------------+
     | 127.0.0.1:65535 | NULL      | FALSE     | Connection refused |
     +-----------------+-----------+-----------+--------------------+
-    CONNECT ERROR (... sec)
+    CONNECT ERROR
 
     cr> connect non-existent.lol:9200
     +-----------------------+-----------+-----------+--------------------------------+
@@ -28,7 +28,7 @@ you will get an error::
     +-----------------------+-----------+-----------+--------------------------------+
     | non-existent.lol:9200 | NULL      | FALSE     | Hostname could no be resolved. |
     +-----------------------+-----------+-----------+--------------------------------+
-    CONNECT ERROR (... sec)
+    CONNECT ERROR
 
 Successful connects will give you some information about the servers you connect to::
 
@@ -38,7 +38,7 @@ Successful connects will give you some information about the servers you connect
     +----------------+-----------+-----------+---------+
     | 127.0.0.1:9295 | crate     | TRUE      | OK      |
     +----------------+-----------+-----------+---------+
-    CONNECT OK (... sec)
+    CONNECT OK
 
 If you connect to more than one server, the command will succeed
 if at least one server is reachable::
@@ -50,7 +50,7 @@ if at least one server is reachable::
     | 127.0.0.1:9295        | crate     | TRUE      | OK                             |
     | non-existent.lol:9295 | NULL      | FALSE     | Hostname could no be resolved. |
     +-----------------------+-----------+-----------+--------------------------------+
-    CONNECT OK (... sec)
+    CONNECT OK
 
 Once the shell is connected, SQL statements can be executed simply by entering
 them without any special arguments like this::

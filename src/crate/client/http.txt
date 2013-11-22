@@ -69,6 +69,7 @@ Issue a select statement against our with test data pre-filled crate instance::
     >>> result = http_client.sql('select name from locations')
     >>> pprint(result)
     {u'cols': [u'name'],
+     u'duration': ...,
      u'rowcount': 13,
      u'rows': [['Algol'],
                ['Folfanga'],

@@ -5,6 +5,9 @@ Changes for crate
 Unreleased
 ==========
 
+ - Added ``duration`` property to the cursor displaying the server-side duration.
+   Show this value at the `crash` crate cli now instead of client-side duration.
+
  - Added `readline` as a requirement package on OS X (Darwin), fixes umlauts problem.
 
  - Fix sqlalchemy: raise exception if timezone aware datetime is saved

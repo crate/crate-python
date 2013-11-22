@@ -43,7 +43,6 @@ class CrateCmd(Cmd):
 
     def do_connect(self, server):
         """connect to one or more server with "connect servername:port[ servername:port [...]]" """
-        time_start = time()
         self.conn = client.connect(servers=server)
         self.cursor = self.conn.cursor()
         results = []
@@ -58,25 +57,21 @@ class CrateCmd(Cmd):
                 results.append(
                     server_infos + (True, "OK", )
                 )
-        duration = time()-time_start
         self.pprint(results, ["host", "node_name", "connected", "message"])
         if failed == len(results):
-            self.print_error("connect", duration)
+            self.print_error("connect")
         else:
-            self.print_success("connect", duration=duration)
+            self.print_success("connect")
 
     def execute_query(self, statement):
-        duration = self.execute(statement)
-        if duration:
+        if self.execute(statement):
             self.pprint(self.cursor.fetchall())
-            self.print_rows_selected(self.cursor.rowcount, duration)
+            self.print_rows_selected()
 
     def execute(self, statement):
         try:
-            time_start = time()
             self.cursor.execute(statement)
-            duration = time()-time_start
-            return duration
+            return True
         except ConnectionError:
             print(
                 'Use "connect <hostname:port>" to connect to a server first')
@@ -123,9 +118,8 @@ class CrateCmd(Cmd):
         E.g.:
             "insert into locations (name) values ('Algol')"
         """
-        duration = self.execute('insert ' + statement)
-        if duration:
-            self.print_rows_affected("insert", self.cursor.rowcount, duration)
+        if self.execute('insert ' + statement):
+            self.print_rows_affected("insert")
 
     def do_delete(self, statement):
         """execute a SQL delete statement
@@ -133,9 +127,8 @@ class CrateCmd(Cmd):
         E.g.:
             "delete from locations where name = 'Algol'"
         """
-        duration = self.execute('delete ' + statement)
-        if duration:
-            self.print_rows_affected("delete", self.cursor.rowcount, duration)
+        if self.execute('delete ' + statement):
+            self.print_rows_affected("delete")
 
     def do_update(self, statement):
         """execute a SQL update statement
@@ -143,9 +136,8 @@ class CrateCmd(Cmd):
         E.g.:
             "update from locations set name = 'newName' where name = 'Algol'"
         """
-        duration = self.execute('update ' + statement)
-        if duration:
-            self.print_rows_affected("update", self.cursor.rowcount, duration)
+        if self.execute('update ' + statement):
+            self.print_rows_affected("update")
 
     def do_create(self, statement):
         """execute a SQL create statement
@@ -153,9 +145,8 @@ class CrateCmd(Cmd):
         E.g.:
             "create table locations (id integer, name string)"
         """
-        duration = self.execute('create ' + statement)
-        if duration:
-            self.print_success("create", duration)
+        if self.execute('create ' + statement):
+            self.print_success("create")
 
 
     def do_crate(self, statement):
@@ -168,9 +159,8 @@ class CrateCmd(Cmd):
         E.g.:
             "drop table locations"
         """
-        duration = self.execute('drop ' + statement)
-        if duration:
-            self.print_success("drop", duration)
+        if self.execute('drop ' + statement):
+            self.print_success("drop")
 
     def do_copy(self, statement):
         """execute a SQL copy statement
@@ -178,9 +168,8 @@ class CrateCmd(Cmd):
         E.g.:
             "copy locations from 'path/to/import/data.json'"
         """
-        duration = self.execute('copy ' + statement)
-        if duration:
-            self.print_rows_affected("copy", self.cursor.rowcount, duration)
+        if self.execute('copy ' + statement):
+            self.print_rows_affected("copy")
 
     def do_exit(self, *args):
         """exit the shell"""
@@ -194,24 +183,38 @@ class CrateCmd(Cmd):
 
     do_EOF = do_exit
 
-    def print_rows_affected(self, command, rowcount=0, duration=0.00):
+    def print_rows_affected(self, command):
         """print success status with rows affected and query duration"""
-        print("{0} OK, {1} row{2} affected ({3:.2f} sec)".format(
-            command.upper(), rowcount, "s"[rowcount==1:], duration))
+        rowcount = self.cursor.rowcount
+        if self.cursor.duration > -1:
+            print("{0} OK, {1} row{2} affected ({3:.3f} sec)".format(
+                command.upper(), rowcount, "s"[rowcount==1:], float(self.cursor.duration)/1000))
+        else:
+            print("{0} OK, {1} row{2} affected".format(command.upper(), rowcount, "s"[rowcount==1:]))
 
-    def print_rows_selected(self, rowcount=0, duration=0.00):
+    def print_rows_selected(self):
         """print count of rows in result set and query duration"""
-        print("SELECT {0} row{1} in set ({2:.2f} sec)".format(
-            rowcount, "s"[rowcount==1:], duration))
+        rowcount = self.cursor.rowcount
+        if self.cursor.duration > -1:
+            print("SELECT {0} row{1} in set ({2:.3f} sec)".format(
+                rowcount, "s"[rowcount==1:], float(self.cursor.duration)/1000))
+        else:
+            print("SELECT {0} row{1} in set".format(rowcount, "s"[rowcount==1:]))
 
-    def print_success(self, command, duration=0.00):
+    def print_success(self, command):
         """print success status only and duration"""
-        print("{0} OK ({1:.2f} sec)".format(command.upper(), duration))
+        if self.cursor.duration > -1:
+            print("{0} OK ({1:.3f} sec)".format(command.upper(), float(self.cursor.duration)/1000))
+        else:
+            print("{0} OK".format(command.upper()))
 
-    def print_error(self, command, duration=0.00, exception=None):
+    def print_error(self, command, exception=None):
         if exception is not None:
             print("{0}: {1}".format(exception.__class__.__name__, exception.message))
-        print("{0} ERROR ({1:.1f} sec)".format(command.upper(), duration))
+        if self.cursor.duration > -1:
+            print("{0} ERROR ({1:.3f} sec)".format(command.upper(), float(self.cursor.duration)/1000))
+        else:
+            print("{0} ERROR".format(command.upper()))
 
     def cmdloop(self, intro=None):
         """Repeatedly issue a prompt, accept input, parse an initial prefix

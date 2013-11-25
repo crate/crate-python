@@ -5,6 +5,9 @@ Changes for crate
 Unreleased
 ==========
 
+2013/11/25 0.1.7
+================
+
  - Added ``duration`` property to the cursor displaying the server-side duration.
    Show this value at the `crash` crate cli now instead of client-side duration.
 

@@ -5,6 +5,9 @@ Changes for crate
 Unreleased
 ==========
 
+2013/12/02 0.1.8
+================
+
  - Fix: Date columns return date objects
 
 2013/11/25 0.1.7

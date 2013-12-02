@@ -26,7 +26,7 @@ class Date(sqltypes.Date):
             if not value:
                 return
             try:
-                return datetime.utcfromtimestamp(value / 1e3)
+                return datetime.utcfromtimestamp(value / 1e3).date()
             except TypeError:
                 pass
 
@@ -40,9 +40,10 @@ class Date(sqltypes.Date):
                 "Received timestamp isn't a long value."
                 "Trying to parse as date string and then as datetime string")
             try:
-                return datetime.strptime(value, '%Y-%m-%d')
+                return datetime.strptime(value, '%Y-%m-%d').date()
             except ValueError:
-                return datetime.strptime(value, '%Y-%m-%dT%H:%M:%S.%fZ')
+                return datetime.strptime(value,
+                                         '%Y-%m-%dT%H:%M:%S.%fZ').date()
         return process
 
 

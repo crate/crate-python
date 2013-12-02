@@ -38,3 +38,7 @@ available in `$PATH`. To run against a single interpreter tox can also be
 invoked like this::
 
     ./bin/tox -e py33
+
+Note: Before running tests make sure to stop all crate instances which
+transport port is listening on port 9300 to avoid side effects with the test
+layer.

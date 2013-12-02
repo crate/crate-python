@@ -159,6 +159,8 @@ def test_suite():
          "DigestNotFoundException:"),
         (re.compile(r"crate.client.exceptions.BlobsDisabledException:"),
          "BlobsDisabledException:"),
+        (re.compile(r"<type "),
+         "<class "),
     ])
 
     s = doctest.DocFileSuite(

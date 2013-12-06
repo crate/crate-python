@@ -92,6 +92,7 @@ colspecs = {
 class CrateDialect(default.DefaultDialect):
     name = 'crate'
     statement_compiler = CrateCompiler
+    supports_native_boolean = True
     colspecs = colspecs
 
     def __init__(self, *args, **kwargs):

@@ -44,6 +44,7 @@ Insert a new location::
     >>> location = Location()
     >>> location.name = 'Earth'
     >>> location.kind = 'Planet'
+    >>> location.flag = True
 
     >>> session.add(location)
     >>> session.flush()
@@ -107,6 +108,11 @@ The datetime and date can be set using a update statement::
     >>> session.flush()
     >>> sleep(1.1)  # wait for index refresh
 
+Boolean values get set natively::
+
+    >>> location.flag = True
+    >>> location.flag = False
+
 Reload the object from the db::
 
     >>> session.refresh(location)
@@ -134,7 +140,7 @@ Update multiple Locations::
     ...     session.add(loc)
     ...     session.flush()
 
-    >>> sleep(1)  # give crate some time to settle
+    >>> sleep(2)  # give crate some time to settle
 
     >>> result = connection.execute("update locations set name='Kein Ort, nirgends.' where kind='Update'")
     >>> result.rowcount

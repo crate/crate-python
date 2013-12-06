@@ -127,6 +127,7 @@ def setUpCrateLayerAndSqlAlchemy(test):
         datetime = sa.Column(sa.DateTime, default=datetime.utcnow)
         nullable_datetime = sa.Column(sa.DateTime)
         nullable_date = sa.Column(sa.Date)
+        flag = sa.Column(sa.Boolean)
 
     Session = sessionmaker(engine)
     session = Session()

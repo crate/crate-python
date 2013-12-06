@@ -60,9 +60,6 @@ Inserted location is available::
     >>> location.name
     u'Earth'
 
-    >>> location.flag
-    True
-
 Retrieve the location from the database::
 
     >>> session.refresh(location)
@@ -113,8 +110,8 @@ The datetime and date can be set using a update statement::
 
 Boolean values get set natively::
 
-    >>> location.flag = True
-    >>> location.flag = False
+    >>> location.flag
+    True
 
 Reload the object from the db::
 

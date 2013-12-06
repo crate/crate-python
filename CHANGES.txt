@@ -5,6 +5,8 @@ Changes for crate
 Unreleased
 ==========
 
+ - sqlalchemy dialect supports native booleans
+
 2013/12/02 0.1.8
 ================
 

@@ -60,6 +60,9 @@ Inserted location is available::
     >>> location.name
     u'Earth'
 
+    >>> location.flag
+    True
+
 Retrieve the location from the database::
 
     >>> session.refresh(location)

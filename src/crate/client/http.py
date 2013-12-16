@@ -5,9 +5,8 @@ import logging
 import sys
 from time import time
 import threading
-
+from six.moves.urllib.parse import urlparse
 import requests
-
 from crate.client.exceptions import (
     ConnectionError, DigestNotFoundException, ProgrammingError, BlobsDisabledException)
 
@@ -29,20 +28,45 @@ class Client(object):
     retry_interval = 30
     """Retry interval for failed servers in seconds."""
 
-    default_server = "127.0.0.1:9200"
+    default_server = "http://127.0.0.1:9200"
     """Default server to use if no servers are given on instantiation."""
 
     def __init__(self, servers=None, timeout=None):
         if not servers:
-            servers = self.default_server
-        if isinstance(servers, basestring):
-            servers = servers.split()
-        self._active_servers = list(servers)
+            servers = [self.default_server]
+        else:
+            if isinstance(servers, basestring):
+                servers = servers.split()
+            servers = [self._server_url(s) for s in servers]
+        self._active_servers = servers
         self._http_timeout = timeout
         self._inactive_servers = []
         self._lock = threading.RLock()
         self._local = threading.local()
         self._session = requests.session()
+
+    @staticmethod
+    def _server_url(server):
+        """
+        Normalizes a given server string to an url
+
+        >>> print(Client._server_url('a'))
+        http://a
+        >>> print(Client._server_url('a:9345'))
+        http://a:9345
+        >>> print(Client._server_url('https://a:9345'))
+        https://a:9345
+        >>> print(Client._server_url('https://a'))
+        https://a
+        >>> print(Client._server_url('demo.crate.io'))
+        http://demo.crate.io
+        """
+        parsed = urlparse(server)
+        if parsed.path and not parsed.netloc and not parsed.scheme:
+            return 'http://%s' % parsed.path
+        url = '%s://%s' % (parsed.scheme, parsed.netloc)
+        return url
+
 
     def sql(self, stmt, parameters=None):
         """
@@ -158,9 +182,9 @@ class Client(object):
                     raise ProgrammingError(e.response.content)
                 raise ProgrammingError()
 
-    def _do_request(self, server, method, path, **kwargs):
+    def _do_request(self, url, method, path, **kwargs):
         """do the actual request to a chosen server"""
-        uri = "http://{server}/{path}".format(server=server, path=path)
+        uri = "{url}/{path}".format(url=url, path=path)
         return self._session.request(method, uri, timeout=self._http_timeout, **kwargs)
 
     def _raise_for_status(self, response):

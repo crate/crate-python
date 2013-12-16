@@ -15,40 +15,41 @@ When you connect to a server that is not reachable or whose hostname cannot be r
 you will get an error::
 
     cr> connect 127.0.0.1:65535
-    +-----------------+-----------+-----------+--------------------+
-    | host            | node_name | connected | message            |
-    +-----------------+-----------+-----------+--------------------+
-    | 127.0.0.1:65535 | NULL      | FALSE     | Connection refused |
-    +-----------------+-----------+-----------+--------------------+
+    +------------------------+-----------+-----------+--------------------+
+    | server_url             | node_name | connected | message            |
+    +------------------------+-----------+-----------+--------------------+
+    | http://127.0.0.1:65535 | NULL      | FALSE     | Connection refused |
+    +------------------------+-----------+-----------+--------------------+
     CONNECT ERROR
 
-    cr> connect non-existent.lol:9200
-    +-----------------------+-----------+-----------+--------------------------------+
-    | host                  | node_name | connected | message                        |
-    +-----------------------+-----------+-----------+--------------------------------+
-    | non-existent.lol:9200 | NULL      | FALSE     | Hostname could no be resolved. |
-    +-----------------------+-----------+-----------+--------------------------------+
+    cr> connect null.lol:9200
+    +----------------------+-----------+-----------+--------------------------------+
+    | server_url           | node_name | connected | message                        |
+    +----------------------+-----------+-----------+--------------------------------+
+    | http://null.lol:9200 | NULL      | FALSE     | Hostname could no be resolved. |
+    +----------------------+-----------+-----------+--------------------------------+
     CONNECT ERROR
+
 
 Successful connects will give you some information about the servers you connect to::
 
     cr> connect 127.0.0.1:9295
-    +----------------+-----------+-----------+---------+
-    | host           | node_name | connected | message |
-    +----------------+-----------+-----------+---------+
-    | 127.0.0.1:9295 | crate     | TRUE      | OK      |
-    +----------------+-----------+-----------+---------+
+    +-----------------------+-----------+-----------+---------+
+    | server_url            | node_name | connected | message |
+    +-----------------------+-----------+-----------+---------+
+    | http://127.0.0.1:9295 | crate     | TRUE      | OK      |
+    +-----------------------+-----------+-----------+---------+
     CONNECT OK
 
 If you connect to more than one server, the command will succeed
 if at least one server is reachable::
 
-    cr> CONNECT 127.0.0.1:9295 non-existent.lol:9295
+    cr> CONNECT 127.0.0.1:9295 null.lol:9295
     +-----------------------+-----------+-----------+--------------------------------+
-    | host                  | node_name | connected | message                        |
+    | server_url            | node_name | connected | message                        |
     +-----------------------+-----------+-----------+--------------------------------+
-    | 127.0.0.1:9295        | crate     | TRUE      | OK                             |
-    | non-existent.lol:9295 | NULL      | FALSE     | Hostname could no be resolved. |
+    | http://127.0.0.1:9295 | crate     | TRUE      | OK                             |
+    | http://null.lol:9295  | NULL      | FALSE     | Hostname could no be resolved. |
     +-----------------------+-----------+-----------+--------------------------------+
     CONNECT OK
 

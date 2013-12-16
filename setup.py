@@ -9,6 +9,7 @@ requirements = [
     'requests>=2.0.1,<3.0',
     'PrettyTable>=0.7,<0.8',
     'appdirs>=1.2,<2.0',
+    'six'
 ]
 
 if (2, 6) == sys.version_info[:2]:

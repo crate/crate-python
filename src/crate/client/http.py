@@ -5,9 +5,8 @@ import logging
 import sys
 from time import time
 import threading
-from urlparse import urlparse
+from six.moves.urllib.parse import urlparse
 import requests
-
 from crate.client.exceptions import (
     ConnectionError, DigestNotFoundException, ProgrammingError, BlobsDisabledException)
 
@@ -38,7 +37,7 @@ class Client(object):
         else:
             if isinstance(servers, basestring):
                 servers = servers.split()
-            servers = map(self._server_url, servers)
+            servers = [self._server_url(s) for s in servers]
         self._active_servers = servers
         self._http_timeout = timeout
         self._inactive_servers = []
@@ -51,15 +50,15 @@ class Client(object):
         """
         Normalizes a given server string to an url
 
-        >>> print Client._server_url('a')
+        >>> print(Client._server_url('a'))
         http://a
-        >>> print Client._server_url('a:9345')
+        >>> print(Client._server_url('a:9345'))
         http://a:9345
-        >>> print Client._server_url('https://a:9345')
+        >>> print(Client._server_url('https://a:9345'))
         https://a:9345
-        >>> print Client._server_url('https://a')
+        >>> print(Client._server_url('https://a'))
         https://a
-        >>> print Client._server_url('demo.crate.io')
+        >>> print(Client._server_url('demo.crate.io'))
         http://demo.crate.io
         """
         parsed = urlparse(server)

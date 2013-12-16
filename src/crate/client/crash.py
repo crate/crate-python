@@ -37,8 +37,6 @@ class CrateCmd(Cmd):
 
     def __init__(self, stdin=None, stdout=None):
         Cmd.__init__(self, "tab", stdin, stdout)
-        self.conn = client.connect()
-        self.cursor = self.conn.cursor()
         self.partial_lines = []
 
     def do_connect(self, server):
@@ -57,7 +55,7 @@ class CrateCmd(Cmd):
                 results.append(
                     server_infos + (True, "OK", )
                 )
-        self.pprint(results, ["host", "node_name", "connected", "message"])
+        self.pprint(results, ["server_url", "node_name", "connected", "message"])
         if failed == len(results):
             self.print_error("connect")
         else:
@@ -328,8 +326,7 @@ def main():
     atexit.register(readline.write_history_file, history_file_path)
 
     cmd = CrateCmd()
-    if args.hosts:
-        cmd.do_connect(args.hosts)
+    cmd.do_connect(args.hosts)
 
     # select.select on sys.stdin doesn't work on windows
     # so currently there is no pipe support

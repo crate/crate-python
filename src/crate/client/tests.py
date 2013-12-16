@@ -178,6 +178,7 @@ def test_suite():
     suite.addTest(unittest.makeSuite(ThreadSafeHttpClientTest))
     suite.addTest(sqlalchemy_tests)
     suite.addTest(doctest.DocTestSuite('crate.client.connection'))
+    suite.addTest(doctest.DocTestSuite('crate.client.http'))
 
     s = doctest.DocFileSuite(
         'sqlalchemy/itests.txt',

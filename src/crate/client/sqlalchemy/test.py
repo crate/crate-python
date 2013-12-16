@@ -29,14 +29,14 @@ class SqlAlchemyConnectionTest(TestCase):
     def test_default_connection(self):
         engine = sa.create_engine('crate://')
         conn = engine.raw_connection()
-        self.assertEquals("<Connection <Client ['127.0.0.1:9200']>>",
+        self.assertEquals("<Connection <Client ['http://127.0.0.1:9200']>>",
                           repr(conn.connection))
 
     def test_connection_server(self):
         engine = sa.create_engine(
             "crate://otherhost:19201")
         conn = engine.raw_connection()
-        self.assertEquals("<Connection <Client ['otherhost:19201']>>",
+        self.assertEquals("<Connection <Client ['http://otherhost:19201']>>",
                           repr(conn.connection))
 
     def test_connection_multiple_server(self):
@@ -47,7 +47,7 @@ class SqlAlchemyConnectionTest(TestCase):
         )
         conn = engine.raw_connection()
         self.assertEquals(
-            "<Connection <Client ['localhost:9201', 'localhost:9202']>>",
+            "<Connection <Client ['http://localhost:9201', 'http://localhost:9202']>>",
             repr(conn.connection))
 
 

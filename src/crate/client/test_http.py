@@ -74,16 +74,18 @@ class HttpClientTest(TestCase):
 
     def test_connect(self):
         client = Client(servers="localhost:9200 localhost:9201")
-        self.assertEqual(client._active_servers, ["localhost:9200", "localhost:9201"])
+        self.assertEqual(client._active_servers,
+                         ["http://localhost:9200", "http://localhost:9201"])
 
         client = Client(servers="localhost:9200")
-        self.assertEqual(client._active_servers, ["localhost:9200"])
+        self.assertEqual(client._active_servers, ["http://localhost:9200"])
 
         client = Client(servers=["localhost:9200"])
-        self.assertEqual(client._active_servers, ["localhost:9200"])
+        self.assertEqual(client._active_servers, ["http://localhost:9200"])
 
         client = Client(servers=["localhost:9200", "127.0.0.1:9201"])
-        self.assertEqual(client._active_servers, ["localhost:9200", "127.0.0.1:9201"])
+        self.assertEqual(client._active_servers,
+                         ["http://localhost:9200", "http://127.0.0.1:9201"])
 
 
 class ThreadSafeHttpClientTest(TestCase):
@@ -103,12 +105,15 @@ class ThreadSafeHttpClientTest(TestCase):
     thread_timeout = 5.0  # seconds
 
     def __init__(self, *args, **kwargs):
-        self.client = Client(self.servers)
-        self.client.retry_interval = 0.0001  # faster retry
-        self.client._session = FakeSessionFailSometimes()  # patch the clients session
         self.event = Event()
         self.err_queue = queue.Queue()
         super(ThreadSafeHttpClientTest, self).__init__(*args, **kwargs)
+
+    def setUp(self):
+        super(ThreadSafeHttpClientTest, self).setUp()
+        self.client = Client(self.servers)
+        self.client.retry_interval = 0.0001  # faster retry
+        self.client._session = FakeSessionFailSometimes()  # patch the clients session
 
     def _run(self):
         self.event.wait()  # wait for the others
@@ -199,10 +204,11 @@ class KeepAliveClientTest(TestCase):
     def __init__(self, *args, **kwargs):
         super(KeepAliveClientTest, self).__init__(*args, **kwargs)
         self.server_process = Process(target=self._run_server)
-        self.client = Client(["%s:%d" % self.server_address])
+
 
     def setUp(self):
         super(KeepAliveClientTest, self).setUp()
+        self.client = Client(["%s:%d" % self.server_address])
         self.server_process.start()
         time.sleep(.10)
 

@@ -60,6 +60,6 @@ def connect(servers=None, timeout=None, client=None):
         client used to communicate with crate.
 
     >>> connect(['host1:9200', 'host2:9200'])
-    <Connection <Client ['host1:9200', 'host2:9200']>>
+    <Connection <Client ['http://host1:9200', 'http://host2:9200']>>
     """
     return Connection(servers=servers, timeout=timeout, client=client)

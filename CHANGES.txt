@@ -5,6 +5,9 @@ Changes for crate
 Unreleased
 ==========
 
+2013/12/17 0.1.10
+=================
+
  - allow to specify https urls in client and crash cli
 
 2013/12/06 0.1.9

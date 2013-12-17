@@ -7,6 +7,7 @@ from time import time
 import threading
 from six.moves.urllib.parse import urlparse
 import requests
+import re
 from crate.client.exceptions import (
     ConnectionError, DigestNotFoundException, ProgrammingError, BlobsDisabledException)
 
@@ -16,6 +17,7 @@ logger = logging.getLogger(__name__)
 if sys.version_info[0] > 2:
     basestring = str
 
+_HTTP_PAT=pat = re.compile('https?://.+',re.I)
 
 class Client(object):
     """
@@ -61,9 +63,9 @@ class Client(object):
         >>> print(Client._server_url('demo.crate.io'))
         http://demo.crate.io
         """
+        if not _HTTP_PAT.match(server):
+            server = 'http://%s' % server
         parsed = urlparse(server)
-        if parsed.path and not parsed.netloc and not parsed.scheme:
-            return 'http://%s' % parsed.path
         url = '%s://%s' % (parsed.scheme, parsed.netloc)
         return url
 

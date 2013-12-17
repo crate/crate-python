@@ -18,6 +18,7 @@ if (2, 6) == sys.version_info[:2]:
 if sys.platform == 'darwin':
     requirements.append('readline>=6.2.4.1')
 
+
 def read(path):
     return open(os.path.join(os.path.dirname(__file__), path)).read()
 
@@ -42,7 +43,7 @@ setup(
     version=version,
     url='https://github.com/crate/crate-python',
     author='Crate Technology GmbH',
-    author_email='office@crate-technology.com',
+    author_email='office@crate.io',
     package_dir={'': 'src'},
     description='Crate client',
     long_description=long_description,

@@ -1,21 +1,17 @@
-
 .. image:: http://www.crate-technology.com/assets/img/logo.png
    :width: 155px
    :height: 45px
    :alt: Crate-Technology
    :target: http://www.crate-technology.com/
 
+========
 Overview
 ========
 
 This is the database adapter for the crate database. Its main feature is a
 implementation of the Python `DB API 2.0
-<http://www.python.org/dev/peps/pep-0249/>`_ specification. Take a look at the
-`client docs <docs/client.txt>`_ for usage information.
+<http://www.python.org/dev/peps/pep-0249/>`_ specification. 
 
-In addition the client library also exposes some features of crate like blob
-support as a more convenient high level API since SQL isn't well suited to blob
-handling. See `the blob docs <docs/blobs.txt>`_ for more details.
 
 Installation
 ============

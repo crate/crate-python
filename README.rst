@@ -1,8 +1,8 @@
-.. image:: http://www.crate-technology.com/assets/img/logo.png
+.. image:: https://crate.io/wp-content/themes/roots/assets/img/logo.png
    :width: 155px
    :height: 45px
-   :alt: Crate-Technology
-   :target: http://www.crate-technology.com/
+   :alt: Crate
+   :target: https://crate.io
 
 ========
 Overview

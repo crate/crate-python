@@ -1,6 +1,7 @@
 
 
 import sqlalchemy as sa
+import sqlalchemy.sql.elements as sql_elements
 from sqlalchemy.sql.compiler import SQLCompiler
 from .types import MutableDict
 
@@ -114,7 +115,7 @@ class CrateCompiler(SQLCompiler):
         for c in stmt.table.columns:
             if c.key in parameters:
                 value = parameters.pop(c.key)
-                if sa.sql.expression._is_literal(value):
+                if sql_elements._is_literal(value):
                     value = self._create_crud_bind_param(
                         c, value, required=value is sa.sql.compiler.REQUIRED,
                         name=c.key

@@ -20,11 +20,11 @@ valid::
     >>> sa.create_engine('crate://')
     Engine(crate://)
 
-This will connect to the default server ('127.0.0.1:9200'). In order to
+This will connect to the default server ('127.0.0.1:4200'). In order to
 connect to a different server the following syntax can be used::
 
-    >>> sa.create_engine('crate://otherserver:9200')
-    Engine(crate://otherserver:9200)
+    >>> sa.create_engine('crate://otherserver:4200')
+    Engine(crate://otherserver:4200)
 
 Since Crate is a clustered database that usually consists of multiple server it
 is recommended to connect to all of them. This enables the DB-API layer to use
@@ -33,7 +33,7 @@ round-robin to distribute the load and skip a server if it becomes unavailable.
 The `connect_args` parameter has to be used to do so::
 
     >>> sa.create_engine('crate://', connect_args={
-    ...     'servers': ['host1:9200', 'host2:9200']
+    ...     'servers': ['host1:4200', 'host2:4200']
     ... })
     Engine(crate://)
 

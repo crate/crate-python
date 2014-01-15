@@ -7,12 +7,15 @@ This layer starts and stops a ``Crate`` instance on a give port and a given crat
     >>> from crate.testing.layer import CrateLayer
     >>> import random
 
-    >>> port = 9295
+    >>> port = 44200
+    >>> transport_port = 44300
 
     >>> layer =  CrateLayer('crate',
     ...                     crate_home=crate_path(),
     ...                     crate_exec=crate_path('bin', 'crate'),
-    ...                     port=port,)
+    ...                     port=port,
+    ...                     transport_port=transport_port
+    ... )
 
 The working directory is defined on layer instantiation.
 It is sometimes required to know it before starting the layer::

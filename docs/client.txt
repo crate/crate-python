@@ -19,14 +19,14 @@ In order for clients to make use of this property it is recommended to specify
 all hosts of the cluster. This way if a server does not respond, the request is
 automatically routed to the next server::
 
-    >>> invalid_host = 'http://not_responding_host:9200'
+    >>> invalid_host = 'http://not_responding_host:4200'
     >>> connection = client.connect([invalid_host, crate_host])
 
-If no ``servers`` are given, the default one ``http://127.0.0.1:9200`` is used::
+If no ``servers`` are given, the default one ``http://127.0.0.1:4200`` is used::
 
     >>> connection = client.connect()
     >>> connection.client._active_servers
-    ['http://127.0.0.1:9200']
+    ['http://127.0.0.1:4200']
 
 It's possible to define a default timeout value in seconds for all servers
 using the optional parameter ``timeout``::

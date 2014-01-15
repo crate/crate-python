@@ -16,7 +16,7 @@ class CrateLayer(server.ServerLayer, layer.WorkDirectoryLayer):
                  name,
                  crate_home,
                  crate_config=None,
-                 port=9295,
+                 port=4200,
                  keepRunning=False,
                  transport_port=None,
                  crate_exec=None):

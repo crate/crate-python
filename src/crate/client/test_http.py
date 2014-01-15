@@ -73,19 +73,19 @@ class HttpClientTest(TestCase):
         self.assertRaises(ProgrammingError, client.sql, 'select 1')
 
     def test_connect(self):
-        client = Client(servers="localhost:9200 localhost:9201")
+        client = Client(servers="localhost:4200 localhost:4201")
         self.assertEqual(client._active_servers,
-                         ["http://localhost:9200", "http://localhost:9201"])
+                         ["http://localhost:4200", "http://localhost:4201"])
 
-        client = Client(servers="localhost:9200")
-        self.assertEqual(client._active_servers, ["http://localhost:9200"])
+        client = Client(servers="localhost:4200")
+        self.assertEqual(client._active_servers, ["http://localhost:4200"])
 
-        client = Client(servers=["localhost:9200"])
-        self.assertEqual(client._active_servers, ["http://localhost:9200"])
+        client = Client(servers=["localhost:4200"])
+        self.assertEqual(client._active_servers, ["http://localhost:4200"])
 
-        client = Client(servers=["localhost:9200", "127.0.0.1:9201"])
+        client = Client(servers=["localhost:4200", "127.0.0.1:4201"])
         self.assertEqual(client._active_servers,
-                         ["http://localhost:9200", "http://127.0.0.1:9201"])
+                         ["http://localhost:4200", "http://127.0.0.1:4201"])
 
 
 class ThreadSafeHttpClientTest(TestCase):
@@ -96,9 +96,9 @@ class ThreadSafeHttpClientTest(TestCase):
     of servers initially given.
     """
     servers = [
-        "127.0.0.1:9200",
-        "127.0.0.2:9200",
-        "127.0.0.3:9200",
+        "127.0.0.1:44200",
+        "127.0.0.2:44200",
+        "127.0.0.3:44200",
     ]
     num_threads = 5
     num_commands = 1000

@@ -5,6 +5,8 @@ Changes for crate
 Unreleased
 ==========
 
+ - changed default port to 4200
+
 2013/12/17 0.1.10
 =================
 

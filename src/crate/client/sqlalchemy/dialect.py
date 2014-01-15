@@ -117,7 +117,7 @@ class CrateDialect(default.DefaultDialect):
     def connect(self, host=None, port=None, *args, **kwargs):
         server = None
         if host:
-            server = '{0}:{1}'.format(host, port or '9200')
+            server = '{0}:{1}'.format(host, port or '4200')
         if 'servers' in kwargs:
             server = kwargs.pop('servers')
         if server:

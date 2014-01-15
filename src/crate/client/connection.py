@@ -59,7 +59,7 @@ def connect(servers=None, timeout=None, client=None):
         (optional - for testing)
         client used to communicate with crate.
 
-    >>> connect(['host1:9200', 'host2:9200'])
-    <Connection <Client ['http://host1:9200', 'http://host2:9200']>>
+    >>> connect(['host1:4200', 'host2:4200'])
+    <Connection <Client ['http://host1:4200', 'http://host2:4200']>>
     """
     return Connection(servers=servers, timeout=timeout, client=client)

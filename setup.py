@@ -65,7 +65,7 @@ setup(
               'mock>=1.0.1',
               'zope.testing',
               'zc.customdoctests>=1.0.1'],
-        sqlalchemy=['sqlalchemy>=0.8.2,<0.9']
+        sqlalchemy=['sqlalchemy>=0.8.2']
     ),
     install_requires=requirements,
     package_data={'': ['*.txt']},

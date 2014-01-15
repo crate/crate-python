@@ -96,9 +96,9 @@ class ThreadSafeHttpClientTest(TestCase):
     of servers initially given.
     """
     servers = [
-        "127.0.0.1:44200",
-        "127.0.0.2:44200",
-        "127.0.0.3:44200",
+        "127.0.0.1:44209",
+        "127.0.0.2:44209",
+        "127.0.0.3:44209",
     ]
     num_threads = 5
     num_commands = 1000

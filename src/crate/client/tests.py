@@ -44,8 +44,8 @@ def setUpMocked(test):
     test.globs['connection_client_mocked'] = ClientMocked()
 
 
-crate_port = 44200
-crate_transport_port = 44300
+crate_port = 44209
+crate_transport_port = 44309
 crate_layer = CrateLayer('crate',
                          crate_home=crate_path(),
                          crate_exec=crate_path('bin', 'crate'),

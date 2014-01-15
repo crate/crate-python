@@ -7,8 +7,8 @@ This layer starts and stops a ``Crate`` instance on a give port and a given crat
     >>> from crate.testing.layer import CrateLayer
     >>> import random
 
-    >>> port = 44200
-    >>> transport_port = 44300
+    >>> port = 44209
+    >>> transport_port = 44309
 
     >>> layer =  CrateLayer('crate',
     ...                     crate_home=crate_path(),

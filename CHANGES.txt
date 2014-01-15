@@ -5,6 +5,9 @@ Changes for crate
 Unreleased
 ==========
 
+2014/01/15 0.2.0
+================
+
  - adapted for compatibility with SQLAlchemy >= 0.9.x
 
  - changed default port to 4200

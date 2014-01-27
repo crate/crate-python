@@ -64,44 +64,45 @@ fetchmany()
 ``fetch_many()`` returns a list of all remaining rows, containing no more than the specified
 size of rows::
 
-    >>> cursor.execute("SELECT name FROM locations")
+    >>> cursor.execute("SELECT name FROM locations order by name")
     >>> result = cursor.fetchmany(2)
     >>> pprint(result)
-    [[u'Algol'], [u'Folfanga']]
+    [[u'Aldebaran'], [u'Algol']]
 
 If a size is not given, the cursor's arraysize, which defaults to '1', determines the number
 of rows to be fetched::
 
     >>> cursor.fetchmany()
-    [[u'Aldebaran']]
+    [[u'Allosimanius Syneca']]
 
 It's also possible to change the cursors arraysize to an other value::
 
     >>> cursor.arraysize = 3
     >>> cursor.fetchmany()
-    [[u'Argabuthon'], [u'Bartledan'], [u'Galactic Sector QQ7 Active J Gamma']]
+    [[u'Alpha Centauri'], [u'Altair'], [u'Argabuthon']]
 
 fetchall()
 ----------
 
 ``fetchall()`` returns a list of all remaining rows:: 
     
-    >>> cursor.execute("SELECT name FROM locations")
+    >>> cursor.execute("SELECT name FROM locations order by name")
     >>> result = cursor.fetchall()
     >>> pprint(result)
-    [['Algol'],
-     ['Folfanga'],
-     ['Aldebaran'],
-     ['Argabuthon'],
-     ['Bartledan'],
-     ['Galactic Sector QQ7 Active J Gamma'],
-     ['Allosimanius Syneca'],
-     ['Arkintoofle Minor'],
-     ['Outer Eastern Rim'],
-     ['Altair'],
-     ['North West Ripple'],
-     ['Alpha Centauri'],
+    [[u'Aldebaran'],
+     [u'Algol'],
+     [u'Allosimanius Syneca'],
+     [u'Alpha Centauri'],
+     [u'Altair'],
+     [u'Argabuthon'],
+     [u'Arkintoofle Minor'],
+     [u'Bartledan'],
+     [u'Folfanga'],
+     [u'Galactic Sector QQ7 Active J Gamma'],
+     [u'North West Ripple'],
+     [u'Outer Eastern Rim'],
      [None]]
+
 
 Cursor Description
 ==================
@@ -109,15 +110,15 @@ Cursor Description
 The ``description`` property of the cursor returns a sequence of 7-item sequences containing the
 column name as first parameter. Just the name field is supported, all other fields are 'None'::
 
-    >>> cursor.execute("SELECT * FROM locations")
+    >>> cursor.execute("SELECT * FROM locations order by name")
     >>> result = cursor.fetchone()
     >>> pprint(result)
     [u'2013-07-16',
      None,
-     u'Algol is the home of the Algolian Suntiger, ...',
+     u'Max Quordlepleen claims that the only thing left ...',
      u'Star System',
-     u'Algol',
-     2]
+     u'Aldebaran',
+     1]
 
     >>> result = cursor.description
     >>> pprint(result)

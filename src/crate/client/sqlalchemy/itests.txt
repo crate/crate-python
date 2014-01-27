@@ -6,24 +6,24 @@ SQLAlchemy Dialect
 
 Using the connection to execute a select statement::
 
-    >>> result = connection.execute('select name from locations')
+    >>> result = connection.execute('select name from locations order by name')
     >>> result.rowcount
     13
 
     >>> result.first()
-    (u'Algol',)
+    (u'Aldebaran',)
 
 Using the ORM to query the locations::
 
     >>> locations = session.query(Location)
-    >>> [l.name for l in locations if l is not None][:5]
-    [u'Algol', u'Folfanga', u'Aldebaran', u'Argabuthon', u'Bartledan']
+    >>> [l.name for l in locations if l is not None][:2]
+    [u'Alpha Centauri', u'Galactic Sector QQ7 Active J Gamma']
 
 With limit and offset::
 
-    >>> locations = session.query(Location).offset(1).limit(4)
+    >>> locations = session.query(Location).offset(1).limit(2)
     >>> [l.name for l in locations if l is not None]
-    [u'Folfanga', u'Aldebaran', u'Argabuthon', u'Bartledan']
+    ['Galactic Sector QQ7 Active J Gamma', 'Allosimanius Syneca']
 
 With filter::
 
@@ -149,6 +149,6 @@ Update multiple Locations::
 Check that number of affected documents of update without ``where-clause`` matches number of all
 documents in the table::
 
-    >>> result = connection.execute(u"update locations set name='Überall'")
+    >>> result = connection.execute(u"update locations set kind='Überall'")
     >>> result.rowcount == connection.execute("select * from locations limit 100").rowcount
     True

@@ -5,6 +5,9 @@ Changes for crate
 Unreleased
 ==========
 
+ - renamed `Craty` type to `Object`.
+   `Craty` can still be imported to maintain backward compatibility
+
 2014/01/15 0.2.0
 ================
 

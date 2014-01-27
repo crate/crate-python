@@ -20,6 +20,7 @@ from .crash import CrateCmd
 from .test_cursor import CursorTest
 from .test_http import HttpClientTest, ThreadSafeHttpClientTest, KeepAliveClientTest
 from .sqlalchemy.test import tests as sqlalchemy_tests
+from .sqlalchemy.types import ObjectArray
 from .compat import cprint
 
 
@@ -133,6 +134,7 @@ def setUpCrateLayerAndSqlAlchemy(test):
         nullable_datetime = sa.Column(sa.DateTime)
         nullable_date = sa.Column(sa.Date)
         flag = sa.Column(sa.Boolean)
+        details = sa.Column(ObjectArray)
 
     Session = sessionmaker(engine)
     session = Session()

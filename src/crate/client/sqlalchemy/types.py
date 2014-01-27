@@ -4,6 +4,50 @@ from sqlalchemy.sql import operators
 from sqlalchemy.ext.mutable import Mutable
 
 
+class MutableList(Mutable, list):
+    @classmethod
+    def coerce(cls, key, value):
+        """ Convert plain list to MutableList """
+        if not isinstance(value, MutableList):
+            if isinstance(value, list):
+                return MutableList(value)
+            else:
+                return MutableList([value])
+        else:
+            return value
+
+    def __init__(self, initval=None):
+        list.__init__(self, initval or [])
+
+    def __setitem__(self, key, value):
+        list.__setitem__(self, key, value)
+        self.changed()
+
+    def append(self, item):
+        list.append(self, item)
+        self.changed()
+
+    def insert(self, idx, item):
+        list.insert(self, idx, item)
+        self.changed()
+
+    def __setslice__(self, i, j, other):
+        list.__setslice__(self, i, j, other)
+        self.changed()
+
+    def extend(self, iterable):
+        list.extend(self, iterable)
+        self.changed()
+
+    def pop(self, index=-1):
+        list.pop(self, index)
+        self.changed()
+
+    def remove(self, item):
+        list.remove(self, item)
+        self.changed()
+
+
 class MutableDict(Mutable, dict):
 
     @classmethod
@@ -49,3 +93,16 @@ class _Craty(sqltypes.UserDefinedType):
 
 
 Object = Craty = MutableDict.as_mutable(_Craty)
+
+
+class _ObjectArray(sqltypes.UserDefinedType):
+
+    class Comparator(sqltypes.TypeEngine.Comparator):
+        def __getitem__(self, key):
+            return self._binary_operate(self.expr, operators.getitem, key)
+
+    type = MutableList
+    comparator_factory = Comparator
+
+
+ObjectArray = MutableList.as_mutable(_ObjectArray)

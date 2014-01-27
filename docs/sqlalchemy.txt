@@ -77,7 +77,7 @@ type. The `Object` type can be seen as some kind of dictionary or map like type.
 Below is a schema definition using `SQLAlchemy's declarative approach
 <http://docs.sqlalchemy.org/en/rel_0_8/orm/extensions/declarative.html>`_::
 
-    >>> from crate.client.sqlalchemy.types import Object
+    >>> from crate.client.sqlalchemy.types import Object, ObjectArray
     >>> from uuid import uuid4
 
     >>> def gen_key():
@@ -88,6 +88,7 @@ Below is a schema definition using `SQLAlchemy's declarative approach
     ...     id = sa.Column(sa.String, primary_key=True, default=gen_key)
     ...     name = sa.Column(sa.String)
     ...     details = sa.Column(Object)
+    ...     more_details = sa.Column(ObjectArray)
 
 Using the `Session
 <http://docs.sqlalchemy.org/en/rel_0_8/orm/session.html?highlight=session#>`_
@@ -157,6 +158,37 @@ left untouched.
     
     >>> char.details['species']
     u'human'
+
+Object Array
+------------
+
+in addition to the `Object` type the Crate sqlalchemy dialect also includes a
+type called `ObjectArray`. This type maps to a Python list of dictionaries.
+
+Note that opposed to the `Object` type the `ObjectArray` type isn't smart and
+doesn't have an intelligent change tracking. Therefore the generated UPDATE
+statement will affect the whole list::
+
+    >>> char.more_details = [{'foo': 1, 'bar': 10}, {'foo': 2}]
+    >>> session.commit()
+
+    >>> char.more_details.append({'foo': 3})
+    >>> session.commit()
+
+This will generate a UPDATE statement roughly like this::
+
+    "UPDATE characters set more_details = ? ...", ([{'foo': 1, 'bar': 10}, {'foo': 2}, {'foo': 3}],)
+
+    >>> sleep(2)
+
+If a query is done on a element inside a dictionary only one of the
+dictionaries inside the dictionaries has to match in order for the result to be
+returned::
+
+    >>> query = session.query(Character.name)
+    >>> query.filter(Character.more_details['foo'] == 1).all()
+    [(u'Arthur Dent',)]
+
 
 Count and Group By
 ==================

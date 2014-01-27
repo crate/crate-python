@@ -13,6 +13,8 @@ import zc.customdoctests
 
 from crate.testing.layer import CrateLayer
 from crate.testing.tests import crate_path, docs_path
+from crate.client import connect
+
 from . import http
 from .crash import CrateCmd
 from .test_cursor import CursorTest
@@ -63,19 +65,20 @@ def setUpWithCrateLayer(test):
     test.globs['cmd'] = CrateCmd()
     test.globs['print'] = cprint
 
+    conn = connect(crate_host)
+    cursor = conn.cursor()
+
+    with open(docs_path('testing/testdata/mappings/locations.sql')) as s:
+        stmt = s.read()
+        cursor.execute(stmt)
+        stmt = ("select count(*) from information_schema.tables "
+                "where table_name = 'locations'")
+        cursor.execute(stmt)
+        assert cursor.fetchall()[0][0] == 1
+
+    data_path = docs_path('testing/testdata/data/test_a.json')
     # load testing data into crate
-    with open(docs_path('testing/testdata/mappings/test_a.json')) as s:
-        data = {
-            "mappings": json.loads(s.read()),
-            "settings": {
-                "number_of_replicas": 0
-            }
-        }
-        resp = requests.put('/'.join([crate_uri, 'locations']),
-                            data=json.dumps(data))
-        assert resp.status_code == 200
-    with open(docs_path('testing', 'testdata', 'data', 'test_a.json')) as s:
-        requests.post('/'.join([crate_uri, '_bulk']), data=(s.read()))
+    cursor.execute("copy locations from ?", (data_path,))
 
     blob_idx_settings = {
         'number_of_shards': 1,

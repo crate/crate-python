@@ -56,22 +56,22 @@ if at least one server is reachable::
 Once the shell is connected, SQL statements can be executed simply by entering
 them without any special arguments like this::
 
-    cr> SELECT name, kind from locations
+    cr> SELECT name, kind from locations order by name
     +------------------------------------+-------------+
     | name                               | kind        |
     +------------------------------------+-------------+
-    | Algol                              | Star System |
-    | Folfanga                           | Star System |
     | Aldebaran                          | Star System |
-    | Argabuthon                         | Planet      |
-    | Bartledan                          | Planet      |
-    | Galactic Sector QQ7 Active J Gamma | Galaxy      |
+    | Algol                              | Star System |
     | Allosimanius Syneca                | Planet      |
-    | Arkintoofle Minor                  | Planet      |
-    | Outer Eastern Rim                  | Galaxy      |
-    | Altair                             | Star System |
-    | North West Ripple                  | Galaxy      |
     | Alpha Centauri                     | Star System |
+    | Altair                             | Star System |
+    | Argabuthon                         | Planet      |
+    | Arkintoofle Minor                  | Planet      |
+    | Bartledan                          | Planet      |
+    | Folfanga                           | Star System |
+    | Galactic Sector QQ7 Active J Gamma | Galaxy      |
+    | North West Ripple                  | Galaxy      |
+    | Outer Eastern Rim                  | Galaxy      |
     | NULL                               | Galaxy      |
     +------------------------------------+-------------+
     SELECT 13 rows in set (... sec)

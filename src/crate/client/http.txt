@@ -68,24 +68,24 @@ SQL Statements
 Issue a select statement against our with test data pre-filled crate instance::
 
     >>> http_client = HttpClient(crate_host)
-    >>> result = http_client.sql('select name from locations')
+    >>> result = http_client.sql('select name from locations order by name')
     >>> pprint(result)
     {u'cols': [u'name'],
      u'duration': ...,
      u'rowcount': 13,
-     u'rows': [['Algol'],
-               ['Folfanga'],
-               ['Aldebaran'],
-               ['Argabuthon'],
-               ['Bartledan'],
-               ['Galactic Sector QQ7 Active J Gamma'],
-               ['Allosimanius Syneca'],
-               ['Arkintoofle Minor'],
-               ['Outer Eastern Rim'],
-               ['Altair'],
-               ['North West Ripple'],
-               ['Alpha Centauri'],
-               [None]]}
+     u'rows': [['Aldebaran'],
+                ['Algol'],
+                ['Allosimanius Syneca'],
+                ['Alpha Centauri'],
+                ['Altair'],
+                ['Argabuthon'],
+                ['Arkintoofle Minor'],
+                ['Bartledan'],
+                ['Folfanga'],
+                ['Galactic Sector QQ7 Active J Gamma'],
+                ['North West Ripple'],
+                ['Outer Eastern Rim'],
+                [None]]}
 
 Blobs
 =====

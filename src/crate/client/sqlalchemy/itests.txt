@@ -152,5 +152,3 @@ documents in the table::
     >>> result = connection.execute(u"update locations set name='Überall'")
     >>> result.rowcount == connection.execute("select * from locations limit 100").rowcount
     True
-
-

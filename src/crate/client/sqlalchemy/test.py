@@ -395,9 +395,9 @@ class SqlAlchemyDictTypeTest(TestCase):
 
     def _setup_object_array_char(self):
         session, Character = self.set_up_character_and_cursor_data_list(
-            return_value=[('Trillian', [{'1': 1}, {'2', 2}])]
+            return_value=[('Trillian', [{'1': 1}, {'2': 2}])]
         )
-        char = Character(name='Trillian', data_list=[{'1': 1}, {'2', 2}])
+        char = Character(name='Trillian', data_list=[{'1': 1}, {'2': 2}])
         session.add(char)
         session.commit()
         return session, char

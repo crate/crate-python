@@ -48,4 +48,4 @@ class _Craty(sqltypes.UserDefinedType):
     comparator_factory = Comparator
 
 
-Craty = MutableDict.as_mutable(_Craty)
+Object = Craty = MutableDict.as_mutable(_Craty)

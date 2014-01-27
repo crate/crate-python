@@ -71,13 +71,13 @@ Complex Types
 =============
 
 In a document oriented database it is a common pattern to store complex objects
-within a single field. For such cases the `crate` package provides the `Craty`
-type. The `Craty` type can be seen as some kind of dictionary or map like type.
+within a single field. For such cases the `crate` package provides the `Object`
+type. The `Object` type can be seen as some kind of dictionary or map like type.
 
 Below is a schema definition using `SQLAlchemy's declarative approach
 <http://docs.sqlalchemy.org/en/rel_0_8/orm/extensions/declarative.html>`_::
 
-    >>> from crate.client.sqlalchemy.types import Craty
+    >>> from crate.client.sqlalchemy.types import Object
     >>> from uuid import uuid4
 
     >>> def gen_key():
@@ -87,7 +87,7 @@ Below is a schema definition using `SQLAlchemy's declarative approach
     ...     __tablename__ = 'characters'
     ...     id = sa.Column(sa.String, primary_key=True, default=gen_key)
     ...     name = sa.Column(sa.String)
-    ...     details = sa.Column(Craty)
+    ...     details = sa.Column(Object)
 
 Using the `Session
 <http://docs.sqlalchemy.org/en/rel_0_8/orm/session.html?highlight=session#>`_
@@ -127,7 +127,7 @@ A regular select query will then fetch the whole documents::
     [('Arthur Dent', 'male'), ('Tricia McMillan', 'female')]
 
 But it is also possible to just select a part of the document, even inside the
-`Craty` type::
+`Object` type::
 
     >>> sorted(session.query(Character.details['gender']).all())
     [('female',), ('male',)]
@@ -143,7 +143,7 @@ Updating Complex Types
 ----------------------
 
 The SQLAlchemy Crate dialect supports change tracking deep down the nested
-levels of a `Craty` type field. For example the following query will only
+levels of a `Object` type field. For example the following query will only
 update the `gender` key. The `species` key which is on the same level will be
 left untouched.
 

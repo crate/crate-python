@@ -5,6 +5,9 @@ Changes for crate
 Unreleased
 ==========
 
+2014/01/27 0.3.0
+================
+
  - added the `ObjectArray` type to the sqlalchemy dialect.
 
  - renamed `Craty` type to `Object`.

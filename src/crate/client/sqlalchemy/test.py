@@ -9,9 +9,8 @@ from sqlalchemy.exc import DBAPIError
 from sqlalchemy.sql import select
 from sqlalchemy.orm import Session
 from sqlalchemy.ext.declarative import declarative_base
-from crate.client.exceptions import TimezoneUnawareException
 
-from .types import Craty
+from .types import Craty, ObjectArray
 from ..cursor import Cursor
 
 
@@ -176,6 +175,7 @@ class SqlAlchemyDictTypeTest(TestCase):
             name = sa.Column(sa.String, primary_key=True)
             age = sa.Column(sa.Integer)
             data = sa.Column(Craty)
+            data_list = sa.Column(ObjectArray)
 
         session = Session()
         return session, Character
@@ -373,6 +373,84 @@ class SqlAlchemyDictTypeTest(TestCase):
              "WHERE characters.name = ?"),
             (3, 'Trillian')
         )
+
+    def set_up_character_and_cursor_data_list(self, return_value=None):
+        return_value = return_value or [('Trillian', {})]
+        fake_cursor.fetchall.return_value = return_value
+        fake_cursor.description = (
+            ('characters_name', None, None, None, None, None, None),
+            ('characters_data_list', None, None, None, None, None, None)
+
+        )
+        fake_cursor.rowcount = 1
+        Base = declarative_base(bind=self.engine)
+
+        class Character(Base):
+            __tablename__ = 'characters'
+            name = sa.Column(sa.String, primary_key=True)
+            data_list = sa.Column(ObjectArray)
+
+        session = Session()
+        return session, Character
+
+    def _setup_object_array_char(self):
+        session, Character = self.set_up_character_and_cursor_data_list(
+            return_value=[('Trillian', [{'1': 1}, {'2', 2}])]
+        )
+        char = Character(name='Trillian', data_list=[{'1': 1}, {'2', 2}])
+        session.add(char)
+        session.commit()
+        return session, char
+
+    @patch('crate.client.connection.Cursor', FakeCursor)
+    def test_object_array_setitem_change_tracking(self):
+        session, char = self._setup_object_array_char()
+        char.data_list[1] = {'3': 3}
+        self.assertTrue(char in session.dirty)
+        session.commit()
+        fake_cursor.execute.assert_called_with(
+            ("UPDATE characters SET characters.data_list = ? "
+             "WHERE characters.name = ?"),
+            ([{'1': 1}, {'3': 3}], 'Trillian')
+        )
+
+    @patch('crate.client.connection.Cursor', FakeCursor)
+    def test_object_array_append_change_tracking(self):
+        session, char = self._setup_object_array_char()
+        char.data_list.append({'3': 3})
+        self.assertTrue(char in session.dirty)
+
+    @patch('crate.client.connection.Cursor', FakeCursor)
+    def test_object_array_insert_change_tracking(self):
+        session, char = self._setup_object_array_char()
+        char.data_list.insert(0, {'3': 3})
+        self.assertTrue(char in session.dirty)
+
+    @patch('crate.client.connection.Cursor', FakeCursor)
+    def test_object_array_slice_change_tracking(self):
+        session, char = self._setup_object_array_char()
+        char.data_list[:] = [{'3': 3}]
+        self.assertTrue(char in session.dirty)
+
+    @patch('crate.client.connection.Cursor', FakeCursor)
+    def test_object_array_extend_change_tracking(self):
+        session, char = self._setup_object_array_char()
+        char.data_list.extend([{'3': 3}])
+        self.assertTrue(char in session.dirty)
+
+    @patch('crate.client.connection.Cursor', FakeCursor)
+    def test_object_array_pop_change_tracking(self):
+        session, char = self._setup_object_array_char()
+        char.data_list.pop()
+        self.assertTrue(char in session.dirty)
+
+    @patch('crate.client.connection.Cursor', FakeCursor)
+    def test_object_array_remove_change_tracking(self):
+        session, char = self._setup_object_array_char()
+        item = char.data_list[0]
+        char.data_list.remove(item)
+        self.assertTrue(char in session.dirty)
+
 
 tests = TestSuite()
 tests.addTest(makeSuite(SqlAlchemyConnectionTest))

@@ -152,3 +152,27 @@ documents in the table::
     >>> result = connection.execute(u"update locations set kind='Überall'")
     >>> result.rowcount == connection.execute("select * from locations limit 100").rowcount
     True
+
+    >>> session.commit()
+    >>> sleep(2)  # give crate some time to settle
+
+Test that objects can be used as list too::
+
+    >>> location = session.query(Location).filter_by(name='Folfanga').one()
+    >>> location.details = [{'size': 'huge'}, {'clima': 'cold'}]
+
+    >>> session.commit()
+    >>> session.refresh(location)
+
+    >>> location.details
+    [{u'size': u'huge'}, {u'clima': u'cold'}]
+
+Update the clima::
+
+    >>> location.details[1] = {'clima': 'hot'}
+
+    >>> session.commit()
+    >>> session.refresh(location)
+
+    >>> location.details
+    [{u'size': u'huge'}, {u'clima': u'hot'}]

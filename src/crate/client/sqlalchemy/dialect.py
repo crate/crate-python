@@ -42,8 +42,7 @@ class Date(sqltypes.Date):
             try:
                 return datetime.strptime(value, '%Y-%m-%d').date()
             except ValueError:
-                return datetime.strptime(value,
-                                         '%Y-%m-%dT%H:%M:%S.%fZ').date()
+                return datetime.strptime(value, '%Y-%m-%dT%H:%M:%S.%fZ').date()
         return process
 
 

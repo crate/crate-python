@@ -26,6 +26,7 @@ import os
 import unittest
 import doctest
 import re
+
 from pprint import pprint
 from datetime import datetime, date
 from six.moves import BaseHTTPServer
@@ -73,6 +74,15 @@ crate_layer = CrateLayer('crate',
 
 crate_host = "127.0.0.1:{port}".format(port=crate_port)
 crate_uri = "http://%s" % crate_host
+
+
+def setUpForDjango(test):
+    connect(crate_host)
+    import os
+    os.environ["DJANGO_SETTINGS_MODULE"] = "crate.client.django.tests.settings"
+
+    from django.test.runner import setup_databases
+    setup_databases(3, False)
 
 
 def setUpWithCrateLayer(test):
@@ -298,5 +308,15 @@ def test_suite():
     )
     s.layer = crate_layer
     suite.addTest(s)
+
+    # DJANGO TESTS
+    django_suite = doctest.DocFileSuite(
+        'django/tests/backend.txt',
+        checker=checker,
+        setUp=setUpForDjango,
+        optionflags=flags
+    )
+    django_suite.layer = crate_layer
+    suite.addTest(django_suite)
 
     return suite

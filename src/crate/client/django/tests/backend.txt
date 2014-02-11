@@ -1,0 +1,31 @@
+
+    >>> from crate.client.django.tests.models import User
+    >>> user = User.objects.create(id=1, username="mfelsche", slogan="Shut the fuck up!")
+    >>> user.id
+    1
+
+    >>> user.username
+    'mfelsche'
+
+    >>> user.slogan
+    'Shut the fuck up!'
+
+    >>> del user
+    >>> user = User.objects.get(id=1)
+    >>> user.id
+    1
+    >>> user.username
+    'mfelsche'
+    >>> user.slogan
+    'Shut the fuck up!'
+
+    >>> searched_user = User.objects.get(slogan__search='fuck')
+    >>> searched_user == user
+    True
+
+    >>> user.delete()
+
+    >>> User.objects.get(id=1)
+    Traceback (most recent call last):
+    ...
+    DoesNotExist: User matching query does not exist.

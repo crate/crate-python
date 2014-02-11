@@ -59,6 +59,13 @@ class Connection(object):
         if self._closed:
             raise ProgrammingError("Connection closed")
 
+    def rollback(self):
+        """
+        Transactions are not supported, so ``rollback`` is not implemented.
+        """
+        if self._closed:
+            raise ProgrammingError("Connection closed")
+
     def get_blob_container(self, container_name):
         """ Retrieve a BlobContainer for `container_name`
 

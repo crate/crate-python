@@ -12,7 +12,7 @@ This is the database adapter for the crate database. Its main feature is a
 implementation of the Python `DB API 2.0
 <http://www.python.org/dev/peps/pep-0249/>`_ specification. 
 
-It also includes support for `SQLAlchemy <http://www.sqlalchemy.org>`.
+It also includes support for `SQLAlchemy <http://www.sqlalchemy.org>`_.
 
 Installation
 ============

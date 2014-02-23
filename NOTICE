@@ -1,0 +1,61 @@
+Crate Python Adapter
+Copyright 2013-2014 CRATE Technology GmbH ("Crate")
+
+
+Third party dependencies:
+
+=========================================================================
+
+Buildout
+http://www.buildout.org
+Copyright (c) 2006 Zope Foundation and Contributors.
+License: Zope Public License, Version 2.1 (ZPL)
+
+=========================================================================
+
+PrettyTable
+http://code.google.com/p/prettytable/
+Copyright (c) 2009-2012 Luke Maurits <luke@maurits.id.au>
+License: BSD-3-Clause (http://opensource.org/licenses/BSD-3-Clause)
+
+=========================================================================
+
+appdirs
+https://github.com/ActiveState/appdirs
+Copyright (c) 2010 ActiveState Software Inc.
+License: MIT (http://opensource.org/licenses/MIT)
+
+=========================================================================
+
+six
+http://pypi.python.org/pypi/six/
+Copyright (c) 2010-2014 Benjamin Peterson
+License: MIT (http://opensource.org/licenses/MIT)
+
+=========================================================================
+
+Requests
+http://requests-library.org
+Copyright 2014 Kenneth Reitz
+License: Apache License v2 (http://www.apache.org/licenses)
+
+-------------------------------------------------------------------------
+
+Urllib3
+https://github.com/shazow/urllib3
+Copyright 2008-2011 Andrey Petrov and contributors (https://github.com/shazow/urllib3/blob/master/CONTRIBUTORS.txt)
+License: MIT (http://www.opensource.org/licenses/mit-license.php)
+
+-------------------------------------------------------------------------
+
+Charade
+https://github.com/sigmavirus24/charade
+Maintained by Ian Cordasco
+License: GNU Lesser General Public License, Version 2.1
+
+-------------------------------------------------------------------------
+
+CA Bundle License
+License: GNU Lesser General Public License, Version 2.1
+
+=========================================================================

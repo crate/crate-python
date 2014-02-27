@@ -5,6 +5,9 @@ Changes for crate
 Unreleased
 ==========
 
+2014/02/27 0.3.1
+================
+
  - minor documentation syntax fix
 
 2014/01/27 0.3.0

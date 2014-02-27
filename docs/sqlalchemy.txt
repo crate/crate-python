@@ -195,7 +195,7 @@ Count and Group By
 
 SQLAlchemy supports different approaches to issue a query with a count
 aggregate function. Take a look at the `Counting section in the tutorial
-<http://docs.sqlalchemy.org/en/rel_0_8/orm/tutorial.html#counting`_ for a full
+<http://docs.sqlalchemy.org/en/rel_0_8/orm/tutorial.html#counting>`_ for a full
 overview.
 
 Crate currently doesn't support all variants as it can't handle the sub-queries

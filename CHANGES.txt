@@ -5,6 +5,8 @@ Changes for crate
 Unreleased
 ==========
 
+ - added single-file crash bundle ``crash.zip.py``
+
 2014/02/27 0.3.1
 ================
 

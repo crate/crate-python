@@ -179,7 +179,7 @@ This will generate a UPDATE statement roughly like this::
 
     "UPDATE characters set more_details = ? ...", ([{'foo': 1, 'bar': 10}, {'foo': 2}, {'foo': 3}],)
 
-    >>> sleep(2)
+    >>> refresh()
 
 If a query is done on a element inside a dictionary only one of the
 dictionaries inside the dictionaries has to match in order for the result to be

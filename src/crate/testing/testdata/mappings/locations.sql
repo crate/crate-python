@@ -4,5 +4,6 @@ create table locations (
     datetime timestamp,
     kind string,
     position integer,
-    description string
+    description string,
+    details array(object)
 ) replicas 0

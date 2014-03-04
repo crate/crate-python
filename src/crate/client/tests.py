@@ -90,6 +90,10 @@ def setUpWithCrateLayer(test):
     conn = connect(crate_host)
     cursor = conn.cursor()
 
+    def refresh():
+        conn.client._request('post', '/_refresh')
+    test.globs['refresh'] = refresh
+
     with open(docs_path('testing/testdata/mappings/locations.sql')) as s:
         stmt = s.read()
         cursor.execute(stmt)
@@ -130,7 +134,12 @@ def setUpCrateLayerAndSqlAlchemy(test):
         "mappings": {
             "default": {
                 "_meta": {
-                    "primary_keys": "id"
+                    "primary_keys": "id",
+                    "columns": {
+                        "more_details": {
+                            "collection_type": "array"
+                        }
+                    }
                 },
                 "properties": {
                     "id": {

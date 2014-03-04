@@ -5,6 +5,8 @@ Changes for crate
 Unreleased
 ==========
 
+ - updated crate to 0.25.0
+
 2014/03/04 0.3.2
 ================
 

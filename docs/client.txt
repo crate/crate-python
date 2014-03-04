@@ -116,6 +116,7 @@ column name as first parameter. Just the name field is supported, all other fiel
     [u'2013-07-16',
      None,
      u'Max Quordlepleen claims that the only thing left ...',
+     None,
      u'Star System',
      u'Aldebaran',
      1]
@@ -125,6 +126,7 @@ column name as first parameter. Just the name field is supported, all other fiel
     ((u'date', None, None, None, None, None, None),
      (u'datetime', None, None, None, None, None, None),
      (u'description', None, None, None, None, None, None),
+     (u'details', None, None, None, None, None, None),
      (u'kind', None, None, None, None, None, None),
      (u'name', None, None, None, None, None, None),
      (u'position', None, None, None, None, None, None))

@@ -17,5 +17,5 @@ crate.egg-info
 /devtools/parts/
 /devtools/develop-eggs/
 /devtools/.installed.cfg
-/devtools/crash.zip.py
+/devtools/crash-*.zip.py
 /devtools/venv/

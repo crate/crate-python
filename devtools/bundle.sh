@@ -1,6 +1,6 @@
 #!/bin/bash
 WORKING_DIR=`dirname $0`
-VENV_DIR="${WORKING_DIR}/venv"
+VENV_DIR="venv"
 VERSION=`sed -n 's/^__version__ = "\(.*\)".*$/\1/p' ${WORKING_DIR}/../src/crate/client/__init__.py`
 BUNDLE_FILE="crash-${VERSION}.zip.py"
 
@@ -26,7 +26,7 @@ fi
 
 mkdir -p venv
 virtualenv --no-site-packages --clear ${VENV_DIR}
-PYTHON_EXECUTABLE=./${VENV_DIR}/bin/python
+PYTHON_EXECUTABLE=${VENV_DIR}/bin/python
 ${VENV_DIR}/bin/easy_install readline
 ${PYTHON_EXECUTABLE} bootstrap.py
 ${PYTHON_EXECUTABLE} bin/buildout -N

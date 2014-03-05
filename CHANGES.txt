@@ -5,7 +5,12 @@ Changes for crate
 Unreleased
 ==========
 
- - updated crate to 0.25.0
+2014/03/05 0.3.3
+================
+
+ - readline support for windows
+
+ - updated crate to 0.26.0
 
 2014/03/04 0.3.2
 ================

@@ -28,15 +28,19 @@ import inspect
 import os
 import sys
 import select
-import readline
-assert readline  # imported so that cmd gains history-editing functionality
+try:
+    if sys.platform == 'win32':
+        import pyreadline as readline
+    else:
+        import readline
+except ImportError:
+    pass  # no readline support
 
 import atexit
 from appdirs import user_data_dir
 
 from cmd import Cmd
 from argparse import ArgumentParser
-from time import time
 
 from prettytable import PrettyTable
 from crate import client
@@ -335,15 +339,18 @@ def main():
                         help='connect to crate hosts', metavar='HOST')
     args = parser.parse_args()
 
-    # read and write history file
-    history_file_path = args.history
-    if not os.path.exists(USER_DATA_DIR):
-        os.makedirs(USER_DATA_DIR)
+    # optionally read and write history file
     try:
-        readline.read_history_file(history_file_path)
-    except IOError as e:
-        pass
-    atexit.register(readline.write_history_file, history_file_path)
+        history_file_path = args.history
+        if not os.path.exists(USER_DATA_DIR):
+            os.makedirs(USER_DATA_DIR)
+        try:
+            readline.read_history_file(history_file_path)
+        except IOError:
+            pass
+        atexit.register(readline.write_history_file, history_file_path)
+    except Exception:
+        pass  # no readline support
 
     cmd = CrateCmd()
     cmd.do_connect(args.hosts)

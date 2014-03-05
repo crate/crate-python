@@ -33,8 +33,9 @@ try:
         import pyreadline as readline
     else:
         import readline
+    _has_readline = True
 except ImportError:
-    pass  # no readline support
+    _has_readline = False
 
 import atexit
 from appdirs import user_data_dir
@@ -247,16 +248,17 @@ class CrateCmd(Cmd):
 
         self.preloop()
         if self.use_rawinput and self.completekey:
-            try:
-                import rlcompleter
-                self.old_completer = readline.get_completer()
-                readline.set_completer(self.complete)
-                if 'libedit' in readline.__doc__:
-                    readline.parse_and_bind("bind ^I rl_complete")
-                else:
-                    readline.parse_and_bind("tab: complete")
-            except ImportError:
-                pass
+            if _has_readline:
+                try:
+                    import rlcompleter
+                    self.old_completer = readline.get_completer()
+                    readline.set_completer(self.complete)
+                    if 'libedit' in readline.__doc__:
+                        readline.parse_and_bind("bind ^I rl_complete")
+                    else:
+                        readline.parse_and_bind("tab: complete")
+                except ImportError:
+                    pass
         try:
             if intro is not None:
                 self.intro = intro
@@ -296,11 +298,8 @@ class CrateCmd(Cmd):
                     stop = self.postcmd(stop, line)
             self.postloop()
         finally:
-            if self.use_rawinput and self.completekey:
-                try:
-                    readline.set_completer(self.old_completer)
-                except ImportError:
-                    pass
+            if self.use_rawinput and self.completekey and _has_readline:
+                readline.set_completer(self.old_completer)
 
     def completedefault(self, text, line, begidx, endidx):
         """Method called to complete an input line when no command-specific
@@ -340,7 +339,7 @@ def main():
     args = parser.parse_args()
 
     # optionally read and write history file
-    try:
+    if _has_readline:
         history_file_path = args.history
         if not os.path.exists(USER_DATA_DIR):
             os.makedirs(USER_DATA_DIR)
@@ -349,8 +348,6 @@ def main():
         except IOError:
             pass
         atexit.register(readline.write_history_file, history_file_path)
-    except Exception:
-        pass  # no readline support
 
     cmd = CrateCmd()
     cmd.do_connect(args.hosts)

@@ -5,6 +5,8 @@ Changes for crate
 Unreleased
 ==========
 
+ - fix readline bug in windows bundle
+
 2014/03/05 0.3.3
 ================
 

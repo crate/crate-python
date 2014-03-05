@@ -37,6 +37,8 @@ if (2, 6) == sys.version_info[:2]:
 
 if sys.platform == 'darwin':
     requirements.append('readline>=6.2.4.1')
+elif sys.platform == 'win32':
+    requirements.append('pyreadline>=1.7.1')
 
 
 def read(path):

@@ -40,7 +40,6 @@ class CrateLayer(server.ServerLayer, layer.WorkDirectoryLayer):
             crate_config = os.path.join(crate_home, 'config', 'crate.yml')
         start_cmd = (
             crate_exec,
-            '-f',
             '-Des.index.storage.type=memory',
             '-Des.node.name=%s' % name,
             '-Des.cluster.name=Testing%s' % port,

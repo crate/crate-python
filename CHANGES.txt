@@ -5,6 +5,10 @@ Changes for crate
 Unreleased
 ==========
 
+ - updated crate to 0.27.0 and changed the test layer to no longer use the `-f`
+   option. Note that this breaks the test layer for all previous crate
+   versions.
+
 2014/03/05 0.3.4
 ================
 

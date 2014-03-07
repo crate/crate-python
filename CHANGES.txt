@@ -5,6 +5,9 @@ Changes for crate
 Unreleased
 ==========
 
+ - the test layer now uses the '/' crate endpoint in order to wait for crate to
+   be available.
+
  - updated crate to 0.27.0 and changed the test layer to no longer use the `-f`
    option. Note that this breaks the test layer for all previous crate
    versions.

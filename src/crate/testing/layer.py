@@ -1,8 +1,13 @@
 import os
 import signal
+import time
+import logging
 
 from lovely.testlayers import server, layer
 import requests
+
+
+logger = logging.getLogger(__name__)
 
 
 class CrateLayer(server.ServerLayer, layer.WorkDirectoryLayer):
@@ -66,8 +71,18 @@ class CrateLayer(server.ServerLayer, layer.WorkDirectoryLayer):
         super(CrateLayer, self).start()
         # since crate 0.10.0 http may be ready before the cluster is fully available
         # block here so that early requests after the layer starts don't result in 503
-        try:
-            requests.get(self.crate_servers[0] + '/_cluster/health?wait_for_status=green')
-        except Exception:
-            self.stop()
-            raise
+
+        time_slept = 0
+        while True:
+            try:
+                resp = requests.get(self.crate_servers[0] + '/')
+                if resp.status_code == 200:
+                    break
+                time.sleep(0.02)
+                time_slept += 0.02
+                if time_slept % 1 == 0:
+                    logger.warning(('Crate not yet fully available. '
+                                    'Waiting since %s seconds...'), time_slept)
+            except Exception:
+                self.stop()
+                raise

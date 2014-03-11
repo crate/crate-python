@@ -56,9 +56,12 @@ class CrateCmd(Cmd):
     NULL = "NULL"
 
     keywords = ["table", "index",
-                "from", "into", "where", "values", "and", "or", "set", "with", "by", "using"
-                "integer", "string", "float", "double", "short", "long", "byte", "timestamp",
-                "replicas", "clustered"]
+                "from", "into", "where", "values", "and", "or", "set", "with", "by", "using", "like",
+                "boolean", "integer", "string", "float", "double", "short", "long", "byte", "timestamp", "ip",
+                "object", "dynamic", "strict", "ignored",
+                "array", "blob", "primary key",
+                "analyzer", "extends", "tokenizer", "char_filters", "token_filters",
+                "number_of_replicas", "clustered"]
 
     def __init__(self, stdin=None, stdout=None):
         Cmd.__init__(self, "tab", stdin, stdout)

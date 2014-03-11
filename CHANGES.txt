@@ -5,6 +5,9 @@ Changes for crate
 Unreleased
 ==========
 
+2014/03/11 0.4.0
+================
+
  - fix a bug where setting an empty list on a multi valued field results in returning ``None``
    after refreshing the session.
 

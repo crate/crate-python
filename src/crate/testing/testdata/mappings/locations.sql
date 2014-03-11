@@ -6,4 +6,4 @@ create table locations (
     position integer,
     description string,
     details array(object)
-) replicas 0
+) with (number_of_replicas=0)

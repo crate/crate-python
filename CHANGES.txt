@@ -5,6 +5,8 @@ Changes for crate
 Unreleased
 ==========
 
+ - updated crash autocompletion keywords
+
 2014/03/11 0.4.0
 ================
 

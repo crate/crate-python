@@ -20,97 +20,21 @@
 # software solely pursuant to the terms of the relevant commercial agreement.
 
 from __future__ import absolute_import
-from datetime import datetime, tzinfo, timedelta
-from unittest import TestCase, TestSuite, makeSuite
+from unittest import TestCase
 from mock import patch, MagicMock
 
 import sqlalchemy as sa
-from sqlalchemy.exc import DBAPIError
 from sqlalchemy.sql import select
 from sqlalchemy.orm import Session
 from sqlalchemy.ext.declarative import declarative_base
 
-from .types import Craty, ObjectArray
-from ..cursor import Cursor
+from crate.client.sqlalchemy.types import Craty, ObjectArray
+from crate.client.cursor import Cursor
 
 
 fake_cursor = MagicMock(name='fake_cursor')
 FakeCursor = MagicMock(name='FakeCursor', spec=Cursor)
 FakeCursor.return_value = fake_cursor
-
-
-class SqlAlchemyConnectionTest(TestCase):
-
-    def setUp(self):
-        self.engine = sa.create_engine('crate://')
-        self.connection = self.engine.connect()
-
-    def test_default_connection(self):
-        engine = sa.create_engine('crate://')
-        conn = engine.raw_connection()
-        self.assertEquals("<Connection <Client ['http://127.0.0.1:4200']>>",
-                          repr(conn.connection))
-
-    def test_connection_server(self):
-        engine = sa.create_engine(
-            "crate://otherhost:19201")
-        conn = engine.raw_connection()
-        self.assertEquals("<Connection <Client ['http://otherhost:19201']>>",
-                          repr(conn.connection))
-
-    def test_connection_multiple_server(self):
-        engine = sa.create_engine(
-            "crate://", connect_args={
-                'servers': ['localhost:4201', 'localhost:4202']
-            }
-        )
-        conn = engine.raw_connection()
-        self.assertEquals(
-            "<Connection <Client ['http://localhost:4201', 'http://localhost:4202']>>",
-            repr(conn.connection))
-
-
-@patch('crate.client.connection.Cursor', FakeCursor)
-class SqlAlchemyDateAndDateTimeTest(TestCase):
-
-    def setUp(self):
-        self.engine = sa.create_engine('crate://')
-        Base = declarative_base(bind=self.engine)
-
-        class Character(Base):
-            __tablename__ = 'characters'
-            name = sa.Column(sa.String, primary_key=True)
-            date = sa.Column(sa.Date)
-            timestamp = sa.Column(sa.DateTime)
-
-        fake_cursor.description = (
-            ('characters_name', None, None, None, None, None, None),
-            ('characters_date', None, None, None, None, None, None)
-        )
-        self.session = Session()
-        self.Character = Character
-
-    def test_date_can_handle_datetime(self):
-        """ date type should also be able to handle iso datetime strings.
-
-        this verifies that the fallback in the Date result_processor works.
-        """
-        fake_cursor.fetchall.return_value = [
-            ('Trillian', '2013-07-16T00:00:00.000Z')
-        ]
-        self.session.query(self.Character).first()
-
-    def test_data_cannot_handle_tz_aware_datetime(self):
-        class CST(tzinfo):
-            def utcoffset(self, date_time):
-                return timedelta(seconds = -3600)
-            def dst(self, date_time):
-                return timedelta(seconds = -7200)
-        character = self.Character()
-        character.name = "Athur"
-        character.timestamp = datetime(2009, 5, 13, 19, 19, 30, tzinfo=CST())
-        self.session.add(character)
-        self.assertRaises(DBAPIError, self.session.commit)
 
 
 class SqlAlchemyDictTypeTest(TestCase):
@@ -470,9 +394,3 @@ class SqlAlchemyDictTypeTest(TestCase):
         item = char.data_list[0]
         char.data_list.remove(item)
         self.assertTrue(char in session.dirty)
-
-
-tests = TestSuite()
-tests.addTest(makeSuite(SqlAlchemyConnectionTest))
-tests.addTest(makeSuite(SqlAlchemyDictTypeTest))
-tests.addTest(makeSuite(SqlAlchemyDateAndDateTimeTest))

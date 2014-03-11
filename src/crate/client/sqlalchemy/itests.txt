@@ -33,7 +33,7 @@ With filter::
 
 Order by::
 
-    >>> locations = session.query(Location).order_by(sa.desc(Location.name))
+    >>> locations = session.query(Location).filter(Location.name != None).order_by(sa.desc(Location.name))
     >>> locations = locations.limit(2)
     >>> [l.name for l in locations]
     [u'Outer Eastern Rim', u'North West Ripple']
@@ -176,3 +176,12 @@ Update the clima::
 
     >>> location.details
     [{u'size': u'huge'}, {u'clima': u'hot'}]
+
+Reset the clima::
+
+    >>> location.details = []
+    >>> session.commit()
+    >>> session.refresh(location)
+
+    >>> location.details
+    []

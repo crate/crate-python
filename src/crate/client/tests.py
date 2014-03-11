@@ -40,7 +40,7 @@ from . import http
 from .crash import CrateCmd
 from .test_cursor import CursorTest
 from .test_http import HttpClientTest, ThreadSafeHttpClientTest, KeepAliveClientTest
-from .sqlalchemy.test import tests as sqlalchemy_tests
+from .sqlalchemy.tests import test_suite as sqlalchemy_test_suite
 from .sqlalchemy.types import ObjectArray
 from .compat import cprint
 
@@ -213,7 +213,7 @@ def test_suite():
     suite.addTest(unittest.makeSuite(HttpClientTest))
     suite.addTest(unittest.makeSuite(KeepAliveClientTest))
     suite.addTest(unittest.makeSuite(ThreadSafeHttpClientTest))
-    suite.addTest(sqlalchemy_tests)
+    suite.addTest(sqlalchemy_test_suite())
     suite.addTest(doctest.DocTestSuite('crate.client.connection'))
     suite.addTest(doctest.DocTestSuite('crate.client.http'))
 

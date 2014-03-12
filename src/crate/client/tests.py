@@ -90,9 +90,9 @@ def setUpWithCrateLayer(test):
     conn = connect(crate_host)
     cursor = conn.cursor()
 
-    def refresh():
-        conn.client._request('post', '/_refresh')
-    test.globs['refresh'] = refresh
+    def refresh(table):
+        cursor.execute("refresh table %s" % table)
+    test.globs["refresh"] = refresh
 
     with open(docs_path('testing/testdata/mappings/locations.sql')) as s:
         stmt = s.read()
@@ -106,11 +106,10 @@ def setUpWithCrateLayer(test):
     # load testing data into crate
     cursor.execute("copy locations from ?", (data_path,))
     # refresh location table so imported data is visible immediately
-    refresh()
+    refresh("locations")
 
     # create blob table
     cursor.execute("create blob table myfiles clustered into 1 shards with (number_of_replicas=0)")
-
 
 
 def setUpCrateLayerAndSqlAlchemy(test):

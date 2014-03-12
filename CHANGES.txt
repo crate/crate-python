@@ -5,7 +5,11 @@ Changes for crate
 Unreleased
 ==========
 
+ - updated crate to 0.30.0
+
  - crash: added support for ``ALTER`` statements.
+
+ - crash: added support for ``REFRESH`` statements.
 
  - crash: added support for multi-statements for stdin and ``--command`` parameter
 

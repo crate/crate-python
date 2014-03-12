@@ -55,13 +55,13 @@ class CrateCmd(Cmd):
     multi_line_prompt = '... '
     NULL = "NULL"
 
-    keywords = ["table", "index",
-                "from", "into", "where", "values", "and", "or", "set", "with", "by", "using", "like",
-                "boolean", "integer", "string", "float", "double", "short", "long", "byte", "timestamp", "ip",
-                "object", "dynamic", "strict", "ignored",
-                "array", "blob", "primary key",
-                "analyzer", "extends", "tokenizer", "char_filters", "token_filters",
-                "number_of_replicas", "clustered"]
+    keywords = ["table", "index", "from", "into", "where", "values", "and",
+                "or", "set", "with", "by", "using", "like", "boolean",
+                "integer", "string", "float", "double", "short", "long",
+                "byte", "timestamp", "ip", "object", "dynamic", "strict",
+                "ignored", "array", "blob", "primary key", "analyzer",
+                "extends", "tokenizer", "char_filters", "token_filters",
+                "number_of_replicas", "clustered", "alter"]
 
     def __init__(self, stdin=None, stdout=None):
         Cmd.__init__(self, "tab", stdin, stdout)
@@ -164,6 +164,15 @@ class CrateCmd(Cmd):
         """
         if self.execute('update ' + statement):
             self.print_rows_affected("update")
+
+    def do_alter(self, statement):
+        """execute a SQL ALTER statement
+
+        E.g.:
+            "alter table locations set (number_of_replicas=2)"
+        """
+        if self.execute('alter ' + statement):
+            self.print_success("alter")
 
     def do_create(self, statement):
         """execute a SQL create statement

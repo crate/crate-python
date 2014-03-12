@@ -55,20 +55,26 @@ class CrateCmd(Cmd):
     multi_line_prompt = '... '
     NULL = "NULL"
 
-    keywords = ["table", "index", "from", "into", "where", "values", "and",
-                "or", "set", "with", "by", "using", "like", "boolean",
-                "integer", "string", "float", "double", "short", "long",
-                "byte", "timestamp", "ip", "object", "dynamic", "strict",
-                "ignored", "array", "blob", "primary key", "analyzer",
-                "extends", "tokenizer", "char_filters", "token_filters",
-                "number_of_replicas", "clustered", "alter"]
+    keywords = [
+        "table", "index", "from", "into", "where", "values", "and", "or",
+        "set", "with", "by", "using", "like",
+        "boolean", "integer", "string", "float", "double", "short", "long",
+        "byte", "timestamp", "ip", "object", "dynamic", "strict", "ignored",
+        "array", "blob", "primary key",
+        "analyzer", "extends", "tokenizer", "char_filters", "token_filters",
+        "number_of_replicas", "clustered",
+        "refresh", "alter",
+    ]
 
     def __init__(self, stdin=None, stdout=None):
         Cmd.__init__(self, "tab", stdin, stdout)
         self.partial_lines = []
 
     def do_connect(self, server):
-        """connect to one or more server with "connect servername:port[ servername:port [...]]" """
+        """
+        connect to one or more server
+        with "connect servername:port[ servername:port [...]]"
+        """
         self.conn = client.connect(servers=server)
         self.cursor = self.conn.cursor()
         results = []
@@ -205,6 +211,15 @@ class CrateCmd(Cmd):
         """
         if self.execute('copy ' + statement):
             self.print_rows_affected("copy")
+
+    def do_refresh(self, statement):
+        """execute a SQL refresh stataement
+
+        E.g.:
+            "refresh table locations"
+        """
+        if self.execute('refresh ' + statement):
+            self.print_success("refresh")
 
     def do_exit(self, *args):
         """exit the shell"""

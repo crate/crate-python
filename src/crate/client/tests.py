@@ -105,18 +105,12 @@ def setUpWithCrateLayer(test):
     data_path = docs_path('testing/testdata/data/test_a.json')
     # load testing data into crate
     cursor.execute("copy locations from ?", (data_path,))
+    # refresh location table so imported data is visible immediately
+    refresh()
 
-    blob_idx_settings = {
-        'number_of_shards': 1,
-        'number_of_replicas': 0,
-        'blobs': {
-            'enabled': True
-        }
-    }
-    requests.post('/'.join([crate_uri, 'myfiles']),
-                  data=json.dumps(blob_idx_settings))
-    # refresh index
-    requests.post('/'.join([crate_uri, 'locations', '_refresh']))
+    # create blob table
+    cursor.execute("create blob table myfiles clustered into 1 shards with (number_of_replicas=0)")
+
 
 
 def setUpCrateLayerAndSqlAlchemy(test):
@@ -178,7 +172,14 @@ def setUpCrateLayerAndSqlAlchemy(test):
 
 def tearDownWithCrateLayer(test):
     # clear testing data
-    requests.delete('/'.join([crate_uri, 'locations']))
+    conn = connect(crate_host)
+    cursor = conn.cursor()
+    cursor.execute("drop table locations")
+    cursor.execute("drop blob table myfiles")
+    try:
+        cursor.execute("drop table characters")
+    except:
+        pass
 
 
 def test_suite():

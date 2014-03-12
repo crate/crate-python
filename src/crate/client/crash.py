@@ -335,7 +335,7 @@ def main():
     parser.add_argument('-v', '--verbose', action='count',
                         help='use -v to get debug output')
     parser.add_argument('--history', type=str, help='the history file to use', default=HISTORY_PATH)
-    parser.add_argument('-s', '--statement', type=str,
+    parser.add_argument('-c', '--command', type=str,
                         help='execute sql statement')
     parser.add_argument('--hosts', type=str, nargs='*',
                         help='connect to crate hosts', metavar='HOST')
@@ -360,15 +360,27 @@ def main():
     if os.name == 'posix':
         # use select.select to check if input is available
         # otherwise sys.stdin would block
+        partial_lines = []
         while sys.stdin in select.select([sys.stdin], [], [], 0)[0]:
             line = sys.stdin.readline()
             if line:
-                cmd.onecmd(line)
+                if not line.endswith(CrateCmd.line_delimiter):
+                    partial_lines.append(line)
+                elif not partial_lines:
+                    for single_cmd in line.rstrip(CrateCmd.line_delimiter).split(CrateCmd.line_delimiter):
+                        cmd.onecmd(single_cmd)
+                else:
+                    partial_lines.append(line)
             else:
+                if partial_lines:
+                    lines = "".join(partial_lines)
+                    for single_cmd in lines.rstrip(CrateCmd.line_delimiter).split(CrateCmd.line_delimiter):
+                        cmd.onecmd(single_cmd)
                 sys.exit(0)
 
-    if args.statement:
-        cmd.onecmd(args.statement)
+    if args.command:
+        for single_cmd in args.command.split(CrateCmd.line_delimiter):
+            cmd.onecmd(single_cmd)
     else:
         cmd.cmdloop()
 

@@ -5,6 +5,10 @@ Changes for crate
 Unreleased
 ==========
 
+ - crash: added support for multi-statements for stdin and ``--command`` parameter
+
+ - crash: renamed cli parameter ``--statement/-s`` to ``--command/-c``
+
 2014/03/12 0.5.0
 ================
 

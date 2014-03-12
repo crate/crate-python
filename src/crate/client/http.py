@@ -125,11 +125,8 @@ class Client(object):
         node_name = content.get("name")
         return server, node_name
 
-    def _blob_path(self, table, digest=None):
-        path = table + '/_blobs/'
-        if digest:
-            path += digest
-        return path
+    def _blob_path(self, table, digest):
+        return '_blobs/{table}/{digest}'.format(table=table, digest=digest)
 
     def blob_put(self, table, digest, data):
         """

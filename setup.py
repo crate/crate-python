@@ -26,20 +26,10 @@ import re
 
 
 requirements = [
+    'setuptools',
     'requests>=2.0.1,<3.0',
-    'PrettyTable>=0.7,<0.8',
-    'appdirs>=1.2,<2.0',
     'six'
 ]
-
-if (2, 6) == sys.version_info[:2]:
-    requirements.append('argparse>=1.2.1')
-
-if sys.platform == 'darwin':
-    requirements.append('readline>=6.2.4.1')
-elif sys.platform == 'win32':
-    requirements.append('pyreadline>=1.7.1')
-
 
 def read(path):
     return open(os.path.join(os.path.dirname(__file__), path)).read()
@@ -75,9 +65,6 @@ setup(
     packages=find_packages('src'),
     namespace_packages=['crate'],
     entry_points={
-        'console_scripts': [
-            'crash = crate.client.crash:main',
-        ],
         'sqlalchemy.dialects': [
             'crate = crate.client.sqlalchemy:CrateDialect'
         ]

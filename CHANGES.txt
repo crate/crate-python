@@ -5,6 +5,8 @@ Changes for crate
 Unreleased
 ==========
 
+ - removed the crate shell ``crash`` from this package. it will live
+   now under the name ``crate-shell`` on pypi.
 
 2014/03/12 0.6.0
 ================

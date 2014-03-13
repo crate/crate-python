@@ -37,20 +37,11 @@ from crate.testing.tests import crate_path, docs_path
 from crate.client import connect
 
 from . import http
-from .crash import CrateCmd
 from .test_cursor import CursorTest
 from .test_http import HttpClientTest, ThreadSafeHttpClientTest, KeepAliveClientTest
 from .sqlalchemy.tests import test_suite as sqlalchemy_test_suite
 from .sqlalchemy.types import ObjectArray
 from .compat import cprint
-
-
-def crash_transform(s):
-    return 'cmd.onecmd("""{0}""");'.format(s.strip())
-
-
-crash_parser = zc.customdoctests.DocTestParser(
-    ps1='cr>', comment_prefix='#', transform=crash_transform)
 
 
 class ClientMocked(object):
@@ -84,7 +75,6 @@ def setUpWithCrateLayer(test):
     test.globs['HttpClient'] = http.Client
     test.globs['crate_host'] = crate_host
     test.globs['pprint'] = pprint
-    test.globs['cmd'] = CrateCmd()
     test.globs['print'] = cprint
 
     conn = connect(crate_host)
@@ -236,17 +226,6 @@ def test_suite():
         setUp=setUpWithCrateLayer,
         tearDown=tearDownWithCrateLayer,
         optionflags=flags
-    )
-    s.layer = crate_layer
-    suite.addTest(s)
-
-    s = doctest.DocFileSuite(
-        'crash.txt',
-        checker=checker,
-        setUp=setUpWithCrateLayer,
-        tearDown=tearDownWithCrateLayer,
-        optionflags=flags,
-        parser=crash_parser
     )
     s.layer = crate_layer
     suite.addTest(s)

@@ -38,7 +38,7 @@ logger = logging.getLogger(__name__)
 if sys.version_info[0] > 2:
     basestring = str
 
-_HTTP_PAT=pat = re.compile('https?://.+',re.I)
+_HTTP_PAT = pat = re.compile('https?://.+',re.I)
 
 class Client(object):
     """
@@ -90,7 +90,6 @@ class Client(object):
         url = '%s://%s' % (parsed.scheme, parsed.netloc)
         return url
 
-
     def sql(self, stmt, parameters=None):
         """
         Execute SQL stmt against the crate server.
@@ -116,12 +115,22 @@ class Client(object):
     def server_infos(self, server):
         try:
             response = self._do_request(server, 'GET', '/')
-            content = response.json()
+            self._raise_for_status(response)
+            try:
+                content = response.json()
+            except ValueError:
+                raise ProgrammingError(
+                    "Invalid server response of content-type '%s'" %
+                    response.headers.get("content-type", "unknown"))
         except requests.ConnectionError as e:
-            if isinstance(e.args[0].reason, gaierror):
+            reason = getattr(e.args[0], "reason", None)
+            if isinstance(reason, gaierror):
                 raise ConnectionError("Hostname could no be resolved.")
+            elif reason:
+                message = getattr(reason, "strerror", "")
             else:
-                raise ConnectionError(e.args[0].reason.strerror)
+                message = unicode(e.args[0])
+            raise ConnectionError(message)
         node_name = content.get("name")
         return server, node_name
 
@@ -214,7 +223,8 @@ class Client(object):
         try:
             response.raise_for_status()
         except requests.exceptions.HTTPError as e:
-            if hasattr(e, 'response'):
+            if hasattr(e, 'response') and \
+                response.headers.get("content-type", "").startswith("application/json"):
                 error = e.response.json().get('error', {})
                 if isinstance(error, dict):
                     raise ProgrammingError(error.get('message', ''))
@@ -235,7 +245,12 @@ class Client(object):
         self._raise_for_status(response)
         # return parsed json response
         if len(response.content) > 0:
-            return response.json()
+            try:
+                return response.json()
+            except ValueError:
+                raise ProgrammingError(
+                    "Invalid server response of content-type '%s'" %
+                    response.headers.get("content-type", ""))
         return response.content
 
     def _get_server(self):

@@ -61,7 +61,6 @@ inactive one::
     >>> http_client._get_server()
     'http://invalid_host:9999'
 
-
 SQL Statements
 ==============
 
@@ -167,3 +166,18 @@ is raised when timeout is reached::
     Traceback (most recent call last):
     ...
     ConnectionError: No more Servers available, exception from last server: HTTPConnectionPool(host='...', port=...): Read timed out. (read timeout=0.001)
+
+When connecting to non Crate servers the HttpClient will raise a ConnectionError like this::
+
+    >>> http_client = HttpClient(["https://crate.io"])
+    >>> http_client.server_infos(http_client._get_server())
+    Traceback (most recent call last):
+    ...
+    ProgrammingError: Invalid server response of content-type 'text/html; charset=UTF-8'
+
+
+    >>> http_client = HttpClient(["https://wrong:password@demo.crate.io"])
+    >>> http_client.server_infos(http_client._get_server())
+    Traceback (most recent call last):
+    ...
+    ProgrammingError: 401 Client Error: Unauthorized

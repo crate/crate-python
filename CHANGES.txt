@@ -2,11 +2,12 @@
 Changes for crate
 =================
 
-Unreleased
-==========
+2014/03/14 0.7.1
+================
+
+ - updated crate to 0.31.0
 
  - client: fixed error handling on wrong content-type and bad status codes (on connect)
-
 
 2014/03/13 0.7.0
 ================

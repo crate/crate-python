@@ -2,6 +2,14 @@
 Changes for crate
 =================
 
+Unreleased
+==========
+
+ - client: adding keyword arguments ``verify_ssl_cert`` and ``ca_cert``
+           to enable ssl server certificate validation
+
+ - client: disable ssl server certificate validation by default
+
 2014/03/14 0.7.1
 ================
 

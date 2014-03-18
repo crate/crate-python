@@ -22,11 +22,17 @@
 from __future__ import absolute_import
 
 import json
+import os
 import unittest
 import doctest
 import re
 from pprint import pprint
 from datetime import datetime, date
+from six.moves import BaseHTTPServer
+import ssl
+import time
+import threading
+from .compat import to_bytes
 
 import requests
 from zope.testing.renormalizing import RENormalizing
@@ -159,6 +165,68 @@ def setUpCrateLayerAndSqlAlchemy(test):
     test.globs['Session'] = Session
 
 
+_server = None
+
+
+class HttpsTestServerLayer(object):
+    PORT = 65534
+    HOST = "localhost"
+    CERT_FILE = os.path.abspath(os.path.join(os.path.dirname(__file__), "test_https.pem"))
+
+    __name__ = "httpsserver"
+    __bases__ = tuple()
+
+    class HttpsServer(BaseHTTPServer.HTTPServer):
+        def get_request(self):
+            socket, client_address = BaseHTTPServer.HTTPServer.get_request(self)
+            socket = ssl.wrap_socket(socket,
+                                     keyfile=HttpsTestServerLayer.CERT_FILE,
+                                     certfile=HttpsTestServerLayer.CERT_FILE,
+                                     server_side=True)
+            return socket, client_address
+
+    class HttpsHandler(BaseHTTPServer.BaseHTTPRequestHandler):
+
+        payload = json.dumps({"name": "test", "status": 200, })
+
+        def do_GET(self):
+            self.send_response(200)
+            self.send_header("Content-Length", len(self.payload))
+            self.send_header("Content-Type", "application/json; charset=UTF-8")
+            self.end_headers()
+            self.wfile.write(to_bytes(self.payload, 'UTF-8'))
+            return
+
+    def __init__(self):
+        self.server = self.HttpsServer(
+            (self.HOST, self.PORT),
+            self.HttpsHandler
+        )
+
+    def setUp(self):
+        thread = threading.Thread(target=self.serve_forever)
+        thread.daemon = True  # quit interpreter when only thread exists
+        thread.start()
+        time.sleep(1)
+
+    def serve_forever(self):
+        print("listening on", self.HOST, self.PORT)
+        self.server.serve_forever()
+        print("server stopped.")
+
+    def tearDown(self):
+        self.server.shutdown()
+
+
+def setUpWithHttps(test):
+    test.globs['HttpClient'] = http.Client
+    test.globs['crate_host'] = "https://{0}:{1}".format(HttpsTestServerLayer.HOST, HttpsTestServerLayer.PORT)
+    test.globs['invalid_ca_cert'] = os.path.abspath(os.path.join(os.path.dirname(__file__), "invalid_ca.pem"))
+    test.globs['valid_ca_cert'] = os.path.abspath(os.path.join(os.path.dirname(__file__), "test_https_ca.pem"))
+    test.globs['pprint'] = pprint
+    test.globs['print'] = cprint
+
+
 def tearDownWithCrateLayer(test):
     # clear testing data
     conn = connect(crate_host)
@@ -206,6 +274,15 @@ def test_suite():
     suite.addTest(sqlalchemy_test_suite())
     suite.addTest(doctest.DocTestSuite('crate.client.connection'))
     suite.addTest(doctest.DocTestSuite('crate.client.http'))
+
+    s = doctest.DocFileSuite(
+        '../../../docs/https.txt',
+        checker=checker,
+        setUp=setUpWithHttps,
+        optionflags=flags
+    )
+    s.layer = HttpsTestServerLayer()
+    suite.addTest(s)
 
     s = doctest.DocFileSuite(
         'sqlalchemy/itests.txt',

@@ -23,11 +23,13 @@ from _socket import gaierror
 import heapq
 import json
 import logging
+import os
 import sys
 from time import time
 import threading
 from six.moves.urllib.parse import urlparse
 import requests
+from requests.exceptions import SSLError
 import re
 from crate.client.exceptions import (
     ConnectionError, DigestNotFoundException, ProgrammingError, BlobsDisabledException)
@@ -39,6 +41,7 @@ if sys.version_info[0] > 2:
     basestring = str
 
 _HTTP_PAT = pat = re.compile('https?://.+',re.I)
+
 
 class Client(object):
     """
@@ -54,7 +57,8 @@ class Client(object):
     default_server = "http://127.0.0.1:4200"
     """Default server to use if no servers are given on instantiation."""
 
-    def __init__(self, servers=None, timeout=None):
+    def __init__(self, servers=None, timeout=None, ca_cert=None,
+                 verify_ssl_cert=False):
         if not servers:
             servers = [self.default_server]
         else:
@@ -62,8 +66,13 @@ class Client(object):
                 servers = servers.split()
             servers = [self._server_url(s) for s in servers]
         self._active_servers = servers
-        self._http_timeout = timeout
         self._inactive_servers = []
+
+        self._http_timeout = timeout
+        if ca_cert is None:
+            ca_cert = os.environ.get("REQUESTS_CA_BUNDLE", None)
+        self._ca_cert = ca_cert
+        self._verify_ssl_cert = verify_ssl_cert
         self._lock = threading.RLock()
         self._local = threading.local()
         self._session = requests.session()
@@ -114,7 +123,7 @@ class Client(object):
 
     def server_infos(self, server):
         try:
-            response = self._do_request(server, 'GET', '/')
+            response = self._do_request(server, 'GET', '')
             self._raise_for_status(response)
             try:
                 content = response.json()
@@ -126,11 +135,14 @@ class Client(object):
             reason = getattr(e.args[0], "reason", None)
             if isinstance(reason, gaierror):
                 raise ConnectionError("Hostname could no be resolved.")
+            elif isinstance(e, SSLError):
+                raise ConnectionError("SSL Error: {0}".format(e.args[0]))
             elif reason:
                 message = getattr(reason, "strerror", "")
             else:
-                message = unicode(e.args[0])
+                message = str(e.args[0])
             raise ConnectionError(message)
+
         node_name = content.get("name")
         return server, node_name
 
@@ -214,7 +226,18 @@ class Client(object):
     def _do_request(self, url, method, path, **kwargs):
         """do the actual request to a chosen server"""
         uri = "{url}/{path}".format(url=url, path=path)
-        return self._session.request(method, uri, timeout=self._http_timeout, **kwargs)
+
+        assert "verify" not in kwargs
+
+        if self._ca_cert is not None and self._verify_ssl_cert:
+            verify = self._ca_cert
+        else:
+            verify = self._verify_ssl_cert
+
+        return self._session.request(method, uri,
+                                     timeout=self._http_timeout,
+                                     verify=verify,
+                                     **kwargs)
 
     def _raise_for_status(self, response):
         """ make sure that only crate.exceptions are raised that are defined in

@@ -152,13 +152,24 @@ The attribute is -1 in case close has been performed on the cursor::
 executemany
 ===========
 
-Since ``executemany()`` is not implemented yet an 'NotImplementedError' is
-raised::
+``executemany()`` allows to execute a single sql statement against a sequence
+of parameters. The resulting ``rowcount`` and ``duration`` are the sum of all
+calls made to the server during this method execution.::
 
-    >>> cursor.executemany('', None)
-    Traceback (most recent call last):
-    ...
-    NotImplementedError
+    >>> cursor = connection.cursor()
+
+    >>> cursor.executemany('', (1,2,3))
+    >>> cursor.rowcount
+    9
+    >>> cursor.duration
+    369
+
+As executemany cannot keep all the possible resultrows during execution of many statements
+and executemany is not intended to be used with statements returning result sets
+the result will always be empty::
+
+    >>> cursor.fetchall()
+    []
 
 close()
 =======

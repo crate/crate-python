@@ -2,8 +2,8 @@
 Changes for crate
 =================
 
-Unreleased
-==========
+2014/04/21 0.8.0
+================
 
  - updated crate to 0.32.3
 

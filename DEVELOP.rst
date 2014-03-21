@@ -51,7 +51,7 @@ To create the packages use::
 
     bin/py setup.py sdist bdist_wheel
 
-and then use `twine <https://pypi.python.org/pypi/twine`_ to upload the
+and then use `twine <https://pypi.python.org/pypi/twine>`_ to upload the
 packages::
 
     twine upload dist/*

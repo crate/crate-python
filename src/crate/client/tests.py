@@ -114,32 +114,15 @@ def setUpCrateLayerAndSqlAlchemy(test):
     from sqlalchemy.ext.declarative import declarative_base
     from sqlalchemy.orm import sessionmaker
 
-    data = {
-        "settings": {
-            "mapper": {
-                "dynamic": True
-            }
-        },
-        "mappings": {
-            "default": {
-                "_meta": {
-                    "primary_keys": "id",
-                    "columns": {
-                        "more_details": {
-                            "collection_type": "array"
-                        }
-                    }
-                },
-                "properties": {
-                    "id": {
-                        "type": "string",
-                        "index": "not_analyzed"
-                    }
-                }
-            }
-        }
-    }
-    requests.put('{0}/characters'.format(crate_uri), data=json.dumps(data))
+    conn = connect(crate_host)
+    cursor = conn.cursor()
+    cursor.execute("""create table characters (
+      id string primary key,
+      name string,
+      details object,
+      more_details array(object)
+)""")
+    conn.close()
 
     engine = sa.create_engine('crate://{0}'.format(crate_host))
     Base = declarative_base()

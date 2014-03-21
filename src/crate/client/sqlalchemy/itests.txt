@@ -127,7 +127,7 @@ And verify that the date and datetime was persisted::
 
 Update one Location via raw sql::
 
-    >>> result = connection.execute("update locations set name='Mother Earth' where name='Earth'")
+    >>> result = connection.execute("update locations set kind='Heimat' where name='Earth'")
     >>> result.rowcount
     1
 
@@ -142,7 +142,7 @@ Update multiple Locations::
 
     >>> sleep(2)  # give crate some time to settle
 
-    >>> result = connection.execute("update locations set name='Kein Ort, nirgends.' where kind='Update'")
+    >>> result = connection.execute("update locations set flag=true where kind='Update'")
     >>> result.rowcount
     10
 

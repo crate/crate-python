@@ -42,3 +42,22 @@ invoked like this::
 Note: Before running tests make sure to stop all crate instances which
 transport port is listening on port 9300 to avoid side effects with the test
 layer.
+
+
+Deployment to Pypi
+==================
+
+To create the packages use::
+
+    bin/py setup.py sdist bdist_wheel
+
+and then use `twine <https://pypi.python.org/pypi/twine`_ to upload the
+packages::
+
+    twine upload dist/*
+
+If twine is not installed locally the regular setup.py upload can also be used,
+but does only support plaintext authentication::
+
+    bin/py setup.py upload
+

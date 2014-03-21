@@ -5,6 +5,8 @@ Changes for crate
 Unreleased
 ==========
 
+ - implemented ``Cursor.executemany(sql, seq_of_parameters)``
+
  - client: adding keyword arguments ``verify_ssl_cert`` and ``ca_cert``
            to enable ssl server certificate validation
 

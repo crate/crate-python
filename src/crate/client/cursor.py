@@ -54,8 +54,20 @@ class Cursor(object):
         Prepare a database operation (query or command) and then execute it against all parameter
         sequences or mappings found in the sequence ``seq_of_parameters``.
         """
-        # TODO: implement ``executemany()``
-        raise NotImplementedError
+        row_counts = []
+        durations = []
+        for params in seq_of_parameters:
+            self.execute(sql, parameters=params)
+            if self.rowcount > -1:
+                row_counts.append(self.rowcount)
+            if self.duration > -1:
+                durations.append(self.duration)
+        self._result = {
+            "rowcount": sum(row_counts) if row_counts else -1,
+            "duration": sum(durations) if durations else -1,
+            "rows": []
+        }
+        self.rows = iter(self._result["rows"])
 
     def fetchone(self):
         """

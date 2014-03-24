@@ -1,3 +1,6 @@
+
+.. _https_connection:
+
 ========================
 HTTPS Connection support
 ========================

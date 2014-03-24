@@ -26,11 +26,15 @@ from .blob import BlobContainer
 
 
 class Connection(object):
-    def __init__(self, servers=None, timeout=None, client=None):
+    def __init__(self, servers=None, timeout=None, client=None,
+                 verify_ssl_cert=False, ca_cert=None):
         if client:
             self.client = client
         else:
-            self.client = Client(servers, timeout=timeout)
+            self.client = Client(servers,
+                                 timeout=timeout,
+                                 verify_ssl_cert=verify_ssl_cert,
+                                 ca_cert=ca_cert)
         self._closed = False
 
     def cursor(self):
@@ -67,7 +71,8 @@ class Connection(object):
         return '<Connection {0}>'.format(repr(self.client))
 
 
-def connect(servers=None, timeout=None, client=None):
+def connect(servers=None, timeout=None, client=None,
+            verify_ssl_cert=False, ca_cert=None):
     """ Create a :class:Connection object
 
     :param servers:
@@ -79,8 +84,15 @@ def connect(servers=None, timeout=None, client=None):
     :param client:
         (optional - for testing)
         client used to communicate with crate.
+    :param verify_ssl_cert:
+        if set to ``True`` verify the servers SSL server certificate.
+        defaults to ``False``
+    :param ca_cert:
+        a path to a CA certificate to use when verifying the SSL server
+        certificate.
 
     >>> connect(['host1:4200', 'host2:4200'])
     <Connection <Client ['http://host1:4200', 'http://host2:4200']>>
     """
-    return Connection(servers=servers, timeout=timeout, client=client)
+    return Connection(servers=servers, timeout=timeout, client=client,
+                      verify_ssl_cert=verify_ssl_cert, ca_cert=ca_cert)

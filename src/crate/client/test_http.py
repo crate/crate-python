@@ -108,6 +108,13 @@ class HttpClientTest(TestCase):
         self.assertEqual(client._active_servers,
                          ["http://localhost:4200", "http://127.0.0.1:4201"])
 
+    @patch('requests.sessions.Session', FakeSession)
+    def test_server_infos(self):
+        client = Client(servers="localhost:4200 localhost:4201")
+        self.assertRaises(ConnectionError,
+                          client.server_infos,
+                          client._get_server())
+
 
 class ThreadSafeHttpClientTest(TestCase):
     """
@@ -225,7 +232,6 @@ class KeepAliveClientTest(TestCase):
     def __init__(self, *args, **kwargs):
         super(KeepAliveClientTest, self).__init__(*args, **kwargs)
         self.server_process = Process(target=self._run_server)
-
 
     def setUp(self):
         super(KeepAliveClientTest, self).setUp()

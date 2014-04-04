@@ -142,6 +142,10 @@ class Client(object):
             else:
                 message = str(e.args[0])
             raise ConnectionError(message)
+        except requests.HTTPError as e:
+            if hasattr(e, 'response') and e.response:
+                raise ConnectionError(e.response.content)
+            raise ConnectionError()
 
         node_name = content.get("name")
         return server, node_name

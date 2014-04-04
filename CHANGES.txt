@@ -2,14 +2,18 @@
 Changes for crate
 =================
 
-
 Unreleased
 ==========
 
  - add ``verify_ssl_cert`` and ``ca_cert`` as kwargs to ``Connection``,
    ``connect`` and as SQLAlchemy ``connect_args``
 
-2014/04/21 0.8.0
+2014/04/04 0.8.1
+================
+
+ - client: fix error handling in ``client.server_infos()``
+
+2014/03/21 0.8.0
 ================
 
  - updated crate to 0.32.3

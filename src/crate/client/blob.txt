@@ -1,0 +1,21 @@
+
+
+    >>> from crate.client.connection import connect
+    >>> client = connect([crate_host])
+
+    >>> container = client.get_blob_container('myfiles')
+
+    >>> from cStringIO import StringIO
+    >>> f = StringIO(b'data')
+
+#    >>> container.put(f)
+
+    >>> container.put(f, 'a17c9aaa61e80a1bf71d0d850af4e5baa9800bbd')
+
+    >>> from tempfile import TemporaryFile
+    >>> f = TemporaryFile()
+    >>> _ = f.write(b'data')
+    >>> _ = f.seek(0)
+    >>> container.put(f)
+    'a17c9aaa61e80a1bf71d0d850af4e5baa9800bbd'
+

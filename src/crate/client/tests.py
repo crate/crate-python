@@ -34,9 +34,7 @@ import time
 import threading
 from .compat import to_bytes
 
-import requests
 from zope.testing.renormalizing import RENormalizing
-import zc.customdoctests
 
 from crate.testing.layer import CrateLayer
 from crate.testing.tests import crate_path, docs_path
@@ -279,6 +277,7 @@ def test_suite():
 
     s = doctest.DocFileSuite(
         'http.txt',
+        'blob.txt',
         '../../../docs/client.txt',
         '../../../docs/advanced_usage.txt',
         '../../../docs/blobs.txt',

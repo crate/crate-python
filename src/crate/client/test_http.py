@@ -29,40 +29,40 @@ from unittest import TestCase
 from mock import patch, MagicMock
 from threading import Thread, Event
 from multiprocessing import Process
-
-from requests.exceptions import HTTPError, ConnectionError as RequestsConnectionError
-
+import urllib3.exceptions
 
 from .http import Client
 from .exceptions import ConnectionError, ProgrammingError
 from .compat import xrange, BaseHTTPServer, to_bytes
 
 
-class FakeSession(object):
-    def request(self, *args, **kwargs):
-        mock_response = MagicMock()
-        mock_response.content = "this shouldn't be raised"
-        raise HTTPError(response=mock_response)
+class FakeServerRaisingException(object):
+
+    def __init__(self, *args, **kwargs):
+        pass
 
 
-class FakeSessionLazyRaise(object):
-    def request(*args, **kwargs):
-        mock_response = MagicMock()
-        mock_response.content = "this shouldn't be raised"
+class FakeServerRaisingGeneralException(FakeServerRaisingException):
 
-        def raise_for_status():
-            raise HTTPError(response=mock_response)
-        mock_response.raise_for_status = raise_for_status
-        return mock_response
+    def request(self, method, path, data=None, stream=False, **kwargs):
+        raise Exception("this shouldn't be raised")
 
 
-class FakeSessionFailSometimes(object):
+class FakeServerRaisingMaxRetryError(FakeServerRaisingException):
+
+    def request(self, method, path, data=None, stream=False, **kwargs):
+        raise urllib3.exceptions.MaxRetryError(
+                    None, path, "this shouldn't be raised")
+
+
+class FakeServerFailSometimes(object):
+
     _rnd = SystemRandom(time.time())
 
-    def request(self, *args, **kwargs):
+    def request(self, method, path, data=None, stream=False, **kwargs):
         mock_response = MagicMock()
-        if int(self._rnd.random()*100) % 10 == 0:
-            raise RequestsConnectionError()
+        if int(self._rnd.random() * 100) % 10 == 0:
+            raise urllib3.exceptions.MaxRetryError(None, path, '')
         else:
             return mock_response
 
@@ -73,12 +73,12 @@ class HttpClientTest(TestCase):
         client = Client()
         self.assertRaises(ConnectionError, client.sql, 'select 1')
 
-    @patch('requests.sessions.Session', FakeSession)
+    @patch('crate.client.http.Server', FakeServerRaisingGeneralException)
     def test_http_error_is_re_raised(self):
         client = Client()
         self.assertRaises(ProgrammingError, client.sql, 'select 1')
 
-    @patch('requests.sessions.Session', FakeSession)
+    @patch('crate.client.http.Server', FakeServerRaisingGeneralException)
     def test_programming_error_contains_http_error_response_content(self):
         client = Client()
         try:
@@ -87,11 +87,6 @@ class HttpClientTest(TestCase):
             self.assertEquals("this shouldn't be raised", e.message)
         else:
             self.assertTrue(False)
-
-    @patch('requests.sessions.Session', FakeSessionLazyRaise)
-    def test_http_error_is_re_raised_in_raise_for_status(self):
-        client = Client()
-        self.assertRaises(ProgrammingError, client.sql, 'select 1')
 
     def test_connect(self):
         client = Client(servers="localhost:4200 localhost:4201")
@@ -108,7 +103,7 @@ class HttpClientTest(TestCase):
         self.assertEqual(client._active_servers,
                          ["http://localhost:4200", "http://127.0.0.1:4201"])
 
-    @patch('requests.sessions.Session', FakeSession)
+    @patch('crate.client.http.Server', FakeServerRaisingMaxRetryError)
     def test_server_infos(self):
         client = Client(servers="localhost:4200 localhost:4201")
         self.assertRaises(ConnectionError,
@@ -118,10 +113,11 @@ class HttpClientTest(TestCase):
 
 class ThreadSafeHttpClientTest(TestCase):
     """
-    Using a pool of 5 Threads to emit commands to the multiple servers through one Client-instance
+    Using a pool of 5 Threads to emit commands to the multiple servers through
+    one Client-instance
 
-    check if number of servers in _inactive_servers and _active_servers always euqals the number
-    of servers initially given.
+    check if number of servers in _inactive_servers and _active_servers always
+    equals the number of servers initially given.
     """
     servers = [
         "127.0.0.1:44209",
@@ -141,7 +137,8 @@ class ThreadSafeHttpClientTest(TestCase):
         super(ThreadSafeHttpClientTest, self).setUp()
         self.client = Client(self.servers)
         self.client.retry_interval = 0.0001  # faster retry
-        self.client._session = FakeSessionFailSometimes()  # patch the clients session
+        for server in list(self.client.server_pool.keys()):
+            self.client.server_pool[server] = FakeServerFailSometimes()
 
     def _run(self):
         self.event.wait()  # wait for the others
@@ -149,7 +146,7 @@ class ThreadSafeHttpClientTest(TestCase):
         for x in xrange(self.num_commands):
             try:
                 self.client._request('GET', "/")
-            except RequestsConnectionError:
+            except (ConnectionError, ProgrammingError):
                 pass
             try:
                 with self.client._lock:
@@ -159,16 +156,17 @@ class ThreadSafeHttpClientTest(TestCase):
                     num_servers,
                     "expected %d but got %d" % (expected_num_servers, num_servers)
                 )
-            except AssertionError as e:
+            except AssertionError:
                 self.err_queue.put(sys.exc_info())
 
     def test_client_threaded(self):
         """
-        Testing if lists of servers is handled correctly when client is used from multiple threads
-        with some requests failing.
+        Testing if lists of servers is handled correctly when client is used
+        from multiple threads with some requests failing.
 
-        **ATTENTION:** this test is probabilistic and does not ensure that the client is
-        indeed thread-safe in all cases, it can only show that it withstands this scenario.
+        **ATTENTION:** this test is probabilistic and does not ensure that the
+        client is indeed thread-safe in all cases, it can only show that it
+        withstands this scenario.
         """
         pool = [
             Thread(target=self._run, name=str(x))

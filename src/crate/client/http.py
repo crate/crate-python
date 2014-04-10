@@ -19,20 +19,23 @@
 # with Crate these terms will supersede the license and you may use the
 # software solely pursuant to the terms of the relevant commercial agreement.
 
-from _socket import gaierror
 import heapq
 import json
 import logging
 import os
 import sys
+import urllib3
+import urllib3.exceptions
 from time import time
 import threading
 from six.moves.urllib.parse import urlparse
-import requests
-from requests.exceptions import SSLError
 import re
 from crate.client.exceptions import (
-    ConnectionError, DigestNotFoundException, ProgrammingError, BlobsDisabledException)
+    ConnectionError,
+    DigestNotFoundException,
+    ProgrammingError,
+    BlobsDisabledException,
+)
 
 
 logger = logging.getLogger(__name__)
@@ -40,7 +43,26 @@ logger = logging.getLogger(__name__)
 if sys.version_info[0] > 2:
     basestring = str
 
-_HTTP_PAT = pat = re.compile('https?://.+',re.I)
+_HTTP_PAT = pat = re.compile('https?://.+', re.I)
+
+
+class Server(object):
+
+    headers = {'Content-type': 'application/json'}
+
+    def __init__(self, server, **kwargs):
+        self.pool = urllib3.connection_from_url(server, **kwargs)
+
+    def request(self, method, path, data=None, stream=False, **kwargs):
+        import pdb; pdb.set_trace()
+        return self.pool.urlopen(
+            method,
+            path,
+            headers=self.headers,
+            body=data,
+            preload_content=not stream,
+            **kwargs
+        )
 
 
 class Client(object):
@@ -57,6 +79,8 @@ class Client(object):
     default_server = "http://127.0.0.1:4200"
     """Default server to use if no servers are given on instantiation."""
 
+    server_pool = None
+
     def __init__(self, servers=None, timeout=None, ca_cert=None,
                  verify_ssl_cert=False):
         if not servers:
@@ -69,13 +93,25 @@ class Client(object):
         self._inactive_servers = []
 
         self._http_timeout = timeout
+        pool_kw = {}
         if ca_cert is None:
             ca_cert = os.environ.get("REQUESTS_CA_BUNDLE", None)
-        self._ca_cert = ca_cert
-        self._verify_ssl_cert = verify_ssl_cert
+        if ca_cert is not None:
+            pool_kw['ca_certs'] = ca_cert
+            pool_kw['cert_reqs'] = verify_ssl_cert and 'REQUIRED' or 'NONE'
+        self.update_server_pool(servers,
+                                timeout=timeout,
+                                **pool_kw
+                                )
         self._lock = threading.RLock()
         self._local = threading.local()
-        self._session = requests.session()
+
+    def update_server_pool(self, servers, **kwargs):
+        if self.server_pool is None:
+            self.server_pool = {}
+        for server in servers:
+            if not server in self.server_pool:
+                self.server_pool[server] = Server(server, **kwargs)
 
     @staticmethod
     def _server_url(server):
@@ -122,31 +158,14 @@ class Client(object):
         return content
 
     def server_infos(self, server):
+        response = self._request('GET', '', server=server)
+        self._raise_for_status(response)
         try:
-            response = self._do_request(server, 'GET', '')
-            self._raise_for_status(response)
-            try:
-                content = response.json()
-            except ValueError:
-                raise ProgrammingError(
-                    "Invalid server response of content-type '%s'" %
-                    response.headers.get("content-type", "unknown"))
-        except requests.ConnectionError as e:
-            reason = getattr(e.args[0], "reason", None)
-            if isinstance(reason, gaierror):
-                raise ConnectionError("Hostname could no be resolved.")
-            elif isinstance(e, SSLError):
-                raise ConnectionError("SSL Error: {0}".format(e.args[0]))
-            elif reason:
-                message = getattr(reason, "strerror", "")
-            else:
-                message = str(e.args[0])
-            raise ConnectionError(message)
-        except requests.HTTPError as e:
-            if hasattr(e, 'response') and e.response:
-                raise ConnectionError(e.response.content)
-            raise ConnectionError()
-
+            content = json.loads(response.data)
+        except ValueError:
+            raise ProgrammingError(
+                "Invalid server response of content-type '%s'" %
+                response.headers.get("content-type", "unknown"))
         node_name = content.get("name")
         return server, node_name
 
@@ -159,11 +178,13 @@ class Client(object):
         given table and digest.
         """
         response = self._request('PUT', self._blob_path(table, digest), data=data)
-        if response.status_code == 201:
+        if response.status == 201:
+            # blob created
             return True
-        elif response.status_code == 409:
+        if response.status == 409:
+            # blob exists
             return False
-        elif response.status_code == 400:
+        if response.status == 400:
             raise BlobsDisabledException(table, digest)
         self._raise_for_status(response)
 
@@ -172,9 +193,9 @@ class Client(object):
         Deletes the blob with given digest under the given table.
         """
         response = self._request('DELETE', self._blob_path(table, digest))
-        if response.status_code == 204:
+        if response.status == 204:
             return True
-        elif response.status_code == 404:
+        if response.status == 404:
             return False
         self._raise_for_status(response)
 
@@ -184,80 +205,81 @@ class Client(object):
         digest.
         """
         response = self._request('GET', self._blob_path(table, digest), stream=True)
-
-        if response.status_code == 404:
+        if response.status == 404:
             raise DigestNotFoundException(table, digest)
         self._raise_for_status(response)
-        return response.iter_content(chunk_size=chunk_size)
+        return response.stream(amt=chunk_size)
 
     def blob_exists(self, table, digest):
         """
         Returns true if the blob with the given digest exists under the given table.
         """
         response = self._request('HEAD', self._blob_path(table, digest))
-        if response.status_code == 200:
+        if response.status == 200:
             return True
-        elif response.status_code == 404:
+        elif response.status == 404:
             return False
         self._raise_for_status(response)
 
-    def _request(self, method, path, **kwargs):
-        server = getattr(self._local, "server", None)
+    def _request(self, method, path, server=None, **kwargs):
+        """Execute a request to the cluster
+
+        A server is selected from the server pool.
+        """
         while True:
-            if not server:
-                self._local.server = server = self._get_server()
+            next_server = server or self._get_server()
             try:
-                response = self._do_request(server, method, path, **kwargs)
-                # reset local server, so next request will use new one
-                self._local.server = server = None
-                return response
-            except (requests.ConnectionError, requests.Timeout,
-                    requests.TooManyRedirects) as ex:
+                return self._do_request(next_server, method, path, **kwargs)
+            except (urllib3.exceptions.MaxRetryError,
+                    urllib3.exceptions.ReadTimeoutError,
+                    urllib3.exceptions.SSLError,
+                    urllib3.exceptions.HTTPError,
+                    urllib3.exceptions.ProxyError,
+                   ) as ex:
                 # drop server from active ones
                 ex_message = hasattr(ex, 'message') and ex.message or str(ex)
-                self._drop_server(server, ex_message)
-                self._local.server = server = None
+                if server:
+                    raise ConnectionError(
+                        "Server not available, exception: %s" % ex_message
+                    )
+                self._drop_server(next_server, ex_message)
                 # if this is the last server raise exception, otherwise try next
                 if not self._active_servers:
                     raise ConnectionError(
                         ("No more Servers available, "
                          "exception from last server: %s") % ex_message)
-            except requests.HTTPError as e:
-                if hasattr(e, 'response') and e.response:
-                    raise ProgrammingError(e.response.content)
-                raise ProgrammingError()
+            except Exception as e:
+                ex_message = hasattr(e, 'message') and e.message or str(e)
+                raise ProgrammingError(ex_message)
 
-    def _do_request(self, url, method, path, **kwargs):
+    def _do_request(self, server, method, path, **kwargs):
         """do the actual request to a chosen server"""
-        uri = "{url}/{path}".format(url=url, path=path)
-
-        assert "verify" not in kwargs
-
-        if self._ca_cert is not None and self._verify_ssl_cert:
-            verify = self._ca_cert
-        else:
-            verify = self._verify_ssl_cert
-
-        return self._session.request(method, uri,
-                                     timeout=self._http_timeout,
-                                     verify=verify,
-                                     **kwargs)
+        if not path.startswith('/'):
+            path = '/' + path
+        return self.server_pool[server].request(
+                    method,
+                    path,
+                    **kwargs)
 
     def _raise_for_status(self, response):
         """ make sure that only crate.exceptions are raised that are defined in
         the DB-API specification """
-
-        try:
-            response.raise_for_status()
-        except requests.exceptions.HTTPError as e:
-            if hasattr(e, 'response') and \
-                response.headers.get("content-type", "").startswith("application/json"):
-                error = e.response.json().get('error', {})
-                if isinstance(error, dict):
-                    raise ProgrammingError(error.get('message', ''))
-                else:
-                    raise ProgrammingError(error)
-            raise ProgrammingError(str(e))
+        http_error_msg = ''
+        if 400 <= response.status < 500:
+            http_error_msg = '%s Client Error: %s' % (
+                                response.status, response.reason)
+        elif 500 <= response.status < 600:
+            http_error_msg = '%s Server Error: %s' % (
+                                response.status, response.reason)
+        else:
+            return
+        if response.headers.get("content-type", ""
+                                ).startswith("application/json"):
+            error = json.loads(response.data).get('error', {})
+            if isinstance(error, dict):
+                raise ProgrammingError(error.get('message', ''))
+            raise ProgrammingError(error)
+        raise ProgrammingError(http_error_msg)
 
     def _json_request(self, method, path, data=None):
         """
@@ -271,14 +293,14 @@ class Client(object):
         # raise error if occurred, otherwise nothing is raised
         self._raise_for_status(response)
         # return parsed json response
-        if len(response.content) > 0:
+        if len(response.data) > 0:
             try:
-                return response.json()
+                return json.loads(response.data)
             except ValueError:
                 raise ProgrammingError(
                     "Invalid server response of content-type '%s'" %
                     response.headers.get("content-type", ""))
-        return response.content
+        return response.data
 
     def _get_server(self):
         """

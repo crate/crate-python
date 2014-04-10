@@ -82,9 +82,9 @@ Issue a select statement against our with test data pre-filled crate instance::
                 ['Bartledan'],
                 ['Folfanga'],
                 ['Galactic Sector QQ7 Active J Gamma'],
+                ['Galaxy'],
                 ['North West Ripple'],
-                ['Outer Eastern Rim'],
-                [None]]}
+                ['Outer Eastern Rim']]}
 
 Blobs
 =====
@@ -117,7 +117,7 @@ created, false if it already exists::
     ...     'myfiles', '040f06fd774092478d450774f5ba30c5da78acc8', f)
     False
 
-The blob should now exist::
+Now the blob exist::
 
     >>> http_client.blob_exists('myfiles', '040f06fd774092478d450774f5ba30c5da78acc8')
     True

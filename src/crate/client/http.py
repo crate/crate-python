@@ -25,6 +25,7 @@ import logging
 import os
 import io
 import sys
+import six
 import urllib3
 import urllib3.exceptions
 from time import time
@@ -189,7 +190,7 @@ class Client(object):
         response = self._request('GET', '', server=server)
         self._raise_for_status(response)
         try:
-            content = json.loads(response.data)
+            content = json.loads(six.text_type(response.data, 'utf-8'))
         except ValueError:
             raise ProgrammingError(
                 "Invalid server response of content-type '%s'" %
@@ -303,7 +304,8 @@ class Client(object):
             return
         if response.headers.get("content-type", ""
                                 ).startswith("application/json"):
-            error = json.loads(response.data).get('error', {})
+            data = json.loads(six.text_type(response.data, 'utf-8'))
+            error = data.get('error', {})
             if isinstance(error, dict):
                 raise ProgrammingError(error.get('message', ''))
             raise ProgrammingError(error)
@@ -323,7 +325,7 @@ class Client(object):
         # return parsed json response
         if len(response.data) > 0:
             try:
-                return json.loads(response.data)
+                return json.loads(six.text_type(response.data, 'utf-8'))
             except ValueError:
                 raise ProgrammingError(
                     "Invalid server response of content-type '%s'" %

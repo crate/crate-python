@@ -24,8 +24,8 @@ stream like object.
 
 Store a StringIO stream::
 
-    >>> from cStringIO import StringIO
-    >>> f = StringIO(b'StringIO data')
+    >>> from six import BytesIO
+    >>> f = BytesIO(b'StringIO data')
     >>> stringio_bob = container.put(f)
     >>> stringio_bob
     '0cd4511d696823779692484029f234471cd21f28'
@@ -44,7 +44,7 @@ If the blob data is not provided as a seekable stream the hash must be
 provided explicetely::
 
     >>> import hashlib
-    >>> string_data = 'String data'
+    >>> string_data = b'String data'
     >>> string_blob = hashlib.sha1(string_data).hexdigest()
     >>> container.put(string_data, string_blob)
     True
@@ -67,8 +67,9 @@ Blobs can be retrieved using its hash::
     >>> blob_stream = container.get(string_blob)
     >>> blob_stream
     <generator ...>
-    >>> blob_stream.next()
-    'String data'
+    >>> data = next(blob_stream)
+    >>> data == string_data
+    True
 
 
 Delete Blobs

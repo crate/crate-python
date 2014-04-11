@@ -34,7 +34,7 @@ When switching on verification and giving a wrong ``ca_cert`` an error is raised
     >>> verifying_client.server_infos(crate_host)
     Traceback (most recent call last):
     ...
-    ConnectionError: Server not available, ...:certificate verify failed
+    ConnectionError: Server not available, ...certificate verify failed...
 
 Without verification, the given ``ca_cert`` is ignored and the connection will be
 established, to Eves satisfaction.

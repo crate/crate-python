@@ -2,7 +2,7 @@ import os
 import signal
 import time
 import logging
-import urllib2
+import urllib3
 
 from lovely.testlayers import server, layer
 
@@ -73,14 +73,12 @@ class CrateLayer(server.ServerLayer, layer.WorkDirectoryLayer):
         # block here so that early requests after the layer starts don't result in 503
 
         time_slept = 0
+        http = urllib3.PoolManager()
         while True:
             try:
-                try:
-                    resp = urllib2.urlopen(self.crate_servers[0] + '/')
-                    if resp.getcode() == 200:
-                        break
-                except urllib2.HTTPError as e:
-                    pass
+                resp = http.request('GET', self.crate_servers[0] + '/')
+                if resp.status == 200:
+                    break
                 time.sleep(0.02)
                 time_slept += 0.02
                 if time_slept % 1 == 0:

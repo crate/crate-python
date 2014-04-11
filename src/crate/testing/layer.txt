@@ -30,11 +30,12 @@ Lets start the layer::
 
 Now we can access the ``Crate`` instance on the defined port::
 
-    >>> import urllib2
+    >>> import urllib3
+    >>> http = urllib3.PoolManager()
 
     >>> stats_uri = "http://127.0.0.1:{0}/".format(port)
-    >>> response = urllib2.urlopen(stats_uri)
-    >>> response.getcode()
+    >>> response = http.request('GET', stats_uri)
+    >>> response.status
     200
 
 

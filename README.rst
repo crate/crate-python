@@ -4,6 +4,9 @@
    :alt: Crate
    :target: https://crate.io
 
+.. image:: https://travis-ci.org/crate/crate-python.svg?branch=master
+        :target: https://travis-ci.org/crate/crate-python
+
 ========
 Overview
 ========

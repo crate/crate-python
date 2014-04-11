@@ -2,9 +2,9 @@ import os
 import signal
 import time
 import logging
+import urllib2
 
 from lovely.testlayers import server, layer
-import requests
 
 
 logger = logging.getLogger(__name__)
@@ -75,9 +75,12 @@ class CrateLayer(server.ServerLayer, layer.WorkDirectoryLayer):
         time_slept = 0
         while True:
             try:
-                resp = requests.get(self.crate_servers[0] + '/')
-                if resp.status_code == 200:
-                    break
+                try:
+                    resp = urllib2.urlopen(self.crate_servers[0] + '/')
+                    if resp.getcode() == 200:
+                        break
+                except urllib2.HTTPError as e:
+                    pass
                 time.sleep(0.02)
                 time_slept += 0.02
                 if time_slept % 1 == 0:

@@ -37,10 +37,9 @@ class BlobContainer(object):
         m = hashlib.sha1()
         while True:
             d = f.read(1024 * 32)
-            if d:
-                m.update(d)
-            else:
+            if not d:
                 break
+            m.update(d)
         f.seek(0)
         return m.hexdigest()
 
@@ -66,8 +65,7 @@ class BlobContainer(object):
         created = self.conn.client.blob_put(self.container_name, actual_digest, f)
         if digest:
             return created
-        else:
-            return actual_digest
+        return actual_digest
 
     def get(self, digest):
         """

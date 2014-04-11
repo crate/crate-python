@@ -5,6 +5,8 @@ Changes for crate
 Unreleased
 ==========
 
+ - replaced requests with urllib3 to improve performance
+
  - add ``verify_ssl_cert`` and ``ca_cert`` as kwargs to ``Connection``,
    ``connect`` and as SQLAlchemy ``connect_args``
 

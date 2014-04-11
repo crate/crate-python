@@ -99,9 +99,9 @@ fetchall()
      [u'Bartledan'],
      [u'Folfanga'],
      [u'Galactic Sector QQ7 Active J Gamma'],
+     ['Galaxy'],
      [u'North West Ripple'],
-     [u'Outer Eastern Rim'],
-     [None]]
+     [u'Outer Eastern Rim']]
 
 
 Cursor Description

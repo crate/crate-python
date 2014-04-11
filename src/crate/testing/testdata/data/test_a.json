@@ -10,4 +10,4 @@
 { "name": "Arkintoofle Minor", "date":"1979-10-12", "kind": "Planet", "position": 3, "description": "Motivated by the fact that the only thing in the Universe that travels faster than light is bad news, the Hingefreel people native to Arkintoofle Minor constructed a starship driven by bad news."}
 { "name": "Bartledan", "date":"2013-07-16", "kind": "Planet", "position": 4, "description": "An Earthlike planet on which Arthur Dent lived for a short time, Bartledan is inhabited by Bartledanians, a race that appears human but only physically."}
 { "name": "Folfanga", "date":"2013-07-16", "kind": "Star System", "position": 5, "description": "Folfanga is a star system, the fourth planet of which is inhabited by a species of small slug, of the genus A-Rth-Urp-Hil-Ipdenu."}
-{ "name": null, "date":"2013-07-16", "kind": "Galaxy", "position": 6, "description": "The end of the Galaxy."}
+{ "name": "Galaxy", "date":"2013-07-16", "kind": "Galaxy", "position": 6, "description": "The end of the Galaxy."}

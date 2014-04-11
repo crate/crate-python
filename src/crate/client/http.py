@@ -23,6 +23,7 @@ import heapq
 import json
 import logging
 import os
+import io
 import sys
 import urllib3
 import urllib3.exceptions
@@ -46,21 +47,51 @@ if sys.version_info[0] > 2:
 _HTTP_PAT = pat = re.compile('https?://.+', re.I)
 
 
-class Server(object):
+def super_len(o):
+    if hasattr(o, '__len__'):
+        return len(o)
+    if hasattr(o, 'len'):
+        return o.len
+    if hasattr(o, 'fileno'):
+        try:
+            fileno = o.fileno()
+        except io.UnsupportedOperation:
+            pass
+        else:
+            return os.fstat(fileno).st_size
+    if hasattr(o, 'getvalue'):
+        # e.g. BytesIO, cStringIO.StringI
+        return len(o.getvalue())
 
-    headers = {'Content-type': 'application/json'}
+
+class Server(object):
 
     def __init__(self, server, **kwargs):
         self.pool = urllib3.connection_from_url(server, **kwargs)
 
-    def request(self, method, path, data=None, stream=False, **kwargs):
-        import pdb; pdb.set_trace()
+    def request(self,
+                method,
+                path,
+                data=None,
+                stream=False,
+                headers=None,
+                **kwargs):
+        """Send a request
+
+        Always set the Content-Length header.
+        """
+        if headers is None:
+            headers = {}
+        if not 'Content-Length' in headers:
+            length = super_len(data)
+            if length is not None:
+                headers['Content-Length'] = length
         return self.pool.urlopen(
             method,
             path,
-            headers=self.headers,
             body=data,
             preload_content=not stream,
+            headers=headers,
             **kwargs
         )
 
@@ -78,8 +109,6 @@ class Client(object):
 
     default_server = "http://127.0.0.1:4200"
     """Default server to use if no servers are given on instantiation."""
-
-    server_pool = None
 
     def __init__(self, servers=None, timeout=None, ca_cert=None,
                  verify_ssl_cert=False):
@@ -99,16 +128,15 @@ class Client(object):
         if ca_cert is not None:
             pool_kw['ca_certs'] = ca_cert
             pool_kw['cert_reqs'] = verify_ssl_cert and 'REQUIRED' or 'NONE'
-        self.update_server_pool(servers,
-                                timeout=timeout,
-                                **pool_kw
+        self.server_pool = {}
+        self._update_server_pool(servers,
+                                 timeout=timeout,
+                                 **pool_kw
                                 )
         self._lock = threading.RLock()
         self._local = threading.local()
 
-    def update_server_pool(self, servers, **kwargs):
-        if self.server_pool is None:
-            self.server_pool = {}
+    def _update_server_pool(self, servers, **kwargs):
         for server in servers:
             if not server in self.server_pool:
                 self.server_pool[server] = Server(server, **kwargs)

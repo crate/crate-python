@@ -5,6 +5,9 @@ Changes for crate
 Unreleased
 ==========
 
+2014/04/01 0.9.0
+================
+
  - replaced requests with urllib3 to improve performance
 
  - add ``verify_ssl_cert`` and ``ca_cert`` as kwargs to ``Connection``,

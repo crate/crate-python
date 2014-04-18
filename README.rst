@@ -6,6 +6,15 @@
 
 .. image:: https://travis-ci.org/crate/crate-python.svg?branch=master
         :target: https://travis-ci.org/crate/crate-python
+        :alt: Test
+
+.. image:: https://badge.fury.io/py/crate.png
+    :target: http://badge.fury.io/py/crate
+    :alt: Version
+
+.. image:: https://pypip.in/download/crate/badge.png
+    :target: https://pypi.python.org/pypi/crate/
+    :alt: Downloads
 
 ========
 Overview

@@ -54,6 +54,12 @@ To update use::
 
     $ easy_install -U crate
 
+Are you a Developer?
+====================
+
+You can build Crate Python Client on your own with the latest version hosted 
+on GitHub.
+To do so, please refer to ``DEVELOP.rst`` for further information.
 
 Help & Contact
 ==============

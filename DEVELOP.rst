@@ -61,3 +61,19 @@ but does only support plaintext authentication::
 
     bin/py setup.py upload
 
+Writing Documentation
+=====================
+
+The documentation is maintained under the ``docs`` directory and
+written in ReStructuredText_ and processed with Sphinx_.
+
+Normally the documentation is built by `Read the Docs`_.
+However if you work on the documentation you can run sphinx
+directly, which can be done by just running ``bin/sphinx``.
+The output can then be found in the ``out/html``  directory.
+
+.. _Sphinx: http://sphinx-doc.org/
+
+.. _ReStructuredText: http://docutils.sourceforge.net/rst.html
+
+.. _`Read the Docs`: http://readthedocs.org

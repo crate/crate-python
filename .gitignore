@@ -6,6 +6,7 @@ crate.egg-info
 /crate-python.iml
 /dist
 /build
+/out
 *.pyc
 /.idea/
 .tox/

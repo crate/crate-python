@@ -5,6 +5,8 @@ Changes for crate
 Unreleased
 ==========
 
+ - fixed python3.3 compatibility issue in sphinx script
+
 2014/05/07 0.9.1
 ================
 

@@ -1,1 +1,1 @@
-from crate.rtd_theme.conf.crate_python import *
+from crate.theme.rtd.conf.crate_python import *

@@ -5,6 +5,9 @@ Changes for crate
 Unreleased
 ==========
 
+2014/05/09 0.9.3
+================
+
  - bugfix: old versions of `six` caused import errors
 
  - updated crate doc theme config

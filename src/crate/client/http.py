@@ -30,8 +30,11 @@ import urllib3
 import urllib3.exceptions
 from time import time
 import threading
-from six.moves.urllib.parse import urlparse
 import re
+try:
+    from urllib.parse import urlparse
+except ImportError:     # Python 2
+    from urlparse import urlparse
 from crate.client.exceptions import (
     ConnectionError,
     DigestNotFoundException,

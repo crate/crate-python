@@ -5,6 +5,9 @@ Changes for crate
 Unreleased
 ==========
 
+2014/05/09 0.9.4
+================
+
  - bugfix: raise correct error if fetching infos is not possible because server
    is not fully started
 

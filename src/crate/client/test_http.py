@@ -55,6 +55,18 @@ class FakeServerRaisingMaxRetryError(FakeServerRaisingException):
                     None, path, "this shouldn't be raised")
 
 
+class FakeServerServiceUnavailable(object):
+
+    def __init__(self, *args, **kwargs):
+        pass
+
+    def request(self, method, path, data=None, stream=False, **kwargs):
+        mock_response = MagicMock()
+        mock_response.status = 503
+        mock_response.reason = "Service Unavailable"
+        return mock_response
+
+
 class FakeServerFailSometimes(object):
 
     _rnd = SystemRandom(time.time())
@@ -105,6 +117,13 @@ class HttpClientTest(TestCase):
 
     @patch('crate.client.http.Server', FakeServerRaisingMaxRetryError)
     def test_server_infos(self):
+        client = Client(servers="localhost:4200 localhost:4201")
+        self.assertRaises(ConnectionError,
+                          client.server_infos,
+                          client._get_server())
+
+    @patch('crate.client.http.Server', FakeServerServiceUnavailable)
+    def test_server_infos_503(self):
         client = Client(servers="localhost:4200 localhost:4201")
         self.assertRaises(ConnectionError,
                           client.server_infos,

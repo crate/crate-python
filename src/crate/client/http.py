@@ -305,6 +305,8 @@ class Client(object):
                                 response.status, response.reason)
         else:
             return
+        if response.status == 503:
+            raise ConnectionError(http_error_msg)
         if response.headers.get("content-type", ""
                                 ).startswith("application/json"):
             data = json.loads(six.text_type(response.data, 'utf-8'))

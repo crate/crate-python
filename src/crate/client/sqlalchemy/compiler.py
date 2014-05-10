@@ -73,7 +73,8 @@ def rewrite_update(clauseelement, multiparams, params):
 
 @sa.event.listens_for(sa.engine.Engine, "before_execute", retval=True)
 def crate_before_execute(conn, clauseelement, multiparams, params):
-    if isinstance(clauseelement, sa.sql.expression.Update):
+    is_crate = type(conn.dialect).__name__ == 'CrateDialect'
+    if is_crate and isinstance(clauseelement, sa.sql.expression.Update):
         return rewrite_update(clauseelement, multiparams, params)
     return clauseelement, multiparams, params
 

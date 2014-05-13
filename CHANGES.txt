@@ -2,8 +2,8 @@
 Changes for crate
 =================
 
-Unreleased
-==========
+2014/05/13 0.9.5
+================
 
  - bugfix: updates of complex types will only be rewritten if the dialect is
    set to 'crate' in SQLAlchemy.

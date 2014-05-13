@@ -42,7 +42,7 @@ def rewrite_update(clauseelement, multiparams, params):
         "col['x'] = ?, col['y'] = ?", (1, 2)
 
     by using the `Craty` (`MutableDict`) type.
-    The update statement is only rewritten if a item of the MutableDict was
+    The update statement is only rewritten if an item of the MutableDict was
     changed.
     """
 

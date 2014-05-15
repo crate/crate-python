@@ -27,6 +27,7 @@ except ImportError:
     # SQLAlchemy 0.9
     from sqlalchemy.sql.elements import _is_literal as sa_is_literal
 from sqlalchemy.sql.compiler import SQLCompiler
+from sqlalchemy.sql import compiler, expression, operators
 from .types import MutableDict
 
 
@@ -85,6 +86,13 @@ class CrateCompiler(SQLCompiler):
         return "{0}['{1}']".format(
             self.process(binary.left, **kw),
             binary.right.value
+        )
+
+    def visit_any(self, element, **kw):
+        return "%s%sANY (%s)" % (
+            self.process(element.left, **kw),
+            compiler.OPERATORS[element.operator],
+            self.process(element.right, **kw)
         )
 
     def visit_update(self, update_stmt, **kw):

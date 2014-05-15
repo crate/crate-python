@@ -83,7 +83,7 @@ class HttpClientTest(TestCase):
 
     def test_no_connection_exception(self):
         client = Client()
-        self.assertRaises(ProgrammingError, client.sql, 'select 1')
+        self.assertRaises(ConnectionError, client.sql, 'select 1')
 
     @patch('crate.client.http.Server', FakeServerRaisingGeneralException)
     def test_http_error_is_re_raised(self):

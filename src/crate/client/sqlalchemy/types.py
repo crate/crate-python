@@ -20,7 +20,7 @@
 # software solely pursuant to the terms of the relevant commercial agreement.
 
 import sqlalchemy.types as sqltypes
-from sqlalchemy.sql import operators
+from sqlalchemy.sql import operators, expression
 from sqlalchemy.ext.mutable import Mutable
 
 
@@ -115,11 +115,63 @@ class _Craty(sqltypes.UserDefinedType):
 Object = Craty = MutableDict.as_mutable(_Craty)
 
 
+class Any(expression.ColumnElement):
+    """Represent the clause ``left operator ANY (right)``.  ``right`` must be
+    an array expression.
+
+    copied from postgresql dialect
+
+    .. seealso::
+
+        :class:`sqlalchemy.dialects.postgresql.ARRAY`
+
+        :meth:`sqlalchemy.dialects.postgresql.ARRAY.Comparator.any` - ARRAY-bound method
+
+    """
+    __visit_name__ = 'any'
+
+    def __init__(self, left, right, operator=operators.eq):
+        self.type = sqltypes.Boolean()
+        self.left = expression._literal_as_binds(left)
+        self.right = right
+        self.operator = operator
+
+
 class _ObjectArray(sqltypes.UserDefinedType):
 
     class Comparator(sqltypes.TypeEngine.Comparator):
         def __getitem__(self, key):
             return self._binary_operate(self.expr, operators.getitem, key)
+
+        def any(self, other, operator=operators.eq):
+            """Return ``other operator ANY (array)`` clause.
+
+            Argument places are switched, because ANY requires array
+            expression to be on the right hand-side.
+
+            E.g.::
+
+                from sqlalchemy.sql import operators
+
+                conn.execute(
+                    select([table.c.data]).where(
+                            table.c.data.any(7, operator=operators.lt)
+                        )
+                )
+
+            :param other: expression to be compared
+            :param operator: an operator object from the
+             :mod:`sqlalchemy.sql.operators`
+             package, defaults to :func:`.operators.eq`.
+
+            .. seealso::
+
+                :class:`.postgresql.Any`
+
+                :meth:`.postgresql.ARRAY.Comparator.all`
+
+            """
+            return Any(other, self.expr, operator=operator)
 
     type = MutableList
     comparator_factory = Comparator

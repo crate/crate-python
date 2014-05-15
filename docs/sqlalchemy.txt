@@ -174,7 +174,7 @@ left untouched.
 Object Array
 ------------
 
-in addition to the `Object` type the Crate sqlalchemy dialect also includes a
+In addition to the `Object` type the Crate sqlalchemy dialect also includes a
 type called `ObjectArray`. This type maps to a Python list of dictionaries.
 
 Note that opposed to the `Object` type the `ObjectArray` type isn't smart and
@@ -187,19 +187,37 @@ statement will affect the whole list::
     >>> char.more_details.append({'foo': 3})
     >>> session.commit()
 
-This will generate a UPDATE statement roughly like this::
+This will generate an UPDATE statement roughly like this::
 
     "UPDATE characters set more_details = ? ...", ([{'foo': 1, 'bar': 10}, {'foo': 2}, {'foo': 3}],)
 
     >>> refresh("characters")
 
-If a query is done on a element inside a dictionary only one of the
-dictionaries inside the dictionaries has to match in order for the result to be
-returned::
+To do queries against fields of `ObjectArray`s
+you have to use the ``.any(value, operator=operators.eq)`` method on a subscript,
+because accessing fields of object arrays (e.g. ``Character.more_details['foo']``)
+returns an array of the field type.
 
+Only one of the objects inside the array has to match
+in order for the result to be returned::
+
+    >>> from sqlalchemy.sql import operators
     >>> query = session.query(Character.name)
-    >>> query.filter(Character.more_details['foo'] == 1).all()
+    >>> query.filter(Character.more_details['foo'].any(1, operator=operators.eq)).all()
     [(u'Arthur Dent',)]
+
+.. versionchanged:: 0.9.6
+
+   When connecting to crate with version <= 0.36.X, instead of using the
+   ``any(...)`` method you can use simple comparisons (e.g. ``==``) to query
+   in object array fields.
+
+Querying a field of an object array will result in an array of
+all values of that field of all objects in that object array::
+
+    >>> query = session.query(Character.more_details['foo']).order_by(Character.name)
+    >>> query.all()
+    [([1, 2, 3],), (None,)]
 
 
 Count and Group By

@@ -2,8 +2,8 @@
 Changes for crate
 =================
 
-Unreleased
-==========
+2014/05/16 0.10.0
+=================
 
  - implemented ANY operator on object array containment checks
    for SQLAlchemy

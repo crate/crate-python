@@ -55,16 +55,40 @@ class FakeServerRaisingMaxRetryError(FakeServerRaisingException):
                     None, path, "this shouldn't be raised")
 
 
-class FakeServerServiceUnavailable(object):
+class FakeServerErrorResponse(object):
+
+    @property
+    def status(self):
+        raise NotImplemented
+
+    @property
+    def reason(self):
+        raise NotImplemented
+
+    content_type = "application/json"
 
     def __init__(self, *args, **kwargs):
         pass
 
     def request(self, method, path, data=None, stream=False, **kwargs):
         mock_response = MagicMock()
-        mock_response.status = 503
-        mock_response.reason = "Service Unavailable"
+        mock_response.status = self.status
+        mock_response.reason = self.reason
+        mock_response.headers = {"content-type": self.content_type}
         return mock_response
+
+
+class FakeServerServiceUnavailable(FakeServerErrorResponse):
+
+    status = 503
+    reason = "Service Unavailable"
+
+
+class FakeServerUnauthorized(FakeServerErrorResponse):
+
+    status = 401
+    reason = "Unauthorized"
+    content_type = "text/html"
 
 
 class FakeServerFailSometimes(object):
@@ -128,6 +152,16 @@ class HttpClientTest(TestCase):
         self.assertRaises(ConnectionError,
                           client.server_infos,
                           client._get_server())
+
+    @patch('crate.client.http.Server', FakeServerUnauthorized)
+    def test_server_infos_401(self):
+        client = Client(servers="localhost:4200 localhost:4201")
+        try:
+            client.server_infos(client._get_server())
+        except ProgrammingError as e:
+            self.assertEqual("401 Client Error: Unauthorized", e.message)
+        else:
+            self.assertTrue(False, msg="Exception should have been raised")
 
 
 class ThreadSafeHttpClientTest(TestCase):

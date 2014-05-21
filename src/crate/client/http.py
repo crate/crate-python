@@ -90,6 +90,8 @@ class Server(object):
             length = super_len(data)
             if length is not None:
                 headers['Content-Length'] = length
+        kwargs['assert_same_host'] = False
+        kwargs['redirect'] = False
         return self.pool.urlopen(
             method,
             path,
@@ -137,6 +139,7 @@ class Client(object):
                                  timeout=timeout,
                                  **pool_kw
                                 )
+        self._pool_kw = pool_kw
         self._lock = threading.RLock()
         self._local = threading.local()
 
@@ -253,6 +256,12 @@ class Client(object):
             return False
         self._raise_for_status(response)
 
+
+    def _add_server(self, server):
+        with self._lock:
+            if server not in self.server_pool:
+                self.server_pool[server] = Server(server, **self._pool_kw)
+
     def _request(self, method, path, server=None, **kwargs):
         """Execute a request to the cluster
 
@@ -261,7 +270,14 @@ class Client(object):
         while True:
             next_server = server or self._get_server()
             try:
-                return self._do_request(next_server, method, path, **kwargs)
+                response = self._do_request(next_server, method, path, **kwargs)
+                redirect_location = response.get_redirect_location()
+                if redirect_location and 300 <= response.status <= 308:
+                    redirect_server = self._server_url(redirect_location)
+                    self._add_server(redirect_server)
+                    return self._request(
+                        method, path, server=redirect_server, **kwargs)
+                return response
             except (urllib3.exceptions.MaxRetryError,
                     urllib3.exceptions.ReadTimeoutError,
                     urllib3.exceptions.SSLError,

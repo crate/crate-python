@@ -103,6 +103,20 @@ class FakeServerFailSometimes(object):
             return mock_response
 
 
+class FakeRedirectServer(object):
+
+    """ server that generates a response with redirect location to
+
+        http://localhost:4201
+    """
+
+    def request(self, method, path, data=None, stream=False, **kwargs):
+        resp = MagicMock()
+        resp.status = 307
+        resp.get_redirect_location.return_value = 'http://localhost:4201'
+        return resp
+
+
 class HttpClientTest(TestCase):
 
     def test_no_connection_exception(self):
@@ -138,6 +152,19 @@ class HttpClientTest(TestCase):
         client = Client(servers=["localhost:4200", "127.0.0.1:4201"])
         self.assertEqual(client._active_servers,
                          ["http://localhost:4200", "http://127.0.0.1:4201"])
+
+    def test_redirect_handling(self):
+        client = Client(servers='localhost:4200')
+        client.server_pool['http://localhost:4200'] = FakeRedirectServer()
+        try:
+            client.blob_get('blobs', 'fake_digest')
+        except ProgrammingError:
+            # 4201 gets added to serverpool but isn't available
+            pass
+        self.assertEqual(
+            ['http://localhost:4200', 'http://localhost:4201'],
+            sorted(list(client.server_pool.keys()))
+        )
 
     @patch('crate.client.http.Server', FakeServerRaisingMaxRetryError)
     def test_server_infos(self):

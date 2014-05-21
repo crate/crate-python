@@ -2,6 +2,9 @@
 Changes for crate
 =================
 
+2014/05/21 0.10.1
+=================
+
  - fixed redirect handling for blob downloads and uploads.
 
 2014/05/16 0.10.0

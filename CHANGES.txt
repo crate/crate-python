@@ -2,6 +2,8 @@
 Changes for crate
 =================
 
+ - fix: return -1 for rowcount if rowcount attribute is missing in crate response
+
 2014/05/21 0.10.1
 =================
 

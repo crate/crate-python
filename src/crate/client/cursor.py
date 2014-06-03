@@ -151,7 +151,7 @@ class Cursor(object):
             or "rows" not in self._result
         ):
             return -1
-        return self._result.get("rowcount", len(self._result["rows"]))
+        return self._result.get("rowcount", -1)
 
     def _next(self):
         """

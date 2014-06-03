@@ -132,6 +132,26 @@ The attribute is -1 in case close has been performed on the cursor::
     >>> cursor.rowcount
     -1
 
+If the last respsonse doesn't contain the rowcount attribute -1 is returned::
+
+    >>> cursor = connection.cursor()
+    >>> connection.client.set_next_response({
+    ...     "rows":[],
+    ...     "cols":[],
+    ...     "duration":123
+    ... })
+
+    >>> cursor.execute('')
+    >>> cursor.rowcount
+    -1
+
+    >>> connection.client.set_next_response({
+    ...     "rows":[ [ "North West Ripple", 1 ], [ "Arkintoofle Minor", 3 ], [ "Alpha Centauri", 3 ] ],
+    ...     "cols":[ "name", "position" ],
+    ...     "rowcount":3,
+    ...     "duration":123
+    ... })
+
 duration
 ========
 

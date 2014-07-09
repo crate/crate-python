@@ -16,8 +16,8 @@
     :target: https://pypi.python.org/pypi/crate/
     :alt: Downloads
 
-.. image:: https://coveralls.io/repos/crate/crate-python/badge.png
-    :target: https://coveralls.io/r/crate/crate-python
+.. image:: https://coveralls.io/repos/crate/crate-python/badge.png?branch=master
+    :target: https://coveralls.io/r/crate/crate-python?branch=master
     :alt: Coverage
 
 .. image:: https://pypip.in/wheel/crate/badge.png

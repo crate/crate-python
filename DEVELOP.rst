@@ -61,6 +61,11 @@ but does only support plaintext authentication::
 
     bin/py setup.py upload
 
+In order to verify that the description that is uploaded to PYPI will be
+rendered correctly the following command can be used::
+
+    bin/py setup.py check --strict --restructuredtext
+
 Writing Documentation
 =====================
 

@@ -11,3 +11,5 @@ crate.egg-info
 /.idea/
 .tox/
 *.DS_Store
+htmlcov/
+.coverage

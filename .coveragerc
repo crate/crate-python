@@ -1,0 +1,10 @@
+[report]
+omit =
+    */virtualenv/*
+    */.buildout/eggs/*
+    bin/test
+    buildout-cache/eggs/*
+    parts/*
+    eggs/*
+exclude_lines =
+    raise NotImplemented

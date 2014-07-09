@@ -16,15 +16,26 @@
     :target: https://pypi.python.org/pypi/crate/
     :alt: Downloads
 
+.. image:: https://coveralls.io/repos/crate/crate-python/badge.png
+    :target: https://coveralls.io/r/crate/crate-python
+    :alt: Coverage
+
+.. image:: https://pypip.in/wheel/crate/badge.png
+    :target: https://pypi.python.org/pypi/crate/
+    :alt: Wheel Status
+
+
 ========
 Overview
 ========
 
 This is the database adapter for the crate database. Its main feature is a
 implementation of the Python `DB API 2.0
-<http://www.python.org/dev/peps/pep-0249/>`_ specification. 
+<http://www.python.org/dev/peps/pep-0249/>`_ specification.
 
 It also includes support for `SQLAlchemy <http://www.sqlalchemy.org>`_.
+
+To get started take a look at the `documentation <https://crate.io/docs/projects/crate-python/stable/>`_.
 
 Installation
 ============
@@ -57,8 +68,8 @@ To update use::
 Are you a Developer?
 ====================
 
-You can build Crate Python Client on your own with the latest version hosted 
-on GitHub.
+You can build Crate Python Client on your own with the latest version hosted on
+GitHub.
 To do so, please refer to ``DEVELOP.rst`` for further information.
 
 Help & Contact

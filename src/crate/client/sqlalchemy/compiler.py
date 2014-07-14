@@ -27,7 +27,7 @@ except ImportError:
     # SQLAlchemy 0.9
     from sqlalchemy.sql.elements import _is_literal as sa_is_literal
 from sqlalchemy.sql.compiler import SQLCompiler
-from sqlalchemy.sql import compiler, expression, operators
+from sqlalchemy.sql import compiler
 from .types import MutableDict
 
 
@@ -160,3 +160,14 @@ class CrateCompiler(SQLCompiler):
                     self.postfetch.append(c)
                     value = self.process(value.self_group())
                 set_clauses.append(c._compiler_dispatch(self) + ' = ?')
+            elif self.isupdate:
+                if (
+                    c.onupdate is not None
+                    and not c.onupdate.is_sequence
+                    and not c.onupdate.is_clause_element
+                ):
+                    set_clauses.append('{0} = {1}'.format(
+                        c._compiler_dispatch(self),
+                        self._create_crud_bind_param(c, None)
+                    ))
+                    self.prefetch.append(c)

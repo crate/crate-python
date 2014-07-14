@@ -1,10 +1,11 @@
 # -*- coding: utf-8 -*-
 
-from unittest import TestCase, TestSuite, makeSuite
+from unittest import TestSuite, makeSuite
 from .connection_test import SqlAlchemyConnectionTest
 from .dict_test import SqlAlchemyDictTypeTest
 from .datetime_test import SqlAlchemyDateAndDateTimeTest
 from .compiler_test import SqlAlchemyCompilerTest
+from .update_test import SqlAlchemyUpdateTest
 
 
 def test_suite():
@@ -13,4 +14,5 @@ def test_suite():
     tests.addTest(makeSuite(SqlAlchemyDictTypeTest))
     tests.addTest(makeSuite(SqlAlchemyDateAndDateTimeTest))
     tests.addTest(makeSuite(SqlAlchemyCompilerTest))
+    tests.addTest(makeSuite(SqlAlchemyUpdateTest))
     return tests

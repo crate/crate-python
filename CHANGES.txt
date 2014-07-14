@@ -2,6 +2,9 @@
 Changes for crate
 =================
 
+2014/07/14 0.10.3
+=================
+
  - fix: Columns that have an onupdate definition are now correctly updated
 
 2014/06/03 0.10.2

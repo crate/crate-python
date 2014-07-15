@@ -57,5 +57,5 @@ class SqlAlchemyUpdateTest(TestCase):
         self.assertEqual(40, args[0])
         dt = datetime.strptime(args[1], '%Y-%m-%dT%H:%M:%S.%fZ') 
         self.assertTrue(isinstance(dt, datetime))
-        self.assertGreater(dt, now)
+        self.assertTrue(dt > now)
         self.assertEqual('Arthur', args[2])

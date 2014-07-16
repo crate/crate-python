@@ -2,8 +2,8 @@
 Changes for crate
 =================
 
-Unreleased
-==========
+2014/07/16 0.10.4
+=================
 
  - expose the ``error_trace`` option to give a full traceback of server exceptions
 

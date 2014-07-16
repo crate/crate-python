@@ -2,6 +2,11 @@
 Changes for crate
 =================
 
+Unreleased
+==========
+
+ - fix: only send ``error_trace`` when it is explicitly set
+
 2014/07/16 0.10.4
 =================
 

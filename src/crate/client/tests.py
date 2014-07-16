@@ -42,7 +42,7 @@ from crate.client import connect
 
 from . import http
 from .test_cursor import CursorTest
-from .test_http import HttpClientTest, ThreadSafeHttpClientTest, KeepAliveClientTest
+from .test_http import HttpClientTest, ThreadSafeHttpClientTest, KeepAliveClientTest, ParamsTest
 from .sqlalchemy.tests import test_suite as sqlalchemy_test_suite
 from .sqlalchemy.types import ObjectArray
 from .compat import cprint
@@ -252,6 +252,7 @@ def test_suite():
     suite.addTest(unittest.makeSuite(HttpClientTest))
     suite.addTest(unittest.makeSuite(KeepAliveClientTest))
     suite.addTest(unittest.makeSuite(ThreadSafeHttpClientTest))
+    suite.addTest(unittest.makeSuite(ParamsTest))
     suite.addTest(sqlalchemy_test_suite())
     suite.addTest(doctest.DocTestSuite('crate.client.connection'))
     suite.addTest(doctest.DocTestSuite('crate.client.http'))

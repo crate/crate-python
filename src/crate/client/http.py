@@ -114,7 +114,7 @@ class Client(object):
     """Default server to use if no servers are given on instantiation."""
 
     def __init__(self, servers=None, timeout=None, ca_cert=None,
-                 verify_ssl_cert=False, **url_params):
+                 verify_ssl_cert=False, error_trace=False):
         if not servers:
             servers = [self.default_server]
         else:
@@ -139,6 +139,9 @@ class Client(object):
         self._pool_kw = pool_kw
         self._lock = threading.RLock()
         self._local = threading.local()
+        url_params = {}
+        if error_trace:
+            url_params["error_trace"] = 1
         self.path = self._get_sql_path(**url_params)
 
     def _get_sql_path(self, **url_params):

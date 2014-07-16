@@ -28,6 +28,12 @@ If no ``servers`` are given, the default one ``http://127.0.0.1:4200`` is used::
     >>> connection.client._active_servers
     ['http://127.0.0.1:4200']
 
+
+If the option ``error_trace`` is set to ``True``, the client will print a whole traceback
+if a server error occurs::
+
+    >>> connection = client.connect([crate_host], error_trace=True)
+
 It's possible to define a default timeout value in seconds for all servers
 using the optional parameter ``timeout``::
 

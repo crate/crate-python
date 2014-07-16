@@ -331,3 +331,18 @@ class KeepAliveClientTest(TestCase):
 
             another_result = self.client.sql("select again from fake")
             self.assertEqual(result, another_result)
+
+
+class ParamsTest(TestCase):
+
+    def test_params(self):
+        client = Client(['127.0.0.1:4200'], some="param eter", another=1)
+        from six.moves.urllib.parse import urlparse, parse_qs
+        parsed = urlparse(client.path)
+        params = parse_qs(parsed.query)
+        self.assertEquals(params["some"], ["param eter"])
+        self.assertEquals(params["another"], ["1"])
+
+    def test_no_params(self):
+        client = Client(['127.0.0.1:4200'])
+        self.assertEqual(client.path, "_sql")

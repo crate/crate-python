@@ -27,14 +27,15 @@ from .blob import BlobContainer
 
 class Connection(object):
     def __init__(self, servers=None, timeout=None, client=None,
-                 verify_ssl_cert=False, ca_cert=None):
+                 verify_ssl_cert=False, ca_cert=None, error_trace=False):
         if client:
             self.client = client
         else:
             self.client = Client(servers,
                                  timeout=timeout,
                                  verify_ssl_cert=verify_ssl_cert,
-                                 ca_cert=ca_cert)
+                                 ca_cert=ca_cert,
+                                 error_trace=error_trace)
         self._closed = False
 
     def cursor(self):
@@ -72,7 +73,7 @@ class Connection(object):
 
 
 def connect(servers=None, timeout=None, client=None,
-            verify_ssl_cert=False, ca_cert=None):
+            verify_ssl_cert=False, ca_cert=None, error_trace=False):
     """ Create a :class:Connection object
 
     :param servers:
@@ -90,9 +91,13 @@ def connect(servers=None, timeout=None, client=None,
     :param ca_cert:
         a path to a CA certificate to use when verifying the SSL server
         certificate.
+    :param error_trace:
+        if set to ``True`` return a whole stacktrace of any server error if
+        one occurs
 
     >>> connect(['host1:4200', 'host2:4200'])
     <Connection <Client ['http://host1:4200', 'http://host2:4200']>>
     """
     return Connection(servers=servers, timeout=timeout, client=client,
-                      verify_ssl_cert=verify_ssl_cert, ca_cert=ca_cert)
+                      verify_ssl_cert=verify_ssl_cert, ca_cert=ca_cert,
+                      error_trace=error_trace)

@@ -31,10 +31,7 @@ import urllib3.exceptions
 from time import time
 import threading
 import re
-try:
-    from urllib.parse import urlparse
-except ImportError:     # Python 2
-    from urlparse import urlparse
+from six.moves.urllib.parse import urlparse, urlencode
 from crate.client.exceptions import (
     ConnectionError,
     DigestNotFoundException,
@@ -107,7 +104,7 @@ class Client(object):
     Crate connection client using crate's HTTP API.
     """
 
-    sql_path = '_sql'
+    SQL_PATH = '_sql'
     """Crate URI path for issuing SQL statements."""
 
     retry_interval = 30
@@ -117,7 +114,7 @@ class Client(object):
     """Default server to use if no servers are given on instantiation."""
 
     def __init__(self, servers=None, timeout=None, ca_cert=None,
-                 verify_ssl_cert=False):
+                 verify_ssl_cert=False, **url_params):
         if not servers:
             servers = [self.default_server]
         else:
@@ -142,6 +139,16 @@ class Client(object):
         self._pool_kw = pool_kw
         self._lock = threading.RLock()
         self._local = threading.local()
+        self.path = self._get_sql_path(**url_params)
+
+    def _get_sql_path(self, **url_params):
+        """
+        create the HTTP path to send SQL Requests to
+        """
+        if url_params:
+            return "{0}?{1}".format(self.SQL_PATH, urlencode(url_params))
+        else:
+            return self.SQL_PATH
 
     def _update_server_pool(self, servers, **kwargs):
         for server in servers:
@@ -186,8 +193,8 @@ class Client(object):
         if parameters:
             data['args'] = parameters
         logger.debug(
-            'Sending request to %s with payload: %s', self.sql_path, data)
-        content = self._json_request('POST', self.sql_path, data=data)
+            'Sending request to %s with payload: %s', self.path, data)
+        content = self._json_request('POST', self.path, data=data)
         logger.debug("JSON response for stmt(%s): %s", stmt, content)
 
         return content

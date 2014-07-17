@@ -39,12 +39,36 @@ using the optional parameter ``timeout``::
 
     >>> connection = client.connect([crate_host, invalid_host], timeout=5)
 
-Selecting Some Data
-===================
+Inserting Data
+==============
 
-To execute a command a cursor has to be opened to perform database operations::
+Before executing any statement a cursor has to be opened to perform
+database operations::
 
     >>> cursor = connection.cursor()
+    >>> cursor.execute("""INSERT INTO locations
+    ... (name, date, kind, position) VALUES (?, ?, ?, ?)""",
+    ...                ('Einstein Cross', '2007-03-11', 'Quasar', 7))
+
+To bulk insert data you need to make use of multiple rows in the
+INSERT statement and provide a list of arguments with the length of
+``number of inserted records * number of columns``::
+
+    >>> cursor.execute("""INSERT INTO locations
+    ... (name, date, kind, position) VALUES (?, ?, ?, ?), (?, ?, ?, ?)""",
+    ...                ('Cloverleaf', '2007-03-11', 'Quasar', 7,
+    ...                 'Old Faithful', '2007-03-11', 'Quasar', 7))
+
+.. Hidden: refresh locations
+
+    >>> cursor.execute("REFRESH TABLE locations")
+
+Selecting Data
+==============
+
+To perform the select operation simply execute the statement on the
+open cursor::
+
     >>> cursor.execute("SELECT name FROM locations where name = ?", ('Algol',))
 
 To retrieve a row we can use one of the cursor's fetch functions (described below).
@@ -91,24 +115,26 @@ fetchall()
 ----------
 
 ``fetchall()`` returns a list of all remaining rows:: 
-    
+
     >>> cursor.execute("SELECT name FROM locations order by name")
     >>> result = cursor.fetchall()
     >>> pprint(result)
-    [[u'Aldebaran'],
-     [u'Algol'],
-     [u'Allosimanius Syneca'],
-     [u'Alpha Centauri'],
-     [u'Altair'],
-     [u'Argabuthon'],
-     [u'Arkintoofle Minor'],
-     [u'Bartledan'],
-     [u'Folfanga'],
-     [u'Galactic Sector QQ7 Active J Gamma'],
+    [['Aldebaran'],
+     ['Algol'],
+     ['Allosimanius Syneca'],
+     ['Alpha Centauri'],
+     ['Altair'],
+     ['Argabuthon'],
+     ['Arkintoofle Minor'],
+     ['Bartledan'],
+     ['Cloverleaf'],
+     ['Einstein Cross'],
+     ['Folfanga'],
+     ['Galactic Sector QQ7 Active J Gamma'],
      ['Galaxy'],
-     [u'North West Ripple'],
-     [u'Outer Eastern Rim']]
-
+     ['North West Ripple'],
+     ['Old Faithful'],
+     ['Outer Eastern Rim']]
 
 Cursor Description
 ==================

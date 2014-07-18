@@ -174,3 +174,15 @@ When connecting to non Crate servers the HttpClient will raise a ConnectionError
     Traceback (most recent call last):
     ...
     ProgrammingError: Invalid server response of content-type 'text/html; charset=UTF-8'
+
+When using the ``error_trace`` kwarg a full traceback of the server exception
+will be provided::
+
+    >>> from crate.client.exceptions import ProgrammingError
+    >>> http_client = HttpClient([crate_host], error_trace=True)
+    >>> try:
+    ...     http_client.sql("select grmpf form error arrrggghh")
+    ... except ProgrammingError as e:
+    ...     print e.error_trace
+    io.crate.exceptions.SQLParseException: line 1:19: mismatched input 'error' expecting EOF
+        at io.crate.action.sql.TransportSQLAction...

@@ -139,6 +139,7 @@ class Client(object):
         self._pool_kw = pool_kw
         self._lock = threading.RLock()
         self._local = threading.local()
+
         url_params = {}
         if error_trace:
             url_params["error_trace"] = 1
@@ -337,9 +338,10 @@ class Client(object):
                                 ).startswith("application/json"):
             data = json.loads(six.text_type(response.data, 'utf-8'))
             error = data.get('error', {})
+            error_trace = data.get('error_trace', None)
             if isinstance(error, dict):
-                raise ProgrammingError(error.get('message', ''))
-            raise ProgrammingError(error)
+                raise ProgrammingError(error.get('message', ''), error_trace=error_trace)
+            raise ProgrammingError(error, error_trace=error_trace)
         raise ProgrammingError(http_error_msg)
 
     def _json_request(self, method, path, data=None):

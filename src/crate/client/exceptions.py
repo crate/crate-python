@@ -24,12 +24,13 @@ from .compat import StandardError
 
 class Error(StandardError):
 
-    def __init__(self, msg=None):
+    def __init__(self, msg=None, error_trace=None):
         # for py33 compat.
         # The Exception base class doesn't set the message attribute
         if msg:
             self.message = msg
         super(Error, self).__init__(msg)
+        self.error_trace = error_trace
 
 
 class Warning(StandardError):

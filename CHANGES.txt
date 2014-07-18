@@ -2,10 +2,10 @@
 Changes for crate
 =================
 
-Unreleased
-==========
+2014/07/18 0.10.6
+=================
 
- - fix: correctly attach server error trace to crate client exceptions 
+ - fix: correctly attach server error trace to crate client exceptions
 
 2014/07/16 0.10.5
 =================

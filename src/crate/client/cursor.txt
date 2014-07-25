@@ -191,6 +191,12 @@ the result will always be empty::
     >>> cursor.fetchall()
     []
 
+For completeness' sake the cursor description is updated nonetheless::
+
+    >>> [ desc[0] for desc in cursor.description ]
+    ['name', 'position']
+
+
 close()
 =======
 

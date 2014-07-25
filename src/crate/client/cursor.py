@@ -56,6 +56,7 @@ class Cursor(object):
         """
         row_counts = []
         durations = []
+
         for params in seq_of_parameters:
             self.execute(sql, parameters=params)
             if self.rowcount > -1:
@@ -65,7 +66,8 @@ class Cursor(object):
         self._result = {
             "rowcount": sum(row_counts) if row_counts else -1,
             "duration": sum(durations) if durations else -1,
-            "rows": []
+            "rows": [],
+            "cols": self._result.get("cols", [])
         }
         self.rows = iter(self._result["rows"])
 

@@ -2,8 +2,8 @@
 Changes for crate
 =================
 
-Unreleased
-==========
+2014/07/25 0.10.7
+=================
 
  - fix: ``cursor.executemany()`` now correctly sets the cursor description
 

@@ -1,4 +1,3 @@
-
 .. _https_connection:
 
 ========================
@@ -7,7 +6,9 @@ HTTPS Connection support
 
 The Crate Client is able to connect via https.
 
-..note:: By default, ssl server certificates are **NOT** verified.
+.. note::
+
+    By default, ssl server certificates are **NOT** verified.
 
 To enable verification, use the keyword argument ``verify_ssl_cert``.
 If it is set to ``True``, the server certificate is validated, if set to

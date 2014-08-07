@@ -1,4 +1,4 @@
-.. image:: https://cdn.crate.io/web/1.0.0/img/logo-solid.png
+.. image:: https://crate.io/wp-content/uploads/2014/08/logo-solid.png
    :width: 155px
    :height: 45px
    :alt: Crate

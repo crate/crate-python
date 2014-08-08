@@ -2,6 +2,8 @@
 Changes for crate
 =================
 
+ - improved docs formatting of field lists
+
 2014/07/25 0.10.7
 =================
 

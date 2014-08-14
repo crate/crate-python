@@ -172,21 +172,17 @@ The attribute is -1 in case close has been performed on the cursor::
 executemany
 ===========
 
-``executemany()`` allows to execute a single sql statement against a sequence
-of parameters. The resulting ``rowcount`` and ``duration`` are the sum of all
-calls made to the server during this method execution.::
+``executemany()`` allows to execute a single sql statement against a sequence of parameters::
 
     >>> cursor = connection.cursor()
 
     >>> cursor.executemany('', (1,2,3))
     >>> cursor.rowcount
-    9
+    3
     >>> cursor.duration
-    369
+    123
 
-As executemany cannot keep all the possible resultrows during execution of many statements
-and executemany is not intended to be used with statements returning result sets
-the result will always be empty::
+``executemany is not intended to be used with statements returning result sets. The result will alway be empty::
 
     >>> cursor.fetchall()
     []
@@ -196,6 +192,23 @@ For completeness' sake the cursor description is updated nonetheless::
     >>> [ desc[0] for desc in cursor.description ]
     ['name', 'position']
 
+Usually ``executemany`` sends the ``bulk_args`` parameter to the crate sql 
+endpoint which was introduced with crate 0.42.0.
+If the client is connected to at least one crate server with an older version
+the client executes the statement once for every parameter within the sequence.
+
+The resulting ``rowcount`` and ``duration`` are the sum of all calls made to
+the server during this method execution.::
+
+
+    >>> connection_client_mocked.set_next_server_infos("local:4200", "my crate", "0.41.9")
+    >>> connection = connect(client=connection_client_mocked)
+    >>> cursor = connection.cursor()
+    >>> cursor.executemany('', (1,2,3))
+    >>> cursor.rowcount
+    9
+    >>> cursor.duration
+    369
 
 close()
 =======

@@ -20,9 +20,10 @@
 # software solely pursuant to the terms of the relevant commercial agreement.
 
 from .cursor import Cursor
-from .exceptions import ProgrammingError
+from .exceptions import ProgrammingError, ConnectionError
 from .http import Client
 from .blob import BlobContainer
+from distutils.version import StrictVersion
 
 
 class Connection(object):
@@ -36,6 +37,7 @@ class Connection(object):
                                  verify_ssl_cert=verify_ssl_cert,
                                  ca_cert=ca_cert,
                                  error_trace=error_trace)
+        self.lowest_server_version = self._lowest_server_version()
         self._closed = False
 
     def cursor(self):
@@ -67,6 +69,18 @@ class Connection(object):
         :returns: a :class:ContainerObject
         """
         return BlobContainer(container_name, self)
+
+    def _lowest_server_version(self):
+        lowest = None
+        for server in self.client.active_servers:
+            try:
+                _, _, version = self.client.server_infos(server)
+                version = StrictVersion(version)
+            except (ValueError, ConnectionError):
+                continue
+            if not lowest or version < lowest:
+                lowest = version
+        return lowest or StrictVersion('0.0.0')
 
     def __repr__(self):
         return '<Connection {0}>'.format(repr(self.client))

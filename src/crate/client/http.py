@@ -123,7 +123,6 @@ class Client(object):
             servers = [self._server_url(s) for s in servers]
         self._active_servers = servers
         self._inactive_servers = []
-
         self._http_timeout = timeout
         pool_kw = {}
         if ca_cert is None:
@@ -181,7 +180,7 @@ class Client(object):
         url = '%s://%s' % (parsed.scheme, parsed.netloc)
         return url
 
-    def sql(self, stmt, parameters=None):
+    def sql(self, stmt, parameters=None, bulk_parameters=None):
         """
         Execute SQL stmt against the crate server.
         """
@@ -196,6 +195,8 @@ class Client(object):
         }
         if parameters:
             data['args'] = parameters
+        if bulk_parameters:
+            data['bulk_args'] = bulk_parameters
         logger.debug(
             'Sending request to %s with payload: %s', self.path, data)
         content = self._json_request('POST', self.path, data=data)
@@ -213,7 +214,7 @@ class Client(object):
                 "Invalid server response of content-type '%s'" %
                 response.headers.get("content-type", "unknown"))
         node_name = content.get("name")
-        return server, node_name
+        return server, node_name, content.get('version', {}).get('number', '0.0.0')
 
     def _blob_path(self, table, digest):
         return '_blobs/{table}/{digest}'.format(table=table, digest=digest)
@@ -266,7 +267,6 @@ class Client(object):
         elif response.status == 404:
             return False
         self._raise_for_status(response)
-
 
     def _add_server(self, server):
         with self._lock:

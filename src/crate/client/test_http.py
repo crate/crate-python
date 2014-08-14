@@ -91,6 +91,35 @@ class FakeServerUnauthorized(FakeServerErrorResponse):
     content_type = "text/html"
 
 
+class FakeServerBadBulkRequest(FakeServerErrorResponse):
+
+    def request(self, method, path, data=None, stream=False, **kwargs):
+        mock_response = MagicMock()
+        mock_response.status = 400
+        mock_response.reason = "Bad Request"
+        mock_response.headers = {"content-type": self.content_type}
+        mock_response.data = json.dumps({
+                        "results": [
+                            {
+                                "rowcount": 1
+                            },
+                            {
+                                "error_message": "an error occured"
+                            },
+                            {
+                                "error_message": "another error"
+                            },
+                            {
+                                "error_message": ""
+                            },
+                            {
+                                "error_message": None
+                            }
+                        ]})
+        mock_response.data = bytes(mock_response.data, 'ascii')
+        return mock_response
+
+
 class FakeServerFailSometimes(object):
 
     _rnd = SystemRandom(time.time())
@@ -187,6 +216,16 @@ class HttpClientTest(TestCase):
             client.server_infos(client._get_server())
         except ProgrammingError as e:
             self.assertEqual("401 Client Error: Unauthorized", e.message)
+        else:
+            self.assertTrue(False, msg="Exception should have been raised")
+
+    @patch('crate.client.http.Server', FakeServerBadBulkRequest)
+    def test_bad_bulk_400(self):
+        client = Client(servers="localhost:4200")
+        try:
+            client.sql("Insert into users (name) values(?)", bulk_parameters=[["douglas"], ["monthy"]])
+        except ProgrammingError as e:
+            self.assertEqual("an error occured\nanother error", e.message)
         else:
             self.assertTrue(False, msg="Exception should have been raised")
 

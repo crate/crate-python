@@ -8,7 +8,7 @@ python:
   - pypy3
 install:
   - python bootstrap.py
-  - ./bin/buildout
+  - ./bin/buildout -N
 script:
   - bin/coverage run bin/test
 after_success:

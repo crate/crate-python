@@ -169,6 +169,19 @@ The attribute is -1 in case close has been performed on the cursor::
     >>> cursor.duration
     -1
 
+    >>> connection.client.set_next_response({
+    ...     "results": [
+    ...         {
+    ...             "rowcount": 3
+    ...         },
+    ...         {
+    ...             "rowcount": 2
+    ...         }
+    ...     ],
+    ...     "duration":123,
+    ...     "cols":[ "name", "position" ],
+    ... })
+
 executemany
 ===========
 
@@ -178,7 +191,7 @@ executemany
 
     >>> cursor.executemany('', (1,2,3))
     >>> cursor.rowcount
-    3
+    5
     >>> cursor.duration
     123
 
@@ -191,6 +204,13 @@ For completeness' sake the cursor description is updated nonetheless::
 
     >>> [ desc[0] for desc in cursor.description ]
     ['name', 'position']
+
+    >>> connection.client.set_next_response({
+    ...     "rows":[ [ "North West Ripple", 1 ], [ "Arkintoofle Minor", 3 ], [ "Alpha Centauri", 3 ] ],
+    ...     "cols":[ "name", "position" ],
+    ...     "rowcount":3,
+    ...     "duration":123
+    ... })
 
 Usually ``executemany`` sends the ``bulk_args`` parameter to the crate sql 
 endpoint which was introduced with crate 0.42.0.

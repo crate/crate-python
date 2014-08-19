@@ -42,6 +42,7 @@ from crate.client import connect
 
 from . import http
 from .test_cursor import CursorTest
+from .test_connection import ConnectionTest
 from .test_http import HttpClientTest, ThreadSafeHttpClientTest, KeepAliveClientTest, ParamsTest
 from .sqlalchemy.tests import test_suite as sqlalchemy_test_suite
 from .sqlalchemy.types import ObjectArray
@@ -49,14 +50,24 @@ from .compat import cprint
 
 
 class ClientMocked(object):
+
+    active_servers = ["http://localhost:4200"]
+
     def __init__(self):
         self.response = {}
+        self._server_infos = ("http://localhost:4200", "my server", "0.42.0")
 
-    def sql(self, stmt=None, parameters=None):
+    def sql(self, stmt=None, parameters=None, bulk_parameters=None):
         return self.response
+
+    def server_infos(self, server):
+        return self._server_infos
 
     def set_next_response(self, response):
         self.response = response
+
+    def set_next_server_infos(self, server, server_name, version):
+        self._server_infos = (server, server_name, version)
 
 
 def setUpMocked(test):
@@ -253,6 +264,7 @@ def test_suite():
     suite.addTest(unittest.makeSuite(KeepAliveClientTest))
     suite.addTest(unittest.makeSuite(ThreadSafeHttpClientTest))
     suite.addTest(unittest.makeSuite(ParamsTest))
+    suite.addTest(unittest.makeSuite(ConnectionTest))
     suite.addTest(sqlalchemy_test_suite())
     suite.addTest(doctest.DocTestSuite('crate.client.connection'))
     suite.addTest(doctest.DocTestSuite('crate.client.http'))

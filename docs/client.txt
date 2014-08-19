@@ -50,14 +50,27 @@ database operations::
     ... (name, date, kind, position) VALUES (?, ?, ?, ?)""",
     ...                ('Einstein Cross', '2007-03-11', 'Quasar', 7))
 
-To bulk insert data you need to make use of multiple rows in the
-INSERT statement and provide a list of arguments with the length of
-``number of inserted records * number of columns``::
+To bulk insert data you can use the `executemany` function::
 
-    >>> cursor.execute("""INSERT INTO locations
-    ... (name, date, kind, position) VALUES (?, ?, ?, ?), (?, ?, ?, ?)""",
-    ...                ('Cloverleaf', '2007-03-11', 'Quasar', 7,
-    ...                 'Old Faithful', '2007-03-11', 'Quasar', 7))
+    >>> cursor.executemany("""INSERT INTO locations
+    ... (name, date, kind, position) VALUES (?, ?, ?, ?)""",
+    ...                [('Cloverleaf', '2007-03-11', 'Quasar', 7),
+    ...                 ('Old Faithful', '2007-03-11', 'Quasar', 7)])
+
+
+.. note::
+
+    If you are using a crate server version older than 0.42.0 the client
+    will execute a single sql statement for every parameter in the parameter
+    sequence when you are using executemany. To avoid that overhead you can
+    use ``execute`` and make use of multiple rows in the INSERT
+    statement and provide a list of arguments with the length of
+    ``number of inserted records * number of columns``::
+    
+        >>> cursor.execute("""INSERT INTO locations
+        ... (name, date, kind, position) VALUES (?, ?, ?, ?), (?, ?, ?, ?)""",
+        ...                ('Creameries', '2007-03-11', 'Quasar', 7,
+        ...                 'Double Quasar', '2007-03-11', 'Quasar', 7))
 
 .. Hidden: refresh locations
 
@@ -128,6 +141,8 @@ fetchall()
      ['Arkintoofle Minor'],
      ['Bartledan'],
      ['Cloverleaf'],
+     ['Creameries'],
+     ['Double Quasar'],
      ['Einstein Cross'],
      ['Folfanga'],
      ['Galactic Sector QQ7 Active J Gamma'],

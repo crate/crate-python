@@ -2,6 +2,8 @@
 Changes for crate
 =================
 
+ - use bulk_args in executemany to increase performance
+
  - improved docs formatting of field lists
 
 2014/07/25 0.10.7

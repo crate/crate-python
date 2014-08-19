@@ -115,8 +115,7 @@ class FakeServerBadBulkRequest(FakeServerErrorResponse):
                             {
                                 "error_message": None
                             }
-                        ]})
-        mock_response.data = bytes(mock_response.data, 'ascii')
+                        ]}).encode()
         return mock_response
 
 

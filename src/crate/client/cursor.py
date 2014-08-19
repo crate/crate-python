@@ -61,8 +61,9 @@ class Cursor(object):
         durations = []
         if self.connection.lowest_server_version >= BULK_INSERT_MIN_VERSION:
             self.execute(sql, bulk_parameters=seq_of_parameters)
-            if self.rowcount > -1:
-                row_counts.append(self.rowcount)
+            for result in self._result.get('results', []):
+                if result.get('rowcount') > -1:
+                    row_counts.append(result.get('rowcount'))
             if self.duration > -1:
                 durations.append(self.duration)
         else:

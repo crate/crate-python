@@ -339,6 +339,10 @@ class Client(object):
             data = json.loads(six.text_type(response.data, 'utf-8'))
             error = data.get('error', {})
             error_trace = data.get('error_trace', None)
+            if "results" in data:
+                errors = [res["error_message"] for res in data["results"] if res.get("error_message")]
+                if errors:
+                    raise ProgrammingError("\n".join(errors))
             if isinstance(error, dict):
                 raise ProgrammingError(error.get('message', ''), error_trace=error_trace)
             raise ProgrammingError(error, error_trace=error_trace)

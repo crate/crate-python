@@ -190,6 +190,8 @@ executemany
     >>> cursor = connection.cursor()
 
     >>> cursor.executemany('', (1,2,3))
+    [{'rowcount': 3}, {'rowcount': 2}]
+
     >>> cursor.rowcount
     5
     >>> cursor.duration

@@ -77,9 +77,11 @@ class Cursor(object):
             "rowcount": sum(row_counts) if row_counts else -1,
             "duration": sum(durations) if durations else -1,
             "rows": [],
-            "cols": self._result.get("cols", [])
+            "cols": self._result.get("cols", []),
+            "results": self._result.get("results")
         }
         self.rows = iter(self._result["rows"])
+        return self._result["results"]
 
     def fetchone(self):
         """

@@ -2,7 +2,12 @@
 Changes for crate
 =================
 
- - use bulk_args in executemany to increase performance
+ - use bulk_args in executemany to increase performance:
+    With crate server >= 0.42.0 executemany uses bulk_args
+    and returns a list of results.
+    With crate server < 0.42.0 executemany still issues
+    a request for every parameter and doesn't return
+    any results.
 
  - improved docs formatting of field lists
 

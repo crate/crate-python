@@ -2,6 +2,8 @@
 Changes for crate
 =================
 
+ - improved server failover / retry behaviour
+
  - use bulk_args in executemany to increase performance:
     With crate server >= 0.42.0 executemany uses bulk_args
     and returns a list of results.

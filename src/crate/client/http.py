@@ -288,6 +288,10 @@ class Client(object):
                     self._add_server(redirect_server)
                     return self._request(
                         method, path, server=redirect_server, **kwargs)
+                if not server and (500 <= response.status < 600):
+                    with self._lock:
+                        # drop server from active ones
+                        self._drop_server(next_server, response.reason)
                 return response
             except (urllib3.exceptions.MaxRetryError,
                     urllib3.exceptions.ReadTimeoutError,
@@ -295,18 +299,14 @@ class Client(object):
                     urllib3.exceptions.HTTPError,
                     urllib3.exceptions.ProxyError,
                    ) as ex:
-                # drop server from active ones
                 ex_message = hasattr(ex, 'message') and ex.message or str(ex)
                 if server:
                     raise ConnectionError(
                         "Server not available, exception: %s" % ex_message
                     )
-                self._drop_server(next_server, ex_message)
-                # if this is the last server raise exception, otherwise try next
-                if not self._active_servers:
-                    raise ConnectionError(
-                        ("No more Servers available, "
-                         "exception from last server: %s") % ex_message)
+                with self._lock:
+                    # drop server from active ones
+                    self._drop_server(next_server, ex_message)
             except Exception as e:
                 ex_message = hasattr(e, 'message') and e.message or str(e)
                 raise ProgrammingError(ex_message)
@@ -409,15 +409,19 @@ class Client(object):
         """
         Drop server from active list and adds it to the inactive ones.
         """
-        with self._lock:
-            try:
-                self._active_servers.remove(server)
-            except ValueError:
-                pass
-            else:
-                heapq.heappush(self._inactive_servers, (time(), server,
-                                                        message))
-                logger.warning("Removed server %s from active pool", server)
+        try:
+            self._active_servers.remove(server)
+        except ValueError:
+            pass
+        else:
+            heapq.heappush(self._inactive_servers, (time(), server, message))
+            logger.warning("Removed server %s from active pool", server)
+
+        # if this is the last server raise exception, otherwise try next
+        if not self._active_servers:
+            raise ConnectionError(
+                ("No more Servers available, "
+                 "exception from last server: %s") % message)
 
     def _roundrobin(self):
         """

@@ -165,7 +165,7 @@ is raised when timeout is reached::
     >>> http_client.sql('select name from locations')
     Traceback (most recent call last):
     ...
-    ConnectionError: No more Servers available, exception from last server: HTTPConnectionPool(host='...', port=...): Read timed out. (read timeout=0.001)
+    ConnectionError: No more Servers available, exception from last server: ...
 
 When connecting to non Crate servers the HttpClient will raise a ConnectionError like this::
 

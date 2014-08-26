@@ -84,6 +84,33 @@ class FakeServerServiceUnavailable(FakeServerErrorResponse):
     reason = "Service Unavailable"
 
 
+class FakeServer50xResponse(FakeServerErrorResponse):
+
+    counter = 0
+    STATI = [200, 503]
+    REASONS = ["Success", "Service Unavailable"]
+
+    _status = 200
+    _reason = "Success"
+
+    @property
+    def status(self):
+        return self._status
+
+    @property
+    def reason(self):
+        return self._reason
+
+    def request(self, method, path, data=None, stream=False, **kwargs):
+        self._reason = self.REASONS[self.counter%2]
+        self._status = self.STATI[self.counter%2]
+        self.counter += 1
+        mock_response = MagicMock()
+        mock_response.status = self._status
+        mock_response.reason = self._reason
+        mock_response.headers = {"content-type": self.content_type}
+        return mock_response
+
 class FakeServerUnauthorized(FakeServerErrorResponse):
 
     status = 401
@@ -165,6 +192,17 @@ class HttpClientTest(TestCase):
             self.assertEquals("this shouldn't be raised", e.message)
         else:
             self.assertTrue(False)
+
+    @patch('crate.client.http.Server', FakeServer50xResponse)
+    def test_server_error_50x(self):
+        client = Client(servers="localhost:4200")
+        client.sql('select 1')
+        try:
+            client.sql('select 2')
+        except ProgrammingError as e:
+            self.assertEqual("No more Servers available, exception from last server: Service Unavailable",
+                             e.message)
+        self.assertEqual([], list(client._active_servers))
 
     def test_connect(self):
         client = Client(servers="localhost:4200 localhost:4201")

@@ -292,7 +292,8 @@ class Client(object):
                     with self._lock:
                         # drop server from active ones
                         self._drop_server(next_server, response.reason)
-                return response
+                else:
+                    return response
             except (urllib3.exceptions.MaxRetryError,
                     urllib3.exceptions.ReadTimeoutError,
                     urllib3.exceptions.SSLError,

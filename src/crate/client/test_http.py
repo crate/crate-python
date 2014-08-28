@@ -102,8 +102,9 @@ class FakeServer50xResponse(FakeServerErrorResponse):
         return self._reason
 
     def request(self, method, path, data=None, stream=False, **kwargs):
-        self._reason = self.REASONS[self.counter%2]
-        self._status = self.STATI[self.counter%2]
+        self._reason = self.REASONS[self.counter % len(self.REASONS)]
+        self._status = self.STATI[self.counter % len(self.STATI)]
+        print(self.counter, self._status)
         self.counter += 1
         mock_response = MagicMock()
         mock_response.status = self._status
@@ -195,10 +196,11 @@ class HttpClientTest(TestCase):
 
     @patch('crate.client.http.Server', FakeServer50xResponse)
     def test_server_error_50x(self):
-        client = Client(servers="localhost:4200")
+        client = Client(servers="localhost:4200 localhost:4201")
         client.sql('select 1')
+        client.sql('select 2')
         try:
-            client.sql('select 2')
+            client.sql('select 3')
         except ProgrammingError as e:
             self.assertEqual("No more Servers available, exception from last server: Service Unavailable",
                              e.message)

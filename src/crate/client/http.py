@@ -19,6 +19,7 @@
 # with Crate these terms will supersede the license and you may use the
 # software solely pursuant to the terms of the relevant commercial agreement.
 
+
 import heapq
 import json
 import logging
@@ -46,6 +47,7 @@ if sys.version_info[0] > 2:
     basestring = str
 
 _HTTP_PAT = pat = re.compile('https?://.+', re.I)
+SRV_UNAVAILABLE_STATUSES = set((502, 503, 504, 509))
 
 
 def super_len(o):
@@ -288,7 +290,7 @@ class Client(object):
                     self._add_server(redirect_server)
                     return self._request(
                         method, path, server=redirect_server, **kwargs)
-                if not server and (500 <= response.status < 600):
+                if not server and response.status in SRV_UNAVAILABLE_STATUSES:
                     with self._lock:
                         # drop server from active ones
                         self._drop_server(next_server, response.reason)

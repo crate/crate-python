@@ -14,3 +14,4 @@ after_success:
   - coveralls
 notifications:
     email: false
+    irc: "irc.freenode.org#crate"

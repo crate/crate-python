@@ -2,6 +2,8 @@
 Changes for crate
 =================
 
+2014/09/19 0.11.2
+=================
 
  - improved server failover
 

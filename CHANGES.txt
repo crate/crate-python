@@ -2,6 +2,11 @@
 Changes for crate
 =================
 
+Unreleased
+==========
+
+ - add new options to CrateLayer in order to build test clusters
+
 2014/09/19 0.11.2
 =================
 

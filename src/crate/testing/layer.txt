@@ -2,7 +2,11 @@
 Crate Test Layer
 ================
 
-This layer starts and stops a ``Crate`` instance on a give port and a given crate node name::
+Basic Usage
+-----------
+
+This layer starts and stops a ``Crate`` instance on a given host, port,
+a given crate node name and, optionally, a given cluster name::
 
     >>> from crate.testing.layer import CrateLayer
     >>> import random
@@ -13,9 +17,17 @@ This layer starts and stops a ``Crate`` instance on a give port and a given crat
     >>> layer =  CrateLayer('crate',
     ...                     crate_home=crate_path(),
     ...                     crate_exec=crate_path('bin', 'crate'),
+    ...                     host='127.0.0.1',
     ...                     port=port,
-    ...                     transport_port=transport_port
+    ...                     transport_port=transport_port,
+    ...                     cluster_name='my_cluster'
     ... )
+
+The urls of the crate servers to be instantiated can be obtained
+via ``crate_servers``::
+
+    >>> layer.crate_servers
+    ['http://127.0.0.1:44209']
 
 The working directory is defined on layer instantiation.
 It is sometimes required to know it before starting the layer::
@@ -43,4 +55,85 @@ The layer can be shutdown using its ``stop()`` method::
 
     >>> layer.stop()
 
+Default Values
+--------------
 
+Starting a ``Crate`` layer leaving out optional parameters will apply the following defaults::
+
+    >>> layer_defaults = CrateLayer('crate_defaults',
+    ...                             crate_path()
+    ... )
+
+The default http port is 4200, the transport_port is 4300, the host defaults
+to ``localhost``::
+
+    >>> layer_defaults.crate_servers
+    ['http://localhost:4200']
+
+The working directory will be places inside a temporary directory made up using
+the layer name::
+
+    >>> layer_defaults.wdPath()
+    '.../crate.testing.layer.CrateLayer.crate_defaults/work'
+
+The command to call is ``bin/crate`` inside the ``crate_home`` path.
+The default config file is ``config/crate.yml`` inside ``crate_home``.
+The default cluster name will be auto generated using the HTTP port.
+If the ``multicast`` argument is omitted the ``Crate`` instance
+will not use multicast to discover other nodes to join a cluster.
+
+
+Starting a Cluster
+------------------
+
+To start a cluster of ``Crate`` instances, give each instance the same
+``cluster_name``, do not use ``localhost`` or any local ip as ``host``,
+give every node different ports if they run on the same machine
+and enable ``multicast``::
+
+    >>> cluster_layer1 = CrateLayer(
+    ...     'crate1',
+    ...     crate_path(),
+    ...     host=public_ip,
+    ...     port=42201,
+    ...     transport_port=43301,
+    ...     cluster_name='my_cluster',
+    ...     multicast=True
+    ... )
+    >>> cluster_layer2 = CrateLayer(
+    ...     'crate2',
+    ...     crate_path(),
+    ...     host=public_ip,
+    ...     port=42202,
+    ...     transport_port=43302,
+    ...     cluster_name='my_cluster',
+    ...     multicast=True
+    ... )
+
+If we start both layers, they will, after a small amount of time, find each other
+and form a cluster::
+
+    >>> cluster_layer1.start()
+    >>> cluster_layer2.start()
+
+We can verify that by checking the number of nodes a node knows about::
+
+    >>> import json
+    >>> def num_cluster_nodes(crate_layer):
+    ...     sql_uri = crate_layer.crate_servers[0] + "/_sql"
+    ...     response = http.urlopen('POST', sql_uri, body='{"stmt":"select count(*) from sys.nodes"}')
+    ...     json_response = json.loads(response.data.decode('utf-8'))
+    ...     return json_response["rows"][0][0]
+
+We might have to wait a moment before the cluster is finally created::
+
+    >>> num_nodes = num_cluster_nodes(cluster_layer1)
+    >>> if num_nodes != 2:
+    ...     import time
+    ...     time.sleep(5)
+    ...     num_nodes = num_cluster_nodes(cluster_layer1)
+    >>> num_nodes
+    2
+
+    >>> cluster_layer1.stop()
+    >>> cluster_layer2.stop()

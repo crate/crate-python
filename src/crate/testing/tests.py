@@ -10,10 +10,13 @@ def docs_path(*parts):
 def crate_path(*parts):
     return docs_path('..', '..', 'parts', 'crate', *parts)
 
+def public_ip():
+    import socket
+    return socket.gethostbyname(socket.gethostname())
 
 def setUp(test):
     test.globs['crate_path'] = crate_path
-
+    test.globs['public_ip'] = public_ip()
 
 def test_suite():
     suite = unittest.TestSuite()

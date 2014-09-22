@@ -24,7 +24,10 @@ class CrateLayer(server.ServerLayer, layer.WorkDirectoryLayer):
                  port=4200,
                  keepRunning=False,
                  transport_port=None,
-                 crate_exec=None):
+                 crate_exec=None,
+                 cluster_name=None,
+                 host="localhost",
+                 multicast=False):
         """
         :param name: layer name, is also used as the cluser name
         :param crate_home: path to home directory of the crate installation
@@ -34,24 +37,29 @@ class CrateLayer(server.ServerLayer, layer.WorkDirectoryLayer):
         :param transport_port: port on which transport layer for crate should run
         :param crate_exec: alternative executable command
         :param crate_config: alternative crate config file location
+        :param cluster_name: the name of the cluster to join/build. Will be
+                             generated automatically if omitted.
+        :param host: the host to bind to. defaults to 'localhost'
         """
         self.keepRunning = keepRunning
         crate_home = os.path.abspath(crate_home)
-        servers = ['localhost:%s' % port]
-        self.crate_servers = ['http://localhost:%s' % port]
+        servers = ['%s:%s' % (host, port)]
+        self.crate_servers = ['http://%s:%s' % (host, port)]
         if crate_exec is None:
             crate_exec = os.path.join(crate_home, 'bin', 'crate')
         if crate_config is None:
             crate_config = os.path.join(crate_home, 'config', 'crate.yml')
+        if cluster_name is None:
+            cluster_name = "Testing{0}".format(port)
         start_cmd = (
             crate_exec,
             '-Des.index.storage.type=memory',
             '-Des.node.name=%s' % name,
-            '-Des.cluster.name=Testing%s' % port,
+            '-Des.cluster.name=%s' % cluster_name,
             '-Des.http.port=%s-%s' % (port, port),
-            '-Des.network.host=localhost',
+            '-Des.network.host=%s' % host,
             '-Des.discovery.type=zen',
-            '-Des.discovery.zen.ping.multicast.enabled=false',
+            '-Des.discovery.zen.ping.multicast.enabled=%s' % ("true" if multicast else "false"),
             '-Des.config=%s' % crate_config,
             '-Des.path.conf=%s' % os.path.dirname(crate_config),
         )

@@ -56,7 +56,6 @@ To bulk insert data you can use the `executemany` function::
     ... (name, date, kind, position) VALUES (?, ?, ?, ?)""",
     ...                [('Cloverleaf', '2007-03-11', 'Quasar', 7),
     ...                 ('Old Faithful', '2007-03-11', 'Quasar', 7)])
-
     [{u'rowcount': 1}, {u'rowcount': 1}]
 
 `executemany` returns a list of results for every parameter. Each result

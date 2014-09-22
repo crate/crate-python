@@ -20,23 +20,23 @@ class CrateLayer(server.ServerLayer, layer.WorkDirectoryLayer):
     def __init__(self,
                  name,
                  crate_home,
-                 cluster_name=None,
                  crate_config=None,
                  port=4200,
                  keepRunning=False,
                  transport_port=None,
-                 crate_exec=None):
+                 crate_exec=None,
+                 cluster_name=None):
         """
         :param name: layer name, is also used as the cluser name
         :param crate_home: path to home directory of the crate installation
-        :param cluster_name: the name of the cluster to join/build. Will be
-                             generated automatically if omitted.
         :param port: port on which crate should run
         :param keepRunning: do not shut down the crate instance for every
                             single test instead just delete all indices
         :param transport_port: port on which transport layer for crate should run
         :param crate_exec: alternative executable command
         :param crate_config: alternative crate config file location
+        :param cluster_name: the name of the cluster to join/build. Will be
+                             generated automatically if omitted.
         """
         self.keepRunning = keepRunning
         crate_home = os.path.abspath(crate_home)

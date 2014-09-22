@@ -2,6 +2,12 @@
 Changes for crate
 =================
 
+Unreleased
+==========
+
+ - add the ``cluster_name`` option to CrateLayer
+   in order to build test clusters using CrateLayer instances
+
 2014/09/19 0.11.2
 =================
 

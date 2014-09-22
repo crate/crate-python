@@ -2,7 +2,8 @@
 Crate Test Layer
 ================
 
-This layer starts and stops a ``Crate`` instance on a give port and a given crate node name::
+This layer starts and stops a ``Crate`` instance on a given,
+a given crate node name and, optionally, a given cluster name::
 
     >>> from crate.testing.layer import CrateLayer
     >>> import random
@@ -14,7 +15,8 @@ This layer starts and stops a ``Crate`` instance on a give port and a given crat
     ...                     crate_home=crate_path(),
     ...                     crate_exec=crate_path('bin', 'crate'),
     ...                     port=port,
-    ...                     transport_port=transport_port
+    ...                     transport_port=transport_port,
+    ...                     cluster_name='my_cluster'
     ... )
 
 The working directory is defined on layer instantiation.

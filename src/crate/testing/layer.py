@@ -20,6 +20,7 @@ class CrateLayer(server.ServerLayer, layer.WorkDirectoryLayer):
     def __init__(self,
                  name,
                  crate_home,
+                 cluster_name=None,
                  crate_config=None,
                  port=4200,
                  keepRunning=False,
@@ -28,6 +29,8 @@ class CrateLayer(server.ServerLayer, layer.WorkDirectoryLayer):
         """
         :param name: layer name, is also used as the cluser name
         :param crate_home: path to home directory of the crate installation
+        :param cluster_name: the name of the cluster to join/build. Will be
+                             generated automatically if omitted.
         :param port: port on which crate should run
         :param keepRunning: do not shut down the crate instance for every
                             single test instead just delete all indices
@@ -43,11 +46,13 @@ class CrateLayer(server.ServerLayer, layer.WorkDirectoryLayer):
             crate_exec = os.path.join(crate_home, 'bin', 'crate')
         if crate_config is None:
             crate_config = os.path.join(crate_home, 'config', 'crate.yml')
+        if cluster_name is None:
+            cluster_name = "Testing{0}".format(port)
         start_cmd = (
             crate_exec,
             '-Des.index.storage.type=memory',
             '-Des.node.name=%s' % name,
-            '-Des.cluster.name=Testing%s' % port,
+            '-Des.cluster.name=%s' % cluster_name,
             '-Des.http.port=%s-%s' % (port, port),
             '-Des.network.host=localhost',
             '-Des.discovery.type=zen',

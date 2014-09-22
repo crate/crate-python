@@ -2,7 +2,7 @@
 Crate Test Layer
 ================
 
-This layer starts and stops a ``Crate`` instance on a given,
+This layer starts and stops a ``Crate`` instance on a given host, port,
 a given crate node name and, optionally, a given cluster name::
 
     >>> from crate.testing.layer import CrateLayer
@@ -14,10 +14,18 @@ a given crate node name and, optionally, a given cluster name::
     >>> layer =  CrateLayer('crate',
     ...                     crate_home=crate_path(),
     ...                     crate_exec=crate_path('bin', 'crate'),
+    ...                     host='127.0.0.1',
     ...                     port=port,
     ...                     transport_port=transport_port,
     ...                     cluster_name='my_cluster'
     ... )
+
+
+The urls of the crate servers to be instantiated can be obtained
+via ``crate_servers``::
+
+    >>> layer.crate_servers
+    ['http://127.0.0.1:44209']
 
 The working directory is defined on layer instantiation.
 It is sometimes required to know it before starting the layer::
@@ -45,4 +53,26 @@ The layer can be shutdown using its ``stop()`` method::
 
     >>> layer.stop()
 
+
+Starting a ``Crate`` layer leaving out optional parameters will apply the following defaults::
+
+    >>> layer_defaults = CrateLayer('crate_defaults',
+    ...                             crate_path()
+    ... )
+
+The default http port is 4200, the transport_port is 4300, the host defaults
+to ``localhost``::
+
+    >>> layer_defaults.crate_servers
+    ['http://localhost:4200']
+
+The working directory will be places inside a temporary directory made up using
+the layer name::
+
+    >>> layer_defaults.wdPath()
+    '.../crate.testing.layer.CrateLayer.crate_defaults/work'
+
+The command to call is ``bin/crate`` inside the ``crate_home`` path.
+The default config file is ``config/crate.yml`` inside ``crate_home``.
+The default cluster name will be auto generated using the HTTP port.
 

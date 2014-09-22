@@ -26,7 +26,8 @@ class CrateLayer(server.ServerLayer, layer.WorkDirectoryLayer):
                  transport_port=None,
                  crate_exec=None,
                  cluster_name=None,
-                 host="localhost"):
+                 host="localhost",
+                 multicast=False):
         """
         :param name: layer name, is also used as the cluser name
         :param crate_home: path to home directory of the crate installation
@@ -58,7 +59,7 @@ class CrateLayer(server.ServerLayer, layer.WorkDirectoryLayer):
             '-Des.http.port=%s-%s' % (port, port),
             '-Des.network.host=%s' % host,
             '-Des.discovery.type=zen',
-            '-Des.discovery.zen.ping.multicast.enabled=false',
+            '-Des.discovery.zen.ping.multicast.enabled=%s' % ("true" if multicast else "false"),
             '-Des.config=%s' % crate_config,
             '-Des.path.conf=%s' % os.path.dirname(crate_config),
         )

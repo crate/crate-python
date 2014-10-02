@@ -89,6 +89,7 @@ class Server(object):
             length = super_len(data)
             if length is not None:
                 headers['Content-Length'] = length
+        headers['Accept'] = 'application/json'
         kwargs['assert_same_host'] = False
         kwargs['redirect'] = False
         return self.pool.urlopen(

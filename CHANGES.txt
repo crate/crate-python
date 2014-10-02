@@ -2,6 +2,8 @@
 Changes for crate
 =================
 
+ - send application/json Accept header when requesting crate
+
 2014/09/11 0.12.0
 =================
 

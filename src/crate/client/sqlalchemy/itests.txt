@@ -15,15 +15,15 @@ Using the connection to execute a select statement::
 
 Using the ORM to query the locations::
 
-    >>> locations = session.query(Location)
+    >>> locations = session.query(Location).order_by('name')
     >>> [l.name for l in locations if l is not None][:2]
-    [u'Alpha Centauri', u'Galactic Sector QQ7 Active J Gamma']
+    ['Aldebaran', 'Algol']
 
 With limit and offset::
 
-    >>> locations = session.query(Location).offset(1).limit(2)
+    >>> locations = session.query(Location).order_by('name').offset(1).limit(2)
     >>> [l.name for l in locations if l is not None]
-    ['Galactic Sector QQ7 Active J Gamma', 'Allosimanius Syneca']
+    ['Algol', 'Allosimanius Syneca']
 
 With filter::
 

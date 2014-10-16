@@ -128,9 +128,12 @@ def setUpCrateLayerAndSqlAlchemy(test):
     cursor.execute("""create table characters (
       id string primary key,
       name string,
+      quote string,
       details object,
-      more_details array(object)
-)""")
+      more_details array(object),
+      INDEX name_ft using fulltext(name) with (analyzer = 'english'),
+      INDEX quote_ft using fulltext(quote) with (analyzer = 'english')
+) """)
     conn.close()
 
     engine = sa.create_engine('crate://{0}'.format(crate_host))

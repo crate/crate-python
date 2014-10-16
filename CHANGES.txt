@@ -2,6 +2,9 @@
 Changes for crate
 =================
 
+ - added match predicate in sqlalchemy to support fulltext
+   search
+
 2014/10/02 0.12.1
 =================
 

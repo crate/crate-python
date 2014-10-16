@@ -99,6 +99,7 @@ Below is a schema definition using `SQLAlchemy's declarative approach
     ...     __tablename__ = 'characters'
     ...     id = sa.Column(sa.String, primary_key=True, default=gen_key)
     ...     name = sa.Column(sa.String)
+    ...     quote = sa.Column(sa.String)
     ...     details = sa.Column(Object)
     ...     more_details = sa.Column(ObjectArray)
 
@@ -115,6 +116,7 @@ column that weren't defined in the schema::
 
     >>> trillian = Character(name='Tricia McMillan')
     >>> trillian.details = {}
+    >>> trillian.quote = "We're on a space ship Arthur. In space."
     >>> trillian.details['gender'] = 'female'
     >>> trillian.details['species'] = 'human'
     >>> trillian.details['female_only_attribute'] = 1
@@ -252,3 +254,53 @@ Using the `group_by` clause is similar::
     ...     .order_by(sa.desc(sa.func.count(Character.id))) \
     ...     .order_by(Character.name).all()
     [(1, u'Arthur Dent'), (1, u'Tricia McMillan')]
+
+Fulltext Search with MATCH Predicate
+====================================
+
+The MATCH predicate performs a fulltext search on one or multiple columns::
+
+    >>> from crate.client.sqlalchemy.predicates import match
+    >>> session.query(Character.name) \
+    ...     .filter(match(Caracter.name, 'Arthur')) \
+    ...     .all()
+    [(u'Arthur Dent')]
+
+It's possible to query for `_score`::
+
+    >>> session.query(Character.name, '_score') \
+    ...     .filter(match(Character.description, 'space')) \
+    ...     .order_by('_score') \
+    ...     .all()
+    [(u'Tricia McMillan', 0.523)]
+
+To search on multiple columns you pass a dictionary with columns
+and boost arguments::
+
+    >>> session.query(Character.name) \
+    ...     .query.filter(match({Character.name: 1.0, Character.quote: 0.5},
+                                'Arthur'))
+    ...     .all()
+    [(u'Arthur Dent'), (u'Tricia McMillan')]
+
+It's also possible to specify the Match Type and options::
+
+    >>> session.query(Character.name) \
+    ...     .filter(
+    ...         match(Caracter.name, 'Arth',
+    ...                 match_type='phrase',
+    ...                 options={'fuzziness': 3})
+    ...     ) \
+    ...     .all()
+    [(u'Arthur Dent')]
+
+It's not possible to specify options without the match_type argument::
+
+    >>> session.query(Character.name) \
+    ...     .filter(
+    ...         match(Caracter.name, 'Arth',
+    ...                 options={'fuzziness': 3})
+    ...     ) \
+    ...     .all()
+    SomeException
+    ...

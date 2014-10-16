@@ -278,7 +278,8 @@ To search on multiple columns you pass a dictionary with columns
 and boost arguments::
 
     >>> session.query(Character.name) \
-    ...     .query.filter(match({Character.name: 1.0, quote: 0.5}, 'Arthur'))
+    ...     .query.filter(match({Character.name: 1.0, Character.quote: 0.5},
+                                'Arthur'))
     ...     .all()
     [(u'Arthur Dent'), (u'Tricia McMillan')]
 
@@ -288,7 +289,7 @@ It's also possible to specify the Match Type and options::
     ...     .filter(
     ...         match(Caracter.name, 'Arth',
     ...                 match_type='phrase',
-    ...                 options={'fuziness': 3})
+    ...                 options={'fuzziness': 3})
     ...     ) \
     ...     .all()
     [(u'Arthur Dent')]

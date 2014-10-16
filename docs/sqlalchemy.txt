@@ -274,8 +274,8 @@ It's possible to query for `_score`::
     ...     .all()
     [(u'Tricia McMillan', 0.523)]
 
-To search on multiple columns you have to pass a dictionary and to provide the
-boost argument::
+To search on multiple columns you pass a dictionary with columns
+and boost arguments::
 
     >>> session.query(Character.name) \
     ...     .query.filter(match({Character.name: 1.0, quote: 0.5}, 'Arthur'))

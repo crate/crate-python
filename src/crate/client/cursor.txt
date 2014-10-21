@@ -51,6 +51,16 @@ A further call to ``fetchone()`` returns an empty result:
 
     >>> cursor.fetchone()
 
+Using ``fetchone()`` on a cursor before issuing a database statement results
+in an error::
+
+    >>> new_cursor = connection.cursor()
+    >>> new_cursor.fetchone()
+    Traceback (most recent call last):
+    ...
+    ProgrammingError: No result available. execute() or executemany() must be called first.
+
+
 fetchmany()
 ===========
 
@@ -110,6 +120,38 @@ And each other call returns an empty sequence::
 
     >>> cursor.fetchall()
     []
+
+iteration
+=========
+
+The cursor supports the iterator interface and can be iterated upon::
+
+    >>> cursor.execute('')
+    >>> [row for row in cursor]
+    [['North West Ripple', 1], ['Arkintoofle Minor', 3], ['Alpha Centauri', 3]]
+
+When no other call to execute has been done, it will raise StopIteration on
+subsequent iterations::
+
+    >>> next(cursor)
+    Traceback (most recent call last):
+    ...
+    StopIteration
+
+    >>> cursor.execute('')
+    >>> for row in cursor:
+    ...     row
+    ['North West Ripple', 1]
+    ['Arkintoofle Minor', 3]
+    ['Alpha Centauri', 3]
+
+Iterating over a new cursor without results will immediately raise a ProgrammingError::
+
+    >>> new_cursor = connection.cursor()
+    >>> next(new_cursor)
+    Traceback (most recent call last):
+    ...
+    ProgrammingError: No result available. execute() or executemany() must be called first.
 
 description
 ===========

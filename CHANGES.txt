@@ -5,6 +5,9 @@ Changes for crate
 Unreleased
 ==========
 
+2014/10/27 0.12.3
+=================
+
  - support iterator protocol on cursor
 
 2014/10/20 0.12.2

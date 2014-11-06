@@ -1,24 +1,16 @@
-# -*- coding: utf-8; -*-
+##############################################################################
 #
-# Licensed to CRATE Technology GmbH ("Crate") under one or more contributor
-# license agreements.  See the NOTICE file distributed with this work for
-# additional information regarding copyright ownership.  Crate licenses
-# this file to you under the Apache License, Version 2.0 (the "License");
-# you may not use this file except in compliance with the License.  You may
-# obtain a copy of the License at
+# Copyright (c) 2006 Zope Foundation and Contributors.
+# All Rights Reserved.
 #
-#   http://www.apache.org/licenses/LICENSE-2.0
+# This software is subject to the provisions of the Zope Public License,
+# Version 2.1 (ZPL).  A copy of the ZPL should accompany this distribution.
+# THIS SOFTWARE IS PROVIDED "AS IS" AND ANY AND ALL EXPRESS OR IMPLIED
+# WARRANTIES ARE DISCLAIMED, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+# WARRANTIES OF TITLE, MERCHANTABILITY, AGAINST INFRINGEMENT, AND FITNESS
+# FOR A PARTICULAR PURPOSE.
 #
-# Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
-# WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.  See the
-# License for the specific language governing permissions and limitations
-# under the License.
-#
-# However, if you have executed another commercial license agreement
-# with Crate these terms will supersede the license and you may use the
-# software solely pursuant to the terms of the relevant commercial agreement.
-
+##############################################################################
 """Bootstrap a buildout-based project
 
 Simply run this script in a directory containing a buildout.cfg.
@@ -64,6 +56,9 @@ parser.add_option("-c", "--config-file",
                         "file to be used."))
 parser.add_option("-f", "--find-links",
                   help=("Specify a URL to search for buildout releases"))
+parser.add_option("--allow-site-packages",
+                  action="store_true", default=False,
+                  help=("Let bootstrap.py use existing site packages"))
 
 
 options, args = parser.parse_args()
@@ -71,32 +66,38 @@ options, args = parser.parse_args()
 ######################################################################
 # load/install setuptools
 
-to_reload = False
 try:
-    import pkg_resources
-    import setuptools
+    if options.allow_site_packages:
+        import setuptools
+        import pkg_resources
+    from urllib.request import urlopen
 except ImportError:
-    ez = {}
+    from urllib2 import urlopen
 
-    try:
-        from urllib.request import urlopen
-    except ImportError:
-        from urllib2 import urlopen
+ez = {}
+exec(urlopen('https://bootstrap.pypa.io/ez_setup.py').read(), ez)
 
-    # XXX use a more permanent ez_setup.py URL when available.
-    exec(urlopen('https://bitbucket.org/pypa/setuptools/raw/0.7.2/ez_setup.py'
-                ).read(), ez)
-    setup_args = dict(to_dir=tmpeggs, download_delay=0)
-    ez['use_setuptools'](**setup_args)
+if not options.allow_site_packages:
+    # ez_setup imports site, which adds site packages
+    # this will remove them from the path to ensure that incompatible versions 
+    # of setuptools are not in the path
+    import site
+    # inside a virtualenv, there is no 'getsitepackages'. 
+    # We can't remove these reliably
+    if hasattr(site, 'getsitepackages'):
+        for sitepackage_path in site.getsitepackages():
+            sys.path[:] = [x for x in sys.path if sitepackage_path not in x]
 
-    if to_reload:
-        reload(pkg_resources)
-    import pkg_resources
-    # This does not (always?) update the default working set.  We will
-    # do it.
-    for path in sys.path:
-        if path not in pkg_resources.working_set.entries:
-            pkg_resources.working_set.add_entry(path)
+setup_args = dict(to_dir=tmpeggs, download_delay=0)
+ez['use_setuptools'](**setup_args)
+import setuptools
+import pkg_resources
+
+# This does not (always?) update the default working set.  We will
+# do it.
+for path in sys.path:
+    if path not in pkg_resources.working_set.entries:
+        pkg_resources.working_set.add_entry(path)
 
 ######################################################################
 # Install buildout
@@ -157,8 +158,7 @@ cmd.append(requirement)
 import subprocess
 if subprocess.call(cmd, env=dict(os.environ, PYTHONPATH=setuptools_path)) != 0:
     raise Exception(
-        "Failed to execute command:\n%s",
-        repr(cmd)[1:-1])
+        "Failed to execute command:\n%s" % repr(cmd)[1:-1])
 
 ######################################################################
 # Import and run buildout

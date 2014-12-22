@@ -5,6 +5,8 @@ Changes for crate
 Unreleased
 ==========
 
+ - run tests against crate 0.46.1
+
 2014/10/27 0.12.3
 =================
 

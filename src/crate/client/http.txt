@@ -173,7 +173,7 @@ When connecting to non Crate servers the HttpClient will raise a ConnectionError
     >>> http_client.server_infos(http_client._get_server())
     Traceback (most recent call last):
     ...
-    ProgrammingError: Invalid server response of content-type 'text/html; charset=UTF-8'
+    ProgrammingError: Invalid server response of content-type 'text/html; charset=utf-8'
 
 When using the ``error_trace`` kwarg a full traceback of the server exception
 will be provided::

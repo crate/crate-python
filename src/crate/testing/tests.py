@@ -8,7 +8,7 @@ def docs_path(*parts):
 
 
 def crate_path(*parts):
-    return docs_path('..', '..', 'parts', 'crate', *parts)
+    return os.path.abspath(docs_path('..', '..', 'parts', 'crate', *parts))
 
 def public_ip():
     import socket

@@ -39,6 +39,7 @@ from zope.testing.renormalizing import RENormalizing
 from crate.testing.layer import CrateLayer
 from crate.testing.tests import crate_path, docs_path
 from crate.client import connect
+from crate.client.sqlalchemy.dialect import CrateDialect
 
 from . import http
 from .test_cursor import CursorTest
@@ -158,6 +159,7 @@ def setUpCrateLayerAndSqlAlchemy(test):
     test.globs['Base'] = Base
     test.globs['session'] = session
     test.globs['Session'] = Session
+    test.globs['CrateDialect'] = CrateDialect
 
 
 _server = None
@@ -283,6 +285,7 @@ def test_suite():
 
     s = doctest.DocFileSuite(
         'sqlalchemy/itests.txt',
+        'sqlalchemy/dialect.txt',
         checker=checker,
         setUp=setUpCrateLayerAndSqlAlchemy,
         tearDown=tearDownWithCrateLayer,

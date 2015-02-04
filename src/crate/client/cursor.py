@@ -164,13 +164,11 @@ class Cursor(object):
         (for DQL statements like ``SELECT``) or affected (for DML statements like ``UPDATE``
         or ``INSERT``).
         """
-        if (
-                    self._closed
-                or not self._result
-            or "rows" not in self._result
-        ):
-            return -1
-        return self._result.get("rowcount", -1)
+        if (self._closed or
+            not self._result or
+            "rows" not in self._result):
+            return None
+        return self._result.get("rowcount", None)
 
     def next(self):
         """

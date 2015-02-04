@@ -18,8 +18,8 @@ return a cursor object::
 Now we are able to perform any operation provided by the
 cursor object::
 
-    >>> cursor.rowcount
-    -1
+    >>> print(cursor.rowcount)
+    None
 
 Now we close the connection::
 
@@ -46,6 +46,6 @@ raise a ``ProgrammingError``::
 
     >>> connection = connect(client=connection_client_mocked)
     >>> cursor = connection.cursor()
-    >>> cursor.rowcount
-    -1
+    >>> print(cursor.rowcount)
+    None
 

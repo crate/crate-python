@@ -9,8 +9,8 @@ Cursor
 
 The rowcount and duration attribute is -1 in case no ``execute()`` has been performed on the cursor.
 
-    >>> cursor.rowcount
-    -1
+    >>> print(cursor.rowcount)
+    None
 
     >>> cursor.duration
     -1
@@ -168,13 +168,13 @@ The ``rowcount`` property specifies the number of rows that the last ``execute()
     >>> cursor.rowcount
     3
 
-The attribute is -1 in case close has been performed on the cursor::
+The attribute is ``None`` in case close has been performed on the cursor::
 
     >>> cursor.close()
-    >>> cursor.rowcount
-    -1
+    >>> print(cursor.rowcount)
+    None
 
-If the last respsonse doesn't contain the rowcount attribute -1 is returned::
+If the last respsonse doesn't contain the rowcount attribute ``None`` is returned::
 
     >>> cursor = connection.cursor()
     >>> connection.client.set_next_response({
@@ -184,8 +184,8 @@ If the last respsonse doesn't contain the rowcount attribute -1 is returned::
     ... })
 
     >>> cursor.execute('')
-    >>> cursor.rowcount
-    -1
+    >>> print(cursor.rowcount)
+    None
 
     >>> connection.client.set_next_response({
     ...     "rows":[ [ "North West Ripple", 1 ], [ "Arkintoofle Minor", 3 ], [ "Alpha Centauri", 3 ] ],

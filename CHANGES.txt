@@ -5,11 +5,14 @@ Changes for crate
 Unreleased
 ==========
 
+2015/02/04 0.12.4
+=================
+
  - added missing functionality in CrateDialect, containing:
    default schema name, server version info,
    check if table/schema exists, list all tables/schemas
 
- - run tests against crate 0.46.1
+ - updated crate to version 0.46.1
 
 2014/10/27 0.12.3
 =================

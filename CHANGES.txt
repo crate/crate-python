@@ -5,6 +5,9 @@ Changes for crate
 Unreleased
 ==========
 
+2015/02/13 0.12.5
+=================
+
  - changed SQLAlchemy update statement generation to be compatible with crate
    0.47.X
 

@@ -5,6 +5,7 @@ python:
   - 3.3
   - 3.4
 install:
+  - pip uninstall -y setuptools
   - python bootstrap.py
   - ./bin/buildout
 script:

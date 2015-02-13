@@ -159,7 +159,7 @@ class CrateCompiler(SQLCompiler):
                 else:
                     self.postfetch.append(c)
                     value = self.process(value.self_group())
-                set_clauses.append(c._compiler_dispatch(self) + ' = ?')
+                set_clauses.append(c._compiler_dispatch(self, include_table=False) + ' = ?')
             elif self.isupdate:
                 if (
                     c.onupdate is not None
@@ -167,7 +167,7 @@ class CrateCompiler(SQLCompiler):
                     and not c.onupdate.is_clause_element
                 ):
                     set_clauses.append('{0} = {1}'.format(
-                        c._compiler_dispatch(self),
+                        c._compiler_dispatch(self, include_table=False),
                         self._create_crud_bind_param(c, None)
                     ))
                     self.prefetch.append(c)

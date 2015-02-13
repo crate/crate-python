@@ -136,7 +136,7 @@ class SqlAlchemyDictTypeTest(TestCase):
         self.assertTrue(char in session.dirty)
         session.commit()
         fake_cursor.execute.assert_called_with(
-            "UPDATE characters SET characters.data = ? WHERE characters.name = ?",
+            "UPDATE characters SET data = ? WHERE characters.name = ?",
             ({'x': 1}, 'Trillian',)
         )
 
@@ -220,7 +220,7 @@ class SqlAlchemyDictTypeTest(TestCase):
         char.age = 20
         session.commit()
         fake_cursor.execute.assert_called_with(
-            ("UPDATE characters SET characters.age = ?, data['x'] = ? "
+            ("UPDATE characters SET age = ?, data['x'] = ? "
              "WHERE characters.name = ?"),
             (20, 1, 'Trillian')
         )
@@ -353,7 +353,7 @@ class SqlAlchemyDictTypeTest(TestCase):
         self.assertTrue(char in session.dirty)
         session.commit()
         fake_cursor.execute.assert_called_with(
-            ("UPDATE characters SET characters.data_list = ? "
+            ("UPDATE characters SET data_list = ? "
              "WHERE characters.name = ?"),
             ([{'1': 1}, {'3': 3}], 'Trillian')
         )

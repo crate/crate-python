@@ -1,4 +1,4 @@
-from sqlalchemy.sql.expression import ColumnElement
+from sqlalchemy.sql.expression import ColumnElement, literal
 from sqlalchemy.ext.compiler import compiles
 from six import iteritems
 
@@ -19,6 +19,9 @@ class Match(ColumnElement):
             return "({0})".format(column)
         else:
             return "{0}".format(compiler.process(self.column))
+
+    def compile_term(self, compiler):
+        return compiler.process(literal(self.term))
 
     def compile_using(self, compiler):
         if self.match_type:
@@ -56,9 +59,9 @@ def match(column, term, match_type=None, options=None):
 
 @compiles(Match)
 def compile_match(match, compiler, **kwargs):
-    func = "match(%s, '%s')" % (
+    func = "match(%s, %s)" % (
         match.compile_column(compiler),
-        match.term
+        match.compile_term(compiler)
     )
     using = match.compile_using(compiler)
     if using:

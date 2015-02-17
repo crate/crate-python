@@ -66,7 +66,7 @@ class SqlAlchemyMatchTest(TestCase):
         query = self.session.query(self.Character.name) \
                     .filter(match(self.Character.name, 'Trillian'))
         self.assertSQL(
-            "SELECT characters.name AS characters_name FROM characters WHERE match(characters.name, 'Trillian')",
+            "SELECT characters.name AS characters_name FROM characters WHERE match(characters.name, ?)",
             query
         )
 
@@ -74,7 +74,7 @@ class SqlAlchemyMatchTest(TestCase):
         query = self.session.query(self.Character.name) \
                 .filter(match({self.Character.name: 0.5}, 'Trillian'))
         self.assertSQL(
-            "SELECT characters.name AS characters_name FROM characters WHERE match((characters.name 0.5), 'Trillian')",
+            "SELECT characters.name AS characters_name FROM characters WHERE match((characters.name 0.5), ?)",
             query
         )
 
@@ -84,7 +84,7 @@ class SqlAlchemyMatchTest(TestCase):
                                self.Character.info['race']: 0.9},
                               'Trillian'))
         self.assertSQL(
-            "SELECT characters.name AS characters_name FROM characters WHERE match((characters.info['race'] 0.9, characters.name 0.5), 'Trillian')",
+            "SELECT characters.name AS characters_name FROM characters WHERE match((characters.info['race'] 0.9, characters.name 0.5), ?)",
             query
         )
 
@@ -97,7 +97,7 @@ class SqlAlchemyMatchTest(TestCase):
                               options={'fuzziness': 3, 'analyzer': 'english'})
                        )
         self.assertSQL(
-            "SELECT characters.name AS characters_name FROM characters WHERE match((characters.info['race'] 0.9, characters.name 0.5), 'Trillian') using phrase with (analyzer=english, fuzziness=3)",
+            "SELECT characters.name AS characters_name FROM characters WHERE match((characters.info['race'] 0.9, characters.name 0.5), ?) using phrase with (analyzer=english, fuzziness=3)",
             query
         )
 
@@ -105,7 +105,7 @@ class SqlAlchemyMatchTest(TestCase):
         query = self.session.query(self.Character.name, '_score') \
                     .filter(match(self.Character.name, 'Trillian'))
         self.assertSQL(
-            "SELECT characters.name AS characters_name, _score FROM characters WHERE match(characters.name, 'Trillian')",
+            "SELECT characters.name AS characters_name, _score FROM characters WHERE match(characters.name, ?)",
             query
         )
 

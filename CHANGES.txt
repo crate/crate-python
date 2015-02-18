@@ -5,6 +5,8 @@ Changes for crate
 Unreleased
 ==========
 
+ - fix: match predicate now properly handles term literal
+
 2015/02/13 0.12.5
 =================
 

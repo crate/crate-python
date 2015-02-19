@@ -108,6 +108,9 @@ class _Craty(sqltypes.UserDefinedType):
         def __getitem__(self, key):
             return self._binary_operate(self.expr, operators.getitem, key)
 
+    def get_col_spec(self):
+        return 'OBJECT'
+
     type = MutableDict
     comparator_factory = Comparator
 

@@ -80,6 +80,63 @@ def crate_before_execute(conn, clauseelement, multiparams, params):
     return clauseelement, multiparams, params
 
 
+class CrateDDLCompiler(compiler.DDLCompiler):
+
+    __special_opts_tmpl = {
+        'NUMBER_OF_SHARDS': ' CLUSTERED INTO {0} SHARDS',
+        'CLUSTERED_BY': ' CLUSTERED BY ({0})',
+        'PARTITIONED_BY': ' PARTITIONED BY ({0})'
+    }
+
+    def get_column_specification(self, column, **kwargs):
+        colspec = self.preparer.format_column(column) + " " + \
+            self.dialect.type_compiler.process(column.type)
+        # TODO: once supported add default / NOT NULL here
+        return colspec
+
+
+    def post_create_table(self, table):
+        special_options = ''
+        table_opts = []
+
+        opts = dict(
+            (k[len(self.dialect.name) + 1:].upper(), v)
+            for k, v, in table.kwargs.items()
+            if k.startswith('%s_' % self.dialect.name)
+        )
+        for k, v in opts.items():
+            if k in self.__special_opts_tmpl:
+                special_options += self.__special_opts_tmpl[k].format(v)
+            else:
+                table_opts.append('{0} = {1}'.format(k, v))
+        if table_opts:
+            return special_options + ' WITH ({0})'.format(
+                ', '.join(sorted(table_opts)))
+        return special_options
+
+
+class CrateTypeCompiler(compiler.GenericTypeCompiler):
+
+    def visit_string(self, type_):
+        return 'STRING'
+
+    def visit_unicode(self, type_):
+        return 'STRING'
+
+    def visit_BIGINT(self, type_):
+        return 'LONG'
+
+    def visit_INTEGER(self, type_):
+        return 'INT'
+
+    def visit_SMALLINT(self, type_):
+        return 'SHORT'
+
+    def visit_datetime(self, type_):
+        return 'TIMESTAMP'
+
+
+
 class CrateCompiler(SQLCompiler):
 
     def visit_getitem_binary(self, binary, operator, **kw):

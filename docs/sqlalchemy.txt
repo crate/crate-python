@@ -171,7 +171,7 @@ left untouched.
 
     >>> char.details['gender']
     u'manly man'
-    
+
     >>> char.details['species']
     u'human'
 
@@ -292,7 +292,7 @@ The `match` function takes the following options:
     must be created on the related column.
     See `Indices and fulltext search <https://crate.io/docs/stable/sql/ddl.html#sql-ddl-index-fulltext>`_
     for details.
-    
+
 To get the relevance of a matching row, an internal system column `_score` can be
 selected. It's a numeric value which is relative to the other rows.
 The higher the score value, the more relevant the row.
@@ -338,3 +338,59 @@ It's not possible to specify options without the match_type argument::
     ...     .all()
     Traceback (most recent call last):
     ValueError: missing match_type. It's not allowed to specify options without match_type
+
+
+Create and Delete Tables
+========================
+
+
+Create Tables using the ORM
+---------------------------
+
+Tables can be created using the ORM as documented in the SQLAlchemy
+documentation. Here is an example that uses the declarative approach:
+
+First the table definition as class::
+
+    >>> class Department(Base):
+    ...     __tablename__ = 'departments'
+    ...     __table_args__ = {
+    ...         'crate_number_of_replicas': '0'
+    ...     }
+    ...     id = sa.Column(sa.String, primary_key=True, default=gen_key)
+    ...     name = sa.Column(sa.String)
+    ...     code = sa.Column(sa.Integer)
+
+
+As seen below the table doesn't exist yet::
+
+    >>> conn = engine.connect()
+    >>> engine.dialect.has_table(conn, table_name='departments')
+    False
+
+In order to create all missing tables the ``create_all`` method can be used::
+
+    >>> Base.metadata.create_all(bind=engine)
+
+    >>> engine.dialect.has_table(conn, table_name='departments')
+    True
+
+    >>> stmt = ("select * from information_schema.columns "
+    ...         "where table_name = 'departments' "
+    ...         "order by column_name")
+    >>> pprint([str(r) for r in conn.execute(stmt)])
+    ["('doc', 'departments', 'code', 1, 'integer')",
+     "('doc', 'departments', 'id', 2, 'string')",
+     "('doc', 'departments', 'name', 3, 'string')"]
+
+
+Delete Tables using the ORM
+---------------------------
+
+In order to delete all tables simply use ``Base.metadata.drop_all()``, or to
+delete a single table use ``drop(...)`` as shown below::
+
+    >>> Base.metadata.tables['departments'].drop(engine)
+
+    >>> engine.dialect.has_table(conn, table_name='departments')
+    False

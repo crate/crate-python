@@ -4,10 +4,12 @@ python:
   - 2.7
   - 3.3
   - 3.4
+  - pypy
+  - pypy3
 install:
   - pip uninstall -y setuptools
   - python bootstrap.py
-  - ./bin/buildout
+  - ./bin/buildout -N
 script:
   - bin/coverage run bin/test
 after_success:

@@ -1,7 +1,7 @@
-.. image:: https://cdn.crate.io/web/1.0.0/img/logo-solid.png
-   :width: 155px
-   :height: 45px
-   :alt: Crate
+.. image:: https://cdn.crate.io/web/2.0/img/crate-avatar_100x100.png
+   :width: 100px
+   :height: 100px
+   :alt: Crate.IO
    :target: https://crate.io
 
 .. image:: https://travis-ci.org/crate/crate-python.svg?branch=master
@@ -29,7 +29,7 @@
 Overview
 ========
 
-This is the database adapter for the crate database. Its main feature is a
+This is the database adapter for the Crate database. Its main feature is a
 implementation of the Python `DB API 2.0
 <http://www.python.org/dev/peps/pep-0249/>`_ specification.
 

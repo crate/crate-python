@@ -5,6 +5,9 @@ Changes for crate
 Unreleased
 ==========
 
+2015/03/10 0.13.0
+=================
+
  - add support for table creation using the SQLAlchemy ORM functionality.
 
  - fix: match predicate now properly handles term literal

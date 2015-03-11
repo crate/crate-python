@@ -165,7 +165,7 @@ column name as first parameter. Just the name field is supported, all other fiel
     >>> cursor.execute("SELECT * FROM locations order by name")
     >>> result = cursor.fetchone()
     >>> pprint(result)
-    [u'2013-07-16',
+    [1373932800000,
      None,
      u'Max Quordlepleen claims that the only thing left ...',
      None,

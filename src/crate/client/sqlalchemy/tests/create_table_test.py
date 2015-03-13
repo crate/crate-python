@@ -25,6 +25,7 @@ class CreateTableTest(TestCase):
             __tablename__ = 'users'
             string_col = sa.Column(sa.String, primary_key=True)
             unicode_col = sa.Column(sa.Unicode)
+            text_col = sa.Column(sa.Text)
             int_col = sa.Column(sa.Integer)
             long_col = sa.Column(sa.BigInteger)
             bool_col = sa.Column(sa.Boolean)
@@ -35,7 +36,7 @@ class CreateTableTest(TestCase):
         self.Base.metadata.create_all()
         fake_cursor.execute.assert_called_with(
             ('\nCREATE TABLE users (\n\tstring_col STRING, '
-             '\n\tunicode_col STRING, \n\tint_col INT, '
+             '\n\tunicode_col STRING, \n\ttext_col STRING, \n\tint_col INT, '
              '\n\tlong_col LONG, \n\tbool_col BOOLEAN, '
              '\n\tshort_col SHORT, \n\tts_col TIMESTAMP, '
              '\n\tfloat_col FLOAT, \n\tPRIMARY KEY (string_col)\n)\n\n'

@@ -123,6 +123,9 @@ class CrateTypeCompiler(compiler.GenericTypeCompiler):
     def visit_unicode(self, type_):
         return 'STRING'
 
+    def visit_TEXT(self, type_):
+        return 'STRING'
+
     def visit_BIGINT(self, type_):
         return 'LONG'
 
@@ -134,7 +137,6 @@ class CrateTypeCompiler(compiler.GenericTypeCompiler):
 
     def visit_datetime(self, type_):
         return 'TIMESTAMP'
-
 
 
 class CrateCompiler(SQLCompiler):

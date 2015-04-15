@@ -3,6 +3,7 @@ import signal
 import time
 import logging
 import urllib3
+from urllib3.exceptions import MaxRetryError
 
 from lovely.testlayers import server, layer
 
@@ -27,7 +28,8 @@ class CrateLayer(server.ServerLayer, layer.WorkDirectoryLayer):
                  crate_exec=None,
                  cluster_name=None,
                  host="localhost",
-                 multicast=False):
+                 multicast=False,
+                 settings=None):
         """
         :param name: layer name, is also used as the cluser name
         :param crate_home: path to home directory of the crate installation
@@ -40,33 +42,51 @@ class CrateLayer(server.ServerLayer, layer.WorkDirectoryLayer):
         :param cluster_name: the name of the cluster to join/build. Will be
                              generated automatically if omitted.
         :param host: the host to bind to. defaults to 'localhost'
+        :param settings: further settings that do not deserve a keyword argument
+                         will be prefixed with ``es.``.
         """
         self.keepRunning = keepRunning
         crate_home = os.path.abspath(crate_home)
-        servers = ['%s:%s' % (host, port)]
-        self.crate_servers = ['http://%s:%s' % (host, port)]
         if crate_exec is None:
             crate_exec = os.path.join(crate_home, 'bin', 'crate')
         if crate_config is None:
             crate_config = os.path.join(crate_home, 'config', 'crate.yml')
         if cluster_name is None:
             cluster_name = "Testing{0}".format(port)
-        start_cmd = (
-            crate_exec,
-            '-Des.index.storage.type=memory',
-            '-Des.node.name=%s' % name,
-            '-Des.cluster.name=%s' % cluster_name,
-            '-Des.http.port=%s-%s' % (port, port),
-            '-Des.network.host=%s' % host,
-            '-Des.discovery.type=zen',
-            '-Des.discovery.zen.ping.multicast.enabled=%s' % ("true" if multicast else "false"),
-            '-Des.config=%s' % crate_config,
-            '-Des.path.conf=%s' % os.path.dirname(crate_config),
-        )
-        if transport_port:
-            start_cmd += ('-Des.transport.tcp.port=%s' % transport_port,)
-        super(CrateLayer, self).__init__(name, servers=servers, start_cmd=start_cmd)
+        settings = self.create_settings(crate_config, cluster_name, name, host, port, transport_port, multicast, settings)
+        start_cmd = (crate_exec, ) + tuple(["-Des.%s=%s" % opt for opt in settings.items()])
+
+        server = '%s:%s' % (settings["network.host"], settings["http.port"])
+        self.crate_servers = ['http://%s' % server]
+
+        super(CrateLayer, self).__init__(name, servers=[server], start_cmd=start_cmd)
         self.setUpWD()
+
+    def create_settings(self,
+                        crate_config,
+                        cluster_name,
+                        node_name,
+                        host,
+                        http_port,
+                        transport_port,
+                        multicast,
+                        further_settings=None):
+        settings = {
+            "index.storage.type": "memory",
+            "discovery.type": "zen",
+            "discovery.zen.ping.multicast.enabled": "true" if multicast else "false",
+            "node.name": node_name,
+            "cluster.name": cluster_name,
+            "network.host": host,
+            "http.port": http_port,
+            "config": crate_config,
+            "path.conf": os.path.dirname(crate_config)
+        }
+        if transport_port:
+            settings["transport.tcp.port"] = transport_port
+        if further_settings:
+            settings.update(further_settings)
+        return settings
 
     def stop(self):
         # override because if we use proc.kill the terminal gets poisioned
@@ -81,17 +101,22 @@ class CrateLayer(server.ServerLayer, layer.WorkDirectoryLayer):
         # block here so that early requests after the layer starts don't result in 503
 
         time_slept = 0
+        max_wait_for_connection = 5  # secs
         http = urllib3.PoolManager()
         while True:
             try:
                 resp = http.request('GET', self.crate_servers[0] + '/')
                 if resp.status == 200:
                     break
-                time.sleep(0.02)
-                time_slept += 0.02
-                if time_slept % 1 == 0:
-                    logger.warning(('Crate not yet fully available. '
-                                    'Waiting since %s seconds...'), time_slept)
+            except MaxRetryError as e:
+                if time_slept >= max_wait_for_connection:
+                    raise e
             except Exception:
                 self.stop()
                 raise
+
+            time.sleep(0.02)
+            time_slept += 0.02
+            if time_slept % 1 == 0:
+                logger.warning(('Crate not yet fully available. '
+                                'Waiting since %s seconds...'), time_slept)

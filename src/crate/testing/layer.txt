@@ -83,6 +83,32 @@ If the ``multicast`` argument is omitted the ``Crate`` instance
 will not use multicast to discover other nodes to join a cluster.
 
 
+Additional Settings
+-------------------
+
+The ``Crate`` layer can be started with additional settings as well.
+Add a dictionary for keyword argument ``settings`` which contains your settings.
+Those additional setting will override settings given as keyword argument.
+
+The settings will be prefixed with ``es.`` and handed over to the ``Crate``
+process with the ``-D`` flag. So the setting ``threadpool.bulk.queue_size: 100`` becomes
+the command line flag: ``-Des.threadpool.bulk.queue_size=100``::
+
+    >>> custom_layer = CrateLayer(
+    ...     'custom',
+    ...     crate_path(),
+    ...     port=44401,
+    ...     settings = {
+    ...                    "cluster.graceful_stop.min_availability": "none",
+    ...                    "http.port": 44402
+    ...                }
+    ... )
+
+    >>> custom_layer.crate_servers
+    ['http://localhost:44402']
+    >>> '-Des.cluster.graceful_stop.min_availability=none' in custom_layer.start_cmd
+    True
+
 Starting a Cluster
 ------------------
 

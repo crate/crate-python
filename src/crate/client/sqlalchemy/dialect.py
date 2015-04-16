@@ -26,9 +26,10 @@ from datetime import datetime, date
 from sqlalchemy import types as sqltypes
 from sqlalchemy.engine import default, reflection
 
-from .compiler import CrateCompiler, CrateTypeCompiler, CrateDDLCompiler
+from .compiler import CrateCompiler, CrateCompilerV1, CrateTypeCompiler, CrateDDLCompiler
 from crate.client.exceptions import TimezoneUnawareException
 
+from .sa_version import SA_1_0
 
 log = logging.getLogger(__name__)
 
@@ -109,7 +110,7 @@ colspecs = {
 
 class CrateDialect(default.DefaultDialect):
     name = 'crate'
-    statement_compiler = CrateCompiler
+    statement_compiler = SA_1_0 and CrateCompilerV1 or CrateCompiler
     ddl_compiler = CrateDDLCompiler
     type_compiler = CrateTypeCompiler
     supports_native_boolean = True

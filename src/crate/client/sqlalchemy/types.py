@@ -21,8 +21,13 @@
 
 import sqlalchemy.types as sqltypes
 from sqlalchemy.sql import operators, expression
+try:
+    # SQLAlchemy >= 0.9
+    from sqlalchemy.sql import default_comparator
+except:
+    pass
 from sqlalchemy.ext.mutable import Mutable
-
+from .sa_version import SA_1_0
 
 class MutableList(Mutable, list):
     @classmethod
@@ -106,6 +111,8 @@ class _Craty(sqltypes.UserDefinedType):
     class Comparator(sqltypes.TypeEngine.Comparator):
 
         def __getitem__(self, key):
+            if SA_1_0:
+                return default_comparator._binary_operate(self.expr, operators.getitem, key)
             return self._binary_operate(self.expr, operators.getitem, key)
 
     def get_col_spec(self):
@@ -144,6 +151,8 @@ class _ObjectArray(sqltypes.UserDefinedType):
 
     class Comparator(sqltypes.TypeEngine.Comparator):
         def __getitem__(self, key):
+            if SA_1_0:
+                return default_comparator._binary_operate(self.expr, operators.getitem, key)
             return self._binary_operate(self.expr, operators.getitem, key)
 
         def any(self, other, operator=operators.eq):

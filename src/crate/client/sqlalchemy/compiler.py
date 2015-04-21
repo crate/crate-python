@@ -26,9 +26,16 @@ try:
 except ImportError:
     # SQLAlchemy 0.9
     from sqlalchemy.sql.elements import _is_literal as sa_is_literal
+try:
+    # SQLAlchemy > 1.0.0
+    from sqlalchemy.sql import crud
+except ImportError:
+    pass
+
 from sqlalchemy.sql.compiler import SQLCompiler
 from sqlalchemy.sql import compiler
 from .types import MutableDict
+from .sa_version import SA_1_0
 
 
 def rewrite_update(clauseelement, multiparams, params):
@@ -48,9 +55,10 @@ def rewrite_update(clauseelement, multiparams, params):
     """
 
     newmultiparams = []
-    for params in multiparams:
+    _multiparams = SA_1_0 and multiparams[0] or multiparams
+    for _params in _multiparams:
         newparams = {}
-        for key, val in params.items():
+        for key, val in _params.items():
             if (
                 not isinstance(val, MutableDict) or
                 (not any(val._changed_keys) and not any(val._deleted_keys))
@@ -64,12 +72,11 @@ def rewrite_update(clauseelement, multiparams, params):
             for subkey in val._deleted_keys:
                 newparams["{0}['{1}']".format(key, subkey)] = None
         newmultiparams.append(newparams)
-    multiparams = tuple(newmultiparams)
-    clauseelement = clauseelement.values(multiparams[0])
+    _multiparams = (newmultiparams, )
+    clause = clauseelement.values(newmultiparams[0])
+    clause._crate_specific = True
+    return clause, _multiparams, params
 
-    # use CrateCompiler specific visit_update
-    clauseelement._crate_specific = True
-    return clauseelement, multiparams, params
 
 
 @sa.event.listens_for(sa.engine.Engine, "before_execute", retval=True)
@@ -117,30 +124,30 @@ class CrateDDLCompiler(compiler.DDLCompiler):
 
 class CrateTypeCompiler(compiler.GenericTypeCompiler):
 
-    def visit_string(self, type_):
+    def visit_string(self, type_, **kw):
         return 'STRING'
 
-    def visit_unicode(self, type_):
+    def visit_unicode(self, type_, **kw):
         return 'STRING'
 
-    def visit_TEXT(self, type_):
+    def visit_TEXT(self, type_, **kw):
         return 'STRING'
 
-    def visit_BIGINT(self, type_):
+    def visit_BIGINT(self, type_, **kw):
         return 'LONG'
 
-    def visit_INTEGER(self, type_):
+    def visit_INTEGER(self, type_, **kw):
         return 'INT'
 
-    def visit_SMALLINT(self, type_):
+    def visit_SMALLINT(self, type_, **kw):
         return 'SHORT'
 
-    def visit_datetime(self, type_):
+    def visit_datetime(self, type_, **kw):
         return 'TIMESTAMP'
 
 
-class CrateCompiler(SQLCompiler):
-
+class CrateCompilerBase(SQLCompiler):
+    
     def visit_getitem_binary(self, binary, operator, **kw):
         return "{0}['{1}']".format(
             self.process(binary.left, **kw),
@@ -154,6 +161,8 @@ class CrateCompiler(SQLCompiler):
             self.process(element.right, **kw)
         )
 
+class CrateCompiler(CrateCompilerBase):
+
     def visit_update(self, update_stmt, **kw):
         """ used to compile <sql.expression.Update> expressions
 
@@ -161,10 +170,8 @@ class CrateCompiler(SQLCompiler):
         e.g. updating multiple tables is not supported.
         """
 
-        if (
-            not update_stmt.parameters
-            and not hasattr(update_stmt, '_crate_specific')
-        ):
+        if not update_stmt.parameters \
+                and not hasattr(update_stmt, '_crate_specific'):
             return super(CrateCompiler, self).visit_update(update_stmt, **kw)
 
         self.isupdate = True
@@ -174,9 +181,8 @@ class CrateCompiler(SQLCompiler):
 
         text = 'UPDATE '
         extra_froms = update_stmt._extra_froms
-        table_text = self.update_tables_clause(update_stmt, update_stmt.table,
-                                               extra_froms, **kw)
-        text += table_text
+        text += self.update_tables_clause(update_stmt, update_stmt.table,
+                                          extra_froms, **kw)
         text += ' SET '
 
         set_clauses = []
@@ -230,3 +236,143 @@ class CrateCompiler(SQLCompiler):
                         self._create_crud_bind_param(c, None)
                     ))
                     self.prefetch.append(c)
+
+
+class CrateCompilerV1(CrateCompilerBase):
+
+    def visit_update(self, update_stmt, **kw):
+        """ used to compile <sql.expression.Update> expressions
+
+        Parts are taken from the SQLCompiler base class.
+        """
+        
+        if not update_stmt.parameters \
+                and not hasattr(update_stmt, '_crate_specific'):
+            return super(CrateCompilerV1, self).visit_update(update_stmt, **kw)
+
+        self.isupdate = True
+        
+        extra_froms = update_stmt._extra_froms
+
+        text = 'UPDATE '
+
+        if update_stmt._prefixes:
+            text += self._generate_prefixes(update_stmt,
+                                            update_stmt._prefixes, **kw)
+
+        table_text = self.update_tables_clause(update_stmt, update_stmt.table,
+                                               extra_froms, **kw)
+        crud_params = self._get_crud_params(update_stmt, **kw)
+
+        text += table_text
+
+        text += ' SET '
+        include_table = extra_froms and \
+            self.render_table_with_column_in_update_from
+        
+        set_clauses = []
+
+        for k, v in crud_params:
+            set_clauses.append(
+                    k._compiler_dispatch(self, include_table=include_table) \
+                            + ' = ' + v)
+
+        for k, v in update_stmt.parameters.items():
+            if '[' in k:
+                bindparam = sa.sql.bindparam(k, v)
+                set_clauses.append(k + ' = ' + self.process(bindparam))
+
+        text += ', '.join(set_clauses)
+        
+        if self.returning or update_stmt._returning:
+            if not self.returning:
+                self.returning = update_stmt._returning
+            if self.returning_precedes_values:
+                text += " " + self.returning_clause(
+                    update_stmt, self.returning)
+
+        if extra_froms:
+            extra_from_text = self.update_from_clause(
+                update_stmt,
+                update_stmt.table,
+                extra_froms,
+                dialect_hints, **kw)
+            if extra_from_text:
+                text += " " + extra_from_text
+
+        if update_stmt._whereclause is not None:
+            t = self.process(update_stmt._whereclause)
+            if t:
+                text += " WHERE " + t
+
+        limit_clause = self.update_limit_clause(update_stmt)
+        if limit_clause:
+            text += " " + limit_clause
+
+        if self.returning and not self.returning_precedes_values:
+            text += " " + self.returning_clause(
+                update_stmt, self.returning)
+
+        return text
+
+    def _get_crud_params(compiler, stmt, **kw):
+        """ extract values from crud parameters
+
+        taken from SQLAlchemy's crud module (since 1.0.x) and
+        adapted for Crate dialect"""
+
+        compiler.postfetch = []
+        compiler.prefetch = []
+        compiler.returning = []
+    
+        # no parameters in the statement, no parameters in the
+        # compiled params - return binds for all columns
+        if compiler.column_keys is None and stmt.parameters is None:
+            return [
+                (c, _create_bind_param(
+                    compiler, c, None, required=True))
+                for c in stmt.table.columns
+            ]
+    
+        if stmt._has_multi_parameters:
+            stmt_parameters = stmt.parameters[0]
+        else:
+            stmt_parameters = stmt.parameters
+    
+        # getters - these are normally just column.key,
+        # but in the case of mysql multi-table update, the rules for
+        # .key must conditionally take tablename into account
+        _column_as_key, _getattr_col_key, _col_bind_name = \
+            crud._key_getters_for_crud_column(compiler)
+    
+        # if we have statement parameters - set defaults in the
+        # compiled params
+        if compiler.column_keys is None:
+            parameters = {}
+        else:
+            parameters = dict((_column_as_key(key), crud.REQUIRED)
+                              for key in compiler.column_keys
+                              if not stmt_parameters or
+                              key not in stmt_parameters)
+    
+        # create a list of column assignment clauses as tuples
+        values = []
+    
+        if stmt_parameters is not None:
+            crud._get_stmt_parameters_params(
+                compiler,
+                parameters, stmt_parameters, _column_as_key, values, kw)
+    
+        check_columns = {}
+    
+        crud._scan_cols(
+                compiler, stmt, parameters,
+                _getattr_col_key, _column_as_key,
+                _col_bind_name, check_columns, values, kw)
+    
+        if stmt._has_multi_parameters:
+            values = crud._extend_values_for_multiparams(compiler, stmt, values, kw)
+    
+        return values
+    
+    

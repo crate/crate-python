@@ -19,5 +19,13 @@
 # with Crate these terms will supersede the license and you may use the
 # software solely pursuant to the terms of the relevant commercial agreement.
 
-from .dialect import CrateDialect
+import sqlalchemy as sa
+SA_VERSION = sa.__version__.split('.')
+
+def is_sa_version(major, minor):
+    return int(SA_VERSION[0]) == major and int(SA_VERSION[1]) == minor
+
+SA_0_8 = is_sa_version(0, 8)
+SA_0_9 = is_sa_version(0, 9)
+SA_1_0 = is_sa_version(1, 0)
 

@@ -12,7 +12,7 @@ The initialize method sets the default schema name and version info::
     'doc'
 
     >>> dialect.server_version_info
-    (0, 48, 1)
+    (0, 48, 7)
 
 Check if table exists::
 

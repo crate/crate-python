@@ -5,6 +5,9 @@ Changes for crate
 Unreleased
 ==========
 
+2015/05/29 0.13.1
+=================
+
  - fixed compatibility issues with SQLAlchemy 1.0.x
 
  - map SqlAlchemy's text column type to Crate's ``STRING`` type

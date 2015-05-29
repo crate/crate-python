@@ -72,7 +72,7 @@ class CrateLayer(server.ServerLayer, layer.WorkDirectoryLayer):
                         multicast,
                         further_settings=None):
         settings = {
-            "index.storage.type": "memory",
+            "index.store.type": "memory",
             "discovery.type": "zen",
             "discovery.zen.ping.multicast.enabled": "true" if multicast else "false",
             "node.name": node_name,

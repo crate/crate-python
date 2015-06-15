@@ -105,7 +105,7 @@ class CrateLayer(server.ServerLayer, layer.WorkDirectoryLayer):
         http = urllib3.PoolManager()
         while True:
             try:
-                resp = http.request('GET', self.crate_servers[0] + '/')
+                resp = http.request('HEAD', self.crate_servers[0] + '/')
                 if resp.status == 200:
                     break
             except MaxRetryError as e:

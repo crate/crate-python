@@ -5,6 +5,9 @@ Changes for crate
 Unreleased
 ==========
 
+2015/06/15 0.13.2
+=================
+
  - wait until master of test cluster is elected before starting tests
 
 2015/05/29 0.13.1

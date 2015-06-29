@@ -124,6 +124,15 @@ class SqlAlchemyDictTypeTest(TestCase):
         session = Session()
         return session, Character
 
+    def test_assign_null_to_object_array(self):
+        session, Character = self.set_up_character_and_cursor()
+        char_1 = Character(name='Trillian', data_list=None)
+        self.assertTrue(char_1.data_list is None)
+        char_2 = Character(name='Trillian', data_list=1)
+        self.assertTrue(char_2.data_list == [1])
+        char_3 = Character(name='Trillian', data_list=[None])
+        self.assertTrue(char_3.data_list == [None])
+
     @patch('crate.client.connection.Cursor', FakeCursor)
     def test_assign_to_craty_type_after_commit(self):
         session, Character = self.set_up_character_and_cursor(

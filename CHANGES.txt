@@ -5,7 +5,10 @@ Changes for crate
 Unreleased
 ==========
 
- - allow ObjectArrays to be set to None
+2015/06/29 0.13.3
+=================
+
+ - Fix: allow ObjectArrays to be set to None
 
 2015/06/15 0.13.2
 =================

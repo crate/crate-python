@@ -36,6 +36,8 @@ class MutableList(Mutable, list):
         if not isinstance(value, MutableList):
             if isinstance(value, list):
                 return MutableList(value)
+            elif value is None:
+                return value
             else:
                 return MutableList([value])
         else:

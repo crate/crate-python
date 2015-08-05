@@ -22,6 +22,7 @@
 import json
 import time
 import sys
+import os
 from .compat import queue
 from random import SystemRandom
 import traceback
@@ -423,3 +424,14 @@ class ParamsTest(TestCase):
     def test_no_params(self):
         client = Client(['127.0.0.1:4200'])
         self.assertEqual(client.path, "_sql")
+
+
+class RequestsCaBundleTest(TestCase):
+
+    def test_open_client(self):
+        os.environ["REQUESTS_CA_BUNDLE"] = "/etc/ssl/certs/ca-certificates.crt"
+        try:
+          client = Client('http://127.0.0.1:4200')
+          crate_cursor = crate_connection.cursor()
+        except crate.client.exceptions.ProgrammingError:
+          self.fail("HTTP not working with REQUESTS_CA_BUNDLE")

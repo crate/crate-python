@@ -159,7 +159,16 @@ class Client(object):
     def _update_server_pool(self, servers, **kwargs):
         for server in servers:
             if not server in self.server_pool:
-                self.server_pool[server] = Server(server, **kwargs)
+                https = server.lower().startswith('https:')
+                if not https:
+                    kwargs_copy = {}
+                    #clean up any kwargs which are invalid for HTTPConnectionPool
+                    for key in kwargs:
+                        if key not in ['ca_certs', 'cert_reqs']:
+                            kwargs_copy[key] = kwargs[key]
+                    self.server_pool[server] = Server(server, **kwargs_copy)
+                else:
+                    self.server_pool[server] = Server(server, **kwargs)
 
     @staticmethod
     def _server_url(server):

@@ -4,7 +4,12 @@ Changes for crate
 
 Unreleased
 ==========
- - Fix urllib3 error with invalid kwargs for HTTPConnectionPool when REQUESTS_CA_BUNDLE is set
+
+2015/08/12 0.13.4
+=================
+
+ - Fix urllib3 error with invalid kwargs for ``HTTPConnectionPool``
+   when ``REQUESTS_CA_BUNDLE`` is set
 
 2015/06/29 0.13.3
 =================

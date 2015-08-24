@@ -110,6 +110,10 @@ def connect(servers=None, timeout=None, client=None,
     :param ca_cert:
         a path to a CA certificate to use when verifying the SSL server
         certificate.
+    :param cert_file:
+        a path to the client certificate to present to the server.
+    :param key_file:
+        a path to the client key to use when communicating with the server.
     :param error_trace:
         if set to ``True`` return a whole stacktrace of any server error if
         one occurs

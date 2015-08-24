@@ -70,6 +70,9 @@ def super_len(o):
 class Server(object):
 
     def __init__(self, server, **kwargs):
+        for k,v in kwargs.iteritems():
+            print k
+            print v
         self.pool = urllib3.connection_from_url(server, **kwargs)
 
     def request(self,
@@ -117,6 +120,7 @@ class Client(object):
     """Default server to use if no servers are given on instantiation."""
 
     def __init__(self, servers=None, timeout=None, ca_cert=None,
+                 cert_file=None, key_file=None,
                  verify_ssl_cert=False, error_trace=False):
         if not servers:
             servers = [self.default_server]
@@ -127,7 +131,7 @@ class Client(object):
         self._active_servers = servers
         self._inactive_servers = []
         self._http_timeout = timeout
-        pool_kw = {}
+        pool_kw = {'cert_file':cert_file, 'key_file':key_file}
         if ca_cert is None:
             ca_cert = os.environ.get("REQUESTS_CA_BUNDLE", None)
         if ca_cert is not None:
@@ -164,7 +168,7 @@ class Client(object):
                     kwargs_copy = {}
                     #clean up any kwargs which are invalid for HTTPConnectionPool
                     for key in kwargs:
-                        if key not in ['ca_certs', 'cert_reqs']:
+                        if key not in ['ca_certs', 'cert_reqs', 'cert_file', 'key_file']:
                             kwargs_copy[key] = kwargs[key]
                     self.server_pool[server] = Server(server, **kwargs_copy)
                 else:

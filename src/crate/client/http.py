@@ -70,9 +70,6 @@ def super_len(o):
 class Server(object):
 
     def __init__(self, server, **kwargs):
-        for k,v in kwargs.iteritems():
-            print k
-            print v
         self.pool = urllib3.connection_from_url(server, **kwargs)
 
     def request(self,

@@ -1,28 +1,34 @@
-.. image:: https://cdn.crate.io/web/2.0/img/crate-avatar_100x100.png
-   :width: 100px
-   :height: 100px
+.. image:: https://cdn.crate.io/web/2.0/img/crate-logo_330x72.png
+   :height: 36px
+   :width: 165px
    :alt: Crate.IO
    :target: https://crate.io
 
-.. image:: https://travis-ci.org/crate/crate-python.svg?branch=master
-        :target: https://travis-ci.org/crate/crate-python
-        :alt: Test
+|
 
-.. image:: https://badge.fury.io/py/crate.png
-    :target: http://badge.fury.io/py/crate
-    :alt: Version
+.. image:: https://img.shields.io/travis/crate/crate-python.svg
+   :target: https://travis-ci.org/crate/crate-python
+   :alt: TravisCI
 
-.. image:: https://pypip.in/download/crate/badge.png
+.. image:: https://img.shields.io/pypi/v/crate.svg
+   :target: https://pypi.python.org/pypi/crate/
+   :alt: PyPI Version
+
+.. image:: https://img.shields.io/pypi/pyversions/crate.svg
+   :target: https://pypi.python.org/pypi/crate/
+   :alt: Python Version
+
+.. image:: https://img.shields.io/pypi/dw/crate.svg
     :target: https://pypi.python.org/pypi/crate/
-    :alt: Downloads
+    :alt: PyPI Downloads
 
-.. image:: https://coveralls.io/repos/crate/crate-python/badge.png?branch=master
+.. image:: https://img.shields.io/pypi/wheel/crate.svg
+    :target: https://pypi.python.org/pypi/crate/
+    :alt: Wheel
+
+.. image:: https://img.shields.io/coveralls/crate/crate-python.svg
     :target: https://coveralls.io/r/crate/crate-python?branch=master
     :alt: Coverage
-
-.. image:: https://pypip.in/wheel/crate/badge.png
-    :target: https://pypi.python.org/pypi/crate/
-    :alt: Wheel Status
 
 
 ========

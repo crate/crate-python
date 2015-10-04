@@ -4,13 +4,14 @@ python:
   - 2.7
   - 3.3
   - 3.4
+  - 3.5
 sudo:
     false
 install:
   - pip uninstall -y setuptools
   - python bootstrap.py
   - sed -ir "s/SQLAlchemy = 1.0.0/SQLAlchemy = ${SA_VERSION}/g" versions.cfg
-  - ./bin/buildout
+  - ./bin/buildout -c base.cfg
 env:
   - SA_VERSION=0.8.2
   - SA_VERSION=0.9.8
@@ -20,6 +21,8 @@ matrix:
     - python: 3.3
       env: SA_VERSION=0.8.2
     - python: 3.4
+      env: SA_VERSION=0.8.2
+    - python: 3.5
       env: SA_VERSION=0.8.2
 script:
   - bin/coverage run bin/test

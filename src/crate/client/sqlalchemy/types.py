@@ -117,14 +117,21 @@ class _Craty(sqltypes.UserDefinedType):
                 return default_comparator._binary_operate(self.expr, operators.getitem, key)
             return self._binary_operate(self.expr, operators.getitem, key)
 
+    def __init__(self, column_policy=None):
+        self.column_policy = column_policy
+
     def get_col_spec(self):
-        return 'OBJECT'
+        if self.column_policy is None:
+            return 'OBJECT'
+        return 'OBJECT(%s)' % self.column_policy
 
     type = MutableDict
     comparator_factory = Comparator
 
-
-Object = Craty = MutableDict.as_mutable(_Craty)
+DynamicObject = MutableDict.as_mutable(_Craty)
+StrictObject = MutableDict.as_mutable(_Craty('strict'))
+IgnoredObject = MutableDict.as_mutable(_Craty('ignored'))
+Object = Craty = DynamicObject
 
 
 class Any(expression.ColumnElement):

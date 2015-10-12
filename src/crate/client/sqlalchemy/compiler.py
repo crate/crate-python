@@ -19,6 +19,9 @@
 # with Crate these terms will supersede the license and you may use the
 # software solely pursuant to the terms of the relevant commercial agreement.
 
+import string
+from collections import defaultdict
+
 import sqlalchemy as sa
 try:
     # SQLAlchemy 0.8
@@ -78,7 +81,6 @@ def rewrite_update(clauseelement, multiparams, params):
     return clause, _multiparams, params
 
 
-
 @sa.event.listens_for(sa.engine.Engine, "before_execute", retval=True)
 def crate_before_execute(conn, clauseelement, multiparams, params):
     is_crate = type(conn.dialect).__name__ == 'CrateDialect'
@@ -90,10 +92,13 @@ def crate_before_execute(conn, clauseelement, multiparams, params):
 class CrateDDLCompiler(compiler.DDLCompiler):
 
     __special_opts_tmpl = {
-        'NUMBER_OF_SHARDS': ' CLUSTERED INTO {0} SHARDS',
-        'CLUSTERED_BY': ' CLUSTERED BY ({0})',
         'PARTITIONED_BY': ' PARTITIONED BY ({0})'
     }
+    __clustered_opts_tmpl = {
+        'NUMBER_OF_SHARDS': ' INTO {0} SHARDS',
+        'CLUSTERED_BY': ' BY ({0})',
+    }
+    __clustered_opt_tmpl = ' CLUSTERED{CLUSTERED_BY}{NUMBER_OF_SHARDS}'
 
     def get_column_specification(self, column, **kwargs):
         colspec = self.preparer.format_column(column) + " " + \
@@ -101,9 +106,9 @@ class CrateDDLCompiler(compiler.DDLCompiler):
         # TODO: once supported add default / NOT NULL here
         return colspec
 
-
     def post_create_table(self, table):
         special_options = ''
+        clustered_options = defaultdict(str)
         table_opts = []
 
         opts = dict(
@@ -114,8 +119,13 @@ class CrateDDLCompiler(compiler.DDLCompiler):
         for k, v in opts.items():
             if k in self.__special_opts_tmpl:
                 special_options += self.__special_opts_tmpl[k].format(v)
+            elif k in self.__clustered_opts_tmpl:
+                clustered_options[k] = self.__clustered_opts_tmpl[k].format(v)
             else:
                 table_opts.append('{0} = {1}'.format(k, v))
+        if clustered_options:
+            special_options += string.Formatter().vformat(
+                self.__clustered_opt_tmpl, (), clustered_options)
         if table_opts:
             return special_options + ' WITH ({0})'.format(
                 ', '.join(sorted(table_opts)))
@@ -160,6 +170,7 @@ class CrateCompilerBase(SQLCompiler):
             compiler.OPERATORS[element.operator],
             self.process(element.right, **kw)
         )
+
 
 class CrateCompiler(CrateCompilerBase):
 

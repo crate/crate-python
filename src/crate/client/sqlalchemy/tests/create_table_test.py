@@ -104,3 +104,20 @@ class CreateTableTest(TestCase):
              'pk STRING, \n\t'
              'PRIMARY KEY (pk)\n'
              ') CLUSTERED INTO 3 SHARDS WITH (NUMBER_OF_REPLICAS = 2)\n\n'), ())
+
+    def test_with_clustered_by_and_number_of_shards(self):
+        class DummyTable(self.Base):
+            __tablename__ = 't'
+            __table_args__ = {
+                'crate_clustered_by': 'p',
+                'crate_number_of_shards': 3
+            }
+            pk = sa.Column(sa.String, primary_key=True)
+            p = sa.Column(sa.String, primary_key=True)
+        self.Base.metadata.create_all()
+        fake_cursor.execute.assert_called_with(
+            ('\nCREATE TABLE t (\n\t'
+             'pk STRING, \n\t'
+             'p STRING, \n\t'
+             'PRIMARY KEY (pk, p)\n'
+             ') CLUSTERED BY (p) INTO 3 SHARDS\n\n'), ())

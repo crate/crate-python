@@ -5,7 +5,10 @@ Changes for crate
 Unreleased
 ==========
 
-- fix: use proper CLUSTERED clause syntax in SQLAlchemy's create table statement
+2015/10/12 0.13.5
+=================
+
+ - fix: use proper CLUSTERED clause syntax in SQLAlchemy's create table statement
 
 2015/08/12 0.13.4
 =================

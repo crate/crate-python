@@ -1,22 +1,23 @@
 import os
+import sys
 import signal
 import time
+import json
 import logging
 import urllib3
 from urllib3.exceptions import MaxRetryError
-
 from lovely.testlayers import server, layer
 
-
 logger = logging.getLogger(__name__)
-
 
 class CrateLayer(server.ServerLayer, layer.WorkDirectoryLayer):
     """
     this layer starts a crate server.
     """
 
+    wait_interval = 0.2
     wdClean = True
+    conn_pool = urllib3.PoolManager()
 
     def __init__(self,
                  name,
@@ -74,6 +75,10 @@ class CrateLayer(server.ServerLayer, layer.WorkDirectoryLayer):
         settings = {
             "index.store.type": "memory",
             "discovery.type": "zen",
+            "gateway.type": "none",
+            "cluster.routing.allocation.disk.watermark.low": "1b",
+            "cluster.routing.allocation.disk.watermark.high": "1b",
+            "discovery.initial_state_timeout": 0,
             "discovery.zen.ping.multicast.enabled": "true" if multicast else "false",
             "node.name": node_name,
             "cluster.name": cluster_name,
@@ -97,26 +102,54 @@ class CrateLayer(server.ServerLayer, layer.WorkDirectoryLayer):
         wd = self.wdPath()
         self.start_cmd = self.start_cmd + ('-Des.path.data="%s"' % wd,)
         super(CrateLayer, self).start()
-        # since crate 0.10.0 http may be ready before the cluster is fully available
-        # block here so that early requests after the layer starts don't result in 503
+        self.wait_for_start()
+        self.wait_for_master()
 
+    def _wait_for(self, validator):
         time_slept = 0
         max_wait_for_connection = 5  # secs
-        http = urllib3.PoolManager()
+
         while True:
             try:
-                resp = http.request('HEAD', self.crate_servers[0] + '/')
-                if resp.status == 200:
+                if validator():
                     break
+                else:
+                    sys.stderr.write('Waiting for layer ... {0:.1f}s\n'.format(time_slept))
             except MaxRetryError as e:
                 if time_slept >= max_wait_for_connection:
                     raise e
-            except Exception:
+            except Exception as e:
                 self.stop()
-                raise
+                raise e
 
-            time.sleep(0.02)
-            time_slept += 0.02
-            if time_slept % 1 == 0:
-                logger.warning(('Crate not yet fully available. '
-                                'Waiting since %s seconds...'), time_slept)
+            time.sleep(self.wait_interval)
+            time_slept += self.wait_interval
+
+
+    def wait_for_start(self):
+        """Wait for instance to be started"""
+
+        # since crate 0.10.0 http may be ready before the cluster is fully available
+        # block here so that early requests after the layer starts don't result in 503
+        def validator():
+            url = '{server}/'.format(server=self.crate_servers[0])
+            resp = self.conn_pool.request('HEAD', url)
+            return resp.status == 200
+
+        self._wait_for(validator)
+
+    def wait_for_master(self):
+        """Wait for master node"""
+
+        def validator():
+            url = '{server}/_sql'.format(server=self.crate_servers[0])
+            resp = self.conn_pool.urlopen('POST', url,
+                headers={'Content-Type': 'application/json'},
+                body='{"stmt": "select master_node from sys.cluster"}')
+            data = json.loads(resp.data.decode('utf-8'))
+            if resp.status == 200 and data['rows'][0][0]:
+                sys.stderr.write('Crate layer started.\n')
+                return True
+            return False
+
+        self._wait_for(validator)

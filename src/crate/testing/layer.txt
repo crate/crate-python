@@ -133,7 +133,8 @@ and enable ``multicast``::
     ...     port=42202,
     ...     transport_port=43302,
     ...     cluster_name='my_cluster',
-    ...     multicast=True
+    ...     multicast=True,
+    ...     settings={"discovery.initial_state_timeout": 10}
     ... )
 
 If we start both layers, they will, after a small amount of time, find each other
@@ -160,7 +161,7 @@ We might have to wait a moment before the cluster is finally created::
     ...     time.sleep(1)
     ...     num_nodes = num_cluster_nodes(cluster_layer1)
     ...     retries += 1
-    ...     if retries == 10:
+    ...     if retries == 30:
     ...         break
     >>> num_nodes
     2

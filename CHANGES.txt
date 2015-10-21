@@ -5,6 +5,9 @@ Changes for crate
 Unreleased
 ==========
 
+2015/10/21 0.13.6
+=================
+
  - fix in crate test layer: wait for layer to completely start up node
 
 2015/10/12 0.13.5

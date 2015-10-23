@@ -1,0 +1,35 @@
+# Appveyor is Windows CI
+environment:
+
+  matrix:
+    - PYTHON: "C:\\Python35"
+      PYTHON_VERSION: "3.5.x"
+      PYTHON_ARCH: "32"
+
+    - PYTHON: "C:\\Python35-x64"
+      PYTHON_VERSION: "3.5.x"
+      PYTHON_ARCH: "64"
+
+install:
+  # Make sure the right python version is first on the PATH.
+  - "SET PATH=%PYTHON%;%PYTHON%\\Scripts;%PATH%"
+
+  # Check that we have the expected version and architecture for Python
+  - "python --version"
+  - "python -c \"import struct; print(struct.calcsize('P') * 8)\""
+
+  # Upgrade to the latest version of pip to avoid it displaying warnings
+  # about it being out of date.
+  - "pip install --disable-pip-version-check --user --upgrade pip"
+
+build: false  # Not a C# project, build stuff at the test step instead.
+
+test_script:
+  # Build the compiled extension and run the project tests.
+  # This is a bit of a hack that won't scale when py36 is out,
+  # but for now it lets us avoid duplication with .travis.yml and tox.ini.
+  # Running "py35-full" would be nice but it's failing on installing
+  # dependencies with no useful logs.
+  - "python bootstrap.py"
+  - "bin/buildout"
+  - "bin/test"

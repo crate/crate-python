@@ -26,6 +26,7 @@ import os
 import unittest
 import doctest
 import re
+import pathlib
 from pprint import pprint
 from datetime import datetime, date
 from six.moves import BaseHTTPServer
@@ -107,7 +108,7 @@ def setUpWithCrateLayer(test):
         cursor.execute(stmt)
         assert cursor.fetchall()[0][0] == 1
 
-    data_path = docs_path('testing/testdata/data/test_a.json')
+    data_path = pathlib.Path(docs_path('testing/testdata/data/test_a.json')).as_uri()
     # load testing data into crate
     cursor.execute("copy locations from ?", (data_path,))
     # refresh location table so imported data is visible immediately

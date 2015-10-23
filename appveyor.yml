@@ -21,15 +21,11 @@ install:
   # Upgrade to the latest version of pip to avoid it displaying warnings
   # about it being out of date.
   - "pip install --disable-pip-version-check --user --upgrade pip"
+  - "pip install --disable-pip-version-check --user --upgrade setuptools"
 
 build: false  # Not a C# project, build stuff at the test step instead.
 
 test_script:
-  # Build the compiled extension and run the project tests.
-  # This is a bit of a hack that won't scale when py36 is out,
-  # but for now it lets us avoid duplication with .travis.yml and tox.ini.
-  # Running "py35-full" would be nice but it's failing on installing
-  # dependencies with no useful logs.
-  - "python bootstrap.py"
-  - "bin/buildout"
-  - "bin/test"
+  - "python bootstrap.py --allow-site-packages"
+  - "python C:/projects/crate-python/bin/buildout"
+  - "python C:/projects/crate-python/bin/test"

@@ -5,18 +5,20 @@ import time
 import json
 import logging
 import urllib3
+import tempfile
+import shutil
 from urllib3.exceptions import MaxRetryError
 from lovely.testlayers import server, layer
 
 logger = logging.getLogger(__name__)
 
-class CrateLayer(server.ServerLayer, layer.WorkDirectoryLayer):
+class CrateLayer(server.ServerLayer):
     """
     this layer starts a crate server.
     """
 
+    tmpdir = tempfile.gettempdir()
     wait_interval = 0.2
-    wdClean = True
     conn_pool = urllib3.PoolManager()
 
     def __init__(self,
@@ -60,8 +62,11 @@ class CrateLayer(server.ServerLayer, layer.WorkDirectoryLayer):
         server = '%s:%s' % (settings["network.host"], settings["http.port"])
         self.crate_servers = ['http://%s' % server]
 
+        self.wd = wd = os.path.join(CrateLayer.tmpdir, 'crate_layer', name)
+        if os.path.exists(wd):
+            shutil.rmtree(wd)
+        start_cmd = start_cmd + ('-Des.path.data="%s"' % wd,)
         super(CrateLayer, self).__init__(name, servers=[server], start_cmd=start_cmd)
-        self.setUpWD()
 
     def create_settings(self,
                         crate_config,
@@ -93,14 +98,10 @@ class CrateLayer(server.ServerLayer, layer.WorkDirectoryLayer):
             settings.update(further_settings)
         return settings
 
-    def stop(self):
-        # override because if we use proc.kill the terminal gets poisioned
-        self.process.send_signal(signal.SIGINT)
-        self.process.wait()
+    def wdPath(self):
+        return self.wd
 
     def start(self):
-        wd = self.wdPath()
-        self.start_cmd = self.start_cmd + ('-Des.path.data="%s"' % wd,)
         super(CrateLayer, self).start()
         self.wait_for_start()
         self.wait_for_master()

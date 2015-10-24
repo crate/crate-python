@@ -79,7 +79,6 @@ crate_port = 44209
 crate_transport_port = 44309
 crate_layer = CrateLayer('crate',
                          crate_home=crate_path(),
-                         crate_exec=crate_path('bin', 'crate'),
                          port=crate_port,
                          transport_port=crate_transport_port)
 

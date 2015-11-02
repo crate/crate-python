@@ -11,8 +11,8 @@ a given crate node name and, optionally, a given cluster name::
     >>> from crate.testing.layer import CrateLayer
     >>> import random
 
-    >>> port = 44209
-    >>> transport_port = 44309
+    >>> port = 44219
+    >>> transport_port = 44319
 
     >>> layer =  CrateLayer('crate',
     ...                     crate_home=crate_path(),
@@ -27,7 +27,7 @@ The urls of the crate servers to be instantiated can be obtained
 via ``crate_servers``::
 
     >>> layer.crate_servers
-    ['http://127.0.0.1:44209']
+    ['http://127.0.0.1:44219']
 
 The working directory is defined on layer instantiation.
 It is sometimes required to know it before starting the layer::

@@ -58,18 +58,6 @@ To update use::
 
     $ pip install -U crate
 
-Installing via easy_install
----------------------------
-
-If you prefer easy_install which is provided by
-`setuptools <https://pypi.python.org/pypi/setuptools/1.1>`_
-use the following command::
-
-    $ easy_install crate
-
-To update use::
-
-    $ easy_install -U crate
 
 Are you a Developer?
 ====================

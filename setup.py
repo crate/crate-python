@@ -32,7 +32,8 @@ requirements = [
 
 
 def read(path):
-    return open(os.path.join(os.path.dirname(__file__), path)).read()
+    with open(os.path.join(os.path.dirname(__file__), path)) as f:
+        return f.read()
 
 
 long_description = (
@@ -43,7 +44,7 @@ long_description = (
     read('docs/blobs.txt')
 )
 
-versionf_content = open("src/crate/client/__init__.py").read()
+versionf_content = read("src/crate/client/__init__.py")
 version_rex = r'^__version__ = [\'"]([^\'"]*)[\'"]$'
 m = re.search(version_rex, versionf_content, re.M)
 if m:

@@ -30,6 +30,7 @@ from unittest import TestCase
 from mock import patch, MagicMock
 from threading import Thread, Event
 from multiprocessing import Process
+from datetime import datetime
 import urllib3.exceptions
 
 from .http import Client
@@ -268,6 +269,20 @@ class HttpClientTest(TestCase):
             self.assertEqual("an error occured\nanother error", e.message)
         else:
             self.assertTrue(False, msg="Exception should have been raised")
+
+    def test_datetime_is_converted_to_ts(self):
+        client = Client(servers="localhost:4200")
+        resp = MagicMock()
+        resp.status = 200
+
+        request = MagicMock(return_value=resp)
+        client._request = request
+        dt = datetime(2015, 2, 28, 7, 31, 40)
+        client.sql('insert into users (dt) values (?)', (dt, ))
+
+        # convert string to dict because the order of the keys isn't deterministic
+        data = json.loads(request.call_args[1]['data'])
+        self.assertEqual(data['args'], [1425108700000])
 
 
 class ThreadSafeHttpClientTest(TestCase):

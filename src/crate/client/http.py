@@ -30,6 +30,7 @@ import six
 import urllib3
 import urllib3.exceptions
 from time import time
+from datetime import datetime
 import threading
 import re
 from six.moves.urllib.parse import urlparse, urlencode
@@ -65,6 +66,17 @@ def super_len(o):
     if hasattr(o, 'getvalue'):
         # e.g. BytesIO, cStringIO.StringI
         return len(o.getvalue())
+
+
+class CrateJsonEncoder(json.JSONEncoder):
+
+    epoch = datetime(1970, 1, 1)
+
+    def default(self, o):
+        if isinstance(o, datetime):
+            delta = o - self.epoch
+            return int(delta.microseconds / 1000.0 + (delta.seconds + delta.days * 24 * 3600) * 1000.0)
+        return json.JSONEncoder.default(self, o)
 
 
 class Server(object):
@@ -367,7 +379,7 @@ class Client(object):
         """
 
         if data:
-            data = json.dumps(data)
+            data = json.dumps(data, cls=CrateJsonEncoder)
         response = self._request(method, path, data=data)
 
         # raise error if occurred, otherwise nothing is raised

@@ -5,6 +5,8 @@ Changes for crate
 Unreleased
 ==========
 
+ - Added support for serialization of datetime objects
+
 2015/10/21 0.13.6
 =================
 

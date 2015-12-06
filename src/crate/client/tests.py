@@ -260,7 +260,8 @@ def test_suite():
         'connection.txt',
         checker=checker,
         setUp=setUpMocked,
-        optionflags=flags
+        optionflags=flags,
+        encoding='utf-8'
     )
     suite.addTest(s)
     suite.addTest(unittest.makeSuite(CursorTest))
@@ -277,7 +278,8 @@ def test_suite():
         '../../../docs/https.txt',
         checker=checker,
         setUp=setUpWithHttps,
-        optionflags=flags
+        optionflags=flags,
+        encoding='utf-8'
     )
     s.layer = HttpsTestServerLayer()
     suite.addTest(s)
@@ -288,7 +290,8 @@ def test_suite():
         checker=checker,
         setUp=setUpCrateLayerAndSqlAlchemy,
         tearDown=tearDownWithCrateLayer,
-        optionflags=flags
+        optionflags=flags,
+        encoding='utf-8'
     )
     s.layer = crate_layer
     suite.addTest(s)
@@ -302,7 +305,8 @@ def test_suite():
         checker=checker,
         setUp=setUpWithCrateLayer,
         tearDown=tearDownWithCrateLayer,
-        optionflags=flags
+        optionflags=flags,
+        encoding='utf-8'
     )
     s.layer = crate_layer
     suite.addTest(s)
@@ -312,7 +316,8 @@ def test_suite():
         checker=checker,
         setUp=setUpCrateLayerAndSqlAlchemy,
         tearDown=tearDownWithCrateLayer,
-        optionflags=flags
+        optionflags=flags,
+        encoding='utf-8'
     )
     s.layer = crate_layer
     suite.addTest(s)

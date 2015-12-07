@@ -70,11 +70,11 @@ Help & Contact
 ==============
 
 Do you have any questions? Or suggestions? We would be very happy
-to help you. So, feel free to swing by our IRC channel #crate on Freenode_.
+to help you. So, feel free to swing by our public room on HipChat_.
 Or for further information and official contact please
 visit `https://crate.io/ <https://crate.io/>`_.
 
-.. _Freenode: http://freenode.net
+.. _HipChat: https://www.hipchat.com/g7Pc2CYwi
 
 License
 =======

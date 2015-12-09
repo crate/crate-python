@@ -49,13 +49,13 @@ class SqlAlchemyUpdateTest(TestCase):
         self.session.commit()
 
         expected_stmt = ("UPDATE characters SET age = ?, "
-                          "ts = ? WHERE characters.name = ?")
+                         "ts = ? WHERE characters.name = ?")
         args, kwargs = fake_cursor.execute.call_args
         stmt = args[0]
         args = args[1]
         self.assertEqual(expected_stmt, stmt)
         self.assertEqual(40, args[0])
-        dt = datetime.strptime(args[1], '%Y-%m-%dT%H:%M:%S.%fZ') 
+        dt = datetime.strptime(args[1], '%Y-%m-%dT%H:%M:%S.%fZ')
         self.assertTrue(isinstance(dt, datetime))
         self.assertTrue(dt > now)
         self.assertEqual('Arthur', args[2])

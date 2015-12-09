@@ -57,4 +57,3 @@ class SqlAlchemyCompilerTest(TestCase):
         )
 
         assert hasattr(clauseelement, '_crate_specific') is True
-

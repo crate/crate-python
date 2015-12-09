@@ -186,13 +186,13 @@ class SqlAlchemyDictTypeTest(TestCase):
         try:
             fake_cursor.execute.assert_called_with(
                 ("UPDATE characters SET data['y'] = ?, data['x'] = ? "
-                "WHERE characters.name = ?"),
+                    "WHERE characters.name = ?"),
                 (2, 1, 'Trillian')
             )
         except AssertionError:
             fake_cursor.execute.assert_called_with(
                 ("UPDATE characters SET data['x'] = ?, data['y'] = ? "
-                "WHERE characters.name = ?"),
+                    "WHERE characters.name = ?"),
                 (1, 2, 'Trillian')
             )
 

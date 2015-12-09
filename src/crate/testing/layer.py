@@ -1,6 +1,5 @@
 import os
 import sys
-import signal
 import time
 import json
 import logging
@@ -166,8 +165,8 @@ class CrateLayer(object):
         def validator():
             url = '{server}/_sql'.format(server=self.http_url)
             resp = self.conn_pool.urlopen('POST', url,
-                headers={'Content-Type': 'application/json'},
-                body='{"stmt": "select master_node from sys.cluster"}')
+                                          headers={'Content-Type': 'application/json'},
+                                          body='{"stmt": "select master_node from sys.cluster"}')
             data = json.loads(resp.data.decode('utf-8'))
             if resp.status == 200 and data['rows'][0][0]:
                 sys.stderr.write('Crate layer started.\n')

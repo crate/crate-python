@@ -70,9 +70,9 @@ class SqlAlchemyDateAndDateTimeTest(TestCase):
     def test_data_cannot_handle_tz_aware_datetime(self):
         class CST(tzinfo):
             def utcoffset(self, date_time):
-                return timedelta(seconds = -3600)
+                return timedelta(seconds=-3600)
             def dst(self, date_time):
-                return timedelta(seconds = -7200)
+                return timedelta(seconds=-7200)
         character = self.Character()
         character.name = "Athur"
         character.timestamp = datetime(2009, 5, 13, 19, 19, 30, tzinfo=CST())

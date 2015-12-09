@@ -14,8 +14,7 @@ class Match(ColumnElement):
 
     def compile_column(self, compiler):
         if isinstance(self.column, dict):
-            column = ', '.join(sorted(["{0} {1}".format(compiler.process(k), v) for k, v in iteritems(self.column
-                                                                                                     )]))
+            column = ', '.join(sorted(["{0} {1}".format(compiler.process(k), v) for k, v in iteritems(self.column)]))
             return "({0})".format(column)
         else:
             return "{0}".format(compiler.process(self.column))

@@ -53,8 +53,7 @@ class FakeServerRaisingGeneralException(FakeServerRaisingException):
 class FakeServerRaisingMaxRetryError(FakeServerRaisingException):
 
     def request(self, method, path, data=None, stream=False, **kwargs):
-        raise urllib3.exceptions.MaxRetryError(
-                    None, path, "this shouldn't be raised")
+        raise urllib3.exceptions.MaxRetryError(None, path, "this shouldn't be raised")
 
 
 class FakeServerErrorResponse(object):

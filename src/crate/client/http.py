@@ -97,7 +97,7 @@ class Server(object):
         """
         if headers is None:
             headers = {}
-        if not 'Content-Length' in headers:
+        if 'Content-Length' not in headers:
             length = super_len(data)
             if length is not None:
                 headers['Content-Length'] = length
@@ -148,8 +148,7 @@ class Client(object):
         self.server_pool = {}
         self._update_server_pool(servers,
                                  timeout=timeout,
-                                 **pool_kw
-                                )
+                                 **pool_kw)
         self._pool_kw = pool_kw
         self._lock = threading.RLock()
         self._local = threading.local()
@@ -170,11 +169,11 @@ class Client(object):
 
     def _update_server_pool(self, servers, **kwargs):
         for server in servers:
-            if not server in self.server_pool:
+            if server not in self.server_pool:
                 https = server.lower().startswith('https:')
                 if not https:
                     kwargs_copy = {}
-                    #clean up any kwargs which are invalid for HTTPConnectionPool
+                    # clean up any kwargs which are invalid for HTTPConnectionPool
                     for key in kwargs:
                         if key not in ['ca_certs', 'cert_reqs']:
                             kwargs_copy[key] = kwargs[key]
@@ -322,8 +321,7 @@ class Client(object):
                     urllib3.exceptions.ReadTimeoutError,
                     urllib3.exceptions.SSLError,
                     urllib3.exceptions.HTTPError,
-                    urllib3.exceptions.ProxyError,
-                   ) as ex:
+                    urllib3.exceptions.ProxyError,) as ex:
                 ex_message = hasattr(ex, 'message') and ex.message or str(ex)
                 if server:
                     raise ConnectionError(
@@ -340,10 +338,7 @@ class Client(object):
         """do the actual request to a chosen server"""
         if not path.startswith('/'):
             path = '/' + path
-        return self.server_pool[server].request(
-                    method,
-                    path,
-                    **kwargs)
+        return self.server_pool[server].request(method, path, **kwargs)
 
     def _raise_for_status(self, response):
         """ make sure that only crate.exceptions are raised that are defined in
@@ -351,10 +346,10 @@ class Client(object):
         http_error_msg = ''
         if 400 <= response.status < 500:
             http_error_msg = '%s Client Error: %s' % (
-                                response.status, response.reason)
+                response.status, response.reason)
         elif 500 <= response.status < 600:
             http_error_msg = '%s Server Error: %s' % (
-                                response.status, response.reason)
+                response.status, response.reason)
         else:
             return
         if response.status == 503:

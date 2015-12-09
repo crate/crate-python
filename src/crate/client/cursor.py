@@ -164,11 +164,7 @@ class Cursor(object):
         (for DQL statements like ``SELECT``) or affected (for DML statements like ``UPDATE``
         or ``INSERT``).
         """
-        if (
-                    self._closed
-                or not self._result
-            or "rows" not in self._result
-        ):
+        if (self._closed or not self._result or "rows" not in self._result):
             return -1
         return self._result.get("rowcount", -1)
 
@@ -209,10 +205,6 @@ class Cursor(object):
         """
         This read-only attribute specifies the server-side duration of a query in milliseconds.
         """
-        if (
-                    self._closed
-                or not self._result
-            or "duration" not in self._result
-        ):
+        if (self._closed or not self._result or "duration" not in self._result):
             return -1
         return self._result.get("duration", 0)

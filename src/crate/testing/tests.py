@@ -32,7 +32,7 @@ def test_suite():
     s = doctest.DocFileSuite('layer.txt',
                              setUp=setUp,
                              optionflags=doctest.NORMALIZE_WHITESPACE |
-                                         doctest.ELLIPSIS,
+                             doctest.ELLIPSIS,
                              encoding='utf-8')
     suite.addTest(s)
     return suite

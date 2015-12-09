@@ -284,9 +284,8 @@ class CrateCompilerV1(CrateCompilerBase):
         set_clauses = []
 
         for k, v in crud_params:
-            set_clauses.append(
-                    k._compiler_dispatch(self, include_table=include_table) \
-                            + ' = ' + v)
+            set_clauses.append(k._compiler_dispatch(self, include_table=include_table)
+                               + ' = ' + v)
 
         for k, v in update_stmt.parameters.items():
             if '[' in k:
@@ -307,7 +306,7 @@ class CrateCompilerV1(CrateCompilerBase):
                 update_stmt,
                 update_stmt.table,
                 extra_froms,
-                dialect_hints, **kw)
+                None, **kw)
             if extra_from_text:
                 text += " " + extra_from_text
 
@@ -335,15 +334,6 @@ class CrateCompilerV1(CrateCompilerBase):
         compiler.postfetch = []
         compiler.prefetch = []
         compiler.returning = []
-    
-        # no parameters in the statement, no parameters in the
-        # compiled params - return binds for all columns
-        if compiler.column_keys is None and stmt.parameters is None:
-            return [
-                (c, _create_bind_param(
-                    compiler, c, None, required=True))
-                for c in stmt.table.columns
-            ]
     
         if stmt._has_multi_parameters:
             stmt_parameters = stmt.parameters[0]
@@ -377,13 +367,11 @@ class CrateCompilerV1(CrateCompilerBase):
         check_columns = {}
     
         crud._scan_cols(
-                compiler, stmt, parameters,
-                _getattr_col_key, _column_as_key,
-                _col_bind_name, check_columns, values, kw)
+            compiler, stmt, parameters,
+            _getattr_col_key, _column_as_key,
+            _col_bind_name, check_columns, values, kw)
     
         if stmt._has_multi_parameters:
             values = crud._extend_values_for_multiparams(compiler, stmt, values, kw)
     
         return values
-    
-    

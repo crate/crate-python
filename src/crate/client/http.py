@@ -75,7 +75,8 @@ class CrateJsonEncoder(json.JSONEncoder):
     def default(self, o):
         if isinstance(o, datetime):
             delta = o - self.epoch
-            return int(delta.microseconds / 1000.0 + (delta.seconds + delta.days * 24 * 3600) * 1000.0)
+            return int(delta.microseconds / 1000.0 +
+                       (delta.seconds + delta.days * 24 * 3600) * 1000.0)
         return json.JSONEncoder.default(self, o)
 
 
@@ -173,7 +174,8 @@ class Client(object):
                 https = server.lower().startswith('https:')
                 if not https:
                     kwargs_copy = {}
-                    # clean up any kwargs which are invalid for HTTPConnectionPool
+                    # clean up any kwargs
+                    # which are invalid for HTTPConnectionPool
                     for key in kwargs:
                         if key not in ['ca_certs', 'cert_reqs']:
                             kwargs_copy[key] = kwargs[key]
@@ -237,7 +239,8 @@ class Client(object):
                 "Invalid server response of content-type '%s'" %
                 response.headers.get("content-type", "unknown"))
         node_name = content.get("name")
-        return server, node_name, content.get('version', {}).get('number', '0.0.0')
+        node_version = content.get('version', {}).get('number', '0.0.0')
+        return server, node_name, node_version
 
     def _blob_path(self, table, digest):
         return '_blobs/{table}/{digest}'.format(table=table, digest=digest)
@@ -247,7 +250,8 @@ class Client(object):
         Stores the contents of the file like @data object in a blob under the
         given table and digest.
         """
-        response = self._request('PUT', self._blob_path(table, digest), data=data)
+        response = self._request('PUT', self._blob_path(table, digest),
+                                 data=data)
         if response.status == 201:
             # blob created
             return True
@@ -271,10 +275,11 @@ class Client(object):
 
     def blob_get(self, table, digest, chunk_size=1024 * 128):
         """
-        Returns a file like object representing the contents of the blob with the given
-        digest.
+        Returns a file like object representing the contents of the blob
+        with the given digest.
         """
-        response = self._request('GET', self._blob_path(table, digest), stream=True)
+        response = self._request('GET', self._blob_path(table, digest),
+                                 stream=True)
         if response.status == 404:
             raise DigestNotFoundException(table, digest)
         self._raise_for_status(response)
@@ -282,7 +287,8 @@ class Client(object):
 
     def blob_exists(self, table, digest):
         """
-        Returns true if the blob with the given digest exists under the given table.
+        Returns true if the blob with the given digest exists
+        under the given table.
         """
         response = self._request('HEAD', self._blob_path(table, digest))
         if response.status == 200:
@@ -304,7 +310,8 @@ class Client(object):
         while True:
             next_server = server or self._get_server()
             try:
-                response = self._do_request(next_server, method, path, **kwargs)
+                response = self._do_request(next_server, method, path,
+                                            **kwargs)
                 redirect_location = response.get_redirect_location()
                 if redirect_location and 300 <= response.status <= 308:
                     redirect_server = self._server_url(redirect_location)
@@ -360,11 +367,14 @@ class Client(object):
             error = data.get('error', {})
             error_trace = data.get('error_trace', None)
             if "results" in data:
-                errors = [res["error_message"] for res in data["results"] if res.get("error_message")]
+                errors = [res["error_message"]
+                          for res in data["results"]
+                          if res.get("error_message")]
                 if errors:
                     raise ProgrammingError("\n".join(errors))
             if isinstance(error, dict):
-                raise ProgrammingError(error.get('message', ''), error_trace=error_trace)
+                raise ProgrammingError(error.get('message', ''),
+                                       error_trace=error_trace)
             raise ProgrammingError(error, error_trace=error_trace)
         raise ProgrammingError(http_error_msg)
 
@@ -402,11 +412,14 @@ class Client(object):
                 except IndexError:
                     pass
                 else:
-                    if (ts + self.retry_interval) > time():  # Not yet, put it back
-                        heapq.heappush(self._inactive_servers, (ts, server, message))
+                    if (ts + self.retry_interval) > time():
+                        # Not yet, put it back
+                        heapq.heappush(self._inactive_servers,
+                                       (ts, server, message))
                     else:
                         self._active_servers.append(server)
-                        logger.warn("Restored server %s into active pool", server)
+                        logger.warn("Restored server %s into active pool",
+                                    server)
 
             # if none is old enough, use oldest
             if not self._active_servers:

@@ -28,4 +28,3 @@ def is_sa_version(major, minor):
 SA_0_8 = is_sa_version(0, 8)
 SA_0_9 = is_sa_version(0, 9)
 SA_1_0 = is_sa_version(1, 0)
-

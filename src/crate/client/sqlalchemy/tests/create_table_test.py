@@ -1,3 +1,24 @@
+# -*- coding: utf-8; -*-
+#
+# Licensed to CRATE Technology GmbH ("Crate") under one or more contributor
+# license agreements.  See the NOTICE file distributed with this work for
+# additional information regarding copyright ownership.  Crate licenses
+# this file to you under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.  You may
+# obtain a copy of the License at
+#
+#   http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+# WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.  See the
+# License for the specific language governing permissions and limitations
+# under the License.
+#
+# However, if you have executed another commercial license agreement
+# with Crate these terms will supersede the license and you may use the
+# software solely pursuant to the terms of the relevant commercial agreement.
+
 import sqlalchemy as sa
 from sqlalchemy.ext.declarative import declarative_base
 
@@ -39,10 +60,8 @@ class CreateTableTest(TestCase):
              '\n\tunicode_col STRING, \n\ttext_col STRING, \n\tint_col INT, '
              '\n\tlong_col LONG, \n\tbool_col BOOLEAN, '
              '\n\tshort_col SHORT, \n\tts_col TIMESTAMP, '
-             '\n\tfloat_col FLOAT, \n\tPRIMARY KEY (string_col)\n)\n\n'
-             ),
-            ()
-        )
+             '\n\tfloat_col FLOAT, \n\tPRIMARY KEY (string_col)\n)\n\n'),
+            ())
 
     def test_with_obj_column(self):
         class DummyTable(self.Base):
@@ -53,8 +72,7 @@ class CreateTableTest(TestCase):
         fake_cursor.execute.assert_called_with(
             ('\nCREATE TABLE dummy (\n\tpk STRING, \n\tobj_col OBJECT, '
              '\n\tPRIMARY KEY (pk)\n)\n\n'),
-            ()
-        )
+            ())
 
     def test_with_clustered_by(self):
         class DummyTable(self.Base):
@@ -70,7 +88,8 @@ class CreateTableTest(TestCase):
              'pk STRING, \n\t'
              'p STRING, \n\t'
              'PRIMARY KEY (pk)\n'
-             ') CLUSTERED BY (p)\n\n'), ())
+             ') CLUSTERED BY (p)\n\n'),
+            ())
 
     def test_with_partitioned_by(self):
         class DummyTable(self.Base):
@@ -87,7 +106,8 @@ class CreateTableTest(TestCase):
              'pk STRING, \n\t'
              'p STRING, \n\t'
              'PRIMARY KEY (pk)\n'
-             ') PARTITIONED BY (p)\n\n'), ())
+             ') PARTITIONED BY (p)\n\n'),
+            ())
 
     def test_with_number_of_shards_and_replicas(self):
         class DummyTable(self.Base):
@@ -103,7 +123,8 @@ class CreateTableTest(TestCase):
             ('\nCREATE TABLE t (\n\t'
              'pk STRING, \n\t'
              'PRIMARY KEY (pk)\n'
-             ') CLUSTERED INTO 3 SHARDS WITH (NUMBER_OF_REPLICAS = 2)\n\n'), ())
+             ') CLUSTERED INTO 3 SHARDS WITH (NUMBER_OF_REPLICAS = 2)\n\n'),
+            ())
 
     def test_with_clustered_by_and_number_of_shards(self):
         class DummyTable(self.Base):
@@ -120,4 +141,5 @@ class CreateTableTest(TestCase):
              'pk STRING, \n\t'
              'p STRING, \n\t'
              'PRIMARY KEY (pk, p)\n'
-             ') CLUSTERED BY (p) INTO 3 SHARDS\n\n'), ())
+             ') CLUSTERED BY (p) INTO 3 SHARDS\n\n'),
+            ())

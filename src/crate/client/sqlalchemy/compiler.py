@@ -157,7 +157,7 @@ class CrateTypeCompiler(compiler.GenericTypeCompiler):
 
 
 class CrateCompilerBase(SQLCompiler):
-    
+
     def visit_getitem_binary(self, binary, operator, **kw):
         return "{0}['{1}']".format(
             self.process(binary.left, **kw),
@@ -235,7 +235,9 @@ class CrateCompiler(CrateCompilerBase):
                 else:
                     self.postfetch.append(c)
                     value = self.process(value.self_group())
-                set_clauses.append(c._compiler_dispatch(self, include_table=False) + ' = ?')
+                clause = c._compiler_dispatch(self,
+                                              include_table=False) + ' = ?'
+                set_clauses.append(clause)
             elif self.isupdate:
                 if (
                     c.onupdate is not None
@@ -256,13 +258,13 @@ class CrateCompilerV1(CrateCompilerBase):
 
         Parts are taken from the SQLCompiler base class.
         """
-        
+
         if not update_stmt.parameters \
                 and not hasattr(update_stmt, '_crate_specific'):
             return super(CrateCompilerV1, self).visit_update(update_stmt, **kw)
 
         self.isupdate = True
-        
+
         extra_froms = update_stmt._extra_froms
 
         text = 'UPDATE '
@@ -280,13 +282,14 @@ class CrateCompilerV1(CrateCompilerBase):
         text += ' SET '
         include_table = extra_froms and \
             self.render_table_with_column_in_update_from
-        
+
         set_clauses = []
 
         for k, v in crud_params:
-            set_clauses.append(
-                    k._compiler_dispatch(self, include_table=include_table) \
-                            + ' = ' + v)
+            k_eq_v = k._compiler_dispatch(self,
+                                          include_table=include_table) + \
+                ' = ' + v
+            set_clauses.append(k_eq_v)
 
         for k, v in update_stmt.parameters.items():
             if '[' in k:
@@ -294,7 +297,7 @@ class CrateCompilerV1(CrateCompilerBase):
                 set_clauses.append(k + ' = ' + self.process(bindparam))
 
         text += ', '.join(set_clauses)
-        
+
         if self.returning or update_stmt._returning:
             if not self.returning:
                 self.returning = update_stmt._returning
@@ -307,7 +310,8 @@ class CrateCompilerV1(CrateCompilerBase):
                 update_stmt,
                 update_stmt.table,
                 extra_froms,
-                dialect_hints, **kw)
+                dialect_hints,  # undefined variable!
+                **kw)
             if extra_from_text:
                 text += " " + extra_from_text
 
@@ -335,27 +339,24 @@ class CrateCompilerV1(CrateCompilerBase):
         compiler.postfetch = []
         compiler.prefetch = []
         compiler.returning = []
-    
+
         # no parameters in the statement, no parameters in the
         # compiled params - return binds for all columns
         if compiler.column_keys is None and stmt.parameters is None:
-            return [
-                (c, _create_bind_param(
-                    compiler, c, None, required=True))
-                for c in stmt.table.columns
-            ]
-    
+            return [(c, _create_bind_param(compiler, c, None, required=True))
+                    for c in stmt.table.columns]
+
         if stmt._has_multi_parameters:
             stmt_parameters = stmt.parameters[0]
         else:
             stmt_parameters = stmt.parameters
-    
+
         # getters - these are normally just column.key,
         # but in the case of mysql multi-table update, the rules for
         # .key must conditionally take tablename into account
         _column_as_key, _getattr_col_key, _col_bind_name = \
             crud._key_getters_for_crud_column(compiler)
-    
+
         # if we have statement parameters - set defaults in the
         # compiled params
         if compiler.column_keys is None:
@@ -365,25 +366,23 @@ class CrateCompilerV1(CrateCompilerBase):
                               for key in compiler.column_keys
                               if not stmt_parameters or
                               key not in stmt_parameters)
-    
+
         # create a list of column assignment clauses as tuples
         values = []
-    
+
         if stmt_parameters is not None:
             crud._get_stmt_parameters_params(
                 compiler,
                 parameters, stmt_parameters, _column_as_key, values, kw)
-    
+
         check_columns = {}
-    
-        crud._scan_cols(
-                compiler, stmt, parameters,
-                _getattr_col_key, _column_as_key,
-                _col_bind_name, check_columns, values, kw)
-    
+
+        crud._scan_cols(compiler, stmt, parameters,
+                        _getattr_col_key, _column_as_key,
+                        _col_bind_name, check_columns, values, kw)
+
         if stmt._has_multi_parameters:
-            values = crud._extend_values_for_multiparams(compiler, stmt, values, kw)
-    
+            values = crud._extend_values_for_multiparams(compiler, stmt,
+                                                         values, kw)
+
         return values
-    
-    

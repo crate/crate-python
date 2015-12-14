@@ -1,3 +1,24 @@
+# -*- coding: utf-8; -*-
+#
+# Licensed to CRATE Technology GmbH ("Crate") under one or more contributor
+# license agreements.  See the NOTICE file distributed with this work for
+# additional information regarding copyright ownership.  Crate licenses
+# this file to you under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.  You may
+# obtain a copy of the License at
+#
+#   http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+# WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.  See the
+# License for the specific language governing permissions and limitations
+# under the License.
+#
+# However, if you have executed another commercial license agreement
+# with Crate these terms will supersede the license and you may use the
+# software solely pursuant to the terms of the relevant commercial agreement.
+
 import os
 import sys
 import time
@@ -40,14 +61,15 @@ class CrateLayer(object):
         :param port: port on which crate should run
         :param keepRunning: do not shut down the crate instance for every
                             single test instead just delete all indices
-        :param transport_port: port on which transport layer for crate should run
+        :param transport_port: port on which transport layer for crate should
+                               run
         :param crate_exec: alternative executable command
         :param crate_config: alternative crate config file location
         :param cluster_name: the name of the cluster to join/build. Will be
                              generated automatically if omitted.
         :param host: the host to bind to. defaults to 'localhost'
-        :param settings: further settings that do not deserve a keyword argument
-                         will be prefixed with ``es.``.
+        :param settings: further settings that do not deserve a keyword
+                         argument will be prefixed with ``es.``.
         """
         self.__name__ = name
         self.keepRunning = keepRunning
@@ -59,8 +81,16 @@ class CrateLayer(object):
             crate_config = os.path.join(crate_home, 'config', 'crate.yml')
         if cluster_name is None:
             cluster_name = "Testing{0}".format(port)
-        settings = self.create_settings(crate_config, cluster_name, name, host, port, transport_port, multicast, settings)
-        start_cmd = (crate_exec, ) + tuple(["-Des.%s=%s" % opt for opt in settings.items()])
+        settings = self.create_settings(crate_config,
+                                        cluster_name,
+                                        name,
+                                        host,
+                                        port,
+                                        transport_port,
+                                        multicast,
+                                        settings)
+        start_cmd = (crate_exec, ) + tuple(["-Des.%s=%s" % opt
+                                           for opt in settings.items()])
 
         self.http_url = 'http://{host}:{port}'.format(
             host=settings['network.host'], port=settings['http.port'])
@@ -84,7 +114,7 @@ class CrateLayer(object):
             "cluster.routing.allocation.disk.watermark.low": "1b",
             "cluster.routing.allocation.disk.watermark.high": "1b",
             "discovery.initial_state_timeout": 0,
-            "discovery.zen.ping.multicast.enabled": "true" if multicast else "false",
+            "discovery.zen.ping.multicast.enabled": str(multicast).lower(),
             "node.name": node_name,
             "cluster.name": cluster_name,
             "network.host": host,
@@ -135,7 +165,9 @@ class CrateLayer(object):
                 if validator():
                     break
                 else:
-                    sys.stderr.write('Waiting for layer ... {0:.1f}s\n'.format(time_slept))
+                    sys.stderr.write(
+                        'Waiting for layer ... {0:.1f}s\n'.format(time_slept)
+                    )
             except MaxRetryError as e:
                 if time_slept >= max_wait_for_connection:
                     raise e
@@ -150,8 +182,9 @@ class CrateLayer(object):
     def _wait_for_start(self):
         """Wait for instance to be started"""
 
-        # since crate 0.10.0 http may be ready before the cluster is fully available
-        # block here so that early requests after the layer starts don't result in 503
+        # since crate 0.10.0 http may be ready before the cluster
+        # is fully available block here so that early requests
+        # after the layer starts don't result in 503
         def validator():
             url = '{server}/'.format(server=self.http_url)
             resp = self.conn_pool.request('HEAD', url)
@@ -164,9 +197,11 @@ class CrateLayer(object):
 
         def validator():
             url = '{server}/_sql'.format(server=self.http_url)
-            resp = self.conn_pool.urlopen('POST', url,
-                                          headers={'Content-Type': 'application/json'},
-                                          body='{"stmt": "select master_node from sys.cluster"}')
+            resp = self.conn_pool.urlopen(
+                'POST', url,
+                headers={'Content-Type': 'application/json'},
+                body='{"stmt": "select master_node from sys.cluster"}'
+            )
             data = json.loads(resp.data.decode('utf-8'))
             if resp.status == 200 and data['rows'][0][0]:
                 sys.stderr.write('Crate layer started.\n')

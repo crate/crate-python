@@ -114,7 +114,9 @@ class _Craty(sqltypes.UserDefinedType):
 
         def __getitem__(self, key):
             if SA_1_0:
-                return default_comparator._binary_operate(self.expr, operators.getitem, key)
+                return default_comparator._binary_operate(self.expr,
+                                                          operators.getitem,
+                                                          key)
             return self._binary_operate(self.expr, operators.getitem, key)
 
     def get_col_spec(self):
@@ -137,7 +139,8 @@ class Any(expression.ColumnElement):
 
         :class:`sqlalchemy.dialects.postgresql.ARRAY`
 
-        :meth:`sqlalchemy.dialects.postgresql.ARRAY.Comparator.any` - ARRAY-bound method
+        :meth:`sqlalchemy.dialects.postgresql.ARRAY.Comparator.any`
+            ARRAY-bound method
 
     """
     __visit_name__ = 'any'
@@ -154,7 +157,9 @@ class _ObjectArray(sqltypes.UserDefinedType):
     class Comparator(sqltypes.TypeEngine.Comparator):
         def __getitem__(self, key):
             if SA_1_0:
-                return default_comparator._binary_operate(self.expr, operators.getitem, key)
+                return default_comparator._binary_operate(self.expr,
+                                                          operators.getitem,
+                                                          key)
             return self._binary_operate(self.expr, operators.getitem, key)
 
         def any(self, other, operator=operators.eq):

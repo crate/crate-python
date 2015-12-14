@@ -50,14 +50,16 @@ class Cursor(object):
         if self._closed:
             raise ProgrammingError("Cursor closed")
 
-        self._result = self.connection.client.sql(sql, parameters, bulk_parameters)
+        self._result = self.connection.client.sql(sql, parameters,
+                                                  bulk_parameters)
         if "rows" in self._result:
             self.rows = iter(self._result["rows"])
 
     def executemany(self, sql, seq_of_parameters):
         """
-        Prepare a database operation (query or command) and then execute it against all parameter
-        sequences or mappings found in the sequence ``seq_of_parameters``.
+        Prepare a database operation (query or command) and then execute it
+        against all parameter sequences or mappings found in the sequence
+        ``seq_of_parameters``.
         """
         row_counts = []
         durations = []
@@ -87,8 +89,8 @@ class Cursor(object):
 
     def fetchone(self):
         """
-        Fetch the next row of a query result set, returning a single sequence, or None when no
-        more data is available.
+        Fetch the next row of a query result set, returning a single sequence,
+        or None when no more data is available.
         Alias for ``next()``.
         """
         try:
@@ -98,7 +100,8 @@ class Cursor(object):
 
     def __iter__(self):
         """
-        support iterator interface: http://legacy.python.org/dev/peps/pep-0249/#iter
+        support iterator interface:
+        http://legacy.python.org/dev/peps/pep-0249/#iter
 
         This iterator is shared. Advancing this iterator will advance other
         iterators created from this cursor.
@@ -108,8 +111,9 @@ class Cursor(object):
 
     def fetchmany(self, count=None):
         """
-        Fetch the next set of rows of a query result, returning a sequence of sequences
-        (e.g. a list of tuples). An empty sequence is returned when no more rows are available.
+        Fetch the next set of rows of a query result, returning a sequence of
+        sequences (e.g. a list of tuples). An empty sequence is returned when
+        no more rows are available.
         """
         if count is None:
             count = self.arraysize
@@ -125,9 +129,9 @@ class Cursor(object):
 
     def fetchall(self):
         """
-        Fetch all (remaining) rows of a query result, returning them as a sequence of sequences
-        (e.g. a list of tuples). Note that the cursor's arraysize attribute can affect the
-        performance of this operation.
+        Fetch all (remaining) rows of a query result, returning them as a
+        sequence of sequences (e.g. a list of tuples). Note that the cursor's
+        arraysize attribute can affect the performance of this operation.
         """
         result = []
         iterate = True
@@ -160,9 +164,9 @@ class Cursor(object):
     @property
     def rowcount(self):
         """
-        This read-only attribute specifies the number of rows that the last .execute*() produced
-        (for DQL statements like ``SELECT``) or affected (for DML statements like ``UPDATE``
-        or ``INSERT``).
+        This read-only attribute specifies the number of rows that the last
+        .execute*() produced (for DQL statements like ``SELECT``) or affected
+        (for DML statements like ``UPDATE`` or ``INSERT``).
         """
         if (self._closed or not self._result or "rows" not in self._result):
             return -1
@@ -170,10 +174,14 @@ class Cursor(object):
 
     def next(self):
         """
-        Return the next row of a query result set, respecting if cursor was closed.
+        Return the next row of a query result set, respecting if cursor was
+        closed.
         """
         if self.rows is None:
-            raise ProgrammingError("No result available. execute() or executemany() must be called first.")
+            raise ProgrammingError(
+                "No result available. " +
+                "execute() or executemany() must be called first."
+            )
         elif not self._closed:
             return next(self.rows)
         else:
@@ -203,8 +211,11 @@ class Cursor(object):
     @property
     def duration(self):
         """
-        This read-only attribute specifies the server-side duration of a query in milliseconds.
+        This read-only attribute specifies the server-side duration of a query
+        in milliseconds.
         """
-        if (self._closed or not self._result or "duration" not in self._result):
+        if self._closed or \
+                not self._result or \
+                "duration" not in self._result:
             return -1
         return self._result.get("duration", 0)

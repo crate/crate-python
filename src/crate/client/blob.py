@@ -48,13 +48,15 @@ class BlobContainer(object):
         Upload a blob
 
         :param f:
-            File object to be uploaded (required to support seek if digest is not provided)
+            File object to be uploaded (required to support seek if digest is
+            not provided).
         :param digest:
-            Optional SHA-1 hex digest of the file contents. Gets computed before actual upload
-            if not provided, which requires an extra file read.
+            Optional SHA-1 hex digest of the file contents. Gets computed
+            before actual upload if not provided, which requires an extra file
+            read.
         :return:
-            The hex digest of the uploaded blob if not provided in the call. Otherwise a
-            boolean indicating if the blob has been newly created
+            The hex digest of the uploaded blob if not provided in the call.
+            Otherwise a boolean indicating if the blob has been newly created.
         """
 
         if digest:
@@ -62,7 +64,8 @@ class BlobContainer(object):
         else:
             actual_digest = self._compute_digest(f)
 
-        created = self.conn.client.blob_put(self.container_name, actual_digest, f)
+        created = self.conn.client.blob_put(self.container_name,
+                                            actual_digest, f)
         if digest:
             return created
         return actual_digest

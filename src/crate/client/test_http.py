@@ -53,7 +53,8 @@ class FakeServerRaisingGeneralException(FakeServerRaisingException):
 class FakeServerRaisingMaxRetryError(FakeServerRaisingException):
 
     def request(self, method, path, data=None, stream=False, **kwargs):
-        raise urllib3.exceptions.MaxRetryError(None, path, "this shouldn't be raised")
+        raise urllib3.exceptions.MaxRetryError(None, path,
+                                               "this shouldn't be raised")
 
 
 class FakeServerErrorResponse(object):
@@ -128,23 +129,13 @@ class FakeServerBadBulkRequest(FakeServerErrorResponse):
         mock_response.reason = "Bad Request"
         mock_response.headers = {"content-type": self.content_type}
         mock_response.data = json.dumps({
-                        "results": [
-                            {
-                                "rowcount": 1
-                            },
-                            {
-                                "error_message": "an error occured"
-                            },
-                            {
-                                "error_message": "another error"
-                            },
-                            {
-                                "error_message": ""
-                            },
-                            {
-                                "error_message": None
-                            }
-                        ]}).encode()
+            "results": [
+                {"rowcount": 1},
+                {"error_message": "an error occured"},
+                {"error_message": "another error"},
+                {"error_message": ""},
+                {"error_message": None}
+            ]}).encode()
         return mock_response
 
 
@@ -203,7 +194,8 @@ class HttpClientTest(TestCase):
         try:
             client.sql('select 3')
         except ProgrammingError as e:
-            self.assertEqual("No more Servers available, exception from last server: Service Unavailable",
+            self.assertEqual("No more Servers available, " +
+                             "exception from last server: Service Unavailable",
                              e.message)
         self.assertEqual([], list(client._active_servers))
 
@@ -263,7 +255,8 @@ class HttpClientTest(TestCase):
     def test_bad_bulk_400(self):
         client = Client(servers="localhost:4200")
         try:
-            client.sql("Insert into users (name) values(?)", bulk_parameters=[["douglas"], ["monthy"]])
+            client.sql("Insert into users (name) values(?)",
+                       bulk_parameters=[["douglas"], ["monthy"]])
         except ProgrammingError as e:
             self.assertEqual("an error occured\nanother error", e.message)
         else:
@@ -279,7 +272,8 @@ class HttpClientTest(TestCase):
         dt = datetime(2015, 2, 28, 7, 31, 40)
         client.sql('insert into users (dt) values (?)', (dt, ))
 
-        # convert string to dict because the order of the keys isn't deterministic
+        # convert string to dict
+        # because the order of the keys isn't deterministic
         data = json.loads(request.call_args[1]['data'])
         self.assertEqual(data['args'], [1425108700000])
 
@@ -323,11 +317,13 @@ class ThreadSafeHttpClientTest(TestCase):
                 pass
             try:
                 with self.client._lock:
-                    num_servers = len(self.client._active_servers) + len(self.client._inactive_servers)
+                    num_servers = len(self.client._active_servers) + \
+                        len(self.client._inactive_servers)
                 self.assertEquals(
                     expected_num_servers,
                     num_servers,
-                    "expected %d but got %d" % (expected_num_servers, num_servers)
+                    "expected %d but got %d" % (expected_num_servers,
+                                                num_servers)
                 )
             except AssertionError:
                 self.err_queue.put(sys.exc_info())
@@ -415,7 +411,8 @@ class KeepAliveClientTest(TestCase):
         super(KeepAliveClientTest, self).tearDown()
 
     def _run_server(self):
-        self.server = BaseHTTPServer.HTTPServer(self.server_address, ClientAddressRequestHandler)
+        self.server = BaseHTTPServer.HTTPServer(self.server_address,
+                                                ClientAddressRequestHandler)
         self.server.handle_request()
 
     def test_client_keepalive(self):
@@ -445,7 +442,6 @@ class RequestsCaBundleTest(TestCase):
     def test_open_client(self):
         os.environ["REQUESTS_CA_BUNDLE"] = "/etc/ssl/certs/ca-certificates.crt"
         try:
-          client = Client('http://127.0.0.1:4200')
-          crate_cursor = crate_connection.cursor()
-        except crate.client.exceptions.ProgrammingError:
-          self.fail("HTTP not working with REQUESTS_CA_BUNDLE")
+            Client('http://127.0.0.1:4200')
+        except ProgrammingError:
+            self.fail("HTTP not working with REQUESTS_CA_BUNDLE")

@@ -70,7 +70,8 @@ class SqlAlchemyDictTypeTest(TestCase):
         s = select([mytable.c.name], bind=self.engine)
         s = s.where(mytable.c.data['x']['y'] == 1)
         self.assertSQL(
-            "SELECT mytable.name FROM mytable WHERE mytable.data['x']['y'] = ?",
+            "SELECT mytable.name FROM mytable " +
+            "WHERE mytable.data['x']['y'] = ?",
             s
         )
 
@@ -88,7 +89,8 @@ class SqlAlchemyDictTypeTest(TestCase):
         s = select([mytable.c.name], bind=self.engine)
         s = s.where(mytable.c.data['x'] == mytable.c.name)
         self.assertSQL(
-            "SELECT mytable.name FROM mytable WHERE mytable.data['x'] = mytable.name",
+            "SELECT mytable.name FROM mytable " +
+            "WHERE mytable.data['x'] = mytable.name",
             s
         )
 
@@ -199,8 +201,9 @@ class SqlAlchemyDictTypeTest(TestCase):
     @patch('crate.client.connection.Cursor', FakeCursor)
     def test_partial_dict_update_only_one_key_changed(self):
         """
-        if only one attribute of Craty is changed the update should only update
-        that attribute not all attributes of Craty
+        If only one attribute of Crate is changed
+        the update should only update that attribute
+        not all attributes of Crate.
         """
         session, Character = self.set_up_character_and_cursor(
             return_value=[('Trillian', dict(x=1, y=2))]

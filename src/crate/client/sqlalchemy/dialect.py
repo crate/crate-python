@@ -26,7 +26,12 @@ from datetime import datetime, date
 from sqlalchemy import types as sqltypes
 from sqlalchemy.engine import default, reflection
 
-from .compiler import CrateCompiler, CrateCompilerV1, CrateTypeCompiler, CrateDDLCompiler
+from .compiler import (
+    CrateCompiler,
+    CrateCompilerV1,
+    CrateTypeCompiler,
+    CrateDDLCompiler
+)
 from crate.client.exceptions import TimezoneUnawareException
 
 from .sa_version import SA_1_0
@@ -67,12 +72,15 @@ class Date(sqltypes.Date):
 
 
 class DateTime(sqltypes.DateTime):
+
+    TZ_ERROR_MSG = "Timezone aware datetime objects are not supported"
+
     def bind_processor(self, dialect):
         def process(value):
             if value is not None:
                 assert isinstance(value, datetime)
                 if value.tzinfo is not None:
-                    raise TimezoneUnawareException("Timezone aware datetime objects are not supported")
+                    raise TimezoneUnawareException(DateTime.TZ_ERROR_MSG)
                 return value.strftime('%Y-%m-%dT%H:%M:%S.%fZ')
             return value
         return process

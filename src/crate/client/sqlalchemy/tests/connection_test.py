@@ -50,5 +50,6 @@ class SqlAlchemyConnectionTest(TestCase):
         )
         conn = engine.raw_connection()
         self.assertEquals(
-            "<Connection <Client ['http://localhost:4201', 'http://localhost:4202']>>",
+            "<Connection <Client ['http://localhost:4201', " +
+            "'http://localhost:4202']>>",
             repr(conn.connection))

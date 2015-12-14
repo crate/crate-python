@@ -20,4 +20,3 @@
 # software solely pursuant to the terms of the relevant commercial agreement.
 
 from .dialect import CrateDialect
-

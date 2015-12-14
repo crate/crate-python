@@ -254,13 +254,13 @@ class CrateCompiler(CrateCompilerBase):
 class CrateCompilerV1(CrateCompilerBase):
 
     def visit_update(self, update_stmt, **kw):
-        """ used to compile <sql.expression.Update> expressions
-
+        """
+        used to compile <sql.expression.Update> expressions
         Parts are taken from the SQLCompiler base class.
         """
 
-        if not update_stmt.parameters \
-                and not hasattr(update_stmt, '_crate_specific'):
+        if not update_stmt.parameters and \
+                not hasattr(update_stmt, '_crate_specific'):
             return super(CrateCompilerV1, self).visit_update(update_stmt, **kw)
 
         self.isupdate = True
@@ -275,6 +275,13 @@ class CrateCompilerV1(CrateCompilerBase):
 
         table_text = self.update_tables_clause(update_stmt, update_stmt.table,
                                                extra_froms, **kw)
+
+        dialect_hints = None
+        if update_stmt._hints:
+            dialect_hints, table_text = self._setup_crud_hints(
+                update_stmt, table_text
+            )
+
         crud_params = self._get_crud_params(update_stmt, **kw)
 
         text += table_text
@@ -286,10 +293,10 @@ class CrateCompilerV1(CrateCompilerBase):
         set_clauses = []
 
         for k, v in crud_params:
-            k_eq_v = k._compiler_dispatch(self,
+            clause = k._compiler_dispatch(self,
                                           include_table=include_table) + \
                 ' = ' + v
-            set_clauses.append(k_eq_v)
+            set_clauses.append(clause)
 
         for k, v in update_stmt.parameters.items():
             if '[' in k:
@@ -310,7 +317,7 @@ class CrateCompilerV1(CrateCompilerBase):
                 update_stmt,
                 update_stmt.table,
                 extra_froms,
-                dialect_hints,  # undefined variable!
+                dialect_hints,
                 **kw)
             if extra_from_text:
                 text += " " + extra_from_text
@@ -343,7 +350,8 @@ class CrateCompilerV1(CrateCompilerBase):
         # no parameters in the statement, no parameters in the
         # compiled params - return binds for all columns
         if compiler.column_keys is None and stmt.parameters is None:
-            return [(c, _create_bind_param(compiler, c, None, required=True))
+            return [(c, crud._create_bind_param(compiler, c, None,
+                                                required=True))
                     for c in stmt.table.columns]
 
         if stmt._has_multi_parameters:

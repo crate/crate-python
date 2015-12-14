@@ -442,6 +442,6 @@ class RequestsCaBundleTest(TestCase):
     def test_open_client(self):
         os.environ["REQUESTS_CA_BUNDLE"] = "/etc/ssl/certs/ca-certificates.crt"
         try:
-            client = Client('http://127.0.0.1:4200')
+            Client('http://127.0.0.1:4200')
         except ProgrammingError:
             self.fail("HTTP not working with REQUESTS_CA_BUNDLE")

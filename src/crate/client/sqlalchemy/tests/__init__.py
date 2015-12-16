@@ -7,7 +7,9 @@ from .datetime_test import SqlAlchemyDateAndDateTimeTest
 from .compiler_test import SqlAlchemyCompilerTest
 from .update_test import SqlAlchemyUpdateTest
 from .match_test import SqlAlchemyMatchTest
+from .bulk_test import SqlAlchemyBulkTest
 from .create_table_test import CreateTableTest
+from ..sa_version import SA_1_0
 
 
 def test_suite():
@@ -19,4 +21,6 @@ def test_suite():
     tests.addTest(makeSuite(SqlAlchemyUpdateTest))
     tests.addTest(makeSuite(SqlAlchemyMatchTest))
     tests.addTest(makeSuite(CreateTableTest))
+    if SA_1_0:
+        tests.addTest(makeSuite(SqlAlchemyBulkTest))
     return tests

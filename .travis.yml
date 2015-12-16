@@ -24,8 +24,9 @@ matrix:
       env: SA_VERSION=0.8.2
     - python: 3.5
       env: SA_VERSION=0.8.2
-script:
+before_script:
   - bin/flake8 --ignore=E,C901,F401,F821 --count src
+script:
   - bin/coverage run bin/test
 after_success:
   - pip install coveralls

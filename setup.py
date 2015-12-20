@@ -37,10 +37,8 @@ def read(path):
 
 
 long_description = (
-    read('README.rst')
-    + '\n' +
-    read('docs/client.txt')
-    + '\n' +
+    read('README.rst') + '\n' +
+    read('docs/client.txt') + '\n' +
     read('docs/blobs.txt')
 )
 
@@ -80,7 +78,7 @@ setup(
     install_requires=requirements,
     package_data={'': ['*.txt']},
     classifiers=[
-        'Development Status :: 4 - Beta',
+        'Development Status :: 5 - Production/Stable',
         'Intended Audience :: Developers',
         'License :: OSI Approved :: Apache Software License',
         'Operating System :: OS Independent',

@@ -41,7 +41,7 @@ implementation of the Python `DB API 2.0
 
 It also includes support for `SQLAlchemy <http://www.sqlalchemy.org>`_.
 
-To get started take a look at the `documentation <https://crate.io/docs/projects/crate-python/stable/>`_.
+To get started take a look at the `documentation <https://crate.io/docs/reference/python/>`_.
 
 Installation
 ============

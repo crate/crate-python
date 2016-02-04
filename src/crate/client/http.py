@@ -30,7 +30,8 @@ import six
 import urllib3
 import urllib3.exceptions
 from time import time
-from datetime import datetime
+from datetime import datetime, date
+import calendar
 import threading
 import re
 from six.moves.urllib.parse import urlparse, urlencode
@@ -77,6 +78,8 @@ class CrateJsonEncoder(json.JSONEncoder):
             delta = o - self.epoch
             return int(delta.microseconds / 1000.0 +
                        (delta.seconds + delta.days * 24 * 3600) * 1000.0)
+        if isinstance(o, date):
+            return calendar.timegm(o.timetuple()) * 1000
         return json.JSONEncoder.default(self, o)
 
 

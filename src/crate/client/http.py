@@ -135,6 +135,72 @@ def _ex_to_message(ex):
     return getattr(ex, 'message', None) or str(ex) or repr(ex)
 
 
+def _raise_for_status(response):
+    """ make sure that only crate.exceptions are raised that are defined in
+    the DB-API specification """
+    message = ''
+    if 400 <= response.status < 500:
+        message = '%s Client Error: %s' % (response.status, response.reason)
+    elif 500 <= response.status < 600:
+        message = '%s Server Error: %s' % (response.status, response.reason)
+    else:
+        return
+    if response.status == 503:
+        raise ConnectionError(message)
+    if response.headers.get("content-type", "").startswith("application/json"):
+        data = json.loads(six.text_type(response.data, 'utf-8'))
+        error = data.get('error', {})
+        error_trace = data.get('error_trace', None)
+        if "results" in data:
+            errors = [res["error_message"] for res in data["results"]
+                      if res.get("error_message")]
+            if errors:
+                raise ProgrammingError("\n".join(errors))
+        if isinstance(error, dict):
+            raise ProgrammingError(error.get('message', ''),
+                                   error_trace=error_trace)
+        raise ProgrammingError(error, error_trace=error_trace)
+    raise ProgrammingError(message)
+
+
+def _server_url(server):
+    """
+    Normalizes a given server string to an url
+
+    >>> print(_server_url('a'))
+    http://a
+    >>> print(_server_url('a:9345'))
+    http://a:9345
+    >>> print(_server_url('https://a:9345'))
+    https://a:9345
+    >>> print(_server_url('https://a'))
+    https://a
+    >>> print(_server_url('demo.crate.io'))
+    http://demo.crate.io
+    """
+    if not _HTTP_PAT.match(server):
+        server = 'http://%s' % server
+    parsed = urlparse(server)
+    url = '%s://%s' % (parsed.scheme, parsed.netloc)
+    return url
+
+
+def _to_server_list(servers):
+    if isinstance(servers, basestring):
+        servers = servers.split()
+    return [_server_url(s) for s in servers]
+
+
+def _pool_kw_args(ca_cert, verify_ssl_cert):
+    ca_cert = ca_cert or os.environ.get('REQUESTS_CA_BUNDLE', None)
+    if not ca_cert:
+        return {}
+    return {
+        'ca_certs': ca_cert,
+        'cert_reqs': 'REQUIRED' if verify_ssl_cert else 'NONE'
+    }
+
+
 class Client(object):
     """
     Crate connection client using crate's HTTP API.
@@ -154,22 +220,13 @@ class Client(object):
         if not servers:
             servers = [self.default_server]
         else:
-            if isinstance(servers, basestring):
-                servers = servers.split()
-            servers = [self._server_url(s) for s in servers]
+            servers = _to_server_list(servers)
         self._active_servers = servers
         self._inactive_servers = []
         self._http_timeout = timeout
-        pool_kw = {}
-        if ca_cert is None:
-            ca_cert = os.environ.get("REQUESTS_CA_BUNDLE", None)
-        if ca_cert is not None:
-            pool_kw['ca_certs'] = ca_cert
-            pool_kw['cert_reqs'] = verify_ssl_cert and 'REQUIRED' or 'NONE'
+        pool_kw = _pool_kw_args(ca_cert, verify_ssl_cert)
         self.server_pool = {}
-        self._update_server_pool(servers,
-                                 timeout=timeout,
-                                 **pool_kw)
+        self._update_server_pool(servers, timeout=timeout, **pool_kw)
         self._pool_kw = pool_kw
         self._lock = threading.RLock()
         self._local = threading.local()
@@ -192,28 +249,6 @@ class Client(object):
                     self.server_pool[server] = Server(server, **kwargs_copy)
                 else:
                     self.server_pool[server] = Server(server, **kwargs)
-
-    @staticmethod
-    def _server_url(server):
-        """
-        Normalizes a given server string to an url
-
-        >>> print(Client._server_url('a'))
-        http://a
-        >>> print(Client._server_url('a:9345'))
-        http://a:9345
-        >>> print(Client._server_url('https://a:9345'))
-        https://a:9345
-        >>> print(Client._server_url('https://a'))
-        https://a
-        >>> print(Client._server_url('demo.crate.io'))
-        http://demo.crate.io
-        """
-        if not _HTTP_PAT.match(server):
-            server = 'http://%s' % server
-        parsed = urlparse(server)
-        url = '%s://%s' % (parsed.scheme, parsed.netloc)
-        return url
 
     def sql(self, stmt, parameters=None, bulk_parameters=None):
         """
@@ -241,7 +276,7 @@ class Client(object):
 
     def server_infos(self, server):
         response = self._request('GET', '/', server=server)
-        self._raise_for_status(response)
+        _raise_for_status(response)
         content = _json_loads_or_error(response)
         node_name = content.get("name")
         node_version = content.get('version', {}).get('number', '0.0.0')
@@ -262,7 +297,7 @@ class Client(object):
             return False
         if response.status == 400:
             raise BlobsDisabledException(table, digest)
-        self._raise_for_status(response)
+        _raise_for_status(response)
 
     def blob_del(self, table, digest):
         """
@@ -273,7 +308,7 @@ class Client(object):
             return True
         if response.status == 404:
             return False
-        self._raise_for_status(response)
+        _raise_for_status(response)
 
     def blob_get(self, table, digest, chunk_size=1024 * 128):
         """
@@ -283,7 +318,7 @@ class Client(object):
         response = self._request('GET', _blob_path(table, digest), stream=True)
         if response.status == 404:
             raise DigestNotFoundException(table, digest)
-        self._raise_for_status(response)
+        _raise_for_status(response)
         return response.stream(amt=chunk_size)
 
     def blob_exists(self, table, digest):
@@ -296,7 +331,7 @@ class Client(object):
             return True
         elif response.status == 404:
             return False
-        self._raise_for_status(response)
+        _raise_for_status(response)
 
     def _add_server(self, server):
         with self._lock:
@@ -315,7 +350,7 @@ class Client(object):
                     method, path, **kwargs)
                 redirect_location = response.get_redirect_location()
                 if redirect_location and 300 <= response.status <= 308:
-                    redirect_server = self._server_url(redirect_location)
+                    redirect_server = _server_url(redirect_location)
                     self._add_server(redirect_server)
                     return self._request(
                         method, path, server=redirect_server, **kwargs)
@@ -341,37 +376,6 @@ class Client(object):
             except Exception as e:
                 raise ProgrammingError(_ex_to_message(e))
 
-    def _raise_for_status(self, response):
-        """ make sure that only crate.exceptions are raised that are defined in
-        the DB-API specification """
-        http_error_msg = ''
-        if 400 <= response.status < 500:
-            http_error_msg = '%s Client Error: %s' % (
-                response.status, response.reason)
-        elif 500 <= response.status < 600:
-            http_error_msg = '%s Server Error: %s' % (
-                response.status, response.reason)
-        else:
-            return
-        if response.status == 503:
-            raise ConnectionError(http_error_msg)
-        if response.headers.get("content-type", ""
-                                ).startswith("application/json"):
-            data = json.loads(six.text_type(response.data, 'utf-8'))
-            error = data.get('error', {})
-            error_trace = data.get('error_trace', None)
-            if "results" in data:
-                errors = [res["error_message"]
-                          for res in data["results"]
-                          if res.get("error_message")]
-                if errors:
-                    raise ProgrammingError("\n".join(errors))
-            if isinstance(error, dict):
-                raise ProgrammingError(error.get('message', ''),
-                                       error_trace=error_trace)
-            raise ProgrammingError(error, error_trace=error_trace)
-        raise ProgrammingError(http_error_msg)
-
     def _json_request(self, method, path, data=None):
         """
         Issue request against the crate HTTP API.
@@ -382,7 +386,7 @@ class Client(object):
         response = self._request(method, path, data=data)
 
         # raise error if occurred, otherwise nothing is raised
-        self._raise_for_status(response)
+        _raise_for_status(response)
         # return parsed json response
         if len(response.data) > 0:
             return _json_loads_or_error(response)

@@ -24,7 +24,7 @@ import time
 import sys
 import os
 from .compat import queue
-from random import SystemRandom
+import random
 import traceback
 from unittest import TestCase
 from mock import patch, MagicMock
@@ -81,16 +81,10 @@ def bad_bulk_response():
     return r
 
 
-class FakeServerFailSometimes(object):
-
-    _rnd = SystemRandom(time.time())
-
-    def request(self, method, path, data=None, stream=False, **kwargs):
-        mock_response = MagicMock()
-        if int(self._rnd.random() * 100) % 10 == 0:
-            raise urllib3.exceptions.MaxRetryError(None, path, '')
-        else:
-            return mock_response
+def fail_sometimes(*args, **kwargs):
+    if random.randint(1, 100) % 10 == 0:
+        raise urllib3.exceptions.MaxRetryError(None, '/_sql', '')
+    return fake_response(200)
 
 
 class HttpClientTest(TestCase):
@@ -220,6 +214,7 @@ class HttpClientTest(TestCase):
         self.assertEqual(data['args'], [1461196800000])
 
 
+@patch(REQUEST, fail_sometimes)
 class ThreadSafeHttpClientTest(TestCase):
     """
     Using a pool of 5 Threads to emit commands to the multiple servers through
@@ -243,19 +238,16 @@ class ThreadSafeHttpClientTest(TestCase):
         super(ThreadSafeHttpClientTest, self).__init__(*args, **kwargs)
 
     def setUp(self):
-        super(ThreadSafeHttpClientTest, self).setUp()
         self.client = Client(self.servers)
         self.client.retry_interval = 0.0001  # faster retry
-        for server in list(self.client.server_pool.keys()):
-            self.client.server_pool[server] = FakeServerFailSometimes()
 
     def _run(self):
         self.event.wait()  # wait for the others
         expected_num_servers = len(self.servers)
         for x in xrange(self.num_commands):
             try:
-                self.client._request('GET', "/")
-            except (ConnectionError, ProgrammingError):
+                self.client.sql('select name from sys.cluster')
+            except ConnectionError:
                 pass
             try:
                 with self.client._lock:
@@ -279,30 +271,20 @@ class ThreadSafeHttpClientTest(TestCase):
         client is indeed thread-safe in all cases, it can only show that it
         withstands this scenario.
         """
-        pool = [
+        threads = [
             Thread(target=self._run, name=str(x))
             for x in xrange(self.num_threads)
         ]
-        for thread in pool:
+        for thread in threads:
             thread.start()
 
         self.event.set()
-        while True:
-            try:
-                thread = pool.pop()
-                thread.join(self.thread_timeout)
-            except IndexError:
-                break
+        for t in threads:
+            t.join(self.thread_timeout)
 
         if not self.err_queue.empty():
-            self.assertTrue(
-                False,
-                "".join(
-                    traceback.format_exception(
-                        *self.err_queue.get(block=False)
-                    )
-                )
-            )
+            self.assertTrue(False, "".join(
+                traceback.format_exception(*self.err_queue.get(block=False))))
 
 
 class ClientAddressRequestHandler(BaseHTTPServer.BaseHTTPRequestHandler):

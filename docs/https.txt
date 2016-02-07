@@ -26,7 +26,7 @@ By default, certificates are not verified. This call is against a server with
 a self signed certificate::
 
     >>> http_client = HttpClient([crate_host])
-    >>> http_client.server_infos(http_client._get_server())
+    >>> http_client.server_infos(crate_host)
     ('https://localhost:65534', u'test', '0.0.0')
 
 When switching on verification and giving a wrong ``ca_cert`` an error is raised::
@@ -35,7 +35,7 @@ When switching on verification and giving a wrong ``ca_cert`` an error is raised
     >>> verifying_client.server_infos(crate_host)
     Traceback (most recent call last):
     ...
-    ConnectionError: Server not available, ...certificate verify failed...
+    ConnectionError: ... certificate verify failed ...
 
 Without verification, the given ``ca_cert`` is ignored and the connection will be
 established, to Eves satisfaction.
@@ -47,5 +47,5 @@ established, to Eves satisfaction.
 Connecting to a host whose certficate is verified::
 
     >>> verifying_valid_client = HttpClient([crate_host], ca_cert=valid_ca_cert, verify_ssl_cert=True)
-    >>> verifying_valid_client.server_infos(verifying_valid_client._get_server())
+    >>> verifying_valid_client.server_infos(crate_host)
     ('https://localhost:65534', u'test', '0.0.0')

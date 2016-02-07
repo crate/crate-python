@@ -27,13 +27,13 @@ from .compat import queue
 import random
 import traceback
 from unittest import TestCase
-from mock import patch, MagicMock
+from mock import patch, MagicMock, ANY
 from threading import Thread, Event
 from multiprocessing import Process
 import datetime as dt
 import urllib3.exceptions
 
-from .http import Client
+from .http import Client, RoundRobin
 from .exceptions import ConnectionError, ProgrammingError
 from .compat import xrange, BaseHTTPServer, to_bytes
 
@@ -117,42 +117,40 @@ class HttpClientTest(TestCase):
     def test_server_error_50x(self):
         client = Client(servers="localhost:4200 localhost:4201")
         client.sql('select 1')
+        self.assertEqual(2, len(client.active_servers))
         client.sql('select 2')
+        self.assertEqual(1, len(client.active_servers))
         try:
             client.sql('select 3')
-        except ProgrammingError as e:
+        except ConnectionError as e:
             self.assertEqual("No more Servers available, " +
                              "exception from last server: Service Unavailable",
                              e.message)
-        self.assertEqual([], list(client._active_servers))
+        self.assertEqual([], list(client.active_servers))
 
     def test_connect(self):
         client = Client(servers="localhost:4200 localhost:4201")
-        self.assertEqual(client._active_servers,
+        self.assertEqual(client.active_servers,
                          ["http://localhost:4200", "http://localhost:4201"])
 
         client = Client(servers="localhost:4200")
-        self.assertEqual(client._active_servers, ["http://localhost:4200"])
+        self.assertEqual(client.active_servers, ["http://localhost:4200"])
 
         client = Client(servers=["localhost:4200"])
-        self.assertEqual(client._active_servers, ["http://localhost:4200"])
+        self.assertEqual(client.active_servers, ["http://localhost:4200"])
 
         client = Client(servers=["localhost:4200", "127.0.0.1:4201"])
-        self.assertEqual(client._active_servers,
+        self.assertEqual(client.active_servers,
                          ["http://localhost:4200", "http://127.0.0.1:4201"])
 
+    @patch('crate.client.http.ServerPool._execute_redirect', autospec=True)
     @patch(REQUEST, fake_request(fake_redirect('http://localhost:4201')))
-    def test_redirect_handling(self):
+    def test_redirect_handling(self, redirect):
+        redirect.return_value = fake_response(200)
         client = Client(servers='localhost:4200')
-        try:
-            client.blob_get('blobs', 'fake_digest')
-        except ProgrammingError:
-            # 4201 gets added to serverpool but isn't available
-            pass
-        self.assertEqual(
-            ['http://localhost:4200', 'http://localhost:4201'],
-            sorted(list(client.server_pool.keys()))
-        )
+        client.blob_get('blobs', 'fake_digest')
+        redirect.assert_called_with(
+            ANY, ANY, 'GET', '/_blobs/blobs/fake_digest', None, True, None)
 
     @patch(REQUEST)
     def test_server_infos(self, request):
@@ -197,11 +195,17 @@ class HttpClientTest(TestCase):
 
         datetime = dt.datetime(2015, 2, 28, 7, 31, 40)
         client.sql('insert into users (dt) values (?)', (datetime,))
-
-        # convert string to dict
-        # because the order of the keys isn't deterministic
-        data = json.loads(request.call_args[1]['data'])
-        self.assertEqual(data['args'], [1425108700000])
+        request.assert_called_with(
+            ANY,
+            'POST',
+            '/_sql',
+            json.dumps({
+                "args": [1425108700000],
+                "stmt": "insert into users (dt) values (?)"
+            }),
+            False,
+            None
+        )
 
     @patch(REQUEST, autospec=True)
     def test_date_is_converted_to_ts(self, request):
@@ -210,8 +214,18 @@ class HttpClientTest(TestCase):
 
         day = dt.date(2016, 4, 21)
         client.sql('insert into users (dt) values (?)', (day,))
-        data = json.loads(request.call_args[1]['data'])
-        self.assertEqual(data['args'], [1461196800000])
+        self.assertEqual(1, request.call_count)
+        request.assert_called_with(
+            ANY,
+            'POST',
+            '/_sql',
+            json.dumps({
+                "args": [1461196800000],
+                "stmt": "insert into users (dt) values (?)"
+            }),
+            False,
+            None
+        )
 
 
 @patch(REQUEST, fail_sometimes)
@@ -220,13 +234,13 @@ class ThreadSafeHttpClientTest(TestCase):
     Using a pool of 5 Threads to emit commands to the multiple servers through
     one Client-instance
 
-    check if number of servers in _inactive_servers and _active_servers always
+    check if number of servers in inactive_servers and active_servers always
     equals the number of servers initially given.
     """
     servers = [
-        "127.0.0.1:44209",
-        "127.0.0.2:44209",
-        "127.0.0.3:44209",
+        "http://127.0.0.1:44209",
+        "http://127.0.0.2:44209",
+        "http://127.0.0.3:44209",
     ]
     num_threads = 5
     num_commands = 1000
@@ -243,7 +257,6 @@ class ThreadSafeHttpClientTest(TestCase):
 
     def _run(self):
         self.event.wait()  # wait for the others
-        expected_num_servers = len(self.servers)
         for x in xrange(self.num_commands):
             try:
                 self.client.sql('select name from sys.cluster')
@@ -251,14 +264,8 @@ class ThreadSafeHttpClientTest(TestCase):
                 pass
             try:
                 with self.client._lock:
-                    num_servers = len(self.client._active_servers) + \
-                        len(self.client._inactive_servers)
-                self.assertEquals(
-                    expected_num_servers,
-                    num_servers,
-                    "expected %d but got %d" % (expected_num_servers,
-                                                num_servers)
-                )
+                    servers = self.client.active_servers + self.client.inactive_servers
+                self.assertEquals(self.servers, sorted(servers))
             except AssertionError:
                 self.err_queue.put(sys.exc_info())
 
@@ -271,12 +278,15 @@ class ThreadSafeHttpClientTest(TestCase):
         client is indeed thread-safe in all cases, it can only show that it
         withstands this scenario.
         """
-        threads = [
-            Thread(target=self._run, name=str(x))
-            for x in xrange(self.num_threads)
-        ]
-        for thread in threads:
-            thread.start()
+        self.assertEquals(
+            self.servers,
+            sorted(self.client.active_servers + self.client.inactive_servers))
+        threads = []
+        for x in xrange(self.num_threads):
+            t = Thread(target=self._run, name=str(x))
+            t.daemon = True
+            threads.append(t)
+            t.start()
 
         self.event.set()
         for t in threads:
@@ -369,3 +379,12 @@ class RequestsCaBundleTest(TestCase):
             Client('http://127.0.0.1:4200')
         except ProgrammingError:
             self.fail("HTTP not working with REQUESTS_CA_BUNDLE")
+
+
+class RoundRobinTest(TestCase):
+
+    def test_round_robin(self):
+        rr = RoundRobin([1, 2, 3, 4])
+        self.assertEqual([1, 2, 3, 4], list(rr))
+        self.assertEqual([2, 3, 4, 1], list(rr))
+        self.assertEqual([3, 4, 1, 2], list(rr))

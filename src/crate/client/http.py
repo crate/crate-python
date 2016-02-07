@@ -20,7 +20,6 @@
 # software solely pursuant to the terms of the relevant commercial agreement.
 
 
-import heapq
 import json
 import logging
 import os
@@ -29,13 +28,15 @@ import sys
 import six
 import urllib3
 import urllib3.exceptions
-from time import time
+import time
+import functools
 from datetime import datetime, date
 import calendar
 import threading
 import re
 from six.moves.urllib.parse import urlparse
 from crate.client.exceptions import (
+    Error,
     ConnectionError,
     DigestNotFoundException,
     ProgrammingError,
@@ -83,10 +84,39 @@ class CrateJsonEncoder(json.JSONEncoder):
         return json.JSONEncoder.default(self, o)
 
 
+def _db_errors(func):
+    @functools.wraps(func)
+    def wrapper(*args, **kwargs):
+        try:
+            return func(*args, **kwargs)
+        except Error as e:
+            raise
+        except Exception as e:
+            raise ProgrammingError(_ex_to_message(e))
+    return wrapper
+
+
+def _remove_certs_for_non_https(server, kwargs):
+    if server.lower().startswith('https'):
+        return kwargs
+    if 'ca_certs' in kwargs or 'cert_regs' in kwargs:
+        kwargs = kwargs.copy()
+        kwargs.pop('ca_certs', None)
+        kwargs.pop('cert_reqs', None)
+    return kwargs
+
+
 class Server(object):
+    RETRY_INTERVAL = 30
 
     def __init__(self, server, **kwargs):
+        kwargs = _remove_certs_for_non_https(server, kwargs)
         self.pool = urllib3.connection_from_url(server, **kwargs)
+        self.server = server
+        self.inactive = 0
+
+    def is_inactive(self, ts):
+        return self.inactive > 0 and self.inactive + self.RETRY_INTERVAL > ts
 
     def request(self,
                 method,
@@ -99,14 +129,12 @@ class Server(object):
 
         Always set the Content-Length header.
         """
-        if headers is None:
-            headers = {}
+        headers = headers or {}
         if 'Content-Length' not in headers:
             length = super_len(data)
             if length is not None:
                 headers['Content-Length'] = length
         headers['Accept'] = 'application/json'
-        kwargs['assert_same_host'] = False
         kwargs['redirect'] = False
         return self.pool.urlopen(
             method,
@@ -116,6 +144,74 @@ class Server(object):
             headers=headers,
             **kwargs
         )
+
+
+class RoundRobin(object):
+    def __init__(self, hosts):
+        self.hosts = hosts
+        self.idx = 0
+
+    def __iter__(self):
+        idx = self.idx
+        hosts = self.hosts
+        hosts = hosts[idx:len(hosts)] + hosts[:idx]
+        self.idx = idx + 1 if idx + 1 < len(hosts) else 0
+        return iter(hosts)
+
+
+class ServerPool(object):
+    SRV_UNAVAILABLE_STATUSES = set((502, 503, 504, 509))
+    SRV_UNAVAILABLE_EXCEPTIONS = (
+        urllib3.exceptions.MaxRetryError,
+        urllib3.exceptions.ReadTimeoutError,
+        urllib3.exceptions.SSLError,
+        urllib3.exceptions.HTTPError,
+        urllib3.exceptions.ProxyError,)
+
+    def __init__(self, servers, pool_kw):
+        self.servers = servers = [Server(s, **pool_kw) for s in servers]
+        self._rr = RoundRobin(servers)
+        self.servers_dict = {s.server: s for s in servers}
+
+    def __iter__(self):
+        return iter(self._rr)
+
+    def __getitem__(self, value):
+        return self.servers_dict[value]
+
+    @_db_errors
+    def _execute_redirect(self, resp, method, path, data, stream, headers, **kw):
+        redirect_location = resp.get_redirect_location()
+        server = Server(_server_url(redirect_location))
+        return server.request(method, path, data, stream, headers, kw)
+
+    @_db_errors
+    def execute(self, method, path, data=None, stream=False, headers=None, **kw):
+        now = time.time()
+        servers = [s for s in self._rr if not s.is_inactive(now)]
+        if not servers:
+            # retry all if none are active
+            servers = sorted(self.servers, key=lambda x: x.inactive)
+        last_ex = None
+        for server in servers:
+            try:
+                resp = server.request(method, path, data, stream, headers, **kw)
+                if 300 <= resp.status <= 308:
+                    return self._execute_redirect(
+                        resp, method, path, data, stream, headers, **kw)
+                if resp.status in self.SRV_UNAVAILABLE_STATUSES:
+                    last_ex = resp.reason
+                else:
+                    server.inactive = 0
+                    return resp
+            except self.SRV_UNAVAILABLE_EXCEPTIONS as e:
+                last_ex = _ex_to_message(e)
+
+            server.inactive = time.time()
+        msg = 'No more Servers available'
+        if last_ex:
+            msg += ', exception from last server: ' + last_ex
+        raise ConnectionError(msg)
 
 
 def _json_loads_or_error(response):
@@ -237,34 +333,13 @@ class Client(object):
             servers = [self.default_server]
         else:
             servers = _to_server_list(servers)
-        self._active_servers = servers
-        self._inactive_servers = []
-        self._http_timeout = timeout
         pool_kw = _pool_kw_args(ca_cert, verify_ssl_cert)
-        self.server_pool = {}
-        self._update_server_pool(servers, timeout=timeout, **pool_kw)
-        self._pool_kw = pool_kw
+        self.pool = ServerPool(servers, pool_kw)
         self._lock = threading.RLock()
-        self._local = threading.local()
 
         self.path = self.SQL_PATH
         if error_trace:
             self.path += '?error_trace=1'
-
-    def _update_server_pool(self, servers, **kwargs):
-        for server in servers:
-            if server not in self.server_pool:
-                https = server.lower().startswith('https:')
-                if not https:
-                    kwargs_copy = {}
-                    # clean up any kwargs
-                    # which are invalid for HTTPConnectionPool
-                    for key in kwargs:
-                        if key not in ['ca_certs', 'cert_reqs']:
-                            kwargs_copy[key] = kwargs[key]
-                    self.server_pool[server] = Server(server, **kwargs_copy)
-                else:
-                    self.server_pool[server] = Server(server, **kwargs)
 
     def sql(self, stmt, parameters=None, bulk_parameters=None):
         """
@@ -282,7 +357,10 @@ class Client(object):
         return content
 
     def server_infos(self, server):
-        response = self._request('GET', '/', server=server)
+        try:
+            response = self.pool[server].request('GET', '/')
+        except ServerPool.SRV_UNAVAILABLE_EXCEPTIONS as e:
+            raise ConnectionError(_ex_to_message(e))
         _raise_for_status(response)
         content = _json_loads_or_error(response)
         node_name = content.get("name")
@@ -340,48 +418,14 @@ class Client(object):
             return False
         _raise_for_status(response)
 
-    def _add_server(self, server):
-        with self._lock:
-            if server not in self.server_pool:
-                self.server_pool[server] = Server(server, **self._pool_kw)
-
-    def _request(self, method, path, server=None, **kwargs):
+    def _request(self, method, path, **kwargs):
         """Execute a request to the cluster
 
         A server is selected from the server pool.
         """
-        while True:
-            next_server = server or self._get_server()
-            try:
-                response = self.server_pool[next_server].request(
-                    method, path, **kwargs)
-                redirect_location = response.get_redirect_location()
-                if redirect_location and 300 <= response.status <= 308:
-                    redirect_server = _server_url(redirect_location)
-                    self._add_server(redirect_server)
-                    return self._request(
-                        method, path, server=redirect_server, **kwargs)
-                if not server and response.status in SRV_UNAVAILABLE_STATUSES:
-                    with self._lock:
-                        # drop server from active ones
-                        self._drop_server(next_server, response.reason)
-                else:
-                    return response
-            except (urllib3.exceptions.MaxRetryError,
-                    urllib3.exceptions.ReadTimeoutError,
-                    urllib3.exceptions.SSLError,
-                    urllib3.exceptions.HTTPError,
-                    urllib3.exceptions.ProxyError,) as ex:
-                ex_message = _ex_to_message(ex)
-                if server:
-                    raise ConnectionError(
-                        "Server not available, exception: %s" % ex_message
-                    )
-                with self._lock:
-                    # drop server from active ones
-                    self._drop_server(next_server, ex_message)
-            except Exception as e:
-                raise ProgrammingError(_ex_to_message(e))
+
+        resp = self.pool.execute(method, path, **kwargs)
+        return resp
 
     def _json_request(self, method, path, data):
         """
@@ -393,68 +437,19 @@ class Client(object):
             return _json_loads_or_error(response)
         return response.data
 
-    def _get_server(self):
-        """
-        Get server to use for request.
-        Also process inactive server list, re-add them after given interval.
-        """
-        with self._lock:
-            inactive_server_count = len(self._inactive_servers)
-            for i in range(inactive_server_count):
-                try:
-                    ts, server, message = heapq.heappop(self._inactive_servers)
-                except IndexError:
-                    pass
-                else:
-                    if (ts + self.retry_interval) > time():
-                        # Not yet, put it back
-                        heapq.heappush(self._inactive_servers,
-                                       (ts, server, message))
-                    else:
-                        self._active_servers.append(server)
-                        logger.warn("Restored server %s into active pool",
-                                    server)
-
-            # if none is old enough, use oldest
-            if not self._active_servers:
-                ts, server, message = heapq.heappop(self._inactive_servers)
-                self._active_servers.append(server)
-                logger.info("Restored server %s into active pool", server)
-
-            server = self._active_servers[0]
-            self._roundrobin()
-
-            return server
-
     @property
     def active_servers(self):
         """get the active servers for this client"""
+        now = time.time()
         with self._lock:
-            return list(self._active_servers)
+            return [s.server for s in self.pool if not s.is_inactive(now)]
 
-    def _drop_server(self, server, message):
-        """
-        Drop server from active list and adds it to the inactive ones.
-        """
-        try:
-            self._active_servers.remove(server)
-        except ValueError:
-            pass
-        else:
-            heapq.heappush(self._inactive_servers, (time(), server, message))
-            logger.warning("Removed server %s from active pool", server)
-
-        # if this is the last server raise exception, otherwise try next
-        if not self._active_servers:
-            raise ConnectionError(
-                ("No more Servers available, "
-                 "exception from last server: %s") % message)
-
-    def _roundrobin(self):
-        """
-        Very simple round-robin implementation
-        """
-        self._active_servers.append(self._active_servers.pop(0))
+    @property
+    def inactive_servers(self):
+        """get the active servers for this client"""
+        now = time.time()
+        with self._lock:
+            return [s.server for s in self.pool if s.is_inactive(now)]
 
     def __repr__(self):
-        return '<Client {0}>'.format(str(self._active_servers))
+        return '<Client {0}>'.format(str(self.active_servers))

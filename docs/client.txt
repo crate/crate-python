@@ -25,7 +25,7 @@ automatically routed to the next server::
 If no ``servers`` are given, the default one ``http://127.0.0.1:4200`` is used::
 
     >>> connection = client.connect()
-    >>> connection.client._active_servers
+    >>> connection.client.active_servers
     ['http://127.0.0.1:4200']
 
 

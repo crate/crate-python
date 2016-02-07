@@ -201,6 +201,22 @@ def _pool_kw_args(ca_cert, verify_ssl_cert):
     }
 
 
+def _create_sql_payload(stmt, args, bulk_args):
+    if not isinstance(stmt, basestring):
+        raise ValueError('stmt is not a string')
+    if args and bulk_args:
+        raise ValueError('Cannot provide both: args and bulk_args')
+
+    data = {
+        'stmt': stmt
+    }
+    if args:
+        data['args'] = args
+    if bulk_args:
+        data['bulk_args'] = bulk_args
+    return json.dumps(data, cls=CrateJsonEncoder)
+
+
 class Client(object):
     """
     Crate connection client using crate's HTTP API.
@@ -257,16 +273,7 @@ class Client(object):
         if stmt is None:
             return None
 
-        if not isinstance(stmt, basestring):
-            raise ValueError("stmt is not a string type")
-
-        data = {
-            'stmt': stmt
-        }
-        if parameters:
-            data['args'] = parameters
-        if bulk_parameters:
-            data['bulk_args'] = bulk_parameters
+        data = _create_sql_payload(stmt, parameters, bulk_parameters)
         logger.debug(
             'Sending request to %s with payload: %s', self.path, data)
         content = self._json_request('POST', self.path, data=data)
@@ -376,18 +383,12 @@ class Client(object):
             except Exception as e:
                 raise ProgrammingError(_ex_to_message(e))
 
-    def _json_request(self, method, path, data=None):
+    def _json_request(self, method, path, data):
         """
         Issue request against the crate HTTP API.
         """
-
-        if data:
-            data = json.dumps(data, cls=CrateJsonEncoder)
         response = self._request(method, path, data=data)
-
-        # raise error if occurred, otherwise nothing is raised
         _raise_for_status(response)
-        # return parsed json response
         if len(response.data) > 0:
             return _json_loads_or_error(response)
         return response.data

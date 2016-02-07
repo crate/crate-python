@@ -123,7 +123,7 @@ class Client(object):
     Crate connection client using crate's HTTP API.
     """
 
-    SQL_PATH = '_sql'
+    SQL_PATH = '/_sql'
     """Crate URI path for issuing SQL statements."""
 
     retry_interval = 30
@@ -223,7 +223,7 @@ class Client(object):
         return content
 
     def server_infos(self, server):
-        response = self._request('GET', '', server=server)
+        response = self._request('GET', '/', server=server)
         self._raise_for_status(response)
         try:
             content = json.loads(six.text_type(response.data, 'utf-8'))
@@ -236,7 +236,7 @@ class Client(object):
         return server, node_name, node_version
 
     def _blob_path(self, table, digest):
-        return '_blobs/{table}/{digest}'.format(table=table, digest=digest)
+        return '/_blobs/{table}/{digest}'.format(table=table, digest=digest)
 
     def blob_put(self, table, digest, data):
         """
@@ -303,8 +303,8 @@ class Client(object):
         while True:
             next_server = server or self._get_server()
             try:
-                response = self._do_request(next_server, method, path,
-                                            **kwargs)
+                response = self.server_pool[next_server].request(
+                    method, path, **kwargs)
                 redirect_location = response.get_redirect_location()
                 if redirect_location and 300 <= response.status <= 308:
                     redirect_server = self._server_url(redirect_location)
@@ -333,12 +333,6 @@ class Client(object):
             except Exception as e:
                 ex_message = hasattr(e, 'message') and e.message or str(e)
                 raise ProgrammingError(ex_message)
-
-    def _do_request(self, server, method, path, **kwargs):
-        """do the actual request to a chosen server"""
-        if not path.startswith('/'):
-            path = '/' + path
-        return self.server_pool[server].request(method, path, **kwargs)
 
     def _raise_for_status(self, response):
         """ make sure that only crate.exceptions are raised that are defined in

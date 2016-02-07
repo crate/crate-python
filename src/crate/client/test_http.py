@@ -448,7 +448,7 @@ class ParamsTest(TestCase):
 
     def test_no_params(self):
         client = Client(['127.0.0.1:4200'])
-        self.assertEqual(client.path, "_sql")
+        self.assertEqual(client.path, "/_sql")
 
 
 class RequestsCaBundleTest(TestCase):

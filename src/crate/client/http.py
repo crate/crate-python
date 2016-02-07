@@ -118,6 +118,23 @@ class Server(object):
         )
 
 
+def _json_loads_or_error(response):
+    try:
+        return json.loads(six.text_type(response.data, 'utf-8'))
+    except ValueError:
+        raise ProgrammingError(
+            "Invalid server response of content-type '%s'" %
+            response.headers.get("content-type", "unknown"))
+
+
+def _blob_path(table, digest):
+    return '/_blobs/{table}/{digest}'.format(table=table, digest=digest)
+
+
+def _ex_to_message(ex):
+    return getattr(ex, 'message', None) or str(ex) or repr(ex)
+
+
 class Client(object):
     """
     Crate connection client using crate's HTTP API.
@@ -225,25 +242,17 @@ class Client(object):
     def server_infos(self, server):
         response = self._request('GET', '/', server=server)
         self._raise_for_status(response)
-        try:
-            content = json.loads(six.text_type(response.data, 'utf-8'))
-        except ValueError:
-            raise ProgrammingError(
-                "Invalid server response of content-type '%s'" %
-                response.headers.get("content-type", "unknown"))
+        content = _json_loads_or_error(response)
         node_name = content.get("name")
         node_version = content.get('version', {}).get('number', '0.0.0')
         return server, node_name, node_version
-
-    def _blob_path(self, table, digest):
-        return '/_blobs/{table}/{digest}'.format(table=table, digest=digest)
 
     def blob_put(self, table, digest, data):
         """
         Stores the contents of the file like @data object in a blob under the
         given table and digest.
         """
-        response = self._request('PUT', self._blob_path(table, digest),
+        response = self._request('PUT', _blob_path(table, digest),
                                  data=data)
         if response.status == 201:
             # blob created
@@ -259,7 +268,7 @@ class Client(object):
         """
         Deletes the blob with given digest under the given table.
         """
-        response = self._request('DELETE', self._blob_path(table, digest))
+        response = self._request('DELETE', _blob_path(table, digest))
         if response.status == 204:
             return True
         if response.status == 404:
@@ -271,8 +280,7 @@ class Client(object):
         Returns a file like object representing the contents of the blob
         with the given digest.
         """
-        response = self._request('GET', self._blob_path(table, digest),
-                                 stream=True)
+        response = self._request('GET', _blob_path(table, digest), stream=True)
         if response.status == 404:
             raise DigestNotFoundException(table, digest)
         self._raise_for_status(response)
@@ -283,7 +291,7 @@ class Client(object):
         Returns true if the blob with the given digest exists
         under the given table.
         """
-        response = self._request('HEAD', self._blob_path(table, digest))
+        response = self._request('HEAD', _blob_path(table, digest))
         if response.status == 200:
             return True
         elif response.status == 404:
@@ -322,7 +330,7 @@ class Client(object):
                     urllib3.exceptions.SSLError,
                     urllib3.exceptions.HTTPError,
                     urllib3.exceptions.ProxyError,) as ex:
-                ex_message = hasattr(ex, 'message') and ex.message or str(ex)
+                ex_message = _ex_to_message(ex)
                 if server:
                     raise ConnectionError(
                         "Server not available, exception: %s" % ex_message
@@ -331,8 +339,7 @@ class Client(object):
                     # drop server from active ones
                     self._drop_server(next_server, ex_message)
             except Exception as e:
-                ex_message = hasattr(e, 'message') and e.message or str(e)
-                raise ProgrammingError(ex_message)
+                raise ProgrammingError(_ex_to_message(e))
 
     def _raise_for_status(self, response):
         """ make sure that only crate.exceptions are raised that are defined in
@@ -378,12 +385,7 @@ class Client(object):
         self._raise_for_status(response)
         # return parsed json response
         if len(response.data) > 0:
-            try:
-                return json.loads(six.text_type(response.data, 'utf-8'))
-            except ValueError:
-                raise ProgrammingError(
-                    "Invalid server response of content-type '%s'" %
-                    response.headers.get("content-type", ""))
+            return _json_loads_or_error(response)
         return response.data
 
     def _get_server(self):

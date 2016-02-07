@@ -34,7 +34,7 @@ from datetime import datetime, date
 import calendar
 import threading
 import re
-from six.moves.urllib.parse import urlparse, urlencode
+from six.moves.urllib.parse import urlparse
 from crate.client.exceptions import (
     ConnectionError,
     DigestNotFoundException,
@@ -157,19 +157,9 @@ class Client(object):
         self._lock = threading.RLock()
         self._local = threading.local()
 
-        url_params = {}
+        self.path = self.SQL_PATH
         if error_trace:
-            url_params["error_trace"] = 1
-        self.path = self._get_sql_path(**url_params)
-
-    def _get_sql_path(self, **url_params):
-        """
-        create the HTTP path to send SQL Requests to
-        """
-        if url_params:
-            return "{0}?{1}".format(self.SQL_PATH, urlencode(url_params))
-        else:
-            return self.SQL_PATH
+            self.path += '?error_trace=1'
 
     def _update_server_pool(self, servers, **kwargs):
         for server in servers:

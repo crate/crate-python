@@ -150,12 +150,14 @@ class RoundRobin(object):
     def __init__(self, hosts):
         self.hosts = hosts
         self.idx = 0
+        self._lock = threading.RLock()
 
     def __iter__(self):
-        idx = self.idx
         hosts = self.hosts
+        with self._lock:
+            idx = self.idx
+            self.idx = idx + 1 if idx + 1 < len(hosts) else 0
         hosts = hosts[idx:len(hosts)] + hosts[:idx]
-        self.idx = idx + 1 if idx + 1 < len(hosts) else 0
         return iter(hosts)
 
 
@@ -174,7 +176,7 @@ class ServerPool(object):
         self.servers_dict = {s.server: s for s in servers}
 
     def __iter__(self):
-        return iter(self._rr)
+        return iter(self.servers)
 
     def __getitem__(self, value):
         return self.servers_dict[value]
@@ -206,8 +208,8 @@ class ServerPool(object):
                     return resp
             except self.SRV_UNAVAILABLE_EXCEPTIONS as e:
                 last_ex = _ex_to_message(e)
-
             server.inactive = time.time()
+
         msg = 'No more Servers available'
         if last_ex:
             msg += ', exception from last server: ' + last_ex

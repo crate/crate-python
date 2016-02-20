@@ -118,7 +118,7 @@ class Server(object):
         )
 
 
-def _json_loads_or_error(response):
+def _json_from_response(response):
     try:
         return json.loads(six.text_type(response.data, 'utf-8'))
     except ValueError:
@@ -284,7 +284,7 @@ class Client(object):
     def server_infos(self, server):
         response = self._request('GET', '/', server=server)
         _raise_for_status(response)
-        content = _json_loads_or_error(response)
+        content = _json_from_response(response)
         node_name = content.get("name")
         node_version = content.get('version', {}).get('number', '0.0.0')
         return server, node_name, node_version
@@ -390,7 +390,7 @@ class Client(object):
         response = self._request(method, path, data=data)
         _raise_for_status(response)
         if len(response.data) > 0:
-            return _json_loads_or_error(response)
+            return _json_from_response(response)
         return response.data
 
     def _get_server(self):

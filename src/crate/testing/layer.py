@@ -32,6 +32,10 @@ from urllib3.exceptions import MaxRetryError
 
 logger = logging.getLogger(__name__)
 
+
+CRATE_CONFIG_ERROR = 'crate_config must point to a folder or to a file named "crate.yml"'
+
+
 class CrateLayer(object):
     """
     this layer starts a crate server.
@@ -64,7 +68,8 @@ class CrateLayer(object):
         :param transport_port: port on which transport layer for crate should
                                run
         :param crate_exec: alternative executable command
-        :param crate_config: alternative crate config file location
+        :param crate_config: alternative crate config file location.
+                             Must be a directory or a file named 'crate.yml'
         :param cluster_name: the name of the cluster to join/build. Will be
                              generated automatically if omitted.
         :param host: the host to bind to. defaults to 'localhost'
@@ -79,6 +84,9 @@ class CrateLayer(object):
             crate_exec = os.path.join(crate_home, 'bin', start_script)
         if crate_config is None:
             crate_config = os.path.join(crate_home, 'config', 'crate.yml')
+        elif (os.path.isfile(crate_config) and
+              os.path.basename(crate_config) != 'crate.yml'):
+            raise ValueError(CRATE_CONFIG_ERROR)
         if cluster_name is None:
             cluster_name = "Testing{0}".format(port)
         settings = self.create_settings(crate_config,
@@ -108,9 +116,7 @@ class CrateLayer(object):
                         multicast,
                         further_settings=None):
         settings = {
-            "index.store.type": "memory",
             "discovery.type": "zen",
-            "gateway.type": "none",
             "cluster.routing.allocation.disk.watermark.low": "1b",
             "cluster.routing.allocation.disk.watermark.high": "1b",
             "discovery.initial_state_timeout": 0,
@@ -119,7 +125,6 @@ class CrateLayer(object):
             "cluster.name": cluster_name,
             "network.host": host,
             "http.port": http_port,
-            "config": crate_config,
             "path.conf": os.path.dirname(crate_config)
         }
         if transport_port:
@@ -177,7 +182,6 @@ class CrateLayer(object):
 
             time.sleep(self.wait_interval)
             time_slept += self.wait_interval
-
 
     def _wait_for_start(self):
         """Wait for instance to be started"""

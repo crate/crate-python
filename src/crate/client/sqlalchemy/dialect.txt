@@ -11,8 +11,8 @@ The initialize method sets the default schema name and version info::
     >>> dialect.default_schema_name
     'doc'
 
-    >>> dialect.server_version_info
-    (0, 52, 4)
+    >>> dialect.server_version_info >= (0, 52, 4)
+    True
 
 Check if table exists::
 

@@ -12,7 +12,7 @@ The initialize method sets the default schema name and version info::
     'doc'
 
     >>> dialect.server_version_info
-    (0, 52, 4)
+    (0, 54, 6)
 
 Check if table exists::
 
@@ -24,8 +24,8 @@ List all tables::
     >>> dialect.get_table_names(connection)
     ['characters', 'locations']
 
-    >>> dialect.get_table_names(connection, schema='sys')
-    ['checks', 'cluster', 'jobs', 'jobs_log', 'nodes', 'operations', 'operations_log', 'shards']
+    >>> dialect.get_table_names(connection, schema='sys')[:4]
+    ['checks', 'cluster', 'jobs', 'jobs_log']
 
 Check if schema exists::
 

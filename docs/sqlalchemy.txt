@@ -375,13 +375,14 @@ In order to create all missing tables the ``create_all`` method can be used::
     >>> engine.dialect.has_table(conn, table_name='departments')
     True
 
-    >>> stmt = ("select * from information_schema.columns "
+    >>> stmt = ("select table_name, column_name, ordinal_position, data_type "
+    ...         "from information_schema.columns "
     ...         "where table_name = 'departments' "
     ...         "order by column_name")
     >>> pprint([str(r) for r in conn.execute(stmt)])
-    ["('doc', 'departments', 'code', 1, 'integer')",
-     "('doc', 'departments', 'id', 2, 'string')",
-     "('doc', 'departments', 'name', 3, 'string')"]
+    ["('departments', 'code', 1, 'integer')",
+     "('departments', 'id', 2, 'string')",
+     "('departments', 'name', 3, 'string')"]
 
 
 Delete Tables using the ORM

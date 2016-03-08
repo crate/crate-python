@@ -5,6 +5,8 @@ Changes for crate
 Unreleased
 ==========
 
+ - test-layer: Removed options that are going to be removed from Crate
+
 2016/02/05 0.14.0
 =================
 

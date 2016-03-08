@@ -127,7 +127,7 @@ and enable ``multicast``::
     ...     transport_port=43302,
     ...     cluster_name='my_cluster',
     ...     multicast=True,
-    ...     settings={"discovery.initial_state_timeout": 10}
+    ...     settings={"discovery.initial_state_timeout": "10s"}
     ... )
 
 If we start both layers, they will, after a small amount of time, find each other

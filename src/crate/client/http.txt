@@ -183,6 +183,8 @@ will be provided::
     >>> try:
     ...     http_client.sql("select grmpf form error arrrggghh")
     ... except ProgrammingError as e:
-    ...     print(e.error_trace)
-    io.crate.exceptions.SQLParseException: line 1:19: mismatched input 'error' expecting EOF
+    ...     trace = 'TRACE: ' + str(e.error_trace)
+
+    >>> print(trace)
+    TRACE:...SQLParseException: line 1:19: mismatched input 'error' expecting EOF
         at io.crate.action.sql.TransportBaseSQLAction...

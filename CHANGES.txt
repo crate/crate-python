@@ -5,6 +5,8 @@ Changes for crate
 Unreleased
 ==========
 
+ - Fix: Never retry on http read errors (so never send SQL statements twice)
+
 2016/03/10 0.14.1
 =================
 

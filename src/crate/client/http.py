@@ -29,6 +29,7 @@ import sys
 import six
 import urllib3
 import urllib3.exceptions
+from urllib3.util.retry import Retry
 from time import time
 from datetime import datetime, date
 import calendar
@@ -108,6 +109,7 @@ class Server(object):
         headers['Accept'] = 'application/json'
         kwargs['assert_same_host'] = False
         kwargs['redirect'] = False
+        kwargs['retries'] = Retry(read=0)
         return self.pool.urlopen(
             method,
             path,

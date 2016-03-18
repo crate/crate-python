@@ -21,6 +21,7 @@
 
 import json
 import time
+import multiprocessing
 import sys
 import os
 from .compat import queue
@@ -369,3 +370,51 @@ class RequestsCaBundleTest(TestCase):
             Client('http://127.0.0.1:4200')
         except ProgrammingError:
             self.fail("HTTP not working with REQUESTS_CA_BUNDLE")
+
+
+class RetryRequestHandler(BaseHTTPServer.BaseHTTPRequestHandler):
+    """
+    http handler for use with BaseHTTPServer
+
+    counts request made
+    """
+
+    def do_POST(self):
+        self.server.SHARED['count'] += 1
+
+
+class TestingHTTPServer(BaseHTTPServer.HTTPServer):
+    """
+    http server providing a shared dict
+    """
+    manager = multiprocessing.Manager()
+    SHARED = manager.dict()
+    SHARED['count'] = 0
+
+    @classmethod
+    def run_server(cls, server_address):
+        cls(server_address, RetryRequestHandler).serve_forever()
+
+
+class RetryOnTimeoutServerTest(TestCase):
+
+    server_address = ("127.0.0.1", 65535)
+
+    def __init__(self, *args, **kwargs):
+        super(RetryOnTimeoutServerTest, self).__init__(*args, **kwargs)
+        self.server_process = Process(target=TestingHTTPServer.run_server, args=(self.server_address,))
+
+    def setUp(self):
+        self.client = Client(["%s:%d" % self.server_address], timeout=5)
+        self.server_process.start()
+        time.sleep(.10)
+
+    def tearDown(self):
+        self.server_process.terminate()
+
+    def test_no_retry_on_read_timeout(self):
+        try:
+            self.client.sql("select * from fake")
+        except ConnectionError:
+            pass
+        self.assertEqual(TestingHTTPServer.SHARED['count'], 1)

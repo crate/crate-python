@@ -35,6 +35,8 @@ from datetime import datetime, date
 import calendar
 import threading
 import re
+from base64 import b64encode
+from string import split
 from six.moves.urllib.parse import urlparse
 from crate.client.exceptions import (
     ConnectionError,
@@ -87,6 +89,12 @@ class CrateJsonEncoder(json.JSONEncoder):
 class Server(object):
 
     def __init__(self, server, **kwargs):
+        self.auth = None
+        if "@" in server:
+            auth = split(server, "@")
+            if "//" in auth[0]:
+                auth = split(auth[0], "//")[1]
+            self.auth = split(auth, ":")
         self.pool = urllib3.connection_from_url(server, **kwargs)
 
     def request(self,
@@ -107,6 +115,10 @@ class Server(object):
             if length is not None:
                 headers['Content-Length'] = length
         headers['Accept'] = 'application/json'
+        if self.auth is not None:
+            auth = '%s:%s' % (self.auth[0], self.auth[1])
+            headers['authorization'] = 'Basic ' + \
+                b64encode(six.b(auth)).decode('utf-8')
         kwargs['assert_same_host'] = False
         kwargs['redirect'] = False
         kwargs['retries'] = Retry(read=0)

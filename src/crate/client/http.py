@@ -36,7 +36,6 @@ import calendar
 import threading
 import re
 from base64 import b64encode
-from string import split
 from six.moves.urllib.parse import urlparse
 from crate.client.exceptions import (
     ConnectionError,
@@ -91,10 +90,10 @@ class Server(object):
     def __init__(self, server, **kwargs):
         self.auth = None
         if "@" in server:
-            auth = split(server, "@")
+            auth = server.split("@")
             if "//" in auth[0]:
-                auth = split(auth[0], "//")[1]
-            self.auth = split(auth, ":")
+                auth = auth[0].split("//")[1]
+            self.auth = auth.split(":")
         self.pool = urllib3.connection_from_url(server, **kwargs)
 
     def request(self,

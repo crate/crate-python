@@ -34,7 +34,7 @@ from multiprocessing import Process
 import datetime as dt
 import urllib3.exceptions
 
-from .http import Client
+from .http import Client, _remove_certs_for_non_https
 from .exceptions import ConnectionError, ProgrammingError
 from .compat import xrange, BaseHTTPServer, to_bytes
 
@@ -370,6 +370,14 @@ class RequestsCaBundleTest(TestCase):
             Client('http://127.0.0.1:4200')
         except ProgrammingError:
             self.fail("HTTP not working with REQUESTS_CA_BUNDLE")
+
+    def test_remove_certs_for_non_https(self):
+        d = _remove_certs_for_non_https('https', {"ca_certs": 1})
+        self.assertTrue('ca_certs' in d)
+
+        d = _remove_certs_for_non_https('http', {"ca_certs": 1, 'foobar': 2})
+        self.assertTrue('ca_certs' not in d)
+        self.assertTrue('foobar' in d)
 
 
 class RetryRequestHandler(BaseHTTPServer.BaseHTTPRequestHandler):

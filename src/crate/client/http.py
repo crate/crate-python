@@ -51,6 +51,7 @@ if sys.version_info[0] > 2:
 
 _HTTP_PAT = pat = re.compile('https?://.+', re.I)
 SRV_UNAVAILABLE_STATUSES = set((502, 503, 504, 509))
+SSL_ONLY_ARGS = set(('ca_certs', 'cert_reqs'))
 
 
 def super_len(o):
@@ -203,6 +204,17 @@ def _pool_kw_args(ca_cert, verify_ssl_cert):
     }
 
 
+def _remove_certs_for_non_https(server, kwargs):
+    if server.lower().startswith('https'):
+        return kwargs
+    used_ssl_args = SSL_ONLY_ARGS & kwargs.keys()
+    if used_ssl_args:
+        kwargs = kwargs.copy()
+        for arg in used_ssl_args:
+            kwargs.pop(arg)
+    return kwargs
+
+
 def _create_sql_payload(stmt, args, bulk_args):
     if not isinstance(stmt, basestring):
         raise ValueError('stmt is not a string')
@@ -255,18 +267,8 @@ class Client(object):
 
     def _update_server_pool(self, servers, **kwargs):
         for server in servers:
-            if server not in self.server_pool:
-                https = server.lower().startswith('https:')
-                if not https:
-                    kwargs_copy = {}
-                    # clean up any kwargs
-                    # which are invalid for HTTPConnectionPool
-                    for key in kwargs:
-                        if key not in ['ca_certs', 'cert_reqs']:
-                            kwargs_copy[key] = kwargs[key]
-                    self.server_pool[server] = Server(server, **kwargs_copy)
-                else:
-                    self.server_pool[server] = Server(server, **kwargs)
+            kwargs = _remove_certs_for_non_https(server, kwargs)
+            self.server_pool[server] = Server(server, **kwargs)
 
     def sql(self, stmt, parameters=None, bulk_parameters=None):
         """

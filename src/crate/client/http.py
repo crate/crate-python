@@ -207,7 +207,7 @@ def _pool_kw_args(ca_cert, verify_ssl_cert):
 def _remove_certs_for_non_https(server, kwargs):
     if server.lower().startswith('https'):
         return kwargs
-    used_ssl_args = SSL_ONLY_ARGS & kwargs.keys()
+    used_ssl_args = SSL_ONLY_ARGS & set(kwargs.keys())
     if used_ssl_args:
         kwargs = kwargs.copy()
         for arg in used_ssl_args:

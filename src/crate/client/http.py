@@ -51,7 +51,7 @@ if sys.version_info[0] > 2:
 
 _HTTP_PAT = pat = re.compile('https?://.+', re.I)
 SRV_UNAVAILABLE_STATUSES = set((502, 503, 504, 509))
-SSL_ONLY_ARGS = set(('ca_certs', 'cert_reqs'))
+SSL_ONLY_ARGS = set(('ca_certs', 'cert_reqs', 'cert_file', 'key_file'))
 
 
 def super_len(o):
@@ -245,8 +245,14 @@ class Client(object):
     default_server = "http://127.0.0.1:4200"
     """Default server to use if no servers are given on instantiation."""
 
-    def __init__(self, servers=None, timeout=None, ca_cert=None,
-                 verify_ssl_cert=False, error_trace=False):
+    def __init__(self,
+                 servers=None,
+                 timeout=None,
+                 ca_cert=None,
+                 verify_ssl_cert=False,
+                 error_trace=False,
+                 cert_file=None,
+                 key_file=None):
         if not servers:
             servers = [self.default_server]
         else:
@@ -255,6 +261,8 @@ class Client(object):
         self._inactive_servers = []
         self._http_timeout = timeout
         pool_kw = _pool_kw_args(ca_cert, verify_ssl_cert)
+        pool_kw['cert_file'] = cert_file
+        pool_kw['key_file'] = key_file
         self.server_pool = {}
         self._update_server_pool(servers, timeout=timeout, **pool_kw)
         self._pool_kw = pool_kw

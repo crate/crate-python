@@ -49,3 +49,23 @@ Connecting to a host whose certficate is verified::
     >>> verifying_valid_client = HttpClient([crate_host], ca_cert=valid_ca_cert, verify_ssl_cert=True)
     >>> verifying_valid_client.server_infos(verifying_valid_client._get_server())
     ('https://localhost:65534', u'test', '0.0.0')
+
+
+Client Certificate
+------------------
+
+The client supports client certificates.
+
+The ``HttpClient`` constructor takes two keyword arguments: ``cert_file`` and
+``key_file``. Both should be a string pointing to the path of the client
+certificate and key file.
+
+Below an example, in this case it fails because the supplied certificate is
+invalid::
+
+    >>> client = HttpClient([crate_host], cert_file=invalid_ca_cert, key_file=invalid_ca_cert)
+    >>> client.server_infos(crate_host)
+    Traceback (most recent call last):
+    ...
+    ConnectionError: Server not available, exception: [SSL: TLSV1_ALERT_UNKNOWN_CA] ...
+

@@ -28,7 +28,8 @@ from distutils.version import StrictVersion
 
 class Connection(object):
     def __init__(self, servers=None, timeout=None, client=None,
-                 verify_ssl_cert=False, ca_cert=None, error_trace=False):
+                 verify_ssl_cert=False, ca_cert=None, error_trace=False,
+                 cert_file=None, key_file=None):
         if client:
             self.client = client
         else:
@@ -36,7 +37,9 @@ class Connection(object):
                                  timeout=timeout,
                                  verify_ssl_cert=verify_ssl_cert,
                                  ca_cert=ca_cert,
-                                 error_trace=error_trace)
+                                 error_trace=error_trace,
+                                 cert_file=cert_file,
+                                 key_file=key_file)
         self.lowest_server_version = self._lowest_server_version()
         self._closed = False
 
@@ -86,8 +89,14 @@ class Connection(object):
         return '<Connection {0}>'.format(repr(self.client))
 
 
-def connect(servers=None, timeout=None, client=None,
-            verify_ssl_cert=False, ca_cert=None, error_trace=False):
+def connect(servers=None,
+            timeout=None,
+            client=None,
+            verify_ssl_cert=False,
+            ca_cert=None,
+            error_trace=False,
+            cert_file=None,
+            key_file=None):
     """ Create a :class:Connection object
 
     :param servers:
@@ -108,10 +117,19 @@ def connect(servers=None, timeout=None, client=None,
     :param error_trace:
         if set to ``True`` return a whole stacktrace of any server error if
         one occurs
+    :param cert_file:
+        a path to the client certificate to present to the server.
+    :param key_file:
+        a path to the client key to use when communicating with the server.
 
     >>> connect(['host1:4200', 'host2:4200'])
     <Connection <Client ['http://host1:4200', 'http://host2:4200']>>
     """
-    return Connection(servers=servers, timeout=timeout, client=client,
-                      verify_ssl_cert=verify_ssl_cert, ca_cert=ca_cert,
-                      error_trace=error_trace)
+    return Connection(servers=servers,
+                      timeout=timeout,
+                      client=client,
+                      verify_ssl_cert=verify_ssl_cert,
+                      ca_cert=ca_cert,
+                      error_trace=error_trace,
+                      cert_file=cert_file,
+                      key_file=key_file)

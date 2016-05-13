@@ -187,6 +187,7 @@ class HttpsTestServerLayer(object):
             socket = ssl.wrap_socket(socket,
                                      keyfile=HttpsTestServerLayer.CERT_FILE,
                                      certfile=HttpsTestServerLayer.CERT_FILE,
+                                     cert_reqs=ssl.CERT_OPTIONAL,
                                      server_side=True)
             return socket, client_address
 

@@ -375,8 +375,10 @@ class RequestsCaBundleTest(TestCase):
         d = _remove_certs_for_non_https('https', {"ca_certs": 1})
         self.assertTrue('ca_certs' in d)
 
-        d = _remove_certs_for_non_https('http', {"ca_certs": 1, 'foobar': 2})
+        kwargs = {'ca_certs': 1, 'foobar': 2, 'cert_file': 3}
+        d = _remove_certs_for_non_https('http', kwargs)
         self.assertTrue('ca_certs' not in d)
+        self.assertTrue('cert_file' not in d)
         self.assertTrue('foobar' in d)
 
 

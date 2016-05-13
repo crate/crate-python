@@ -5,6 +5,8 @@ Changes for crate
 Unreleased
 ==========
 
+ - Added support for client certificates
+
  - Dropped support for Python 2.6
 
 2016/03/18 0.14.2

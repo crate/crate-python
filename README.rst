@@ -59,6 +59,9 @@ To update use::
     $ pip install -U crate
 
 
+Python 2.6 is only supported up to and including version ``0.14``.
+
+
 Are you a Developer?
 ====================
 

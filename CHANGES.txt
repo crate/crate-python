@@ -2,8 +2,8 @@
 Changes for crate
 =================
 
-Unreleased
-==========
+2016/05/17 0.15.0
+=================
 
  - Added support for client certificates
 

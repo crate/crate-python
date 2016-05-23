@@ -2,6 +2,11 @@
 Changes for crate
 =================
 
+Unreleased
+==========
+
+ - Added support for serialization of Decimals
+
 2016/05/17 0.15.0
 =================
 

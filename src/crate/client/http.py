@@ -32,6 +32,7 @@ import urllib3.exceptions
 from urllib3.util.retry import Retry
 from time import time
 from datetime import datetime, date
+from decimal import Decimal
 import calendar
 import threading
 import re
@@ -76,6 +77,8 @@ class CrateJsonEncoder(json.JSONEncoder):
     epoch = datetime(1970, 1, 1)
 
     def default(self, o):
+        if isinstance(o, Decimal):
+            return str(o)
         if isinstance(o, datetime):
             delta = o - self.epoch
             return int(delta.microseconds / 1000.0 +

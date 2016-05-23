@@ -31,6 +31,7 @@ from unittest import TestCase
 from mock import patch, MagicMock
 from threading import Thread, Event
 from multiprocessing import Process
+from decimal import Decimal
 import datetime as dt
 import urllib3.exceptions
 
@@ -190,6 +191,17 @@ class HttpClientTest(TestCase):
             self.assertEqual("an error occured\nanother error", e.message)
         else:
             self.assertTrue(False, msg="Exception should have been raised")
+
+    @patch(REQUEST, autospec=True)
+    def test_decimal_serialization(self, request):
+        client = Client(servers="localhost:4200")
+        request.return_value = fake_response(200)
+
+        dec = Decimal(0.12)
+        client.sql('insert into users (float_col) values (?)', (dec,))
+
+        data = json.loads(request.call_args[1]['data'])
+        self.assertEqual(data['args'], [str(dec)])
 
     @patch(REQUEST, autospec=True)
     def test_datetime_is_converted_to_ts(self, request):

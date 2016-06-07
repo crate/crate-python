@@ -23,6 +23,7 @@ import os
 import socket
 import unittest
 import doctest
+import tempfile
 
 def docs_path(*parts):
     return os.path.join(os.path.dirname(os.path.dirname(__file__)), *parts)
@@ -44,9 +45,13 @@ def public_ip():
     # fallback
     return socket.gethostbyname(socket.gethostname())
 
+
 def setUp(test):
     test.globs['crate_path'] = crate_path
     test.globs['public_ip'] = public_ip()
+    test.globs['tempfile'] = tempfile
+    test.globs['os'] = os
+
 
 def test_suite():
     suite = unittest.TestSuite()

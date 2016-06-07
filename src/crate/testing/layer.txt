@@ -161,3 +161,22 @@ We might have to wait a moment before the cluster is finally created::
 
     >>> cluster_layer1.stop()
     >>> cluster_layer2.stop()
+
+From Uri
+--------
+
+The CrateLayer can also be created by providing a URI that points to a Crate
+tarball::
+
+    >>> uri = 'https://cdn.crate.io/downloads/releases/crate-0.55.0.tar.gz'
+    >>> tmpdir = tempfile.mkdtemp()
+    >>> layer = CrateLayer.from_uri(
+    ...             uri, name='crate-uri', http_port=42203, directory=tmpdir)
+    >>> layer.setUp()
+    >>> os.path.exists(os.path.join(tmpdir, 'crate-0.55.0'))
+    True
+
+    >>> layer.tearDown()
+
+    >>> os.path.exists(os.path.join(tmpdir, 'crate-0.55.0'))
+    False

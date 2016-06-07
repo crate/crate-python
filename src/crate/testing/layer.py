@@ -20,6 +20,7 @@
 # software solely pursuant to the terms of the relevant commercial agreement.
 
 import os
+import re
 import sys
 import time
 import json
@@ -28,6 +29,12 @@ import urllib3
 import tempfile
 import shutil
 import subprocess
+import tarfile
+import io
+try:
+    from urllib.request import urlopen
+except ImportError:
+    from urllib import urlopen
 from urllib3.exceptions import MaxRetryError
 
 logger = logging.getLogger(__name__)
@@ -36,9 +43,15 @@ logger = logging.getLogger(__name__)
 CRATE_CONFIG_ERROR = 'crate_config must point to a folder or to a file named "crate.yml"'
 
 
+def _download_and_extract(uri, directory):
+    with io.BytesIO(urlopen(uri).read()) as tmpfile:
+        with tarfile.open(fileobj=tmpfile) as t:
+            t.extractall(directory)
+
+
 class CrateLayer(object):
     """
-    this layer starts a crate server.
+    this layer starts a Crate server.
     """
 
     __bases__ = ()
@@ -46,6 +59,51 @@ class CrateLayer(object):
     tmpdir = tempfile.gettempdir()
     wait_interval = 0.2
     conn_pool = urllib3.PoolManager(num_pools=1)
+
+    @staticmethod
+    def from_uri(uri,
+                 name,
+                 http_port=4200,
+                 transport_port=4300,
+                 settings=None,
+                 directory=None,
+                 cleanup=True):
+        """Download the Crate tarball from a URI and create a CrateLayer
+
+        :param uri: The uri that points to the Crate tarball
+        :param name: layer and cluster name
+        :param http_port: The http port on which Crate will listen
+        :param transport_port: the transport port on which Crate will listen
+        :param settings: A dictionary that contains Crate settings
+        :param directory: Where the tarball will be extracted to.
+                          If this is None a temporary directory will be created.
+        :param clean: a boolean indicating if the directory should be removed
+                      on teardown.
+        """
+        directory = directory or tempfile.mkdtemp()
+        filename = os.path.basename(uri)
+        crate_dir = re.sub('\.tar(\.gz)?$', '', filename)
+        crate_home = os.path.join(directory, crate_dir)
+
+        if os.path.exists(crate_home):
+            logger.info('Not extracting Crate tarball because folder already exists')
+        else:
+            _download_and_extract(uri, directory)
+
+        layer = CrateLayer(
+            name=name,
+            crate_home=crate_home,
+            port=http_port,
+            transport_port=transport_port,
+            settings=settings)
+        if cleanup:
+            tearDown = layer.tearDown
+
+            def new_teardown(*args, **kws):
+                shutil.rmtree(directory)
+                tearDown(*args, **kws)
+            layer.tearDown = new_teardown
+        return layer
 
     def __init__(self,
                  name,

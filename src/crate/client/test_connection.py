@@ -20,3 +20,8 @@ class ConnectionTest(TestCase):
         client.server_infos = lambda server: (None, None, "No version")
         connection = connect(client=client)
         self.assertEqual((0, 0, 0), connection.lowest_server_version.version)
+
+    def test_with_is_supported(self):
+        with connect('localhost:4200') as conn:
+            pass
+        self.assertEqual(conn._closed, True)

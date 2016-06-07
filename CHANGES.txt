@@ -5,6 +5,11 @@ Changes for crate
 Unreleased
 ==========
 
+ - The ``Connection`` class now supports the context management protocol and
+   can therefore be used with the ``with`` statement.
+
+ - Sockets are now properly closed if a connection is closed.
+
  - Added support for serialization of Decimals
 
 2016/05/17 0.15.0

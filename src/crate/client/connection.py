@@ -57,6 +57,7 @@ class Connection(object):
         Close the connection now
         """
         self._closed = True
+        self.client.close()
 
     def commit(self):
         """
@@ -87,6 +88,12 @@ class Connection(object):
 
     def __repr__(self):
         return '<Connection {0}>'.format(repr(self.client))
+
+    def __enter__(self):
+        return self
+
+    def __exit__(self, *excs):
+        self.close()
 
 
 def connect(servers=None,

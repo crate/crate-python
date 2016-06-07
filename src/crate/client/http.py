@@ -123,6 +123,9 @@ class Server(object):
             **kwargs
         )
 
+    def close(self):
+        self.pool.close()
+
 
 def _json_from_response(response):
     try:
@@ -275,6 +278,10 @@ class Client(object):
         self.path = self.SQL_PATH
         if error_trace:
             self.path += '?error_trace=1'
+
+    def close(self):
+        for server in self.server_pool.values():
+            server.close()
 
     def _update_server_pool(self, servers, **kwargs):
         for server in servers:

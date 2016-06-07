@@ -77,6 +77,9 @@ class ClientMocked(object):
     def set_next_server_infos(self, server, server_name, version):
         self._server_infos = (server, server_name, version)
 
+    def close(self):
+        pass
+
 
 def setUpMocked(test):
     test.globs['connection_client_mocked'] = ClientMocked()

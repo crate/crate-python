@@ -5,6 +5,9 @@ Changes for crate
 Unreleased
 ==========
 
+2016/06/09 0.16.0
+=================
+
  - Added a ``from_uri`` factory method to the ``CrateLayer``
 
  - The ``Connection`` class now supports the context management protocol and

@@ -22,12 +22,6 @@ a given crate node name and, optionally, a given cluster name::
     ...                     cluster_name='my_cluster'
     ... )
 
-The urls of the crate servers to be instantiated can be obtained
-via ``crate_servers``::
-
-    >>> layer.crate_servers
-    ['http://127.0.0.1:44219']
-
 The working directory is defined on layer instantiation.
 It is sometimes required to know it before starting the layer::
 
@@ -37,6 +31,12 @@ It is sometimes required to know it before starting the layer::
 Lets start the layer::
 
     >>> layer.start()
+
+The urls of the crate servers to be instantiated can be obtained
+via ``crate_servers``::
+
+    >>> layer.crate_servers
+    ['http://127.0.0.1:44219']
 
 
 Now we can access the ``Crate`` instance on the defined port::
@@ -63,11 +63,15 @@ Starting a ``Crate`` layer leaving out optional parameters will apply the follow
     ...                             crate_path()
     ... )
 
-The default http port is 4200, the transport_port is 4300, the host defaults
-to ``localhost``::
+The default http port is the first free port in the range of ``4200-4299``,
+the default transport port is the first free port in the range of ``4300-4399``,
+the host defaults to ``127.0.0.1``::
 
+    >>> layer_defaults.start()
     >>> layer_defaults.crate_servers
-    ['http://localhost:4200']
+    ['http://127.0.0.1:4200']
+
+    >>> layer_defaults.stop()
 
 The command to call is ``bin/crate`` inside the ``crate_home`` path.
 The default config file is ``config/crate.yml`` inside ``crate_home``.
@@ -97,10 +101,12 @@ the command line flag: ``-Des.threadpool.bulk.queue_size=100``::
     ...                }
     ... )
 
+    >>> custom_layer.start()
     >>> custom_layer.crate_servers
-    ['http://localhost:44402']
+    ['http://127.0.0.1:44402']
     >>> '-Des.cluster.graceful_stop.min_availability=none' in custom_layer.start_cmd
     True
+    >>> custom_layer.stop()
 
 Starting a Cluster
 ------------------
@@ -113,18 +119,14 @@ and enable ``multicast``::
     >>> cluster_layer1 = CrateLayer(
     ...     'crate1',
     ...     crate_path(),
-    ...     host=public_ip,
-    ...     port=42201,
-    ...     transport_port=43301,
+    ...     host='_non_loopback_',
     ...     cluster_name='my_cluster',
     ...     multicast=True
     ... )
     >>> cluster_layer2 = CrateLayer(
     ...     'crate2',
     ...     crate_path(),
-    ...     host=public_ip,
-    ...     port=42202,
-    ...     transport_port=43302,
+    ...     host='_non_loopback_',
     ...     cluster_name='my_cluster',
     ...     multicast=True,
     ...     settings={"discovery.initial_state_timeout": "10s"}

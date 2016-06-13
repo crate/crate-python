@@ -2,6 +2,8 @@
 Connection
 ==========
 
+::
+
     >>> from crate.client import connect
 
 We create a new connection object::

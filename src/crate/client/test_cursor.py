@@ -35,6 +35,7 @@ class CursorTest(TestCase):
         statement = 'select * from locations where position = ?'
         c.execute(statement, 1)
         client.sql.assert_called_once_with(statement, 1, None)
+        conn.close()
 
     def test_execute_with_bulk_args(self):
         client = MagicMock(spec=Client)
@@ -43,3 +44,4 @@ class CursorTest(TestCase):
         statement = 'select * from locations where position = ?'
         c.execute(statement, bulk_parameters=[[1]])
         client.sql.assert_called_once_with(statement, None, [[1]])
+        conn.close()

@@ -86,3 +86,11 @@ Trying to delete a not existing blob::
 
     >>> container.delete(string_blob)
     False
+
+Close Connection
+================
+
+Close the connection to clear the connection pool::
+
+    >>> client.close()
+

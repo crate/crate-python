@@ -14,12 +14,14 @@ class ConnectionTest(TestCase):
         client.server_infos = lambda server: infos.pop()
         connection = connect(client=client)
         self.assertEqual((0, 41, 8), connection.lowest_server_version.version)
+        connection.close()
 
     def test_invalid_server_version(self):
         client = Client(servers="localhost:4200")
         client.server_infos = lambda server: (None, None, "No version")
         connection = connect(client=client)
         self.assertEqual((0, 0, 0), connection.lowest_server_version.version)
+        connection.close()
 
     def test_with_is_supported(self):
         with connect('localhost:4200') as conn:

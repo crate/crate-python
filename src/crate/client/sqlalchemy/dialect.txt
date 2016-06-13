@@ -37,3 +37,7 @@ List all schemas::
     >>> dialect.get_schema_names(connection)
     [u'blob', u'doc', u'information_schema', u'sys']
 
+.. Hidden: close connection
+
+    >>> connection.close()
+

@@ -13,8 +13,8 @@ Its also possible to pass a single server as a string::
 
     >>> http_client = HttpClient(crate_host)
 
-If no ``server` argument (or no argument at all) is passed, the default one ``127.0.0.1:4200``
-is used::
+If no ``server`` argument (or no argument at all) is passed, the default one
+``127.0.0.1:4200`` is used::
 
     >>> http_client = HttpClient()
     >>> http_client._active_servers

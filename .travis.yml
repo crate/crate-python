@@ -26,7 +26,7 @@ matrix:
 before_script:
   - bin/flake8 --ignore=E,C901,F401,F821 --count src
 script:
-  - bin/coverage run bin/test
+  - bin/coverage run bin/test -vv1
 after_success:
   - pip install coveralls
   - coveralls

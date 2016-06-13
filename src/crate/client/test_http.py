@@ -113,6 +113,8 @@ class HttpClientTest(TestCase):
             self.assertEquals("this shouldn't be raised", e.message)
         else:
             self.assertTrue(False)
+        finally:
+            client.close()
 
     @patch(REQUEST, fake_request([fake_response(200),
                                   fake_response(503, 'Service Unavailable')]))
@@ -126,22 +128,30 @@ class HttpClientTest(TestCase):
             self.assertEqual("No more Servers available, " +
                              "exception from last server: Service Unavailable",
                              e.message)
-        self.assertEqual([], list(client._active_servers))
+            self.assertEqual([], list(client._active_servers))
+        else:
+            self.assertTrue(False)
+        finally:
+            client.close()
 
     def test_connect(self):
         client = Client(servers="localhost:4200 localhost:4201")
         self.assertEqual(client._active_servers,
                          ["http://localhost:4200", "http://localhost:4201"])
+        client.close()
 
         client = Client(servers="localhost:4200")
         self.assertEqual(client._active_servers, ["http://localhost:4200"])
+        client.close()
 
         client = Client(servers=["localhost:4200"])
         self.assertEqual(client._active_servers, ["http://localhost:4200"])
+        client.close()
 
         client = Client(servers=["localhost:4200", "127.0.0.1:4201"])
         self.assertEqual(client._active_servers,
                          ["http://localhost:4200", "http://127.0.0.1:4201"])
+        client.close()
 
     @patch(REQUEST, fake_request(fake_redirect('http://localhost:4201')))
     def test_redirect_handling(self):
@@ -155,6 +165,7 @@ class HttpClientTest(TestCase):
             ['http://localhost:4200', 'http://localhost:4201'],
             sorted(list(client.server_pool.keys()))
         )
+        client.close()
 
     @patch(REQUEST)
     def test_server_infos(self, request):
@@ -163,12 +174,14 @@ class HttpClientTest(TestCase):
         client = Client(servers="localhost:4200 localhost:4201")
         self.assertRaises(
             ConnectionError, client.server_infos, 'http://localhost:4200')
+        client.close()
 
     @patch(REQUEST, fake_request(fake_response(503)))
     def test_server_infos_503(self):
         client = Client(servers="localhost:4200")
         self.assertRaises(
             ConnectionError, client.server_infos, 'http://localhost:4200')
+        client.close()
 
     @patch(REQUEST, fake_request(
         fake_response(401, 'Unauthorized', 'text/html')))
@@ -180,6 +193,8 @@ class HttpClientTest(TestCase):
             self.assertEqual("401 Client Error: Unauthorized", e.message)
         else:
             self.assertTrue(False, msg="Exception should have been raised")
+        finally:
+            client.close()
 
     @patch(REQUEST, fake_request(bad_bulk_response()))
     def test_bad_bulk_400(self):
@@ -191,6 +206,9 @@ class HttpClientTest(TestCase):
             self.assertEqual("an error occured\nanother error", e.message)
         else:
             self.assertTrue(False, msg="Exception should have been raised")
+        finally:
+            client.close()
+
 
     @patch(REQUEST, autospec=True)
     def test_decimal_serialization(self, request):
@@ -202,6 +220,7 @@ class HttpClientTest(TestCase):
 
         data = json.loads(request.call_args[1]['data'])
         self.assertEqual(data['args'], [str(dec)])
+        client.close()
 
     @patch(REQUEST, autospec=True)
     def test_datetime_is_converted_to_ts(self, request):
@@ -215,6 +234,7 @@ class HttpClientTest(TestCase):
         # because the order of the keys isn't deterministic
         data = json.loads(request.call_args[1]['data'])
         self.assertEqual(data['args'], [1425108700000])
+        client.close()
 
     @patch(REQUEST, autospec=True)
     def test_date_is_converted_to_ts(self, request):
@@ -225,6 +245,7 @@ class HttpClientTest(TestCase):
         client.sql('insert into users (dt) values (?)', (day,))
         data = json.loads(request.call_args[1]['data'])
         self.assertEqual(data['args'], [1461196800000])
+        client.close()
 
 
 @patch(REQUEST, fail_sometimes)
@@ -253,6 +274,9 @@ class ThreadSafeHttpClientTest(TestCase):
     def setUp(self):
         self.client = Client(self.servers)
         self.client.retry_interval = 0.1  # faster retry
+
+    def tearDown(self):
+        self.client.close()
 
     def _run(self):
         self.event.wait()  # wait for the others
@@ -345,6 +369,7 @@ class KeepAliveClientTest(TestCase):
 
     def tearDown(self):
         self.server_process.terminate()
+        self.client.close()
         super(KeepAliveClientTest, self).tearDown()
 
     def _run_server(self):
@@ -368,10 +393,12 @@ class ParamsTest(TestCase):
         parsed = urlparse(client.path)
         params = parse_qs(parsed.query)
         self.assertEquals(params["error_trace"], ["1"])
+        client.close()
 
     def test_no_params(self):
-        client = Client(['127.0.0.1:4200'])
+        client = Client()
         self.assertEqual(client.path, "/_sql")
+        client.close()
 
 
 class RequestsCaBundleTest(TestCase):
@@ -382,6 +409,8 @@ class RequestsCaBundleTest(TestCase):
             Client('http://127.0.0.1:4200')
         except ProgrammingError:
             self.fail("HTTP not working with REQUESTS_CA_BUNDLE")
+        finally:
+            os.unsetenv('REQUESTS_CA_BUNDLE')
 
     def test_remove_certs_for_non_https(self):
         d = _remove_certs_for_non_https('https', {"ca_certs": 1})
@@ -433,6 +462,7 @@ class RetryOnTimeoutServerTest(TestCase):
 
     def tearDown(self):
         self.server_process.terminate()
+        self.client.close()
 
     def test_no_retry_on_read_timeout(self):
         try:

@@ -87,45 +87,48 @@ def setUpMocked(test):
 
 crate_port = 44209
 crate_transport_port = 44309
+local = '127.0.0.1'
 crate_layer = CrateLayer('crate',
                          crate_home=crate_path(),
                          port=crate_port,
+                         host=local,
                          transport_port=crate_transport_port)
 
-crate_host = "127.0.0.1:{port}".format(port=crate_port)
+crate_host = "{host}:{port}".format(host=local, port=crate_port)
 crate_uri = "http://%s" % crate_host
 
+
+def refresh(table):
+    with connect(crate_host) as conn:
+        cursor = conn.cursor()
+        cursor.execute("refresh table %s" % table)
 
 def setUpWithCrateLayer(test):
     test.globs['HttpClient'] = http.Client
     test.globs['crate_host'] = crate_host
     test.globs['pprint'] = pprint
     test.globs['print'] = cprint
-
-    conn = connect(crate_host)
-    cursor = conn.cursor()
-
-    def refresh(table):
-        cursor.execute("refresh table %s" % table)
     test.globs["refresh"] = refresh
 
-    with open(docs_path('testing/testdata/mappings/locations.sql')) as s:
-        stmt = s.read()
-        cursor.execute(stmt)
-        stmt = ("select count(*) from information_schema.tables "
-                "where table_name = 'locations'")
-        cursor.execute(stmt)
-        assert cursor.fetchall()[0][0] == 1
+    with connect(crate_host) as conn:
+        cursor = conn.cursor()
 
-    data_path = docs_path('testing/testdata/data/test_a.json')
-    # load testing data into crate
-    cursor.execute("copy locations from ?", (data_path,))
-    # refresh location table so imported data is visible immediately
-    refresh("locations")
+        with open(docs_path('testing/testdata/mappings/locations.sql')) as s:
+            stmt = s.read()
+            cursor.execute(stmt)
+            stmt = ("select count(*) from information_schema.tables "
+                    "where table_name = 'locations'")
+            cursor.execute(stmt)
+            assert cursor.fetchall()[0][0] == 1
 
-    # create blob table
-    cursor.execute("create blob table myfiles clustered into 1 shards " +
-                   "with (number_of_replicas=0)")
+        data_path = docs_path('testing/testdata/data/test_a.json')
+        # load testing data into crate
+        cursor.execute("copy locations from ?", (data_path,))
+        # refresh location table so imported data is visible immediately
+        cursor.execute("refresh table locations")
+        # create blob table
+        cursor.execute("create blob table myfiles clustered into 1 shards " +
+                       "with (number_of_replicas=0)")
 
 
 def setUpCrateLayerAndSqlAlchemy(test):
@@ -134,18 +137,17 @@ def setUpCrateLayerAndSqlAlchemy(test):
     from sqlalchemy.ext.declarative import declarative_base
     from sqlalchemy.orm import sessionmaker
 
-    conn = connect(crate_host)
-    cursor = conn.cursor()
-    cursor.execute("""create table characters (
-      id string primary key,
-      name string,
-      quote string,
-      details object,
-      more_details array(object),
-      INDEX name_ft using fulltext(name) with (analyzer = 'english'),
-      INDEX quote_ft using fulltext(quote) with (analyzer = 'english')
-) """)
-    conn.close()
+    with connect(crate_host) as conn:
+        cursor = conn.cursor()
+        cursor.execute("""create table characters (
+          id string primary key,
+          name string,
+          quote string,
+          details object,
+          more_details array(object),
+          INDEX name_ft using fulltext(name) with (analyzer = 'english'),
+          INDEX quote_ft using fulltext(quote) with (analyzer = 'english')
+    ) """)
 
     engine = sa.create_engine('crate://{0}'.format(crate_host))
     Base = declarative_base()
@@ -170,9 +172,6 @@ def setUpCrateLayerAndSqlAlchemy(test):
     test.globs['session'] = session
     test.globs['Session'] = Session
     test.globs['CrateDialect'] = CrateDialect
-
-
-_server = None
 
 
 class HttpsTestServerLayer(object):
@@ -244,14 +243,20 @@ def setUpWithHttps(test):
 
 def tearDownWithCrateLayer(test):
     # clear testing data
-    conn = connect(crate_host)
-    cursor = conn.cursor()
-    cursor.execute("drop table locations")
-    cursor.execute("drop blob table myfiles")
-    try:
-        cursor.execute("drop table characters")
-    except:
-        pass
+    with connect(crate_host) as conn:
+        cursor = conn.cursor()
+        try:
+            cursor.execute("drop table locations")
+        except Exception:
+            pass
+        try:
+            cursor.execute("drop blob table myfiles")
+        except Exception:
+            pass
+        try:
+            cursor.execute("drop table characters")
+        except Exception:
+            pass
 
 
 def test_suite():

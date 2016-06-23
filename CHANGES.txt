@@ -5,6 +5,9 @@ Changes for crate
 Unreleased
 ==========
 
+2016/06/23 0.16.1
+=================
+
  - Fix: ``Date`` column type is now correctly created as ``TIMESTAMP`` column
    when creating the table
 

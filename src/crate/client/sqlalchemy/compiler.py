@@ -155,6 +155,9 @@ class CrateTypeCompiler(compiler.GenericTypeCompiler):
     def visit_datetime(self, type_, **kw):
         return 'TIMESTAMP'
 
+    def visit_date(self, type_, **kw):
+        return 'TIMESTAMP'
+
 
 class CrateCompilerBase(SQLCompiler):
 

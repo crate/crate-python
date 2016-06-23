@@ -51,7 +51,8 @@ class CreateTableTest(TestCase):
             long_col = sa.Column(sa.BigInteger)
             bool_col = sa.Column(sa.Boolean)
             short_col = sa.Column(sa.SmallInteger)
-            ts_col = sa.Column(sa.DateTime)
+            datetime_col = sa.Column(sa.DateTime)
+            date_col = sa.Column(sa.Date)
             float_col = sa.Column(sa.Float)
 
         self.Base.metadata.create_all()
@@ -59,7 +60,8 @@ class CreateTableTest(TestCase):
             ('\nCREATE TABLE users (\n\tstring_col STRING, '
              '\n\tunicode_col STRING, \n\ttext_col STRING, \n\tint_col INT, '
              '\n\tlong_col LONG, \n\tbool_col BOOLEAN, '
-             '\n\tshort_col SHORT, \n\tts_col TIMESTAMP, '
+             '\n\tshort_col SHORT, '
+             '\n\tdatetime_col TIMESTAMP, \n\tdate_col TIMESTAMP, '
              '\n\tfloat_col FLOAT, \n\tPRIMARY KEY (string_col)\n)\n\n'),
             ())
 

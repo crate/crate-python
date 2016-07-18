@@ -130,6 +130,24 @@ the command line flag: ``-Des.threadpool.bulk.queue_size=100``::
     True
     >>> custom_layer.stop()
 
+
+Verbosity
+---------
+
+The test layer hides the standard output of Crate per default. To increase the
+verbosity level the additional keyword argument ``verbose`` needs to be set
+to ``True``.
+
+    >>> layer =  CrateLayer('crate',
+    ...                     crate_home=crate_path(),
+    ...                     verbose=True
+    ... )
+
+    >>> layer.start()
+    >>> layer.verbose
+    True
+    >>> layer.stop()
+
 Starting a Cluster
 ------------------
 

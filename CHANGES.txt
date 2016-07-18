@@ -5,6 +5,9 @@ Changes for crate
 Unreleased
 ==========
 
+ - Testing: Made Crate test layer logging less verbose (hide Crate startup logs)
+   and added ``verbose keyword`` argument to layer to control its verbosity.
+
  - Testing: Do not rely on startup log if static http port is defined in test
    layer.
 

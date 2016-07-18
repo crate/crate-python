@@ -30,6 +30,7 @@ import shutil
 import subprocess
 import tarfile
 import io
+
 try:
     from urllib.request import urlopen
 except ImportError:
@@ -71,19 +72,18 @@ def _download_and_extract(uri, directory):
         with tarfile.open(fileobj=tmpfile) as t:
             t.extractall(directory)
 
-
-def wait_for_http_url(log, timeout=20):
+def wait_for_http_url(log, timeout=20, verbose=False):
     start = time.time()
     while True:
         line = log.readline().decode('utf-8').strip()
         elapsed = time.time() - start
-        sys.stderr.write('[{:>4.1f}s]{}\n'.format(elapsed, line))
+        if verbose:
+            sys.stderr.write('[{:>4.1f}s]{}\n'.format(elapsed, line))
         m = HTTP_ADDRESS_RE.match(line)
         if m:
             return prepend_http(m.group('addr'))
         elif elapsed > timeout:
             return None
-
 
 class CrateLayer(object):
     """
@@ -103,7 +103,8 @@ class CrateLayer(object):
                  transport_port='4300-4399',
                  settings=None,
                  directory=None,
-                 cleanup=True):
+                 cleanup=True,
+                 verbose=False):
         """Download the Crate tarball from a URI and create a CrateLayer
 
         :param uri: The uri that points to the Crate tarball
@@ -115,6 +116,7 @@ class CrateLayer(object):
                           If this is None a temporary directory will be created.
         :param clean: a boolean indicating if the directory should be removed
                       on teardown.
+        :param verbose: Set the log verbosity of the test layer
         """
         directory = directory or tempfile.mkdtemp()
         filename = os.path.basename(uri)
@@ -131,7 +133,8 @@ class CrateLayer(object):
             crate_home=crate_home,
             port=http_port,
             transport_port=transport_port,
-            settings=settings)
+            settings=settings,
+            verbose=verbose)
         if cleanup:
             tearDown = layer.tearDown
 
@@ -152,7 +155,8 @@ class CrateLayer(object):
                  cluster_name=None,
                  host="127.0.0.1",
                  multicast=False,
-                 settings=None):
+                 settings=None,
+                 verbose=False):
         """
         :param name: layer name, is also used as the cluser name
         :param crate_home: path to home directory of the crate installation
@@ -167,6 +171,7 @@ class CrateLayer(object):
         :param host: the host to bind to. defaults to 'localhost'
         :param settings: further settings that do not deserve a keyword
                          argument will be prefixed with ``es.``.
+        :param verbose: Set the log verbosity of the test layer
         """
         self.__name__ = name
         if settings and isinstance(settings, dict):
@@ -177,6 +182,8 @@ class CrateLayer(object):
             self.http_url = http_url_from_host_port(host, port)
 
         self.process = None
+        self.verbose = verbose
+
         crate_home = os.path.abspath(crate_home)
         if crate_exec is None:
             start_script = 'crate.bat' if sys.platform == 'win32' else 'crate'
@@ -259,7 +266,7 @@ class CrateLayer(object):
         if not self.http_url:
             # try to read http_url from startup logs
             # this is necessary if no static port is assigned
-            self.http_url = wait_for_http_url(self.process.stdout)
+            self.http_url = wait_for_http_url(self.process.stdout, verbose=self.verbose)
 
         if not self.http_url:
             self.stop()

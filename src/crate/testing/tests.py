@@ -27,6 +27,7 @@ import unittest
 import doctest
 import tempfile
 from zope.testing.renormalizing import RENormalizing
+from .test_layer import LayerUtilsTest
 
 def docs_path(*parts):
     return os.path.join(os.path.dirname(os.path.dirname(__file__)), *parts)
@@ -55,4 +56,5 @@ def test_suite():
                              checker=checker,
                              encoding='utf-8')
     suite.addTest(s)
+    suite.addTest(unittest.makeSuite(LayerUtilsTest))
     return suite

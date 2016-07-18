@@ -54,6 +54,28 @@ The layer can be shutdown using its ``stop()`` method::
 
     >>> layer.stop()
 
+Dynamic HTTP Port
+-----------------
+
+It is also possible to define a port range instead of a static HTTP port for
+the layer::
+
+    >>> port = '44200-44299'
+    >>> layer = CrateLayer('crate',
+    ...                    crate_home=crate_path(),
+    ...                    port=port,
+    ... )
+    >>> layer.start()
+    >>> layer.crate_servers
+    ['http://127.0.0.1:442...']
+    >>> layer.stop()
+
+Crate will start with the first available port in the given range and the test
+layer obtains the chosen port from the startup logs of the Crate process.
+Note, that this feature requires a logging configuration with at least loglevel
+``INFO`` on ``http``.
+
+
 Default Values
 --------------
 
@@ -96,9 +118,9 @@ the command line flag: ``-Des.threadpool.bulk.queue_size=100``::
     ...     crate_path(),
     ...     port=44401,
     ...     settings = {
-    ...                    "cluster.graceful_stop.min_availability": "none",
-    ...                    "http.port": 44402
-    ...                }
+    ...         "cluster.graceful_stop.min_availability": "none",
+    ...         "http.port": 44402
+    ...     }
     ... )
 
     >>> custom_layer.start()

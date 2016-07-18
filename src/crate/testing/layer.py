@@ -48,6 +48,24 @@ HTTP_ADDRESS_RE = re.compile(
     '}'
 )
 
+
+def http_url_from_host_port(host, port):
+    if host and port:
+        if not isinstance(port, int):
+            try:
+                port = int(port)
+            except ValueError:
+                return None
+        return '{}:{}'.format(prepend_http(host), port)
+    return None
+
+
+def prepend_http(host):
+    if not re.match(r'^https?\:\/\/.*', host):
+        return 'http://{}'.format(host)
+    return host
+
+
 def _download_and_extract(uri, directory):
     with io.BytesIO(urlopen(uri).read()) as tmpfile:
         with tarfile.open(fileobj=tmpfile) as t:
@@ -62,7 +80,7 @@ def wait_for_http_url(log, timeout=20):
         sys.stderr.write('[{:>4.1f}s]{}\n'.format(elapsed, line))
         m = HTTP_ADDRESS_RE.match(line)
         if m:
-            return 'http://' + m.group('addr')
+            return prepend_http(m.group('addr'))
         elif elapsed > timeout:
             return None
 
@@ -127,9 +145,9 @@ class CrateLayer(object):
                  name,
                  crate_home,
                  crate_config=None,
-                 port='4200-4299',
+                 port=None,
                  keepRunning=False,
-                 transport_port='4300-4399',
+                 transport_port=None,
                  crate_exec=None,
                  cluster_name=None,
                  host="127.0.0.1",
@@ -151,7 +169,13 @@ class CrateLayer(object):
                          argument will be prefixed with ``es.``.
         """
         self.__name__ = name
-        self.http_url = None
+        if settings and isinstance(settings, dict):
+            # extra settings may override host/port specification!
+            self.http_url = http_url_from_host_port(settings.get('network.host', host),
+                                                    settings.get('http.port', port))
+        else:
+            self.http_url = http_url_from_host_port(host, port)
+
         self.process = None
         crate_home = os.path.abspath(crate_home)
         if crate_exec is None:
@@ -163,13 +187,13 @@ class CrateLayer(object):
               os.path.basename(crate_config) != 'crate.yml'):
             raise ValueError(CRATE_CONFIG_ERROR)
         if cluster_name is None:
-            cluster_name = "Testing{0}".format(port)
+            cluster_name = "Testing{0}".format(port or 'Dynamic')
         settings = self.create_settings(crate_config,
                                         cluster_name,
                                         name,
                                         host,
-                                        port,
-                                        transport_port,
+                                        port or '4200-4299',
+                                        transport_port or '4300-4399',
                                         multicast,
                                         settings)
         start_cmd = (crate_exec, ) + tuple(["-Des.%s=%s" % opt
@@ -232,7 +256,11 @@ class CrateLayer(object):
                                                                self.start_cmd)
             )
 
-        self.http_url = wait_for_http_url(self.process.stdout)
+        if not self.http_url:
+            # try to read http_url from startup logs
+            # this is necessary if no static port is assigned
+            self.http_url = wait_for_http_url(self.process.stdout)
+
         if not self.http_url:
             self.stop()
         else:

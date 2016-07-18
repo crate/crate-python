@@ -5,6 +5,9 @@ Changes for crate
 Unreleased
 ==========
 
+ - Testing: Do not rely on startup log if static http port is defined in test
+   layer.
+
 2016/06/23 0.16.1
 =================
 

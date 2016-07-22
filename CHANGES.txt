@@ -5,6 +5,9 @@ Changes for crate
 Unreleased
 ==========
 
+2016/07/22 0.16.2
+=================
+
  - Increased ``urllib3`` version requirement to >=1.9 to prevent from 
    compatibility issues.
 

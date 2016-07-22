@@ -26,7 +26,7 @@ import re
 
 requirements = [
     'setuptools',
-    'urllib3',
+    'urllib3>=1.9',
     'six'
 ]
 

@@ -5,6 +5,9 @@ Changes for crate
 Unreleased
 ==========
 
+ - Increased ``urllib3`` version requirement to >=1.9 to prevent from 
+   compatibility issues.
+
  - Testing: Do not rely on startup log if static http port is defined in test
    layer.
 

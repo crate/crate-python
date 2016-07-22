@@ -5,6 +5,9 @@ Changes for crate
 Unreleased
 ==========
 
+ - Increased ``urllib3`` version requirement to >=1.9 to prevent from 
+   compatibility issues.
+
  - Testing: Made Crate test layer logging less verbose (hide Crate startup logs)
    and added ``verbose keyword`` argument to layer to control its verbosity.
 

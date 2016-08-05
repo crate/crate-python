@@ -365,7 +365,8 @@ class Client(object):
     def _add_server(self, server):
         with self._lock:
             if server not in self.server_pool:
-                self.server_pool[server] = Server(server, **self._pool_kw)
+                kwargs = _remove_certs_for_non_https(server, self._pool_kw)
+                self.server_pool[server] = Server(server, **kwargs)
 
     def _request(self, method, path, server=None, **kwargs):
         """Execute a request to the cluster

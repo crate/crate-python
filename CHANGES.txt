@@ -4,6 +4,8 @@ Changes for crate
 
 Unreleased
 ==========
+ - Fix: Avoid invalid keyword argument error when fetching blobs from cluster
+   by removing certificate keywords before creating non-https server in pool.
 
  - Testing: Made Crate test layer logging less verbose (hide Crate startup logs)
    and added ``verbose keyword`` argument to layer to control its verbosity.
@@ -11,7 +13,7 @@ Unreleased
 2016/07/22 0.16.2
 =================
 
- - Increased ``urllib3`` version requirement to >=1.9 to prevent from 
+ - Increased ``urllib3`` version requirement to >=1.9 to prevent from
    compatibility issues.
 
  - Testing: Do not rely on startup log if static http port is defined in test

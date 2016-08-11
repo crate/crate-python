@@ -283,10 +283,13 @@ class Client(object):
         for server in self.server_pool.values():
             server.close()
 
+    def _create_server(self, server, **kwargs):
+        kwargs = _remove_certs_for_non_https(server, kwargs)
+        self.server_pool[server] = Server(server, **kwargs)
+
     def _update_server_pool(self, servers, **kwargs):
         for server in servers:
-            kwargs = _remove_certs_for_non_https(server, kwargs)
-            self.server_pool[server] = Server(server, **kwargs)
+            self._create_server(server, **kwargs)
 
     def sql(self, stmt, parameters=None, bulk_parameters=None):
         """
@@ -365,7 +368,7 @@ class Client(object):
     def _add_server(self, server):
         with self._lock:
             if server not in self.server_pool:
-                self.server_pool[server] = Server(server, **self._pool_kw)
+                self._create_server(server, **self._pool_kw)
 
     def _request(self, method, path, server=None, **kwargs):
         """Execute a request to the cluster

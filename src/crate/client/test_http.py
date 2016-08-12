@@ -160,10 +160,18 @@ class HttpClientTest(TestCase):
             client.blob_get('blobs', 'fake_digest')
         except ProgrammingError:
             # 4201 gets added to serverpool but isn't available
+            # that's why we run into an infinite recursion
+            # exception message is: maximum recursion depth exceeded
             pass
         self.assertEqual(
             ['http://localhost:4200', 'http://localhost:4201'],
             sorted(list(client.server_pool.keys()))
+        )
+        # the new non-https server must not contain any SSL only arguments
+        # regression test for github issue #179/#180
+        self.assertEqual(
+            {},
+            client.server_pool['http://localhost:4201'].pool.conn_kw
         )
         client.close()
 

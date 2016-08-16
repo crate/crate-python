@@ -4,6 +4,10 @@ Changes for crate
 
 Unreleased
 ==========
+
+2016/08/16 0.16.3
+=================
+
  - Fix: Avoid invalid keyword argument error when fetching blobs from cluster
    by removing certificate keywords before creating non-https server in pool.
 

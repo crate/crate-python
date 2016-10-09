@@ -185,8 +185,8 @@ class CrateDialect(default.DefaultDialect):
     def get_table_names(self, connection, schema=None, **kw):
         cursor = connection.execute(
             "select table_name from information_schema.tables "
-            "where schema_name = ? "
-            "order by table_name asc, schema_name asc",
+            "where table_schema = ? "
+            "order by table_name asc, table_schema asc",
             [schema or self.default_schema_name]
         )
         return [row[0] for row in cursor.fetchall()]

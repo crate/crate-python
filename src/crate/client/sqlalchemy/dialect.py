@@ -38,6 +38,7 @@ from .sa_version import SA_1_0
 
 log = logging.getLogger(__name__)
 
+# information_schema.tables column table_schema was named schema_name earlier
 TABLE_SCHEMA_MIN_VERSION = (0, 57, 0)
 
 

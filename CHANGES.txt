@@ -6,7 +6,7 @@ Unreleased
 ==========
 
  - Use column ``table_schema`` in ``information_schema.tables`` in order to
-   conform with the SQL standard-
+   be conform with the SQL standard.
 
 2016/08/16 0.16.3
 =================

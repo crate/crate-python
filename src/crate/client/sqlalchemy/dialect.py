@@ -38,6 +38,9 @@ from .sa_version import SA_1_0
 
 log = logging.getLogger(__name__)
 
+TABLE_SCHEMA_MIN_VERSION = (0, 57, 0)
+
+
 class Date(sqltypes.Date):
     def bind_processor(self, dialect):
         def process(value):
@@ -183,10 +186,16 @@ class CrateDialect(default.DefaultDialect):
 
     @reflection.cache
     def get_table_names(self, connection, schema=None, **kw):
-        cursor = connection.execute(
-            "select table_name from information_schema.tables "
-            "where table_schema = ? "
-            "order by table_name asc, table_schema asc",
+        if self.server_version_info >= TABLE_SCHEMA_MIN_VERSION:
+            stmt = ("select table_name from information_schema.tables "
+                    "where table_schema = ? "
+                    "order by table_name asc, table_schema asc")
+        else:
+            stmt = ("select table_name from information_schema.tables "
+                    "where schema_name = ? "
+                    "order by table_name asc, schema_name asc")
+        cursor = connection.execute(stmt,
             [schema or self.default_schema_name]
         )
+
         return [row[0] for row in cursor.fetchall()]

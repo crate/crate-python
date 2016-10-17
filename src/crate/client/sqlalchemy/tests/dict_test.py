@@ -370,6 +370,57 @@ class SqlAlchemyDictTypeTest(TestCase):
             ([{'1': 1}, {'3': 3}], 'Trillian')
         )
 
+    def _setup_nested_object_char(self):
+        session, Character = self.set_up_character_and_cursor(
+            return_value=[('Trillian', {'nested': {'x': 1, 'y': {'z': 2}}})]
+        )
+        char = Character(name='Trillian')
+        char.data = {'nested': {'x': 1, 'y': {'z': 2}}}
+        session.add(char)
+        session.commit()
+        return session, char
+
+
+    @patch('crate.client.connection.Cursor', FakeCursor)
+    def test_nested_object_change_tracking(self):
+        session, char = self._setup_nested_object_char()
+        char.data["nested"]["x"] = 3
+        self.assertTrue(char in session.dirty)
+        session.commit()
+        fake_cursor.execute.assert_called_with(
+            ("UPDATE characters SET data['nested'] = ? "
+             "WHERE characters.name = ?"),
+            ({'y': {'z': 2}, 'x': 3}, 'Trillian')
+        )
+
+
+    @patch('crate.client.connection.Cursor', FakeCursor)
+    def test_deep_nested_object_change_tracking(self):
+        session, char = self._setup_nested_object_char()
+        # change deep nested object
+        char.data["nested"]["y"]["z"] = 5
+        self.assertTrue(char in session.dirty)
+        session.commit()
+        fake_cursor.execute.assert_called_with(
+            ("UPDATE characters SET data['nested'] = ? "
+             "WHERE characters.name = ?"),
+            ({'y': {'z': 5}, 'x': 1}, 'Trillian')
+        )
+
+    @patch('crate.client.connection.Cursor', FakeCursor)
+    def test_delete_nested_object_tracking(self):
+        session, char = self._setup_nested_object_char()
+        # delete nested object
+        del char.data["nested"]["y"]["z"]
+        self.assertTrue(char in session.dirty)
+        session.commit()
+        fake_cursor.execute.assert_called_with(
+            ("UPDATE characters SET data['nested'] = ? "
+             "WHERE characters.name = ?"),
+            ({'y': {}, 'x': 1}, 'Trillian')
+        )
+
+
     @patch('crate.client.connection.Cursor', FakeCursor)
     def test_object_array_append_change_tracking(self):
         session, char = self._setup_object_array_char()

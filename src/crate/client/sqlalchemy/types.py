@@ -90,22 +90,44 @@ class MutableDict(Mutable, dict):
         else:
             return value
 
-    def __init__(self, initval=None):
+    def __init__(self, initval=None, to_update=None, root_change_key=None):
         initval = initval or {}
         self._changed_keys = set()
         self._deleted_keys = set()
+        self._overwrite_key = root_change_key
+        self.to_update = self if to_update is None else to_update
+        for k in initval:
+            initval[k] = self._convert_dict(initval[k],
+                                            overwrite_key=k if self._overwrite_key is None else self._overwrite_key
+                                            )
         dict.__init__(self, initval)
 
     def __setitem__(self, key, value):
+        value = self._convert_dict(value, key if self._overwrite_key is None else self._overwrite_key)
         dict.__setitem__(self, key, value)
+        self.to_update.on_key_changed(
+            key if self._overwrite_key is None else self._overwrite_key
+        )
+
+    def __delitem__(self, key):
+        dict.__delitem__(self, key)
+        # add the key to the deleted keys if this is the root object
+        # otherwise update on root object
+        if self._overwrite_key is None:
+            self._deleted_keys.add(key)
+            self.changed()
+        else:
+            self.to_update.on_key_changed(self._overwrite_key)
+
+    def on_key_changed(self, key):
         self._deleted_keys.discard(key)
         self._changed_keys.add(key)
         self.changed()
 
-    def __delitem__(self, key):
-        dict.__delitem__(self, key)
-        self._deleted_keys.add(key)
-        self.changed()
+    def _convert_dict(self, value, overwrite_key):
+        if isinstance(value, dict) and not isinstance(value, MutableDict):
+            return MutableDict(value, self.to_update, overwrite_key)
+        return value
 
 
 class _Craty(sqltypes.UserDefinedType):

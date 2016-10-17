@@ -5,6 +5,8 @@ Changes for crate
 Unreleased
 ==========
 
+ - Fix sqlalchemy: updates in nested object columns have been ignored
+
 2016/08/16 0.16.3
 =================
 

@@ -203,11 +203,11 @@ class CrateLayer(object):
                                         transport_port or '4300-4399',
                                         multicast,
                                         settings)
-        start_cmd = (crate_exec, ) + tuple(["-Des.%s=%s" % opt
+        start_cmd = (crate_exec, ) + tuple(["-C%s=%s" % opt
                                            for opt in settings.items()])
 
         self._wd = wd = os.path.join(CrateLayer.tmpdir, 'crate_layer', name)
-        self.start_cmd = start_cmd + ('-Des.path.data=%s' % wd,)
+        self.start_cmd = start_cmd + ('-Cpath.data=%s' % wd,)
 
     def create_settings(self,
                         crate_config,

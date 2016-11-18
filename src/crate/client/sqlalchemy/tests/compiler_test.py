@@ -27,7 +27,7 @@ import sqlalchemy as sa
 from sqlalchemy.sql import update
 
 from crate.client.sqlalchemy.types import Craty
-from crate.client.sqlalchemy.sa_version import SA_1_0
+from crate.client.sqlalchemy.sa_version import SA_1_0, SA_VERSION
 
 class SqlAlchemyCompilerTest(TestCase):
 
@@ -41,7 +41,7 @@ class SqlAlchemyCompilerTest(TestCase):
 
         self.update = update(self.mytable, 'where name=:name')
         self.values = [{'name': 'crate'}]
-        if SA_1_0:
+        if SA_VERSION >= SA_1_0:
             self.values = (self.values, )
 
     def test_sqlite_update_not_rewritten(self):

@@ -27,7 +27,7 @@ try:
 except:
     pass
 from sqlalchemy.ext.mutable import Mutable
-from .sa_version import SA_1_0
+from .sa_version import SA_1_0, SA_VERSION
 
 class MutableList(Mutable, list):
     @classmethod
@@ -135,7 +135,7 @@ class _Craty(sqltypes.UserDefinedType):
     class Comparator(sqltypes.TypeEngine.Comparator):
 
         def __getitem__(self, key):
-            if SA_1_0:
+            if SA_VERSION >= SA_1_0:
                 return default_comparator._binary_operate(self.expr,
                                                           operators.getitem,
                                                           key)
@@ -178,7 +178,7 @@ class _ObjectArray(sqltypes.UserDefinedType):
 
     class Comparator(sqltypes.TypeEngine.Comparator):
         def __getitem__(self, key):
-            if SA_1_0:
+            if SA_VERSION >= SA_1_0:
                 return default_comparator._binary_operate(self.expr,
                                                           operators.getitem,
                                                           key)

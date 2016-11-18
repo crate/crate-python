@@ -38,7 +38,7 @@ except ImportError:
 from sqlalchemy.sql.compiler import SQLCompiler
 from sqlalchemy.sql import compiler
 from .types import MutableDict
-from .sa_version import SA_1_0
+from .sa_version import SA_1_0, SA_1_1, SA_VERSION
 
 
 def rewrite_update(clauseelement, multiparams, params):
@@ -58,7 +58,7 @@ def rewrite_update(clauseelement, multiparams, params):
     """
 
     newmultiparams = []
-    _multiparams = SA_1_0 and multiparams[0] or multiparams
+    _multiparams = (SA_VERSION >= SA_1_0) and multiparams[0] or multiparams
     for _params in _multiparams:
         newparams = {}
         for key, val in _params.items():
@@ -160,6 +160,8 @@ class CrateTypeCompiler(compiler.GenericTypeCompiler):
 
 
 class CrateCompilerBase(SQLCompiler):
+
+    prefetch = []
 
     def visit_getitem_binary(self, binary, operator, **kw):
         return "{0}['{1}']".format(
@@ -347,7 +349,8 @@ class CrateCompilerV1(CrateCompilerBase):
         adapted for Crate dialect"""
 
         compiler.postfetch = []
-        compiler.prefetch = []
+        compiler.insert_prefetch = []
+        compiler.update_prefetch = []
         compiler.returning = []
 
         # no parameters in the statement, no parameters in the
@@ -365,8 +368,13 @@ class CrateCompilerV1(CrateCompilerBase):
         # getters - these are normally just column.key,
         # but in the case of mysql multi-table update, the rules for
         # .key must conditionally take tablename into account
-        _column_as_key, _getattr_col_key, _col_bind_name = \
-            crud._key_getters_for_crud_column(compiler)
+        if SA_VERSION >= SA_1_1:
+            _column_as_key, _getattr_col_key, _col_bind_name = \
+                crud._key_getters_for_crud_column(compiler, stmt)
+        else:
+            _column_as_key, _getattr_col_key, _col_bind_name = \
+                crud._key_getters_for_crud_column(compiler)
+
 
         # if we have statement parameters - set defaults in the
         # compiled params

@@ -34,7 +34,7 @@ from .compiler import (
 )
 from crate.client.exceptions import TimezoneUnawareException
 
-from .sa_version import SA_1_0
+from .sa_version import SA_1_0, SA_VERSION
 
 from distutils.version import StrictVersion
 
@@ -122,7 +122,7 @@ colspecs = {
 
 class CrateDialect(default.DefaultDialect):
     name = 'crate'
-    statement_compiler = SA_1_0 and CrateCompilerV1 or CrateCompiler
+    statement_compiler = (SA_VERSION >= SA_1_0) and CrateCompilerV1 or CrateCompiler
     ddl_compiler = CrateDDLCompiler
     type_compiler = CrateTypeCompiler
     supports_native_boolean = True

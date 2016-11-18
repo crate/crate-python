@@ -14,7 +14,8 @@ install:
 env:
   - SA_VERSION=0.8.2
   - SA_VERSION=0.9.8
-  - SA_VERSION=1.0.0
+  - SA_VERSION=1.0.16
+  - SA_VERSION=1.1.4
 matrix:
   exclude:
     - python: 3.3

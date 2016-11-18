@@ -20,11 +20,9 @@
 # software solely pursuant to the terms of the relevant commercial agreement.
 
 import sqlalchemy as sa
-SA_VERSION = sa.__version__.split('.')
+from distutils.version import StrictVersion as V
 
-def is_sa_version(major, minor):
-    return int(SA_VERSION[0]) == major and int(SA_VERSION[1]) == minor
+SA_VERSION = V(sa.__version__)
 
-SA_0_8 = is_sa_version(0, 8)
-SA_0_9 = is_sa_version(0, 9)
-SA_1_0 = is_sa_version(1, 0)
+SA_1_0 = V('1.0')
+SA_1_1 = V('1.1')

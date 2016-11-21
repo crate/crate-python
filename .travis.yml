@@ -9,7 +9,7 @@ sudo:
 install:
   - pip uninstall -y setuptools
   - python bootstrap.py
-  - sed -ir "s/SQLAlchemy = 1.0.0/SQLAlchemy = ${SA_VERSION}/g" versions.cfg
+  - sed -ir "s/SQLAlchemy.*/SQLAlchemy = ${SA_VERSION}/g" versions.cfg
   - ./bin/buildout -c base.cfg
 env:
   - SA_VERSION=0.8.2

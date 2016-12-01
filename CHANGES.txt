@@ -5,6 +5,9 @@ Changes for crate
 Unreleased
 ==========
 
+ - Fix sqlalchemy: ``sa.inspect(engine).get_table_names`` failed due
+   to an attribute error
+
 2016/11/21 0.16.5
 =================
 

@@ -313,6 +313,7 @@ def test_suite():
     s = doctest.DocFileSuite(
         'sqlalchemy/itests.txt',
         'sqlalchemy/dialect.txt',
+        'sqlalchemy/reflection.txt',
         checker=checker,
         setUp=setUpCrateLayerAndSqlAlchemy,
         tearDown=tearDownWithCrateLayer,

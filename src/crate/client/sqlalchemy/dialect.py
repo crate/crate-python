@@ -36,9 +36,7 @@ from crate.client.exceptions import TimezoneUnawareException
 
 from .sa_version import SA_1_0, SA_VERSION
 
-from distutils.version import StrictVersion
-
-SCHEMA_MIN_VERSION = StrictVersion("0.57.0")
+SCHEMA_MIN_VERSION = (0, 57, 0)
 
 log = logging.getLogger(__name__)
 
@@ -187,9 +185,8 @@ class CrateDialect(default.DefaultDialect):
 
     @reflection.cache
     def get_table_names(self, connection, schema=None, **kw):
-        version = connection.connection.lowest_server_version
         schema_name = \
-            "table_schema" if version >= SCHEMA_MIN_VERSION else "schema_name"
+            "table_schema" if self.server_version_info >= SCHEMA_MIN_VERSION else "schema_name"
 
         cursor = connection.execute(
             "select table_name from information_schema.tables "

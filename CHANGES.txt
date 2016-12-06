@@ -5,6 +5,8 @@ Changes for crate
 Unreleased
 ==========
 
+ - Added support for ``Insert`` from select to the SQLAlchemy dialect
+
  - sqlalchemy: support `get_columns` and `get_pk_constraint`
 
  - BREAKING: Dropped support for SQLAlchemy < 1.0.0

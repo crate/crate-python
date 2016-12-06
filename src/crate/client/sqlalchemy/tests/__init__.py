@@ -8,9 +8,11 @@ from .compiler_test import SqlAlchemyCompilerTest
 from .update_test import SqlAlchemyUpdateTest
 from .match_test import SqlAlchemyMatchTest
 from .bulk_test import SqlAlchemyBulkTest
+from .insert_from_select_test import SqlAlchemyInsertFromSelectTest
 from .create_table_test import CreateTableTest
 from .array_test import SqlAlchemyArrayTypeTest
 from ..sa_version import SA_1_1, SA_VERSION
+
 
 
 def test_suite():
@@ -23,6 +25,7 @@ def test_suite():
     tests.addTest(makeSuite(SqlAlchemyMatchTest))
     tests.addTest(makeSuite(CreateTableTest))
     tests.addTest(makeSuite(SqlAlchemyBulkTest))
+    tests.addTest(makeSuite(SqlAlchemyInsertFromSelectTest))
     if SA_VERSION >= SA_1_1:
         tests.addTest(makeSuite(SqlAlchemyArrayTypeTest))
     return tests

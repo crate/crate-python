@@ -61,6 +61,7 @@ An overview of supported operations::
  - Simple select statements including filter operations, limit and offset,
    group by and order by. But without joins or subselects
  - Inserting new rows.
+ - Insert From Select statements.
  - Updating rows.
 
 Unlike other databases that are usually used with SQLAlchemy, Crate isn't a
@@ -132,8 +133,7 @@ After `INSERT` statements are sent to the database the newly inserted rows
 aren't immediately available for search because the index is only updated
 periodically::
 
-    >>> from time import sleep
-    >>> sleep(2)
+    >>> refresh("characters")
 
 .. note::
 
@@ -346,10 +346,10 @@ It's not possible to specify options without the match_type argument::
 
 
 Create and Delete Tables
-========================
+------------------------
 
 Create Tables using the ORM
----------------------------
+===========================
 
 Tables can be created using the ORM as documented in the SQLAlchemy
 documentation. Here is an example that uses the declarative approach:
@@ -390,7 +390,7 @@ In order to create all missing tables the ``create_all`` method can be used::
 
 
 Delete Tables using the ORM
----------------------------
+===========================
 
 In order to delete all tables simply use ``Base.metadata.drop_all()``, or to
 delete a single table use ``drop(...)`` as shown below::
@@ -399,3 +399,58 @@ delete a single table use ``drop(...)`` as shown below::
 
     >>> engine.dialect.has_table(conn, table_name='departments')
     False
+
+
+Insert From Select
+==================
+
+In SQLAlchemy, the ``insert().from_select()`` function returns a new ``Insert``
+construct which represents an ``INSERT...FROM SELECT`` statement. 
+This functionality is now supported by the `crate` client library.  
+Here is an example that uses ``insert().from_select()``::
+
+First let's define and create the tables::
+
+    >>> from sqlalchemy import select, insert
+
+    >>> class Todos(Base):
+    ...     __tablename__ = 'todos'
+    ...     __table_args__ = {
+    ...         'crate_number_of_replicas': '0'
+    ...     }
+    ...     id = sa.Column(sa.String, primary_key=True, default=gen_key)
+    ...     content = sa.Column(sa.String)
+    ...     status = sa.Column(sa.String)
+
+    >>> class ArchivedTasks(Base):
+    ...     __tablename__ = 'archived_tasks'
+    ...     __table_args__ = {
+    ...         'crate_number_of_replicas': '0'
+    ...     }
+    ...     id = sa.Column(sa.String, primary_key=True)
+    ...     content = sa.Column(sa.String)
+
+    >>> Base.metadata.create_all(bind=engine)
+
+Let's add a task to the ``Todo`` table::
+
+    >>> task = Todos(content='Write Tests', status='done')
+    >>> session.add(task)
+    >>> session.commit()
+    >>> refresh("todos")
+
+Using ``insert().from_select()`` to archive the task in ``ArchivedTasks`` table::
+
+    >>> sel = select([Todos.id, Todos.content]).where(Todos.status=="done")
+    >>> ins = insert(ArchivedTasks).from_select(['id','content'], sel)
+    >>> result = session.execute(ins)
+    >>> session.commit()
+    >>> refresh("archived_tasks")
+
+This will result in the following query::
+
+    "INSERT INTO archived_tasks (id, content) "
+    ... "(SELECT todos.id, todos.content FROM todos WHERE todos.status = 'done')"
+
+    >>> pprint([str(r) for r in session.execute("Select content from archived_tasks")]) 
+    ["(u'Write Tests',)"]

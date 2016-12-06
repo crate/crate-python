@@ -96,10 +96,10 @@ Check if a blob exists::
 
 Trying to get a non-existing blob throws an exception::
 
-    >>> http_client.blob_get('myfiles', '040f06fd774092478d450774f5ba30c5da78acc8')
+    >>> http_client.blob_get('myfiles', '041f06fd774092478d450774f5ba30c5da78acc8')
     Traceback (most recent call last):
     ...
-    DigestNotFoundException: myfiles/040f06fd774092478d450774f5ba30c5da78acc8
+    DigestNotFoundException: myfiles/041f06fd774092478d450774f5ba30c5da78acc8
 
 Creating a new blob - this method returns True if the blob was newly
 created, false if it already exists::
@@ -186,5 +186,6 @@ will be provided::
     ...     trace = 'TRACE: ' + str(e.error_trace)
 
     >>> print(trace)
-    TRACE:...SQLParseException: line 1:19: mismatched input 'error' expecting EOF
-        at io.crate.action.sql.TransportBaseSQLAction...
+    TRACE: SQLActionException: BAD_REQUEST 4000 SQLParseException: ... mismatched input 'error' expecting EOF
+    	at io.crate.exceptions...
+

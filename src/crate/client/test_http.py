@@ -93,14 +93,14 @@ class HttpClientTest(TestCase):
 
     def test_no_connection_exception(self):
         client = Client()
-        self.assertRaises(ConnectionError, client.sql, 'select 1')
+        self.assertRaises(ConnectionError, client.sql, 'select foo')
 
     @patch(REQUEST)
     def test_http_error_is_re_raised(self, request):
         request.side_effect = Exception
 
         client = Client()
-        self.assertRaises(ProgrammingError, client.sql, 'select 1')
+        self.assertRaises(ProgrammingError, client.sql, 'select foo')
 
     @patch(REQUEST)
     def test_programming_error_contains_http_error_response_content(self, request):

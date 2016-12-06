@@ -7,7 +7,7 @@ SQLAlchemy Dialect and Reflection
 List all schemas::
 
     >>> inspector.get_schema_names()
-    ['blob', 'doc', 'information_schema', 'sys']
+    ['blob', 'doc', 'information_schema', 'pg_catalog', 'sys']
 
 List all tables::
 

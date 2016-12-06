@@ -327,7 +327,7 @@ class Client(object):
         if response.status == 409:
             # blob exists
             return False
-        if response.status == 400:
+        if response.status in (400, 404):
             raise BlobsDisabledException(table, digest)
         _raise_for_status(response)
 

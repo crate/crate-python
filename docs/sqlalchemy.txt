@@ -104,6 +104,9 @@ Below is a schema definition using `SQLAlchemy's declarative approach
     ...     more_details = sa.Column(ObjectArray)
     ...     name_ft = sa.Column(sa.String)
     ...     quote_ft = sa.Column(sa.String)
+    ...     __mapper_args__ = {
+    ...         'exclude_properties': ['name_ft', 'quote_ft']
+    ...     }
 
 Using the `Session
 <http://docs.sqlalchemy.org/en/rel_0_8/orm/session.html?highlight=session#>`_
@@ -163,6 +166,8 @@ The SQLAlchemy Crate dialect supports change tracking deep down the nested
 levels of a `Object` type field. For example the following query will only
 update the `gender` key. The `species` key which is on the same level will be
 left untouched.
+
+::
 
     >>> char = session.query(Character).filter_by(name='Arthur Dent').one()
     >>> char.details['gender'] = 'manly man'
@@ -342,7 +347,6 @@ It's not possible to specify options without the match_type argument::
 
 Create and Delete Tables
 ========================
-
 
 Create Tables using the ORM
 ---------------------------

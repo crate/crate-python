@@ -21,3 +21,17 @@ Get default schema name::
 
     >>> inspector.default_schema_name
     'doc'
+
+Create a sqlalchemy table object::
+
+    >>> meta = sa.MetaData()
+    >>> table = sa.Table(
+    ...     "characters", meta,
+    ...     autoload=True,
+    ...     autoload_with=engine)
+
+    >>> table.columns.get('name')
+    Column('name', String(), table=<characters>)
+
+    >>> table.primary_key
+    PrimaryKeyConstraint(Column('id', String(), table=<characters>, primary_key=True...

@@ -32,8 +32,36 @@ from .compiler import (
     CrateDDLCompiler
 )
 from crate.client.exceptions import TimezoneUnawareException
+from .types import Object, ObjectArray
 
 SCHEMA_MIN_VERSION = (0, 57, 0)
+
+TYPES_MAP = {
+    "boolean": sqltypes.Boolean,
+    "short": sqltypes.SmallInteger,
+    "timestamp": sqltypes.TIMESTAMP,
+    "object": Object,
+    "integer": sqltypes.Integer,
+    "long": sqltypes.NUMERIC,
+    "double": sqltypes.DECIMAL,
+    "object_array": ObjectArray,
+    "float": sqltypes.Float,
+    "string": sqltypes.String
+}
+try:
+    # SQLAlchemy >= 1.1
+    from sqlalchemy.types import ARRAY
+    TYPES_MAP["integer_array"] = ARRAY(sqltypes.Integer)
+    TYPES_MAP["boolean_array"] = ARRAY(sqltypes.Boolean)
+    TYPES_MAP["short_array"] = ARRAY(sqltypes.SmallInteger)
+    TYPES_MAP["timestamp_array"] = ARRAY(sqltypes.TIMESTAMP)
+    TYPES_MAP["long_array"] = ARRAY(sqltypes.NUMERIC)
+    TYPES_MAP["double_array"] = ARRAY(sqltypes.DECIMAL)
+    TYPES_MAP["float_array"] = ARRAY(sqltypes.Float)
+    TYPES_MAP["string_array"] = ARRAY(sqltypes.String)
+except:
+    pass
+
 
 log = logging.getLogger(__name__)
 
@@ -182,14 +210,71 @@ class CrateDialect(default.DefaultDialect):
 
     @reflection.cache
     def get_table_names(self, connection, schema=None, **kw):
-        schema_name = \
-            "table_schema" if self.server_version_info >= SCHEMA_MIN_VERSION \
-            else "schema_name"
-
         cursor = connection.execute(
             "select table_name from information_schema.tables "
             "where {0} = ? "
-            "order by table_name asc, {0} asc".format(schema_name),
+            "order by table_name asc, {0} asc".format(self.schema_column),
             [schema or self.default_schema_name]
         )
         return [row[0] for row in cursor.fetchall()]
+
+
+    @reflection.cache
+    def get_columns(self, connection, table_name, schema=None, **kw):
+        query = "SELECT column_name, data_type " \
+                "FROM information_schema.columns " \
+                "WHERE table_name = ? AND {schema_col}=? " \
+                "AND column_name !~ ?" \
+                .format(schema_col=self.schema_column)
+        cursor = connection.execute(
+            query,
+            [table_name,
+             schema or self.default_schema_name,
+             "(.*)\[\'(.*)\'\]"]  # regex to filter subscript
+        )
+        return [self._create_column_info(row) for row in cursor.fetchall()]
+
+
+    @reflection.cache
+    def get_pk_constraint(self, connection, table_name, schema=None, **kw):
+        query = "SELECT constraint_name " \
+                "FROM information_schema.table_constraints " \
+                "WHERE table_name=? " \
+                "AND {schema_col}=? AND constraint_type='PRIMARY_KEY' " \
+                .format(schema_col=self.schema_column)
+        pk = connection.execute(
+            query,
+            [table_name, schema or self.default_schema_name]
+        ).fetchone()
+        return {'constrained_columns': set(*pk) if pk is not None else (),
+                'name': 'PRIMARY KEY'}
+
+
+    @reflection.cache
+    def get_foreign_keys(self, connection, table_name, schema=None,
+                         postgresql_ignore_search_path=False, **kw):
+        # Crate doesn't support Foreign Keys, so this stays empty
+        return []
+
+    @reflection.cache
+    def get_indexes(self, connection, table_name, schema, **kw):
+        return []
+
+    @property
+    def schema_column(self):
+        return "table_schema" \
+            if self.server_version_info >= SCHEMA_MIN_VERSION \
+            else "schema_name"
+
+    def _create_column_info(self, row):
+        return {
+            'name': row[0],
+            'type': self._resolve_type(row[1]),
+            # In Crate every column is nullable except PK
+            # Primary Key Constraints are not nullable anyway, no matter what
+            # we return here, so it's fine to return always `True`
+            'nullable': True
+        }
+
+    def _resolve_type(self, type_):
+        return TYPES_MAP.get(type_, sqltypes.UserDefinedType)

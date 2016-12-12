@@ -5,6 +5,8 @@ Changes for crate
 Unreleased
 ==========
 
+ - sqlalchemy: added support for native Arrays
+
  - Fix sqlalchemy: ``sa.inspect(engine).get_table_names`` failed due
    to an attribute error
 

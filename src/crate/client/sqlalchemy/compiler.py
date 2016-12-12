@@ -158,6 +158,12 @@ class CrateTypeCompiler(compiler.GenericTypeCompiler):
     def visit_date(self, type_, **kw):
         return 'TIMESTAMP'
 
+    def visit_ARRAY(self, type_, **kw):
+        if type_.dimensions is not None and type_.dimensions > 1:
+            raise NotImplementedError(
+                "CrateDB doesn't support multidimensional arrays")
+        return 'ARRAY({0})'.format(self.process(type_.item_type))
+
 
 class CrateCompilerBase(SQLCompiler):
 
@@ -245,9 +251,9 @@ class CrateCompiler(CrateCompilerBase):
                 set_clauses.append(clause)
             elif self.isupdate:
                 if (
-                    c.onupdate is not None
-                    and not c.onupdate.is_sequence
-                    and not c.onupdate.is_clause_element
+                    c.onupdate is not None and not
+                    c.onupdate.is_sequence and not
+                    c.onupdate.is_clause_element
                 ):
                     set_clauses.append('{0} = {1}'.format(
                         c._compiler_dispatch(self, include_table=False),

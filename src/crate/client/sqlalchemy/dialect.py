@@ -28,13 +28,10 @@ from sqlalchemy.engine import default, reflection
 
 from .compiler import (
     CrateCompiler,
-    CrateCompilerV1,
     CrateTypeCompiler,
     CrateDDLCompiler
 )
 from crate.client.exceptions import TimezoneUnawareException
-
-from .sa_version import SA_1_0, SA_VERSION
 
 SCHEMA_MIN_VERSION = (0, 57, 0)
 
@@ -120,7 +117,7 @@ colspecs = {
 
 class CrateDialect(default.DefaultDialect):
     name = 'crate'
-    statement_compiler = (SA_VERSION >= SA_1_0) and CrateCompilerV1 or CrateCompiler
+    statement_compiler = CrateCompiler
     ddl_compiler = CrateDDLCompiler
     type_compiler = CrateTypeCompiler
     supports_native_boolean = True
@@ -186,7 +183,8 @@ class CrateDialect(default.DefaultDialect):
     @reflection.cache
     def get_table_names(self, connection, schema=None, **kw):
         schema_name = \
-            "table_schema" if self.server_version_info >= SCHEMA_MIN_VERSION else "schema_name"
+            "table_schema" if self.server_version_info >= SCHEMA_MIN_VERSION \
+            else "schema_name"
 
         cursor = connection.execute(
             "select table_name from information_schema.tables "

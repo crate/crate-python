@@ -39,7 +39,7 @@ This is the database adapter for the Crate database. Its main feature is a
 implementation of the Python `DB API 2.0
 <http://www.python.org/dev/peps/pep-0249/>`_ specification.
 
-It also includes support for `SQLAlchemy <http://www.sqlalchemy.org>`_.
+It also includes support for `SQLAlchemy <http://www.sqlalchemy.org>`_ >= 1.0.0.
 
 To get started take a look at the `documentation <https://crate.io/docs/reference/python/>`_.
 

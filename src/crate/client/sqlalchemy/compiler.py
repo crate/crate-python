@@ -23,22 +23,10 @@ import string
 from collections import defaultdict
 
 import sqlalchemy as sa
-try:
-    # SQLAlchemy 0.8
-    from sqlalchemy.sql.expression import _is_literal as sa_is_literal
-except ImportError:
-    # SQLAlchemy 0.9
-    from sqlalchemy.sql.elements import _is_literal as sa_is_literal
-try:
-    # SQLAlchemy > 1.0.0
-    from sqlalchemy.sql import crud
-except ImportError:
-    pass
-
-from sqlalchemy.sql.compiler import SQLCompiler
+from sqlalchemy.sql import crud
 from sqlalchemy.sql import compiler
 from .types import MutableDict
-from .sa_version import SA_1_0, SA_1_1, SA_VERSION
+from .sa_version import SA_1_1, SA_VERSION
 
 
 def rewrite_update(clauseelement, multiparams, params):
@@ -58,7 +46,7 @@ def rewrite_update(clauseelement, multiparams, params):
     """
 
     newmultiparams = []
-    _multiparams = (SA_VERSION >= SA_1_0) and multiparams[0] or multiparams
+    _multiparams = multiparams[0]
     for _params in _multiparams:
         newparams = {}
         for key, val in _params.items():
@@ -165,7 +153,7 @@ class CrateTypeCompiler(compiler.GenericTypeCompiler):
         return 'ARRAY({0})'.format(self.process(type_.item_type))
 
 
-class CrateCompilerBase(SQLCompiler):
+class CrateCompiler(compiler.SQLCompiler):
 
     prefetch = []
 
@@ -183,87 +171,6 @@ class CrateCompilerBase(SQLCompiler):
         )
 
 
-class CrateCompiler(CrateCompilerBase):
-
-    def visit_update(self, update_stmt, **kw):
-        """ used to compile <sql.expression.Update> expressions
-
-        only implements a subset of the SQLCompiler.visit_update method
-        e.g. updating multiple tables is not supported.
-        """
-
-        if not update_stmt.parameters \
-                and not hasattr(update_stmt, '_crate_specific'):
-            return super(CrateCompiler, self).visit_update(update_stmt, **kw)
-
-        self.isupdate = True
-        self.postfetch = []
-        self.prefetch = []
-        self.returning = []
-
-        text = 'UPDATE '
-        extra_froms = update_stmt._extra_froms
-        text += self.update_tables_clause(update_stmt, update_stmt.table,
-                                          extra_froms, **kw)
-        text += ' SET '
-
-        set_clauses = []
-        parameters = update_stmt.parameters
-        self.__handle_regular_columns(update_stmt, parameters, set_clauses)
-
-        for k, v in parameters.items():
-            if '[' in k:
-                bindparam = sa.sql.bindparam(k, v)
-                set_clauses.append(k + ' = ' + self.process(bindparam))
-
-        text += ', '.join(set_clauses)
-
-        if update_stmt._whereclause is not None:
-            text += ' WHERE ' + self.process(update_stmt._whereclause)
-
-        return text
-
-    def __handle_regular_columns(self, stmt, parameters, set_clauses):
-        need_pks = self.isinsert and \
-            not self.inline and \
-            not stmt._returning
-
-        implicit_returning = need_pks and \
-            self.dialect.implicit_returning and \
-            stmt.table.implicit_returning
-
-        for c in stmt.table.columns:
-            if c.key in parameters:
-                value = parameters.pop(c.key)
-                if sa_is_literal(value):
-                    value = self._create_crud_bind_param(
-                        c, value, required=value is sa.sql.compiler.REQUIRED,
-                        name=c.key
-                    )
-                elif c.primary_key and implicit_returning:
-                    self.returning.append(c)
-                    value = self.process(value.self_group())
-                else:
-                    self.postfetch.append(c)
-                    value = self.process(value.self_group())
-                clause = c._compiler_dispatch(self,
-                                              include_table=False) + ' = ?'
-                set_clauses.append(clause)
-            elif self.isupdate:
-                if (
-                    c.onupdate is not None and not
-                    c.onupdate.is_sequence and not
-                    c.onupdate.is_clause_element
-                ):
-                    set_clauses.append('{0} = {1}'.format(
-                        c._compiler_dispatch(self, include_table=False),
-                        self._create_crud_bind_param(c, None)
-                    ))
-                    self.prefetch.append(c)
-
-
-class CrateCompilerV1(CrateCompilerBase):
-
     def visit_update(self, update_stmt, **kw):
         """
         used to compile <sql.expression.Update> expressions
@@ -272,7 +179,7 @@ class CrateCompilerV1(CrateCompilerBase):
 
         if not update_stmt.parameters and \
                 not hasattr(update_stmt, '_crate_specific'):
-            return super(CrateCompilerV1, self).visit_update(update_stmt, **kw)
+            return super(CrateCompiler, self).visit_update(update_stmt, **kw)
 
         self.isupdate = True
 

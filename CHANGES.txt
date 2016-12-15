@@ -5,6 +5,10 @@ Changes for crate
 Unreleased
 ==========
 
+ - Fix sqlalchemy: crate dialect didn't work properly with alpha and beta
+   versions of sqlalchemy due to a wrong version check
+   (e.g.: sandman2 depends on 1.1.0b3)
+
  - sqlalchemy: added support for native Arrays
 
  - Fix sqlalchemy: ``sa.inspect(engine).get_table_names`` failed due

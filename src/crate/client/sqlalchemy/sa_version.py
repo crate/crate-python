@@ -24,5 +24,5 @@ from distutils.version import StrictVersion as V
 
 SA_VERSION = V(sa.__version__)
 
-SA_1_0 = V('1.0')
-SA_1_1 = V('1.1')
+SA_1_0 = V('1.0a0')
+SA_1_1 = V('1.1a0')

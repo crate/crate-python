@@ -5,6 +5,8 @@ Changes for crate
 Unreleased
 ==========
 
+ - BREAKING: Dropped support for SQLAlchemy < 1.0.0
+
  - Fix sqlalchemy: crate dialect didn't work properly with alpha and beta
    versions of sqlalchemy due to a wrong version check
    (e.g.: sandman2 depends on 1.1.0b3)

@@ -20,7 +20,7 @@
 # software solely pursuant to the terms of the relevant commercial agreement.
 
 from unittest import TestCase
-from mock import patch, MagicMock
+from unittest.mock import patch, MagicMock
 
 import sqlalchemy as sa
 from sqlalchemy.orm import Session

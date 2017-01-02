@@ -20,7 +20,7 @@
 # software solely pursuant to the terms of the relevant commercial agreement.
 
 
-from mock import patch, MagicMock
+from unittest.mock import patch, MagicMock
 from unittest import TestCase
 
 import sqlalchemy as sa
@@ -54,8 +54,7 @@ class SqlAlchemyArrayTypeTest(TestCase):
         self.session = Session()
 
     def assertSQL(self, expected_str, actual_expr):
-            self.assertEquals(expected_str, str(actual_expr).replace('\n', ''))
-
+        self.assertEquals(expected_str, str(actual_expr).replace('\n', ''))
 
     def test_create_with_array(self):
         t1 = sa.Table('t', self.metadata,

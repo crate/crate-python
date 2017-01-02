@@ -19,8 +19,6 @@
 # with Crate these terms will supersede the license and you may use the
 # software solely pursuant to the terms of the relevant commercial agreement.
 
-from __future__ import absolute_import
-
 import json
 import os
 import unittest
@@ -28,11 +26,10 @@ import doctest
 import re
 from pprint import pprint
 from datetime import datetime, date
-from six.moves.BaseHTTPServer import HTTPServer, BaseHTTPRequestHandler
+from http.server import HTTPServer, BaseHTTPRequestHandler
 import ssl
 import time
 import threading
-from .compat import to_bytes
 
 from zope.testing.renormalizing import RENormalizing
 
@@ -54,7 +51,12 @@ from .test_http import (
 )
 from .sqlalchemy.tests import test_suite as sqlalchemy_test_suite
 from .sqlalchemy.types import ObjectArray
-from .compat import cprint
+
+
+def cprint(s):
+    if isinstance(s, bytes):
+        s = s.decode('utf-8')
+    print(s)
 
 
 class ClientMocked(object):
@@ -102,6 +104,7 @@ def refresh(table):
     with connect(crate_host) as conn:
         cursor = conn.cursor()
         cursor.execute("refresh table %s" % table)
+
 
 def setUpWithCrateLayer(test):
     test.globs['HttpClient'] = http.Client
@@ -202,7 +205,7 @@ class HttpsTestServerLayer(object):
             self.send_header("Content-Length", len(self.payload))
             self.send_header("Content-Type", "application/json; charset=UTF-8")
             self.end_headers()
-            self.wfile.write(to_bytes(self.payload, 'UTF-8'))
+            self.wfile.write(self.payload.encode('utf-8'))
             return
 
     def __init__(self):

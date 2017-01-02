@@ -19,10 +19,9 @@
 # with Crate these terms will supersede the license and you may use the
 # software solely pursuant to the terms of the relevant commercial agreement.
 
-from __future__ import absolute_import
 from datetime import datetime, tzinfo, timedelta
 from unittest import TestCase
-from mock import patch, MagicMock
+from unittest.mock import patch, MagicMock
 
 import sqlalchemy as sa
 from sqlalchemy.exc import DBAPIError

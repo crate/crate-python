@@ -19,7 +19,6 @@
 # with Crate these terms will supersede the license and you may use the
 # software solely pursuant to the terms of the relevant commercial agreement.
 
-from __future__ import absolute_import
 from unittest import TestCase
 from crate.client.sqlalchemy.compiler import crate_before_execute
 
@@ -27,6 +26,7 @@ import sqlalchemy as sa
 from sqlalchemy.sql import update
 
 from crate.client.sqlalchemy.types import Craty
+
 
 class SqlAlchemyCompilerTest(TestCase):
 

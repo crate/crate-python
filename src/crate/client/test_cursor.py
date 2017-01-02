@@ -20,7 +20,7 @@
 # software solely pursuant to the terms of the relevant commercial agreement.
 
 from unittest import TestCase
-from mock import MagicMock
+from unittest.mock import MagicMock
 
 from crate.client import connect
 from crate.client.http import Client

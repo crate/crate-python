@@ -25,9 +25,7 @@ import re
 
 
 requirements = [
-    'setuptools',
     'urllib3>=1.9',
-    'six'
 ]
 
 
@@ -70,8 +68,7 @@ setup(
         ]
     },
     extras_require=dict(
-        test=['mock>=1.0.1',
-              'zope.testing',
+        test=['zope.testing',
               'zc.customdoctests>=1.0.1'],
         sqlalchemy=['sqlalchemy>=1.0.0']
     ),
@@ -83,14 +80,10 @@ setup(
         'License :: OSI Approved :: Apache Software License',
         'Operating System :: OS Independent',
         'Programming Language :: Python',
-        'Programming Language :: Python :: 2',
-        'Programming Language :: Python :: 2.7',
         'Programming Language :: Python :: 3',
-        'Programming Language :: Python :: 3.3',
         'Programming Language :: Python :: 3.4',
         'Programming Language :: Python :: 3.5',
         'Programming Language :: Python :: Implementation :: CPython',
-        'Programming Language :: Python :: Implementation :: PyPy',
         'Topic :: Database'
     ],
 )

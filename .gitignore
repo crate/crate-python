@@ -13,3 +13,5 @@ crate.egg-info
 *.DS_Store
 htmlcov/
 .coverage
+eggs/
+venv/

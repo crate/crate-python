@@ -19,21 +19,17 @@
 # with Crate these terms will supersede the license and you may use the
 # software solely pursuant to the terms of the relevant commercial agreement.
 
-from .compat import StandardError
 
-
-class Error(StandardError):
+class Error(Exception):
 
     def __init__(self, msg=None, error_trace=None):
-        # for py33 compat.
-        # The Exception base class doesn't set the message attribute
         if msg:
             self.message = msg
         super(Error, self).__init__(msg)
         self.error_trace = error_trace
 
 
-class Warning(StandardError):
+class Warning(Exception):
     pass
 
 
@@ -87,8 +83,10 @@ class BlobException(Exception):
 class DigestNotFoundException(BlobException):
     pass
 
+
 class BlobsDisabledException(BlobException):
     pass
+
 
 class TimezoneUnawareException(Error):
     pass

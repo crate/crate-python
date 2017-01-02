@@ -21,7 +21,7 @@
 
 from unittest import TestCase
 from datetime import datetime
-from mock import patch, MagicMock
+from unittest.mock import patch, MagicMock
 
 import sqlalchemy as sa
 from sqlalchemy.orm import Session

@@ -25,7 +25,7 @@ from sqlalchemy.ext.declarative import declarative_base
 from crate.client.sqlalchemy.types import Object
 from crate.client.cursor import Cursor
 
-from mock import patch, MagicMock
+from unittest.mock import patch, MagicMock
 from unittest import TestCase
 
 

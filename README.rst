@@ -60,6 +60,7 @@ To update use::
 
 
 Python 2.6 is only supported up to and including version ``0.14``.
+Python 2.7 is supported up to and including ``0.16``.
 
 
 Are you a Developer?

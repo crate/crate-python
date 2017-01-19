@@ -85,16 +85,18 @@ def setUpMocked(test):
     test.globs['connection_client_mocked'] = ClientMocked()
 
 
-crate_port = 44209
+crate_http_port = 44209
 crate_transport_port = 44309
+crate_psql_port = 44509
 local = '127.0.0.1'
 crate_layer = CrateLayer('crate',
                          crate_home=crate_path(),
-                         port=crate_port,
+                         http_port=crate_http_port,
                          host=local,
-                         transport_port=crate_transport_port)
+                         transport_port=crate_transport_port,
+                         psql_port=crate_psql_port)
 
-crate_host = "{host}:{port}".format(host=local, port=crate_port)
+crate_host = "{host}:{port}".format(host=local, port=crate_http_port)
 crate_uri = "http://%s" % crate_host
 
 

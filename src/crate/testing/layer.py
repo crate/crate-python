@@ -101,6 +101,7 @@ class CrateLayer(object):
                  name,
                  http_port='4200-4299',
                  transport_port='4300-4399',
+                 psql_port='5432-5532',
                  settings=None,
                  directory=None,
                  cleanup=True,
@@ -111,6 +112,7 @@ class CrateLayer(object):
         :param name: layer and cluster name
         :param http_port: The http port on which Crate will listen
         :param transport_port: the transport port on which Crate will listen
+        :param psql_port: the psql port on which Crate will listen
         :param settings: A dictionary that contains Crate settings
         :param directory: Where the tarball will be extracted to.
                           If this is None a temporary directory will be created.
@@ -131,8 +133,9 @@ class CrateLayer(object):
         layer = CrateLayer(
             name=name,
             crate_home=crate_home,
-            port=http_port,
+            http_port=http_port,
             transport_port=transport_port,
+            psql_port=psql_port,
             settings=settings,
             verbose=verbose)
         if cleanup:
@@ -148,9 +151,10 @@ class CrateLayer(object):
                  name,
                  crate_home,
                  crate_config=None,
-                 port=None,
+                 http_port=None,
                  keepRunning=False,
                  transport_port=None,
+                 psql_port=None,
                  crate_exec=None,
                  cluster_name=None,
                  host="127.0.0.1",
@@ -161,6 +165,8 @@ class CrateLayer(object):
         :param crate_home: path to home directory of the crate installation
         :param port: port on which crate should run
         :param transport_port: port on which transport layer for crate should
+                               run
+        :param psql_port: port on which psql connector for crate should
                                run
         :param crate_exec: alternative executable command
         :param crate_config: alternative crate config file location.
@@ -176,9 +182,9 @@ class CrateLayer(object):
         if settings and isinstance(settings, dict):
             # extra settings may override host/port specification!
             self.http_url = http_url_from_host_port(settings.get('network.host', host),
-                                                    settings.get('http.port', port))
+                                                    settings.get('http.port', http_port))
         else:
-            self.http_url = http_url_from_host_port(host, port)
+            self.http_url = http_url_from_host_port(host, http_port)
 
         self.process = None
         self.verbose = verbose
@@ -193,13 +199,14 @@ class CrateLayer(object):
               os.path.basename(crate_config) != 'crate.yml'):
             raise ValueError(CRATE_CONFIG_ERROR)
         if cluster_name is None:
-            cluster_name = "Testing{0}".format(port or 'Dynamic')
+            cluster_name = "Testing{0}".format(http_port or 'Dynamic')
         settings = self.create_settings(crate_config,
                                         cluster_name,
                                         name,
                                         host,
-                                        port or '4200-4299',
+                                        http_port or '4200-4299',
                                         transport_port or '4300-4399',
+                                        psql_port or '5432-5532',
                                         settings)
         start_cmd = (crate_exec, ) + tuple(["-Des.%s=%s" % opt
                                            for opt in settings.items()])
@@ -214,6 +221,7 @@ class CrateLayer(object):
                         host,
                         http_port,
                         transport_port,
+                        psql_port,
                         further_settings=None):
         settings = {
             "discovery.type": "zen",
@@ -225,7 +233,8 @@ class CrateLayer(object):
             "network.host": host,
             "http.port": http_port,
             "path.conf": os.path.dirname(crate_config),
-            "transport.tcp.port": transport_port
+            "transport.tcp.port": transport_port,
+            "psql.port": psql_port
         }
         if further_settings:
             settings.update(further_settings)

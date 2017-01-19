@@ -11,14 +11,16 @@ a given crate node name and, optionally, a given cluster name::
     >>> from crate.testing.layer import CrateLayer
     >>> import random
 
-    >>> port = 44219
+    >>> http_port = 44219
     >>> transport_port = 44319
+    >>> psql_port = 44419
 
     >>> layer =  CrateLayer('crate',
     ...                     crate_home=crate_path(),
     ...                     host='127.0.0.1',
-    ...                     port=port,
+    ...                     http_port=http_port,
     ...                     transport_port=transport_port,
+    ...                     psql_port=psql_port,
     ...                     cluster_name='my_cluster'
     ... )
 
@@ -39,12 +41,12 @@ via ``crate_servers``::
     ['http://127.0.0.1:44219']
 
 
-Now we can access the ``Crate`` instance on the defined port::
+Now we can access the ``Crate`` instance on the defined http port::
 
     >>> import urllib3
     >>> http = urllib3.PoolManager()
 
-    >>> stats_uri = "http://127.0.0.1:{0}/".format(port)
+    >>> stats_uri = "http://127.0.0.1:{0}/".format(http_port)
     >>> response = http.request('GET', stats_uri)
     >>> response.status
     200
@@ -54,16 +56,17 @@ The layer can be shutdown using its ``stop()`` method::
 
     >>> layer.stop()
 
-Dynamic HTTP Port
------------------
+Dynamic  Port
+-------------
 
-It is also possible to define a port range instead of a static HTTP port for
-the layer::
+It is also possible to define a port range instead of a static port
+(http_port, transport_port, psql_port) for the layer. http_port e.g.::
+(http_port, transport_port, psql_port) for the layer. http_port e.g.::
 
-    >>> port = '44200-44299'
+    >>> http_port = '44200-44299'
     >>> layer = CrateLayer('crate',
     ...                    crate_home=crate_path(),
-    ...                    port=port,
+    ...                    http_port=http_port,
     ... )
     >>> layer.start()
     >>> layer.crate_servers
@@ -114,7 +117,7 @@ the command line flag: ``-Des.threadpool.bulk.queue_size=100``::
     >>> custom_layer = CrateLayer(
     ...     'custom',
     ...     crate_path(),
-    ...     port=44401,
+    ...     http_port=44401,
     ...     settings = {
     ...         "cluster.graceful_stop.min_availability": "none",
     ...         "http.port": 44402

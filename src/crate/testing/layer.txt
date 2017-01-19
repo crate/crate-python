@@ -98,8 +98,6 @@ the host defaults to ``127.0.0.1``::
 The command to call is ``bin/crate`` inside the ``crate_home`` path.
 The default config file is ``config/crate.yml`` inside ``crate_home``.
 The default cluster name will be auto generated using the HTTP port.
-If the ``multicast`` argument is omitted the ``Crate`` instance
-will not use multicast to discover other nodes to join a cluster.
 
 
 Additional Settings
@@ -152,23 +150,20 @@ Starting a Cluster
 ------------------
 
 To start a cluster of ``Crate`` instances, give each instance the same
-``cluster_name``, do not use ``localhost`` or any local ip as ``host``,
-give every node different ports if they run on the same machine
-and enable ``multicast``::
+``cluster_name``. If you want to start instances on the same machine then
+ use value ``_local_`` for ``host`` and give every node different ports::
 
     >>> cluster_layer1 = CrateLayer(
     ...     'crate1',
     ...     crate_path(),
-    ...     host='_non_loopback_',
+    ...     host='_local_',
     ...     cluster_name='my_cluster',
-    ...     multicast=True
     ... )
     >>> cluster_layer2 = CrateLayer(
     ...     'crate2',
     ...     crate_path(),
-    ...     host='_non_loopback_',
+    ...     host='_local_',
     ...     cluster_name='my_cluster',
-    ...     multicast=True,
     ...     settings={"discovery.initial_state_timeout": "10s"}
     ... )
 

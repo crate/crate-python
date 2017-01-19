@@ -154,7 +154,6 @@ class CrateLayer(object):
                  crate_exec=None,
                  cluster_name=None,
                  host="127.0.0.1",
-                 multicast=False,
                  settings=None,
                  verbose=False):
         """
@@ -201,7 +200,6 @@ class CrateLayer(object):
                                         host,
                                         port or '4200-4299',
                                         transport_port or '4300-4399',
-                                        multicast,
                                         settings)
         start_cmd = (crate_exec, ) + tuple(["-Des.%s=%s" % opt
                                            for opt in settings.items()])
@@ -216,14 +214,12 @@ class CrateLayer(object):
                         host,
                         http_port,
                         transport_port,
-                        multicast,
                         further_settings=None):
         settings = {
             "discovery.type": "zen",
             "cluster.routing.allocation.disk.watermark.low": "1b",
             "cluster.routing.allocation.disk.watermark.high": "1b",
             "discovery.initial_state_timeout": 0,
-            "discovery.zen.ping.multicast.enabled": str(multicast).lower(),
             "node.name": node_name,
             "cluster.name": cluster_name,
             "network.host": host,

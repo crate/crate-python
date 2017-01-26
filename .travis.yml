@@ -5,6 +5,8 @@ python:
   - 3.3
   - 3.4
   - 3.5
+  - 3.6
+  - pypy
   - nightly
 sudo:
   false
@@ -13,11 +15,11 @@ addons:
     packages:
       - oracle-java8-set-default
 before_install:
-  - pip uninstall setuptools -y
+  - pip install --upgrade setuptools
 install:
   - python bootstrap.py
   - sed -ir "s/SQLAlchemy.*/SQLAlchemy = ${SA_VERSION}/g" versions.cfg
-  - ./bin/buildout -c base.cfg
+  - bin/buildout -c base.cfg
 env:
   - SA_VERSION=1.0.16
   - SA_VERSION=1.1.4

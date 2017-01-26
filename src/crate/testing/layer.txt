@@ -205,15 +205,15 @@ From Uri
 The CrateLayer can also be created by providing a URI that points to a Crate
 tarball::
 
-    >>> uri = 'https://cdn.crate.io/downloads/releases/crate-0.55.0.tar.gz'
+    >>> uri = 'https://cdn.crate.io/downloads/releases/crate-1.0.2.tar.gz'
     >>> tmpdir = tempfile.mkdtemp()
     >>> layer = CrateLayer.from_uri(
     ...             uri, name='crate-uri', http_port=42203, directory=tmpdir)
     >>> layer.setUp()
-    >>> os.path.exists(os.path.join(tmpdir, 'crate-0.55.0'))
+    >>> os.path.exists(os.path.join(tmpdir, 'crate-1.0.2'))
     True
 
     >>> layer.tearDown()
 
-    >>> os.path.exists(os.path.join(tmpdir, 'crate-0.55.0'))
+    >>> os.path.exists(os.path.join(tmpdir, 'crate-1.0.2'))
     False

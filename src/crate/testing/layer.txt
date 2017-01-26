@@ -107,9 +107,9 @@ The ``Crate`` layer can be started with additional settings as well.
 Add a dictionary for keyword argument ``settings`` which contains your settings.
 Those additional setting will override settings given as keyword argument.
 
-The settings will be prefixed with ``es.`` and handed over to the ``Crate``
-process with the ``-D`` flag. So the setting ``threadpool.bulk.queue_size: 100`` becomes
-the command line flag: ``-Des.threadpool.bulk.queue_size=100``::
+The settings will handed over to the ``Crate`` process with the ``-C`` flag.
+So the setting ``threadpool.bulk.queue_size: 100`` becomes
+the command line flag: ``-Cthreadpool.bulk.queue_size=100``::
 
     >>> custom_layer = CrateLayer(
     ...     'custom',
@@ -124,7 +124,7 @@ the command line flag: ``-Des.threadpool.bulk.queue_size=100``::
     >>> custom_layer.start()
     >>> custom_layer.crate_servers
     ['http://127.0.0.1:44402']
-    >>> '-Des.cluster.graceful_stop.min_availability=none' in custom_layer.start_cmd
+    >>> '-Ccluster.graceful_stop.min_availability=none' in custom_layer.start_cmd
     True
     >>> custom_layer.stop()
 

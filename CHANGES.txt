@@ -5,7 +5,9 @@ Changes for crate
 Unreleased
 ==========
 
- - Testing: Dropped  ``multicast`` support for Crate test layer
+ - BREAKING: Dropped Crate version < 1.0.0 support for Crate test layer
+
+ - Testing: Dropped ``multicast`` support for Crate test layer
 
  - Added support for ``Insert`` from select to the SQLAlchemy dialect
 

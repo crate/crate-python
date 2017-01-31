@@ -201,8 +201,9 @@ class CrateLayer(object):
                                         port or '4200-4299',
                                         transport_port or '4300-4399',
                                         settings)
-        start_cmd = (crate_exec, ) + tuple(["-C%s=%s" % opt
-                                            for opt in settings.items()])
+        # ES 5 cannot parse 'True'/'False' as booleans so convert to lowercase
+        start_cmd = (crate_exec, ) + tuple(["-C%s=%s" % ((key, str(value).lower()) if type(value) == bool else (key, value))
+                                            for key, value in settings.items()])
 
         self._wd = wd = os.path.join(CrateLayer.tmpdir, 'crate_layer', name)
         self.start_cmd = start_cmd + ('-Cpath.data=%s' % wd,)

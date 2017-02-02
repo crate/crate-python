@@ -5,16 +5,19 @@ Changes for crate
 Unreleased
 ==========
 
-2017/02/02 0.17.0
+2017/02/02 0.18.0
 =================
 
  - BREAKING: Dropped Crate version < 1.0.0 support for Crate test layer
 
- - Testing: Dropped ``multicast`` support for Crate test layer
+  - Testing: Dropped ``multicast`` support for Crate test layer
 
- - Added support for ``Insert`` from select to the SQLAlchemy dialect
+  - Added support for ``Insert`` from select to the SQLAlchemy dialect
 
- - sqlalchemy: support `get_columns` and `get_pk_constraint`
+  - sqlalchemy: support `get_columns` and `get_pk_constraint`
+
+2016/12/19 0.17.0
+=================
 
  - BREAKING: Dropped support for SQLAlchemy < 1.0.0
 

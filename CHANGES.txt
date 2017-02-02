@@ -5,6 +5,9 @@ Changes for crate
 Unreleased
 ==========
 
+2017/02/02 0.17.0
+=================
+
  - BREAKING: Dropped Crate version < 1.0.0 support for Crate test layer
 
  - Testing: Dropped ``multicast`` support for Crate test layer

@@ -5,6 +5,8 @@ Changes for crate
 Unreleased
 ==========
 
+ - Testing: Added support for setting environment variables.
+
 2017/02/02 0.18.0
 =================
 

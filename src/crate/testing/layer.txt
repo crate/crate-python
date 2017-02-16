@@ -146,6 +146,29 @@ to ``True``.
     True
     >>> layer.stop()
 
+Environment variables
+---------------------
+
+It is possible to provide  enviromental variables for the ``Crate`` testing
+layer. 
+
+    >>> layer =  CrateLayer('crate',
+    ...                     crate_home=crate_path(),
+    ...                     env={"CRATE_HEAP_SIZE": "300m"}
+    ... )
+
+    >>> layer.start()
+
+    >>> import json
+    >>> sql_uri = layer.crate_servers[0] + "/_sql"
+    >>> response = http.urlopen('POST', sql_uri,
+    ...     body='{"stmt": "select heap[\'max\'] from sys.nodes"}')
+    >>> json_response = json.loads(response.data.decode('utf-8'))
+    >>> json_response["rows"][0][0]
+    304087040
+
+    >>> layer.stop()
+
 Starting a Cluster
 ------------------
 

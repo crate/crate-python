@@ -155,7 +155,8 @@ class CrateLayer(object):
                  cluster_name=None,
                  host="127.0.0.1",
                  settings=None,
-                 verbose=False):
+                 verbose=False,
+                 env=None):
         """
         :param name: layer name, is also used as the cluser name
         :param crate_home: path to home directory of the crate installation
@@ -171,6 +172,7 @@ class CrateLayer(object):
         :param settings: further settings that do not deserve a keyword
                          argument will be prefixed with ``es.``.
         :param verbose: Set the log verbosity of the test layer
+        :param env: Set environment variables.
         """
         self.__name__ = name
         if settings and isinstance(settings, dict):
@@ -182,6 +184,8 @@ class CrateLayer(object):
 
         self.process = None
         self.verbose = verbose
+        self.env = env or {}
+        self.env.setdefault('CRATE_USE_IPV4', 'true')
 
         crate_home = os.path.abspath(crate_home)
         if crate_exec is None:
@@ -251,7 +255,7 @@ class CrateLayer(object):
     def start(self):
         self._clean()
         self.process = subprocess.Popen(self.start_cmd,
-                                        env=dict(CRATE_USE_IPV4='true'),
+                                        env=self.env,
                                         stdout=subprocess.PIPE)
         returncode = self.process.poll()
         if returncode is not None:

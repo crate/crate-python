@@ -273,8 +273,8 @@ def test_suite():
          "ConnectionError:"),
         (re.compile(r"crate.client.exceptions.DigestNotFoundException:"),
          "DigestNotFoundException:"),
-        (re.compile(r"crate.client.exceptions.BlobsDisabledException:"),
-         "BlobsDisabledException:"),
+        (re.compile(r"crate.client.exceptions.BlobLocationNotFoundException:"),
+         "BlobLocationNotFoundException:"),
         (re.compile(r"<type "),
          "<class "),
     ])

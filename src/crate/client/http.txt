@@ -153,7 +153,7 @@ Uploading a blob to a table with disabled blob support throws an exception::
     ...     'locations', '040f06fd774092478d450774f5ba30c5da78acc8', f)
     Traceback (most recent call last):
     ...
-    BlobsDisabledException: locations/040f06fd774092478d450774f5ba30c5da78acc8
+    BlobLocationNotFoundException: locations/040f06fd774092478d450774f5ba30c5da78acc8
 
 Error Handling
 ==============

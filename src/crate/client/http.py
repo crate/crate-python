@@ -41,7 +41,7 @@ from crate.client.exceptions import (
     ConnectionError,
     DigestNotFoundException,
     ProgrammingError,
-    BlobsDisabledException,
+    BlobLocationNotFoundException,
 )
 
 
@@ -328,7 +328,7 @@ class Client(object):
             # blob exists
             return False
         if response.status in (400, 404):
-            raise BlobsDisabledException(table, digest)
+            raise BlobLocationNotFoundException(table, digest)
         _raise_for_status(response)
 
     def blob_del(self, table, digest):

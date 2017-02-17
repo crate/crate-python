@@ -87,8 +87,10 @@ class BlobException(Exception):
 class DigestNotFoundException(BlobException):
     pass
 
-class BlobsDisabledException(BlobException):
+
+class BlobLocationNotFoundException(BlobException):
     pass
+
 
 class TimezoneUnawareException(Error):
     pass

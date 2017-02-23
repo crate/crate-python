@@ -30,6 +30,7 @@ import shutil
 import subprocess
 import tarfile
 import io
+import threading
 
 try:
     from urllib.request import urlopen
@@ -186,6 +187,8 @@ class CrateLayer(object):
         self.verbose = verbose
         self.env = env or {}
         self.env.setdefault('CRATE_USE_IPV4', 'true')
+        self._stdout_consumers = []
+        self._stop_out_thread = threading.Event()
 
         crate_home = os.path.abspath(crate_home)
         if crate_exec is None:
@@ -269,6 +272,12 @@ class CrateLayer(object):
             # this is necessary if no static port is assigned
             self.http_url = wait_for_http_url(self.process.stdout, verbose=self.verbose)
 
+        # start a process stdout consumer to prevent the stdout buffer from
+        # filling up, which would cause the process to block
+        self._out_thread = threading.Thread(target=self._consume, args=(self.process.stdout,))
+        self._out_thread.daemon = True
+        self._out_thread.start()
+
         if not self.http_url:
             self.stop()
         else:
@@ -277,11 +286,19 @@ class CrateLayer(object):
             self._wait_for_master()
             sys.stderr.write('\nCrate instance ready.\n')
 
+    def _consume(self, iterable):
+        for line in iterable:
+            if not self._stop_out_thread.isSet():
+                for consumer in self._stdout_consumers:
+                    consumer.send(line)
+
     def stop(self):
         if self.process:
             self.process.terminate()
-            self.process.communicate()
         self.process = None
+        if self._out_thread is not None:
+            self._stop_out_thread.set()
+            self._out_thread.join()
         self._clean()
 
     def tearDown(self):
@@ -299,7 +316,7 @@ class CrateLayer(object):
                 self.stop()
                 raise e
 
-            if wait_time > 20:
+            if wait_time > 30:
                 raise SystemError('Failed to start Crate instance in time.')
             else:
                 sys.stderr.write('.')

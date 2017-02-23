@@ -5,6 +5,9 @@ Changes for crate
 Unreleased
 ==========
 
+ - Testing: Prevent the process.stdout buffer from filling up in the test layer 
+   which in turn would cause the process to block 
+
  - Raise more meaningful `BlobLocationNotFoundException` error when
    trying to upload a file to an invalid blob table.
 

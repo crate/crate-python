@@ -5,6 +5,9 @@ Changes for crate
 Unreleased
 ==========
 
+2017/02/27 0.19.1
+=================
+
  - Testing: Prevent the process.stdout buffer from filling up in the test layer 
    which in turn would cause the process to block 
 

@@ -1,10 +1,6 @@
-.. image:: https://cdn.crate.io/web/2.0/img/crate-logo_330x72.png
-   :height: 36px
-   :width: 165px
-   :alt: Crate.IO
-   :target: https://crate.io
-
-|
+=====================
+CrateDB Python Client
+=====================
 
 .. image:: https://img.shields.io/travis/crate/crate-python.svg
    :target: https://travis-ci.org/crate/crate-python
@@ -30,75 +26,62 @@
     :target: https://coveralls.io/r/crate/crate-python?branch=master
     :alt: Coverage
 
+|
 
-========
-Overview
-========
+A Python database client library for CrateDB.
 
-This is the database adapter for the Crate database. Its main feature is a
-implementation of the Python `DB API 2.0
-<http://www.python.org/dev/peps/pep-0249/>`_ specification.
+This library:
 
-It also includes support for `SQLAlchemy <http://www.sqlalchemy.org>`_ >= 1.0.0.
+- Implements the Python `DB API 2.0`_ specification
+- Includes support for SQLAlchemy_ (>= 1.0.0)
 
-To get started take a look at the `documentation <https://crate.io/docs/reference/python/>`_.
+
+Prerequisites
+=============
+
+Recent versions of this library require Python (>= 2.7) to run.
+
+Use library version 0.14 if you're running Python 2.6.
 
 Installation
 ============
 
-Installing via pip
-------------------
+The CrateDB Python client is available as a pip_ package.
 
-To install the crate client via `pip <https://pypi.python.org/pypi/pip>`_ use
-the following command::
+To install, run::
 
     $ pip install crate
 
-To update use::
+
+To update, run::
 
     $ pip install -U crate
 
+Contributing
+============
 
-Python 2.6 is only supported up to and including version ``0.14``.
+The CrateDB Python client is primarily maintained by `Crate.io`_, but we
+welcome community contributions!
 
+See the `developer docs`_ and the `contribution docs`_ for more information.
 
-Are you a Developer?
-====================
+Help
+====
 
-You can build Crate Python Client on your own with the latest version hosted on
-GitHub.
-To do so, please refer to ``DEVELOP.rst`` for further information.
+Looking for more help?
 
-Help & Contact
-==============
+- Read `the CrateDB Python client documentation`_
+- Check `StackOverflow`_ for common problems
+- Chat with us on `Slack`_
+- Get `paid support`_
 
-Do you have any questions? Or suggestions? We would be very happy
-to help you. So, feel free to swing by our support Channel on Slack_.
-Or for further information and official contact please
-visit `https://crate.io/ <https://crate.io/>`_.
-
+.. _contribution docs: CONTRIBUTING.rst
+.. _Crate.io: http://crate.io/
+.. _DB API 2.0: http://www.python.org/dev/peps/pep-0249/>
+.. _developer docs: DEVELOP.rst
+.. _paid support: https://crate.io/pricing/
+.. _pip: https://pypi.python.org/pypi/pip
 .. _Slack: https://crate.io/docs/support/slackin/
-
-License
-=======
-
-Copyright 2013-2014 CRATE Technology GmbH ("Crate")
-
-Licensed to CRATE Technology GmbH ("Crate") under one or more contributor
-license agreements.  See the NOTICE file distributed with this work for
-additional information regarding copyright ownership.  Crate licenses
-this file to you under the Apache License, Version 2.0 (the "License");
-you may not use this file except in compliance with the License.  You may
-obtain a copy of the License at
-
-  http://www.apache.org/licenses/LICENSE-2.0
-
-Unless required by applicable law or agreed to in writing, software
-distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
-WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.  See the
-License for the specific language governing permissions and limitations
-under the License.
-
-However, if you have executed another commercial license agreement
-with Crate these terms will supersede the license and you may use the
-software solely pursuant to the terms of the relevant commercial agreement.
+.. _SQLAlchemy: http://www.sqlalchemy.org
+.. _StackOverflow: https://stackoverflow.com/tags/crate
+.. _the CrateDB Python client documentation: https://crate.io/docs/reference/python/

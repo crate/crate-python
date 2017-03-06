@@ -1,84 +1,95 @@
-========================
-Crate-Python Development
-========================
+===============
+Developer Guide
+===============
 
+Setup
+=====
 
-Development Setup
-=================
+This project uses buildout_ to set up the development environment.
 
-To get a development environment crate-python uses `buildout
-<https://pypi.python.org/pypi/zc.buildout/2.2.1>`_
+To start things off, run::
 
-Run `bootstrap.py`::
+    $ python bootstrap.py
 
-    python bootstrap.py
+Then, run::
 
-And afterwards run buildout::
-
-    ./bin/buildout -N
+    $ ./bin/buildout -N
 
 Running Tests
 =============
 
-The tests are run using the `zope.testrunner
-<https://pypi.python.org/pypi/zope.testrunner/4.4.1>`_::
+The tests are run using the zope.testrunner_::
 
-    ./bin/test
+    $ ./bin/test
 
 This will run all tests using the python interpreter that was used to
 bootstrap buildout.
 
-In addition to that it is also possible to run the test case against multiple
-python interpreter using `tox <http://testrun.org/tox/latest/>`_::
+You can run the tests against multiple Python interpreters with tox_::
 
-    ./bin/tox
+    $ ./bin/tox
 
-This required the interpreters `python2.7`, `python3.3` and `pypy` to be
-available in `$PATH`. To run against a single interpreter tox can also be
-invoked like this::
+To do this, you will need ``python2.7``, ``python3.3``, and ``pypy`` on your
+``$PATH``.
 
-    ./bin/tox -e py33
+To run against a single interpreter, you can also do::
 
-Note: Before running tests make sure to stop all crate instances which
-transport port is listening on port 9300 to avoid side effects with the test
-layer.
+    $ ./bin/tox -e py33
 
+*Note*: before running tests make sure to stop all CrateDB instances which
+listening on the default CrateDB transport port to avoid side effects with the
+test layer.
 
-Deployment to Pypi
-==================
+Preparing a Release
+===================
+
+To create a new release, you must:
+
+- Update ``__version__`` in ``src/crate/client/__init__.py``
+
+- Add a section for the new version in the ``CHANGES.txt`` file
+
+- Commit your changes with a message like "prepare release x.y.z"
+
+- Push to origin
+
+- Create a tag by running ``./devtools/create_tag.sh``
+
+PyPI Deployment
+===============
 
 To create the packages use::
 
-    bin/py setup.py sdist bdist_wheel
+    $ bin/py setup.py sdist bdist_wheel
 
-and then use `twine <https://pypi.python.org/pypi/twine>`_ to upload the
-packages::
+Then, use twine_ to upload the packages::
 
-    twine upload dist/*
+    $ bin/twine upload dist/*
 
-If twine is not installed locally the regular setup.py upload can also be used,
-but does only support plaintext authentication::
+If you want to check the PyPI description before uploading, run::
 
-    bin/py setup.py upload
-
-In order to verify that the description that is uploaded to PYPI will be
-rendered correctly the following command can be used::
-
-    bin/py setup.py check --strict --restructuredtext
+    $ bin/py setup.py check --strict --restructuredtext
 
 Writing Documentation
 =====================
 
-The documentation is maintained under the ``docs`` directory and
-written in ReStructuredText_ and processed with Sphinx_.
+The docs live under the ``docs`` directory.
 
-Normally the documentation is built by `Read the Docs`_.
-However if you work on the documentation you can run sphinx
-directly, which can be done by just running ``bin/sphinx``.
-The output can then be found in the ``out/html``  directory.
+The docs are written written with ReStructuredText_ and processed with Sphinx_.
 
-.. _Sphinx: http://sphinx-doc.org/
+Build the docs by running::
 
+    $ bin/sphinx
+
+The output can then be found in the ``out/html`` directory.
+
+The docs are automatically built from Git by `Read the Docs`_ and there is
+nothing special you need to do to get the live docs to update.
+
+.. _buildout: https://pypi.python.org/pypi/zc.buildout
+.. _Read the Docs: http://readthedocs.org
 .. _ReStructuredText: http://docutils.sourceforge.net/rst.html
-
-.. _`Read the Docs`: http://readthedocs.org
+.. _Sphinx: http://sphinx-doc.org/
+.. _tox: http://testrun.org/tox/latest/
+.. _twine: https://pypi.python.org/pypi/twine
+.. _zope.testrunner: https://pypi.python.org/pypi/zope.testrunner/4.4.1

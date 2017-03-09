@@ -60,8 +60,8 @@ To update, run::
 Contributing
 ============
 
-The CrateDB Python client is primarily maintained by `Crate.io`_, but we
-welcome community contributions!
+This project is primarily maintained by `Crate.io`_, but we welcome community
+contributions!
 
 See the `developer docs`_ and the `contribution docs`_ for more information.
 
@@ -70,7 +70,7 @@ Help
 
 Looking for more help?
 
-- Read `the CrateDB Python client documentation`_
+- Read `the project documentation`_
 - Check `StackOverflow`_ for common problems
 - Chat with us on `Slack`_
 - Get `paid support`_
@@ -84,4 +84,4 @@ Looking for more help?
 .. _Slack: https://crate.io/docs/support/slackin/
 .. _SQLAlchemy: http://www.sqlalchemy.org
 .. _StackOverflow: https://stackoverflow.com/tags/crate
-.. _the CrateDB Python client documentation: https://crate.io/docs/reference/python/
+.. _the project documentation: https://crate.io/docs/reference/python/

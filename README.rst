@@ -28,13 +28,12 @@ CrateDB Python Client
 
 |
 
-A Python database client library for CrateDB.
+A Python database client library for CrateDB_.
 
 This library:
 
 - Implements the Python `DB API 2.0`_ specification
 - Includes support for SQLAlchemy_ (>= 1.0.0)
-
 
 Prerequisites
 =============
@@ -51,7 +50,6 @@ The CrateDB Python client is available as a pip_ package.
 To install, run::
 
     $ pip install crate
-
 
 To update, run::
 
@@ -77,6 +75,7 @@ Looking for more help?
 
 .. _contribution docs: CONTRIBUTING.rst
 .. _Crate.io: http://crate.io/
+.. _CrateDB: https://github.com/crate/crate
 .. _DB API 2.0: http://www.python.org/dev/peps/pep-0249/>
 .. _developer docs: DEVELOP.rst
 .. _paid support: https://crate.io/pricing/

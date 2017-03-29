@@ -28,7 +28,7 @@ CrateDB Python Client
 
 |
 
-A Python database client library for CrateDB_.
+A Python client library for CrateDB_.
 
 This library:
 

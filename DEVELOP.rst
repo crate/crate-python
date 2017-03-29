@@ -22,7 +22,7 @@ The tests are run using the zope.testrunner_::
 
     $ ./bin/test
 
-This will run all tests using the python interpreter that was used to
+This will run all tests using the Python interpreter that was used to
 bootstrap buildout.
 
 You can run the tests against multiple Python interpreters with tox_::
@@ -58,13 +58,28 @@ To create a new release, you must:
 PyPI Deployment
 ===============
 
-To create the packages use::
+To create the package use::
 
     $ bin/py setup.py sdist bdist_wheel
 
-Then, use twine_ to upload the packages::
+Then, use twine_ to upload the package to PyPI_::
 
     $ bin/twine upload dist/*
+
+For this to work, you will need a personal PyPI account that is set up as a project admin.
+
+You'll also need to create a ``~/.pypirc`` file, like so::
+
+    [distutils]
+    index-servers =
+      pypi
+
+    [pypi]
+    repository=https://pypi.python.org/pypi
+    username=<USERNAME>
+    password=<PASSWORD>
+
+Here, ``<USERNAME>`` and ``<PASSWORD>`` should be replaced with your username and password, respectively.
 
 If you want to check the PyPI description before uploading, run::
 
@@ -87,6 +102,7 @@ The docs are automatically built from Git by `Read the Docs`_ and there is
 nothing special you need to do to get the live docs to update.
 
 .. _buildout: https://pypi.python.org/pypi/zc.buildout
+.. _PyPI: https://pypi.python.org/pypi
 .. _Read the Docs: http://readthedocs.org
 .. _ReStructuredText: http://docutils.sourceforge.net/rst.html
 .. _Sphinx: http://sphinx-doc.org/

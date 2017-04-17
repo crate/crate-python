@@ -22,7 +22,7 @@
 import sqlalchemy as sa
 from sqlalchemy.ext.declarative import declarative_base
 
-from crate.client.sqlalchemy.types import Object
+from crate.client.sqlalchemy.types import IgnoredObject, Object, StrictObject
 from crate.client.cursor import Cursor
 
 from mock import patch, MagicMock
@@ -75,6 +75,32 @@ class CreateTableTest(TestCase):
             ('\nCREATE TABLE dummy (\n\tpk STRING, \n\tobj_col OBJECT, '
              '\n\tPRIMARY KEY (pk)\n)\n\n'),
             ())
+
+    def test_with_strict_obj_column(self):
+        class DummyTable(self.Base):
+            __tablename__ = 'dummy'
+            pk = sa.Column(sa.String, primary_key=True)
+            obj_col = sa.Column(StrictObject)
+        self.Base.metadata.create_all()
+        fake_cursor.execute.assert_called_with(
+            ('\nCREATE TABLE dummy (\n\tpk STRING, \n\t'
+             'obj_col OBJECT(strict), \n\t'
+             'PRIMARY KEY (pk)\n)\n\n'),
+            ()
+        )
+
+    def test_with_ignored_obj_column(self):
+        class DummyTable(self.Base):
+            __tablename__ = 'dummy'
+            pk = sa.Column(sa.String, primary_key=True)
+            obj_col = sa.Column(IgnoredObject)
+        self.Base.metadata.create_all()
+        fake_cursor.execute.assert_called_with(
+            ('\nCREATE TABLE dummy (\n\tpk STRING, \n\t'
+             'obj_col OBJECT(ignored), \n\t'
+             'PRIMARY KEY (pk)\n)\n\n'),
+            ()
+        )
 
     def test_with_clustered_by(self):
         class DummyTable(self.Base):

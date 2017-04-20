@@ -73,7 +73,7 @@ def _download_and_extract(uri, directory):
         with tarfile.open(fileobj=tmpfile) as t:
             t.extractall(directory)
 
-def wait_for_http_url(log, timeout=20, verbose=False):
+def wait_for_http_url(log, timeout=30, verbose=False):
     start = time.time()
     while True:
         line = log.readline().decode('utf-8').strip()

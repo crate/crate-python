@@ -5,7 +5,8 @@ Changes for crate
 Unreleased
 ==========
 
- - Increased startup time to wait for the instance until ready.
+ - Increased startup time to wait for the instance until ready at the
+   test-layer.
 
 2017/02/27 0.19.1
 =================

@@ -101,12 +101,14 @@ class OutputMonitor:
                 consumer.send(line)
 
     def start(self, proc):
+        self._stop_out_thread = threading.Event()
         self._out_thread = threading.Thread(target=self.consume, args=(proc.stdout,))
         self._out_thread.daemon = True
         self._out_thread.start()
 
     def stop(self):
         if self._out_thread is not None:
+            self._stop_out_thread.set()
             self._out_thread.join()
 
 
@@ -222,7 +224,6 @@ class CrateLayer(object):
         self.env = env or {}
         self.env.setdefault('CRATE_USE_IPV4', 'true')
         self._stdout_consumers = []
-        self._stop_out_thread = threading.Event()
 
         crate_home = os.path.abspath(crate_home)
         if crate_exec is None:
@@ -323,7 +324,6 @@ class CrateLayer(object):
             self.process.terminate()
         self.process = None
         self.monitor.stop()
-        self._stop_out_thread.set()
         self._clean()
 
     def tearDown(self):

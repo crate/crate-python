@@ -5,6 +5,8 @@ Changes for crate
 Unreleased
 ==========
 
+ - Output logs in case when CrateDB instance does not start in time.
+
  - Increased the default timeout for the test-layer startup to avoid timeouts 
    on slow hosts.
 

@@ -31,12 +31,15 @@ import subprocess
 import tarfile
 import io
 import threading
+import logging
 
 try:
     from urllib.request import urlopen
 except ImportError:
     from urllib import urlopen
-from urllib3.exceptions import MaxRetryError
+
+
+log = logging.getLogger(__file__)
 
 
 CRATE_CONFIG_ERROR = 'crate_config must point to a folder or to a file named "crate.yml"'
@@ -85,6 +88,38 @@ def wait_for_http_url(log, timeout=30, verbose=False):
             return prepend_http(m.group('addr'))
         elif elapsed > timeout:
             return None
+
+
+class OutputMonitor:
+
+    def __init__(self):
+        self.consumers = []
+
+    def consume(self, iterable):
+        for line in iterable:
+            for consumer in self.consumers:
+                consumer.send(line)
+
+    def start(self, proc):
+        self._stop_out_thread = threading.Event()
+        self._out_thread = threading.Thread(target=self.consume, args=(proc.stdout,))
+        self._out_thread.daemon = True
+        self._out_thread.start()
+
+    def stop(self):
+        if self._out_thread is not None:
+            self._stop_out_thread.set()
+            self._out_thread.join()
+
+
+class LineBuffer:
+
+    def __init__(self):
+        self.lines = []
+
+    def send(self, line):
+        self.lines.append(line.strip())
+
 
 class CrateLayer(object):
     """
@@ -145,6 +180,7 @@ class CrateLayer(object):
             layer.tearDown = new_teardown
         return layer
 
+
     def __init__(self,
                  name,
                  crate_home,
@@ -188,7 +224,6 @@ class CrateLayer(object):
         self.env = env or {}
         self.env.setdefault('CRATE_USE_IPV4', 'true')
         self._stdout_consumers = []
-        self._stop_out_thread = threading.Event()
 
         crate_home = os.path.abspath(crate_home)
         if crate_exec is None:
@@ -272,11 +307,8 @@ class CrateLayer(object):
             # this is necessary if no static port is assigned
             self.http_url = wait_for_http_url(self.process.stdout, verbose=self.verbose)
 
-        # start a process stdout consumer to prevent the stdout buffer from
-        # filling up, which would cause the process to block
-        self._out_thread = threading.Thread(target=self._consume, args=(self.process.stdout,))
-        self._out_thread.daemon = True
-        self._out_thread.start()
+        self.monitor = OutputMonitor()
+        self.monitor.start(self.process)
 
         if not self.http_url:
             self.stop()
@@ -286,19 +318,12 @@ class CrateLayer(object):
             self._wait_for_master()
             sys.stderr.write('\nCrate instance ready.\n')
 
-    def _consume(self, iterable):
-        for line in iterable:
-            if not self._stop_out_thread.isSet():
-                for consumer in self._stdout_consumers:
-                    consumer.send(line)
 
     def stop(self):
         if self.process:
             self.process.terminate()
         self.process = None
-        if self._out_thread is not None:
-            self._stop_out_thread.set()
-            self._out_thread.join()
+        self.monitor.stop()
         self._clean()
 
     def tearDown(self):
@@ -306,6 +331,9 @@ class CrateLayer(object):
 
     def _wait_for(self, validator):
         start = time.time()
+
+        line_buf = LineBuffer()
+        self.monitor.consumers.append(line_buf)
 
         while True:
             wait_time = time.time() - start
@@ -317,10 +345,15 @@ class CrateLayer(object):
                 raise e
 
             if wait_time > 30:
+                for line in line_buf.lines:
+                    log.error(line)
                 raise SystemError('Failed to start Crate instance in time.')
             else:
                 sys.stderr.write('.')
                 time.sleep(self.wait_interval)
+
+        self.monitor.consumers.remove(line_buf)
+        line_buf = None
 
     def _wait_for_start(self):
         """Wait for instance to be started"""

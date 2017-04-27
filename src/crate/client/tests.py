@@ -32,6 +32,7 @@ from six.moves.BaseHTTPServer import HTTPServer, BaseHTTPRequestHandler
 import ssl
 import time
 import threading
+import logging
 from .compat import to_bytes
 
 from zope.testing.renormalizing import RENormalizing
@@ -55,6 +56,12 @@ from .test_http import (
 from .sqlalchemy.tests import test_suite as sqlalchemy_test_suite
 from .sqlalchemy.types import ObjectArray
 from .compat import cprint
+
+
+log = logging.getLogger('crate.testing.layer')
+ch = logging.StreamHandler()
+ch.setLevel(logging.ERROR)
+log.addHandler(ch)
 
 
 class ClientMocked(object):

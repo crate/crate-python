@@ -39,7 +39,7 @@ except ImportError:
     from urllib import urlopen
 
 
-log = logging.getLogger(__file__)
+log = logging.getLogger(__name__)
 
 
 CRATE_CONFIG_ERROR = 'crate_config must point to a folder or to a file named "crate.yml"'

@@ -5,6 +5,9 @@ Changes for crate
 Unreleased
 ==========
 
+2017/04/28 0.19.2
+=================
+
  - Output logs in test-layer in case when CrateDB instance does not start in
    time.
 

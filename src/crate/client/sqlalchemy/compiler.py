@@ -317,7 +317,7 @@ class CrateCompiler(compiler.SQLCompiler):
             set_clauses.append(clause)
 
         for k, v in update_stmt.parameters.items():
-            if type(k) is str and '[' in k:
+            if isinstance(k, str) and '[' in k:
                 bindparam = sa.sql.bindparam(k, v)
                 set_clauses.append(k + ' = ' + self.process(bindparam))
 

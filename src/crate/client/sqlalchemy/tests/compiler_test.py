@@ -21,6 +21,7 @@
 
 from __future__ import absolute_import
 from unittest import TestCase
+
 from crate.client.sqlalchemy.compiler import crate_before_execute
 
 import sqlalchemy as sa
@@ -55,3 +56,16 @@ class SqlAlchemyCompilerTest(TestCase):
         )
 
         assert hasattr(clauseelement, '_crate_specific') is True
+
+    def test_bulk_update_on_builtin_type(self):
+        """
+        The "before_execute" hook in the compiler doesn't get
+        access to the parameters in case of a bulk update. It
+        should not try to optimize any parameters.
+        """
+        data = ({},)
+        clauseelement, multiparams, params = crate_before_execute(
+            self.crate_engine, self.update, data, None
+        )
+
+        assert hasattr(clauseelement, '_crate_specific') is False

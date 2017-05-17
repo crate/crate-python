@@ -21,6 +21,8 @@
 
 from unittest import TestCase
 from datetime import datetime
+
+from crate.client.sqlalchemy.types import Object
 from mock import patch, MagicMock
 
 import sqlalchemy as sa
@@ -40,13 +42,14 @@ class SqlAlchemyUpdateTest(TestCase):
 
     def setUp(self):
         self.engine = sa.create_engine('crate://')
-        Base = declarative_base(bind=self.engine)
+        self.base = declarative_base(bind=self.engine)
 
-        class Character(Base):
+        class Character(self.base):
             __tablename__ = 'characters'
 
             name = sa.Column(sa.String, primary_key=True)
             age = sa.Column(sa.Integer)
+            obj = sa.Column(Object)
             ts = sa.Column(sa.DateTime, onupdate=datetime.utcnow)
 
         self.character = Character
@@ -79,3 +82,31 @@ class SqlAlchemyUpdateTest(TestCase):
         self.assertTrue(isinstance(dt, datetime))
         self.assertTrue(dt > now)
         self.assertEqual('Arthur', args[2])
+
+    @patch('crate.client.connection.Cursor', FakeCursor)
+    def test_bulk_update(self):
+        """
+            Checks whether bulk updates work correctly
+            on native types and Crate types.
+        """
+        before_update_time = datetime.utcnow()
+
+        self.session.query(self.character).update({
+            # change everyone's name to Julia
+            self.character.name: 'Julia',
+            self.character.obj: {'favorite_book' : 'Romeo & Juliet'}
+        })
+
+        self.session.commit()
+
+        expected_stmt = ("UPDATE characters SET "
+                         "name = ?, obj = ?, ts = ?")
+        args, kwargs = fake_cursor.execute.call_args
+        stmt = args[0]
+        args = args[1]
+        self.assertEqual(expected_stmt, stmt)
+        self.assertEqual('Julia', args[0])
+        self.assertEqual({'favorite_book': 'Romeo & Juliet'}, args[1])
+        dt = datetime.strptime(args[2], '%Y-%m-%dT%H:%M:%S.%fZ')
+        self.assertTrue(isinstance(dt, datetime))
+        self.assertTrue(dt > before_update_time)

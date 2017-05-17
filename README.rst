@@ -76,7 +76,7 @@ Looking for more help?
 .. _contribution docs: CONTRIBUTING.rst
 .. _Crate.io: http://crate.io/
 .. _CrateDB: https://github.com/crate/crate
-.. _DB API 2.0: http://www.python.org/dev/peps/pep-0249/>
+.. _DB API 2.0: http://www.python.org/dev/peps/pep-0249/
 .. _developer docs: DEVELOP.rst
 .. _paid support: https://crate.io/pricing/
 .. _pip: https://pypi.python.org/pypi/pip

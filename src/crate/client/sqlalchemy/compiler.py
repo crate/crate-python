@@ -44,9 +44,10 @@ def rewrite_update(clauseelement, multiparams, params):
     The update statement is only rewritten if an item of the MutableDict was
     changed.
     """
-
     newmultiparams = []
     _multiparams = multiparams[0]
+    if len(_multiparams) == 0:
+        return clauseelement, multiparams, params
     for _params in _multiparams:
         newparams = {}
         for key, val in _params.items():
@@ -316,7 +317,7 @@ class CrateCompiler(compiler.SQLCompiler):
             set_clauses.append(clause)
 
         for k, v in update_stmt.parameters.items():
-            if '[' in k:
+            if type(k) is str and '[' in k:
                 bindparam = sa.sql.bindparam(k, v)
                 set_clauses.append(k + ' = ' + self.process(bindparam))
 

@@ -57,7 +57,6 @@ class SqlAlchemyCompilerTest(TestCase):
 
         assert hasattr(clauseelement, '_crate_specific') is True
 
-
     def test_bulk_update_on_builtin_type(self):
         """
         The "before_execute" hook in the compiler doesn't get

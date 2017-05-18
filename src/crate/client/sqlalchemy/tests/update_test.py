@@ -94,19 +94,19 @@ class SqlAlchemyUpdateTest(TestCase):
         self.session.query(self.character).update({
             # change everyone's name to Julia
             self.character.name: 'Julia',
-            self.character.obj['favorite_books']: 'Romeo & Juliet'
+            self.character.obj: {'favorite_book' : 'Romeo & Juliet'}
         })
 
         self.session.commit()
 
-        expected_stmt = ("UPDATE characters SET obj['favorite_books'] = ?, "
-                         "name = ?, ts = ?")
+        expected_stmt = ("UPDATE characters SET "
+                         "name = ?, obj = ?, ts = ?")
         args, kwargs = fake_cursor.execute.call_args
         stmt = args[0]
         args = args[1]
         self.assertEqual(expected_stmt, stmt)
-        self.assertEqual('Romeo & Juliet', args[0])
-        self.assertEqual('Julia', args[1])
+        self.assertEqual('Julia', args[0])
+        self.assertEqual({'favorite_book': 'Romeo & Juliet'}, args[1])
         dt = datetime.strptime(args[2], '%Y-%m-%dT%H:%M:%S.%fZ')
         self.assertTrue(isinstance(dt, datetime))
         self.assertTrue(dt > before_update_time)

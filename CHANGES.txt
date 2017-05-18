@@ -5,7 +5,7 @@ Changes for crate
 Unreleased
 ==========
 
-2017/05/17 0.19.3
+2017/05/18 0.19.3
 =================
 
  - Fix bulk updates which were broken due to query rewrites.

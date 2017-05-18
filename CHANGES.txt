@@ -8,7 +8,7 @@ Unreleased
  - Testing: Fixed issue that caused the test layer to hang after it failed to
    start a CrateDB instance in time.
 
-2017/05/17 0.19.3
+2017/05/18 0.19.3
 =================
 
  - Fix bulk updates which were broken due to query rewrites.

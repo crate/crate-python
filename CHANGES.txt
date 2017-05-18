@@ -9,7 +9,6 @@ Unreleased
 =================
 
  - Fix bulk updates which were broken due to query rewrites.
- - Fix typo to DB API in README
 
 
 2017/04/28 0.19.2

@@ -5,6 +5,9 @@ Changes for crate
 Unreleased
 ==========
 
+  - Testing: Fixed issue that caused the test layer to hang after it failed to
+   start a CrateDB instance in time.
+
 2017/05/18 0.19.3
 =================
 

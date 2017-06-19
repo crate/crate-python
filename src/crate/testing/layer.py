@@ -347,6 +347,7 @@ class CrateLayer(object):
             if wait_time > 30:
                 for line in line_buf.lines:
                     log.error(line)
+                self.stop()
                 raise SystemError('Failed to start Crate instance in time.')
             else:
                 sys.stderr.write('.')

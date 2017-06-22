@@ -25,6 +25,7 @@ import json
 import logging
 import os
 import io
+import ssl
 import sys
 import six
 import urllib3
@@ -200,13 +201,13 @@ def _to_server_list(servers):
     return [_server_url(s) for s in servers]
 
 
-def _pool_kw_args(ca_cert, verify_ssl_cert):
+def _pool_kw_args(verify_ssl_cert, ca_cert, client_cert, client_key):
     ca_cert = ca_cert or os.environ.get('REQUESTS_CA_BUNDLE', None)
-    if not ca_cert:
-        return {}
     return {
         'ca_certs': ca_cert,
-        'cert_reqs': 'REQUIRED' if verify_ssl_cert else 'NONE'
+        'cert_reqs': ssl.CERT_REQUIRED if verify_ssl_cert else ssl.CERT_NONE,
+        'cert_file' : client_cert,
+        'key_file' : client_key,
     }
 
 
@@ -254,8 +255,8 @@ class Client(object):
     def __init__(self,
                  servers=None,
                  timeout=None,
-                 ca_cert=None,
                  verify_ssl_cert=False,
+                 ca_cert=None,
                  error_trace=False,
                  cert_file=None,
                  key_file=None):
@@ -266,9 +267,7 @@ class Client(object):
         self._active_servers = servers
         self._inactive_servers = []
         self._http_timeout = timeout
-        pool_kw = _pool_kw_args(ca_cert, verify_ssl_cert)
-        pool_kw['cert_file'] = cert_file
-        pool_kw['key_file'] = key_file
+        pool_kw = _pool_kw_args(verify_ssl_cert, ca_cert, cert_file, key_file)
         self.server_pool = {}
         self._update_server_pool(servers, timeout=timeout, **pool_kw)
         self._pool_kw = pool_kw

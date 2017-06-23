@@ -5,7 +5,10 @@ Changes for crate
 Unreleased
 ==========
 
-- Enforce cert check when verify_ssl_cert=True
+2017/06/23 0.19.5
+=================
+
+ - Enforce cert check when verify_ssl_cert=True
 
 2017/06/20 0.19.4
 =================

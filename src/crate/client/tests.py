@@ -51,7 +51,8 @@ from .test_http import (
     KeepAliveClientTest,
     ParamsTest,
     RetryOnTimeoutServerTest,
-    RequestsCaBundleTest
+    RequestsCaBundleTest,
+    TestUsernameSentAsHeader
 )
 from .sqlalchemy.tests import test_suite as sqlalchemy_test_suite
 from .sqlalchemy.types import ObjectArray
@@ -303,6 +304,7 @@ def test_suite():
     suite.addTest(unittest.makeSuite(ConnectionTest))
     suite.addTest(unittest.makeSuite(RetryOnTimeoutServerTest))
     suite.addTest(unittest.makeSuite(RequestsCaBundleTest))
+    suite.addTest(unittest.makeSuite(TestUsernameSentAsHeader))
     suite.addTest(sqlalchemy_test_suite())
     suite.addTest(doctest.DocTestSuite('crate.client.connection'))
     suite.addTest(doctest.DocTestSuite('crate.client.http'))

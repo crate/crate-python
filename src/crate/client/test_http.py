@@ -440,6 +440,7 @@ class RetryRequestHandler(BaseHTTPServer.BaseHTTPRequestHandler):
 
     def do_POST(self):
         self.server.SHARED['count'] += 1
+        self.server.SHARED['username'] = self.headers['X-User']
 
 
 class TestingHTTPServer(BaseHTTPServer.HTTPServer):
@@ -449,6 +450,7 @@ class TestingHTTPServer(BaseHTTPServer.HTTPServer):
     manager = multiprocessing.Manager()
     SHARED = manager.dict()
     SHARED['count'] = 0
+    SHARED['username'] = None
 
     @classmethod
     def run_server(cls, server_address):
@@ -478,3 +480,36 @@ class RetryOnTimeoutServerTest(TestCase):
         except ConnectionError:
             pass
         self.assertEqual(TestingHTTPServer.SHARED['count'], 1)
+
+
+class TestUsernameSentAsHeader(TestCase):
+
+    server_address = ("127.0.0.1", 62535)
+
+    def __init__(self, *args, **kwargs):
+        super(TestUsernameSentAsHeader, self).__init__(*args, **kwargs)
+        self.server_process = Process(target=TestingHTTPServer.run_server, args=(self.server_address,))
+
+    def setUp(self):
+        self.clientWithoutUsername = Client(["%s:%d" % self.server_address], timeout=5)
+        self.clientWithUsername = Client(["%s:%d" % self.server_address], timeout=5, username='testDBUser')
+        self.server_process.start()
+        time.sleep(.10)
+
+    def tearDown(self):
+        self.server_process.terminate()
+        self.clientWithoutUsername.close()
+        self.clientWithUsername.close()
+
+    def test_username(self):
+        try:
+            self.clientWithoutUsername.sql("select * from fake")
+        except ConnectionError:
+            pass
+        self.assertEqual(TestingHTTPServer.SHARED['username'], None)
+
+        try:
+            self.clientWithUsername.sql("select * from fake")
+        except ConnectionError:
+            pass
+        self.assertEqual(TestingHTTPServer.SHARED['username'], 'testDBUser')

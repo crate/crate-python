@@ -5,10 +5,12 @@ Changes for crate
 Unreleased
 ==========
 
+ - Added new parameter ``username`` used to authenticate the user in CrateDB.
+
 2017/06/23 0.19.5
 =================
 
- - Enforce cert check when verify_ssl_cert=True
+ - Enforced cert check when verify_ssl_cert=True
 
 2017/06/20 0.19.4
 =================
@@ -28,14 +30,14 @@ Unreleased
  - Output logs in test-layer in case when CrateDB instance does not start in
    time.
 
- - Increased the default timeout for the test-layer startup to avoid timeouts 
+ - Increased the default timeout for the test-layer startup to avoid timeouts
    on slow hosts.
 
 2017/02/27 0.19.1
 =================
 
- - Testing: Prevent the process.stdout buffer from filling up in the test layer 
-   which in turn would cause the process to block 
+ - Testing: Prevent the process.stdout buffer from filling up in the test layer
+   which in turn would cause the process to block
 
  - Raise more meaningful `BlobLocationNotFoundException` error when
    trying to upload a file to an invalid blob table.

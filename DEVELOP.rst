@@ -45,15 +45,27 @@ Preparing a Release
 
 To create a new release, you must:
 
+- Backport your bug fixes to the latest stable branch x.y (e.g. 0.19)
+
+- For new features, create a new stable branch x.(y+1) (e.g. 0.20)
+
+In the release branch:
+
 - Update ``__version__`` in ``src/crate/client/__init__.py``
 
 - Add a section for the new version in the ``CHANGES.txt`` file
 
 - Commit your changes with a message like "prepare release x.y.z"
 
-- Push to origin
+- Push to origin/<release_branch>
 
 - Create a tag by running ``./devtools/create_tag.sh``
+
+On master:
+
+- Update the release notes to reflect the release
+
+Next:
 
 - Deploy to PyPI (see section below)
 

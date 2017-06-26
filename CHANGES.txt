@@ -5,6 +5,9 @@ Changes for crate
 Unreleased
 ==========
 
+2017/06/26 0.20.0
+=================
+
  - Added new parameter ``username`` used to authenticate the user in CrateDB.
 
 2017/06/23 0.19.5

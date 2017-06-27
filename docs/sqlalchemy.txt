@@ -80,6 +80,35 @@ Please refer to the `SQLAlchemy documentation
 <http://docs.sqlalchemy.org/en/rel_0_8/orm/tutorial.html#adding-new-objects>`_
 for more information about the session management and the concept of `flush`.
 
+Type Mapping
+============
+
+CrateDB and SQLAlchemy use different types.
+
+The CrateDB Python library maps between these types like so:
+
+=======================  =============
+SQLAlchemy               CrateDB
+=======================  =============
+Boolean                  boolean
+SmallInteger             short
+TIMESTAMP                timestamp
+Integer                  integer
+NUMERIC                  long
+DECIMAL                  double
+Float                    float
+String                   string
+Unicode                  string
+DateTime                 timestamp
+Date                     timestamp
+Object (extension)       object
+ObjectArray (extension)  array(object)   
+=======================  =============
+
+|
+
+``Object`` and ``ObjectArray`` are documented below.
+ 
 Complex Types
 =============
 

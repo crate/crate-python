@@ -74,6 +74,7 @@ setup(
               'zc.customdoctests>=1.0.1'],
         sqlalchemy=['sqlalchemy>=1.0.0']
     ),
+    python_requires='>=2.7',
     install_requires=requirements,
     package_data={'': ['*.txt']},
     classifiers=[

@@ -55,8 +55,12 @@ To create a new release, you must:
 
 - Create a tag by running ``./devtools/create_tag.sh``
 
+- Deploy to PyPI (see section below)
+
+- Archive docs for old releases (see section below)
+
 PyPI Deployment
-===============
+---------------
 
 To create the package use::
 
@@ -85,6 +89,20 @@ If you want to check the PyPI description before uploading, run::
 
     $ bin/py setup.py check --strict --restructuredtext
 
+Archiving Docs Versions
+-----------------------
+
+Check the `versions hosted on ReadTheDocs`_.
+
+We should only be hosting the docs for `latest`, `stable`, and the most recent
+patch versions for the last two minor releases.
+
+Sometimes you might find that there are multiple older releases that need to be
+archived.
+
+You can archive releases by selecting *Edit*, unselecting the *Active*
+checkbox, and then saving.
+
 Writing Documentation
 =====================
 
@@ -109,3 +127,4 @@ nothing special you need to do to get the live docs to update.
 .. _tox: http://testrun.org/tox/latest/
 .. _twine: https://pypi.python.org/pypi/twine
 .. _zope.testrunner: https://pypi.python.org/pypi/zope.testrunner/4.4.1
+.. _versions hosted on ReadTheDocs: https://readthedocs.org/projects/crate-python/versions/

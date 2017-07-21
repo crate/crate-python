@@ -6,7 +6,7 @@ Client Mocking
 --------------
 
 For testing purposes it is often useful to replace the client used for
-communication with the crate server with a stub or mock.
+communication with the CrateDB server with a stub or mock.
 
 This can be done by passing a object of the Client class when calling the
 `connect` method::

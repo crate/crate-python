@@ -4,7 +4,7 @@
 HTTPS Connection support
 ========================
 
-The Crate Client is able to connect via https.
+The CrateDB Client is able to connect via https.
 
 .. note::
 

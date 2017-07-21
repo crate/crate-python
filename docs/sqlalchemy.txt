@@ -14,7 +14,7 @@ Connection String
 In SQLAlchemy a connection is established using the `create_engine` function.
 This function takes a connection string that varies from database to database.
 
-In order to connect to a crate cluster the following connection strings are
+In order to connect to a CrateDB cluster the following connection strings are
 valid::
 
     >>> sa.create_engine('crate://')
@@ -26,9 +26,10 @@ connect to a different server the following syntax can be used::
     >>> sa.create_engine('crate://otherserver:4200')
     Engine(crate://otherserver:4200)
 
-Since Crate is a clustered database that usually consists of multiple server it
-is recommended to connect to all of them. This enables the DB-API layer to use
-round-robin to distribute the load and skip a server if it becomes unavailable.
+Since CrateDB is a clustered database that usually consists of multiple server
+it is recommended to connect to all of them. This enables the DB-API layer to
+use round-robin to distribute the load and skip a server if it becomes
+unavailable.
 
 The `connect_args` parameter has to be used to do so::
 
@@ -53,8 +54,8 @@ SSL verification options can be given via `connect_args` too::
 Supported Operations and Limitations
 ====================================
 
-Currently Crate only implements a subset of the `SQL` standard. Therefore many
-operations that SQLAlchemy provides are currently not supported.
+Currently CrateDB only implements a subset of the `SQL` standard. Therefore
+many operations that SQLAlchemy provides are currently not supported.
 
 An overview of supported operations::
 
@@ -64,7 +65,7 @@ An overview of supported operations::
  - Insert From Select statements.
  - Updating rows.
 
-Unlike other databases that are usually used with SQLAlchemy, Crate isn't a
+Unlike other databases that are usually used with SQLAlchemy, CrateDB isn't a
 RDBMS but instead is document oriented with `eventual consistency
 <http://en.wikipedia.org/wiki/Eventual_consistency>`_.
 
@@ -74,7 +75,7 @@ modeled without relationships.
 In SQLAlchemy a `Session` object is used to query the database. This `Session`
 object contains a `rollback` method that in `Crate` won't do anything at all.
 Similar the `commit` method will only `flush` but not actually commit, as there
-is no commit in crate.
+is no commit in CrateDB.
 
 Please refer to the `SQLAlchemy documentation
 <http://docs.sqlalchemy.org/en/rel_0_8/orm/tutorial.html#adding-new-objects>`_
@@ -102,13 +103,13 @@ Unicode                  string
 DateTime                 timestamp
 Date                     timestamp
 Object (extension)       object
-ObjectArray (extension)  array(object)   
+ObjectArray (extension)  array(object)
 =======================  =============
 
 |
 
 ``Object`` and ``ObjectArray`` are documented below.
- 
+
 Complex Types
 =============
 
@@ -191,7 +192,7 @@ possible::
 Updating Complex Types
 ----------------------
 
-The SQLAlchemy Crate dialect supports change tracking deep down the nested
+The SQLAlchemy CrateDB dialect supports change tracking deep down the nested
 levels of a `Object` type field. For example the following query will only
 update the `gender` key. The `species` key which is on the same level will be
 left untouched.
@@ -212,7 +213,7 @@ left untouched.
 Object Array
 ------------
 
-In addition to the `Object` type the Crate sqlalchemy dialect also includes a
+In addition to the `Object` type the CrateDB sqlalchemy dialect also includes a
 type called `ObjectArray`. This type maps to a Python list of dictionaries.
 
 Note that opposed to the `Object` type the `ObjectArray` type isn't smart and
@@ -246,7 +247,7 @@ in order for the result to be returned::
 
 .. versionchanged:: 0.9.6
 
-   When connecting to crate with version <= 0.36.X, instead of using the
+   When connecting to CrateDB with version <= 0.36.X, instead of using the
    ``any(...)`` method you can use simple comparisons (e.g. ``==``) to query
    in object array fields.
 
@@ -266,8 +267,8 @@ aggregate function. Take a look at the `Counting section in the tutorial
 <http://docs.sqlalchemy.org/en/rel_0_8/orm/tutorial.html#counting>`_ for a full
 overview.
 
-Crate currently doesn't support all variants as it can't handle the sub-queries
-yet.
+CrateDB currently doesn't support all variants as it can't handle the
+sub-queries yet.
 
 This means that queries with count have to be written in one of the following
 ways::
@@ -294,7 +295,7 @@ Using the `group_by` clause is similar::
 Fulltext Search with MATCH Predicate
 ------------------------------------
 
-Fulltext Search in Crate is performed using the MATCH Predicate. The Crate
+Fulltext Search in CrateDB is performed using the MATCH Predicate. The CrateDB
 SQLAlchemy driver comes with a `match` function in the `predicates` namespace,
 which can be used to search on one or multiple fields.
 
@@ -434,8 +435,8 @@ Insert From Select
 ==================
 
 In SQLAlchemy, the ``insert().from_select()`` function returns a new ``Insert``
-construct which represents an ``INSERT...FROM SELECT`` statement. 
-This functionality is now supported by the `crate` client library.  
+construct which represents an ``INSERT...FROM SELECT`` statement.
+This functionality is now supported by the `crate` client library.
 Here is an example that uses ``insert().from_select()``:
 
 First let's define and create the tables::
@@ -481,5 +482,5 @@ This will result in the following query::
     "INSERT INTO archived_tasks (id, content) "
     ... "(SELECT todos.id, todos.content FROM todos WHERE todos.status = 'done')"
 
-    >>> pprint([str(r) for r in session.execute("Select content from archived_tasks")]) 
+    >>> pprint([str(r) for r in session.execute("Select content from archived_tasks")])
     ["(u'Write Tests',)"]

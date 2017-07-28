@@ -400,7 +400,7 @@ class ParamsTest(TestCase):
         from six.moves.urllib.parse import urlparse, parse_qs
         parsed = urlparse(client.path)
         params = parse_qs(parsed.query)
-        self.assertEquals(params["error_trace"], ["1"])
+        self.assertEquals(params["error_trace"], ["true"])
         client.close()
 
     def test_no_params(self):

@@ -104,7 +104,7 @@ class Server(object):
                 **kwargs):
         """Send a request
 
-        Always set the Content-Length header.
+        Always set the Content-Length and the Content-Type header.
         """
         if headers is None:
             headers = {}
@@ -115,6 +115,7 @@ class Server(object):
         if 'X-User' not in headers and username is not None:
             headers['X-User'] = username
         headers['Accept'] = 'application/json'
+        headers['Content-Type'] = 'application/json'
         kwargs['assert_same_host'] = False
         kwargs['redirect'] = False
         kwargs['retries'] = Retry(read=0)
@@ -281,7 +282,7 @@ class Client(object):
 
         self.path = self.SQL_PATH
         if error_trace:
-            self.path += '?error_trace=1'
+            self.path += '?error_trace=true'
 
     def close(self):
         for server in self.server_pool.values():

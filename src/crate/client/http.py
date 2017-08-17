@@ -137,8 +137,8 @@ def _json_from_response(response):
         return json.loads(six.text_type(response.data, 'utf-8'))
     except ValueError:
         raise ProgrammingError(
-            "Invalid server response of content-type '%s'" %
-            response.headers.get("content-type", "unknown"))
+            "Invalid server response of content-type '{}':\n{}"
+            .format(response.headers.get("content-type", "unknown"), response.data))
 
 
 def _blob_path(table, digest):

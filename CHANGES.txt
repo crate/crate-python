@@ -2,6 +2,8 @@
 Changes for crate
 =================
 
+ - Fix deprecation warnings logged in CrateDB server on every REST request.
+
 Unreleased
 ==========
 

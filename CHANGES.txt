@@ -5,6 +5,11 @@ Changes for crate
 Unreleased
 ==========
 
+2017/08/18 0.20.1
+=================
+
+ - Fixed deprecation warnings logged in CrateDB server on every REST request.
+
 2017/06/26 0.20.0
 =================
 

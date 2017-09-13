@@ -2,6 +2,11 @@
 Client Usage
 ============
 
+.. rubric:: Table of Contents
+
+.. contents::
+   :local:
+
 Connect to a Database
 =====================
 

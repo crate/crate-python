@@ -2,8 +2,7 @@
 Crate Data Python Client
 ========================
 
-Contents
-========
+.. rubric:: Table of Contents
 
 .. toctree::
    :maxdepth: 2

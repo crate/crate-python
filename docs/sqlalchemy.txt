@@ -8,6 +8,11 @@ support for SQLAlchemy out of the box.
 The Dialect is installed and registered by default (e.g. if `crate` was
 installed using pip) and can be used without further configuration.
 
+.. rubric:: Table of Contents
+
+.. contents::
+   :local:
+
 Connection String
 -----------------
 

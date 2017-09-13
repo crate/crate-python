@@ -22,6 +22,11 @@ retrieved like this::
 The returned container object can now be used to manage the contained
 Blobs.
 
+.. rubric:: Table of Contents
+
+.. contents::
+   :local:
+
 Uploading Blobs
 ===============
 

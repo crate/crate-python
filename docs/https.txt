@@ -18,6 +18,10 @@ One can check against a single CA certificate
 by creating the client with the a path to a CA certificate file to check against
 in keyword argument ``ca_cert``.
 
+.. rubric:: Table of Contents
+
+.. contents::
+   :local:
 
 Examples
 --------

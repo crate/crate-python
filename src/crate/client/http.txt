@@ -187,5 +187,5 @@ will be provided::
     ...     trace = 'TRACE: ' + str(e.error_trace)
 
     >>> print(trace)
-    TRACE: SQLActionException: BAD_REQUEST 4000 SQLParseException: ... mismatched input 'error' expecting EOF
+    TRACE: SQLActionException: BAD_REQUEST 4000 SQLParseException: ... mismatched input 'error' expecting {<EOF>, ...
     	at io.crate.exceptions...

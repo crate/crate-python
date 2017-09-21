@@ -49,9 +49,9 @@ class LayerUtilsTest(TestCase):
         self.assertEqual('https://crate:4200', url)
 
     def test_wait_for_http(self):
-        log = BytesIO(b'[http ] [crate] publish_address {127.0.0.1:4200}')
+        log = BytesIO(b'[i.c.p.h.CrateNettyHttpServerTransport] [crate] publish_address {127.0.0.1:4200}')
         addr = wait_for_http_url(log)
         self.assertEqual('http://127.0.0.1:4200', addr)
-        log = BytesIO(b'[http ] [crate] publish_address {}')
+        log = BytesIO(b'[i.c.p.h.CrateNettyHttpServerTransport] [crate] publish_address {}')
         addr = wait_for_http_url(log=log, timeout=1)
         self.assertEqual(None, addr)

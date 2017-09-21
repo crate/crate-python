@@ -44,7 +44,7 @@ log = logging.getLogger(__name__)
 
 CRATE_CONFIG_ERROR = 'crate_config must point to a folder or to a file named "crate.yml"'
 HTTP_ADDRESS_RE = re.compile(
-    '.*\[http +\] \[.*\] .*'
+    '.*\[(http|.*HttpServer.*)\s*] \[.*\] .*'
     'publish_address {'
     '(?:inet\[[\w\d\.-]*/|\[)?'
     '(?:[\w\d\.-]+/)?'

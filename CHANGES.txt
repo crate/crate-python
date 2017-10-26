@@ -5,6 +5,9 @@ Changes for crate
 Unreleased
 ==========
 
+ - Prepared SQL Alchemy primary key retrieval for CrateDB 2.3.0. Preserved
+   backwards-compatibility for lower versions.
+
 2017/08/18 0.20.1
 =================
 

@@ -14,8 +14,8 @@ List all tables::
     >>> inspector.get_table_names()
     ['characters', 'locations']
 
-    >>> inspector.get_table_names(schema='sys')[:4]
-    ['checks', 'cluster', 'jobs', 'jobs_log']
+    >>> set(['checks', 'cluster', 'jobs', 'jobs_log']).issubset(inspector.get_table_names(schema='sys'))
+    True
 
 Get default schema name::
 

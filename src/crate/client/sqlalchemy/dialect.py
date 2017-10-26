@@ -234,21 +234,31 @@ class CrateDialect(default.DefaultDialect):
         )
         return [self._create_column_info(row) for row in cursor.fetchall()]
 
-
     @reflection.cache
-    def get_pk_constraint(self, connection, table_name, schema=None, **kw):
-        query = "SELECT constraint_name " \
-                "FROM information_schema.table_constraints " \
-                "WHERE table_name=? " \
-                "AND {schema_col}=? AND constraint_type='PRIMARY_KEY' " \
-                .format(schema_col=self.schema_column)
-        pk = connection.execute(
+    def get_pk_constraint(self, engine, table_name, schema=None, **kw):
+        if self.server_version_info >= (2, 3, 0):
+            query = """SELECT column_name
+                    FROM information_schema.key_column_usage
+                    WHERE table_name = ? AND table_catalog = ?"""
+            def result_fun(result):
+                rows = result.fetchall()
+                return set(map(lambda el: el[0], rows))
+        else:
+            query = """SELECT constraint_name
+                   FROM information_schema.table_constraints
+                   WHERE table_name = ? AND {schema_col} = ?
+                   AND constraint_type='PRIMARY_KEY'
+                   """.format(schema_col=self.schema_column)
+            def result_fun(result):
+                rows = result.fetchone()
+                return set(rows[0] if rows else [])
+        pk_result = engine.execute(
             query,
             [table_name, schema or self.default_schema_name]
-        ).fetchone()
-        return {'constrained_columns': set(*pk) if pk is not None else (),
+        )
+        pks = result_fun(pk_result)
+        return {'constrained_columns': pks,
                 'name': 'PRIMARY KEY'}
-
 
     @reflection.cache
     def get_foreign_keys(self, connection, table_name, schema=None,

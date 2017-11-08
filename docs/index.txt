@@ -1,6 +1,6 @@
-========================
-Crate Data Python Client
-========================
+=====================
+CrateDB Python Client
+=====================
 
 .. rubric:: Table of Contents
 

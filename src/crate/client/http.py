@@ -114,11 +114,18 @@ class Server(object):
             length = super_len(data)
             if length is not None:
                 headers['Content-Length'] = length
-        if 'Authorization' not in headers and username is not None:
-            credentials = username + ':'
-            if (password is not None):
-                credentials += password
-            headers['Authorization'] = 'Basic %s' % b64encode(credentials.encode('utf-8')).decode('utf-8')
+
+        # Authentication credentials
+        if username is not None:
+            if 'Authorization' not in headers and username is not None:
+                credentials = username + ':'
+                if (password is not None):
+                    credentials += password
+                headers['Authorization'] = 'Basic %s' % b64encode(credentials.encode('utf-8')).decode('utf-8')
+            # For backwards compatibility with Crate <= 2.2
+            if 'X-User' not in headers:
+                headers['X-User'] = username
+
         headers['Accept'] = 'application/json'
         headers['Content-Type'] = 'application/json'
         kwargs['assert_same_host'] = False

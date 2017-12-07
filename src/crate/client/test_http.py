@@ -452,6 +452,11 @@ class RetryRequestHandler(BaseHTTPServer.BaseHTTPRequestHandler):
         else:
             self.server.SHARED['username'] = None
 
+        if self.headers['X-User'] is not None:
+            self.server.SHARED['usernameFromXUser'] = self.headers['X-User']
+        else:
+            self.server.SHARED['usernameFromXUser'] = None
+
 
 class TestingHTTPServer(BaseHTTPServer.HTTPServer):
     """
@@ -460,6 +465,7 @@ class TestingHTTPServer(BaseHTTPServer.HTTPServer):
     manager = multiprocessing.Manager()
     SHARED = manager.dict()
     SHARED['count'] = 0
+    SHARED['usernameFromXUser'] = None
     SHARED['username'] = None
     SHARED['password'] = None
 
@@ -519,6 +525,7 @@ class TestUsernameSentAsHeader(TestCase):
             self.clientWithoutUsername.sql("select * from fake")
         except ConnectionError:
             pass
+        self.assertEqual(TestingHTTPServer.SHARED['usernameFromXUser'], None)
         self.assertEqual(TestingHTTPServer.SHARED['username'], None)
         self.assertEqual(TestingHTTPServer.SHARED['password'], None)
 
@@ -526,6 +533,7 @@ class TestUsernameSentAsHeader(TestCase):
             self.clientWithUsername.sql("select * from fake")
         except ConnectionError:
             pass
+        self.assertEqual(TestingHTTPServer.SHARED['usernameFromXUser'], 'testDBUser')
         self.assertEqual(TestingHTTPServer.SHARED['username'], 'testDBUser')
         self.assertEqual(TestingHTTPServer.SHARED['password'], None)
 
@@ -533,5 +541,6 @@ class TestUsernameSentAsHeader(TestCase):
             self.clientWithUsernameAndPassword.sql("select * from fake")
         except ConnectionError:
             pass
+        self.assertEqual(TestingHTTPServer.SHARED['usernameFromXUser'], 'testDBUser')
         self.assertEqual(TestingHTTPServer.SHARED['username'], 'testDBUser')
         self.assertEqual(TestingHTTPServer.SHARED['password'], 'test:password')

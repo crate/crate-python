@@ -5,6 +5,8 @@ Changes for crate
 Unreleased
 ==========
 
+ - Added new parameter ``password`` used to authenticate the user in CrateDB.
+
  - Prepared SQL Alchemy primary key retrieval for CrateDB 2.3.0. Preserved
    backwards-compatibility for lower versions.
 

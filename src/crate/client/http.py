@@ -31,6 +31,7 @@ import six
 import urllib3
 import urllib3.exceptions
 from urllib3.util.retry import Retry
+from base64 import b64encode
 from time import time
 from datetime import datetime, date
 from decimal import Decimal
@@ -101,6 +102,7 @@ class Server(object):
                 stream=False,
                 headers=None,
                 username=None,
+                password=None,
                 **kwargs):
         """Send a request
 
@@ -112,8 +114,11 @@ class Server(object):
             length = super_len(data)
             if length is not None:
                 headers['Content-Length'] = length
-        if 'X-User' not in headers and username is not None:
-            headers['X-User'] = username
+        if 'Authorization' not in headers and username is not None:
+            credentials = username + ':'
+            if (password is not None):
+                credentials += password
+            headers['Authorization'] = 'Basic %s' % b64encode(credentials.encode('utf-8')).decode('utf-8')
         headers['Accept'] = 'application/json'
         headers['Content-Type'] = 'application/json'
         kwargs['assert_same_host'] = False
@@ -264,7 +269,8 @@ class Client(object):
                  error_trace=False,
                  cert_file=None,
                  key_file=None,
-                 username=None):
+                 username=None,
+                 password=None):
         if not servers:
             servers = [self.default_server]
         else:
@@ -279,6 +285,7 @@ class Client(object):
         self._lock = threading.RLock()
         self._local = threading.local()
         self.username = username
+        self.password = password
 
         self.path = self.SQL_PATH
         if error_trace:
@@ -384,7 +391,7 @@ class Client(object):
             next_server = server or self._get_server()
             try:
                 response = self.server_pool[next_server].request(
-                    method, path, username=self.username, **kwargs)
+                    method, path, username=self.username, password=self.password, **kwargs)
                 redirect_location = response.get_redirect_location()
                 if redirect_location and 300 <= response.status <= 308:
                     redirect_server = _server_url(redirect_location)

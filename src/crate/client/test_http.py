@@ -34,6 +34,7 @@ from multiprocessing import Process
 from decimal import Decimal
 import datetime as dt
 import urllib3.exceptions
+from base64 import b64decode
 
 from .http import Client, _remove_certs_for_non_https
 from .exceptions import ConnectionError, ProgrammingError
@@ -440,7 +441,16 @@ class RetryRequestHandler(BaseHTTPServer.BaseHTTPRequestHandler):
 
     def do_POST(self):
         self.server.SHARED['count'] += 1
-        self.server.SHARED['username'] = self.headers['X-User']
+
+        if self.headers['Authorization'] is not None:
+            credentials = b64decode(self.headers['Authorization'].replace('Basic ','')).decode('utf-8').split(":", 1)
+            self.server.SHARED['username'] = credentials[0]
+            if len(credentials) > 1 and credentials[1]:
+                self.server.SHARED['password'] = credentials[1]
+            else:
+                self.server.SHARED['password'] = None
+        else:
+            self.server.SHARED['username'] = None
 
 
 class TestingHTTPServer(BaseHTTPServer.HTTPServer):
@@ -451,6 +461,7 @@ class TestingHTTPServer(BaseHTTPServer.HTTPServer):
     SHARED = manager.dict()
     SHARED['count'] = 0
     SHARED['username'] = None
+    SHARED['password'] = None
 
     @classmethod
     def run_server(cls, server_address):
@@ -493,6 +504,8 @@ class TestUsernameSentAsHeader(TestCase):
     def setUp(self):
         self.clientWithoutUsername = Client(["%s:%d" % self.server_address], timeout=5)
         self.clientWithUsername = Client(["%s:%d" % self.server_address], timeout=5, username='testDBUser')
+        self.clientWithUsernameAndPassword = Client(["%s:%d" % self.server_address], timeout=5,
+                                                    username='testDBUser', password='test:password')
         self.server_process.start()
         time.sleep(.10)
 
@@ -507,9 +520,18 @@ class TestUsernameSentAsHeader(TestCase):
         except ConnectionError:
             pass
         self.assertEqual(TestingHTTPServer.SHARED['username'], None)
+        self.assertEqual(TestingHTTPServer.SHARED['password'], None)
 
         try:
             self.clientWithUsername.sql("select * from fake")
         except ConnectionError:
             pass
         self.assertEqual(TestingHTTPServer.SHARED['username'], 'testDBUser')
+        self.assertEqual(TestingHTTPServer.SHARED['password'], None)
+
+        try:
+            self.clientWithUsernameAndPassword.sql("select * from fake")
+        except ConnectionError:
+            pass
+        self.assertEqual(TestingHTTPServer.SHARED['username'], 'testDBUser')
+        self.assertEqual(TestingHTTPServer.SHARED['password'], 'test:password')

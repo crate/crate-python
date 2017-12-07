@@ -29,7 +29,7 @@ from distutils.version import StrictVersion
 class Connection(object):
     def __init__(self, servers=None, timeout=None, client=None,
                  verify_ssl_cert=False, ca_cert=None, error_trace=False,
-                 cert_file=None, key_file=None, username=None):
+                 cert_file=None, key_file=None, username=None, password=None):
         if client:
             self.client = client
         else:
@@ -40,7 +40,8 @@ class Connection(object):
                                  error_trace=error_trace,
                                  cert_file=cert_file,
                                  key_file=key_file,
-                                 username=username)
+                                 username=username,
+                                 password=password)
         self.lowest_server_version = self._lowest_server_version()
         self._closed = False
 
@@ -105,7 +106,8 @@ def connect(servers=None,
             error_trace=False,
             cert_file=None,
             key_file=None,
-            username=None):
+            username=None,
+            password=None):
     """ Create a :class:Connection object
 
     :param servers:
@@ -132,6 +134,8 @@ def connect(servers=None,
         a path to the client key to use when communicating with the server.
     :param username:
         the username in the database.
+    :param password:
+        the password of the user in the database.
 
     >>> connect(['host1:4200', 'host2:4200'])
     <Connection <Client ['http://host1:4200', 'http://host2:4200']>>
@@ -144,4 +148,5 @@ def connect(servers=None,
                       error_trace=error_trace,
                       cert_file=cert_file,
                       key_file=key_file,
-                      username=username)
+                      username=username,
+                      password=password)

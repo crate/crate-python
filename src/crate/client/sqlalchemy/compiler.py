@@ -132,7 +132,13 @@ class CrateTypeCompiler(compiler.GenericTypeCompiler):
     def visit_TEXT(self, type_, **kw):
         return 'STRING'
 
+    def visit_DECIMAL(self, type_, **kw):
+        return 'DOUBLE'
+
     def visit_BIGINT(self, type_, **kw):
+        return 'LONG'
+
+    def visit_NUMERIC(self, type_, **kw):
         return 'LONG'
 
     def visit_INTEGER(self, type_, **kw):

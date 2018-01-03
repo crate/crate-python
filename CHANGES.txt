@@ -5,6 +5,10 @@ Changes for crate
 Unreleased
 ==========
 
+
+2018/01/03 0.21.1
+=================
+
  - Fixed an issue that prevented the usage of SQLAlchemy types ``NUMERIC`` and
   ``DECIMAL`` as column types.
 

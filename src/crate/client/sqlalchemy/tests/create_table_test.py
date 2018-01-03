@@ -48,21 +48,25 @@ class CreateTableTest(TestCase):
             unicode_col = sa.Column(sa.Unicode)
             text_col = sa.Column(sa.Text)
             int_col = sa.Column(sa.Integer)
-            long_col = sa.Column(sa.BigInteger)
+            long_col1 = sa.Column(sa.BigInteger)
+            long_col2 = sa.Column(sa.NUMERIC)
             bool_col = sa.Column(sa.Boolean)
             short_col = sa.Column(sa.SmallInteger)
             datetime_col = sa.Column(sa.DateTime)
             date_col = sa.Column(sa.Date)
             float_col = sa.Column(sa.Float)
+            double_col = sa.Column(sa.DECIMAL)
 
         self.Base.metadata.create_all()
         fake_cursor.execute.assert_called_with(
             ('\nCREATE TABLE users (\n\tstring_col STRING, '
              '\n\tunicode_col STRING, \n\ttext_col STRING, \n\tint_col INT, '
-             '\n\tlong_col LONG, \n\tbool_col BOOLEAN, '
+             '\n\tlong_col1 LONG, \n\tlong_col2 LONG, '
+             '\n\tbool_col BOOLEAN, '
              '\n\tshort_col SHORT, '
              '\n\tdatetime_col TIMESTAMP, \n\tdate_col TIMESTAMP, '
-             '\n\tfloat_col FLOAT, \n\tPRIMARY KEY (string_col)\n)\n\n'),
+             '\n\tfloat_col FLOAT, \n\tdouble_col DOUBLE, '
+             '\n\tPRIMARY KEY (string_col)\n)\n\n'),
             ())
 
     def test_with_obj_column(self):

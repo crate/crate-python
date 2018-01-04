@@ -442,7 +442,7 @@ class RetryRequestHandler(BaseHTTPServer.BaseHTTPRequestHandler):
     def do_POST(self):
         self.server.SHARED['count'] += 1
 
-        if self.headers['Authorization'] is not None:
+        if self.headers.get('Authorization') is not None:
             credentials = b64decode(self.headers['Authorization'].replace('Basic ','')).decode('utf-8').split(":", 1)
             self.server.SHARED['username'] = credentials[0]
             if len(credentials) > 1 and credentials[1]:
@@ -452,7 +452,7 @@ class RetryRequestHandler(BaseHTTPServer.BaseHTTPRequestHandler):
         else:
             self.server.SHARED['username'] = None
 
-        if self.headers['X-User'] is not None:
+        if self.headers.get('X-User') is not None:
             self.server.SHARED['usernameFromXUser'] = self.headers['X-User']
         else:
             self.server.SHARED['usernameFromXUser'] = None

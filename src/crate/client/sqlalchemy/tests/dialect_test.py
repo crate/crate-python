@@ -21,10 +21,10 @@
 
 from datetime import datetime
 from unittest import TestCase
+from unittest.mock import MagicMock
 
 import sqlalchemy as sa
 from crate.client.sqlalchemy.types import Object
-from mock import MagicMock
 from sqlalchemy import inspect
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import Session

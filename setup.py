@@ -68,8 +68,7 @@ setup(
         ]
     },
     extras_require=dict(
-        test=['mock>=1.0.1',
-              'zope.testing',
+        test=['zope.testing',
               'zc.customdoctests>=1.0.1'],
         sqlalchemy=['sqlalchemy>=1.0.0']
     ),

@@ -29,7 +29,7 @@ import random
 import traceback
 from http.server import BaseHTTPRequestHandler, HTTPServer
 from unittest import TestCase
-from mock import patch, MagicMock
+from unittest.mock import patch, MagicMock
 from threading import Thread, Event
 from multiprocessing import Process
 from decimal import Decimal

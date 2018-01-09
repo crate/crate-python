@@ -19,11 +19,11 @@
 # with Crate these terms will supersede the license and you may use the
 # software solely pursuant to the terms of the relevant commercial agreement.
 
-from unittest import TestCase
 from datetime import datetime
+from unittest import TestCase
+from unittest.mock import patch, MagicMock
 
 from crate.client.sqlalchemy.types import Object
-from mock import patch, MagicMock
 
 import sqlalchemy as sa
 from sqlalchemy.orm import Session

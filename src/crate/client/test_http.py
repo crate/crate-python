@@ -24,9 +24,10 @@ import time
 import multiprocessing
 import sys
 import os
-from .compat import queue
+import queue
 import random
 import traceback
+from http.server import BaseHTTPRequestHandler, HTTPServer
 from unittest import TestCase
 from mock import patch, MagicMock
 from threading import Thread, Event
@@ -35,10 +36,10 @@ from decimal import Decimal
 import datetime as dt
 import urllib3.exceptions
 from base64 import b64decode
+from urllib.parse import urlparse, parse_qs
 
 from .http import Client, _remove_certs_for_non_https
 from .exceptions import ConnectionError, ProgrammingError
-from .compat import xrange, BaseHTTPServer, to_bytes
 
 
 REQUEST = 'crate.client.http.Server.request'
@@ -290,7 +291,7 @@ class ThreadSafeHttpClientTest(TestCase):
     def _run(self):
         self.event.wait()  # wait for the others
         expected_num_servers = len(self.servers)
-        for x in xrange(self.num_commands):
+        for x in range(self.num_commands):
             try:
                 self.client.sql('select name from sys.cluster')
             except ConnectionError:
@@ -319,7 +320,7 @@ class ThreadSafeHttpClientTest(TestCase):
         """
         threads = [
             Thread(target=self._run, name=str(x))
-            for x in xrange(self.num_threads)
+            for x in range(self.num_threads)
         ]
         for thread in threads:
             thread.start()
@@ -333,9 +334,9 @@ class ThreadSafeHttpClientTest(TestCase):
                 traceback.format_exception(*self.err_queue.get(block=False))))
 
 
-class ClientAddressRequestHandler(BaseHTTPServer.BaseHTTPRequestHandler):
+class ClientAddressRequestHandler(BaseHTTPRequestHandler):
     """
-    http handler for use with BaseHTTPServer
+    http handler for use with HTTPServer
 
     returns client host and port in crate-conform-responses
     """
@@ -357,7 +358,7 @@ class ClientAddressRequestHandler(BaseHTTPServer.BaseHTTPRequestHandler):
         self.send_header("Content-Length", len(response))
         self.send_header("Content-Type", "application/json; charset=UTF-8")
         self.end_headers()
-        self.wfile.write(to_bytes(response, 'UTF-8'))
+        self.wfile.write(response.encode('UTF-8'))
 
     do_POST = do_PUT = do_DELETE = do_HEAD = do_GET
 
@@ -382,8 +383,8 @@ class KeepAliveClientTest(TestCase):
         super(KeepAliveClientTest, self).tearDown()
 
     def _run_server(self):
-        self.server = BaseHTTPServer.HTTPServer(self.server_address,
-                                                ClientAddressRequestHandler)
+        self.server = HTTPServer(self.server_address,
+                                 ClientAddressRequestHandler)
         self.server.handle_request()
 
     def test_client_keepalive(self):
@@ -398,7 +399,6 @@ class ParamsTest(TestCase):
 
     def test_params(self):
         client = Client(['127.0.0.1:4200'], error_trace=True)
-        from six.moves.urllib.parse import urlparse, parse_qs
         parsed = urlparse(client.path)
         params = parse_qs(parsed.query)
         self.assertEqual(params["error_trace"], ["true"])
@@ -432,9 +432,9 @@ class RequestsCaBundleTest(TestCase):
         self.assertTrue('foobar' in d)
 
 
-class RetryRequestHandler(BaseHTTPServer.BaseHTTPRequestHandler):
+class RetryRequestHandler(BaseHTTPRequestHandler):
     """
-    http handler for use with BaseHTTPServer
+    http handler for use with HTTPServer
 
     counts request made
     """
@@ -458,7 +458,7 @@ class RetryRequestHandler(BaseHTTPServer.BaseHTTPRequestHandler):
             self.server.SHARED['usernameFromXUser'] = None
 
 
-class TestingHTTPServer(BaseHTTPServer.HTTPServer):
+class TestingHTTPServer(HTTPServer):
     """
     http server providing a shared dict
     """

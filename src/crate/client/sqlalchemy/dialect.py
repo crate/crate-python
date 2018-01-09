@@ -19,7 +19,6 @@
 # with Crate these terms will supersede the license and you may use the
 # software solely pursuant to the terms of the relevant commercial agreement.
 
-from __future__ import absolute_import
 import logging
 from datetime import datetime, date
 

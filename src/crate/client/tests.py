@@ -28,12 +28,11 @@ import doctest
 import re
 from pprint import pprint
 from datetime import datetime, date
-from six.moves.BaseHTTPServer import HTTPServer, BaseHTTPRequestHandler
+from http.server import HTTPServer, BaseHTTPRequestHandler
 import ssl
 import time
 import threading
 import logging
-from .compat import to_bytes
 
 from zope.testing.renormalizing import RENormalizing
 
@@ -56,13 +55,17 @@ from .test_http import (
 )
 from .sqlalchemy.tests import test_suite as sqlalchemy_test_suite
 from .sqlalchemy.types import ObjectArray
-from .compat import cprint
-
 
 log = logging.getLogger('crate.testing.layer')
 ch = logging.StreamHandler()
 ch.setLevel(logging.ERROR)
 log.addHandler(ch)
+
+
+def cprint(s):
+    if isinstance(s, bytes):
+        s = s.decode('utf-8')
+    print(s)
 
 
 class ClientMocked(object):
@@ -210,7 +213,7 @@ class HttpsTestServerLayer(object):
             self.send_header("Content-Length", len(self.payload))
             self.send_header("Content-Type", "application/json; charset=UTF-8")
             self.end_headers()
-            self.wfile.write(to_bytes(self.payload, 'UTF-8'))
+            self.wfile.write(self.payload.encode('UTF-8'))
             return
 
     def __init__(self):

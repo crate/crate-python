@@ -21,7 +21,6 @@
 
 from sqlalchemy.sql.expression import ColumnElement, literal
 from sqlalchemy.ext.compiler import compiles
-from six import iteritems
 
 
 class Match(ColumnElement):
@@ -37,7 +36,7 @@ class Match(ColumnElement):
         if isinstance(self.column, dict):
             column = ', '.join(
                 sorted(["{0} {1}".format(compiler.process(k), v)
-                       for k, v in iteritems(self.column)])
+                       for k, v in self.column.items()])
             )
             return "({0})".format(column)
         else:
@@ -62,7 +61,7 @@ class Match(ColumnElement):
         if self.options:
             options = ', '.join(
                 sorted(["{0}={1}".format(k, v)
-                       for k, v in iteritems(self.options)])
+                       for k, v in self.options.items()])
             )
 
             return "with ({0})".format(options)

@@ -26,7 +26,6 @@ import re
 
 requirements = [
     'urllib3>=1.9',
-    'six'
 ]
 
 
@@ -74,7 +73,7 @@ setup(
               'zc.customdoctests>=1.0.1'],
         sqlalchemy=['sqlalchemy>=1.0.0']
     ),
-    python_requires='>=2.7',
+    python_requires='>=3.4',
     install_requires=requirements,
     package_data={'': ['*.txt']},
     classifiers=[
@@ -83,10 +82,7 @@ setup(
         'License :: OSI Approved :: Apache Software License',
         'Operating System :: OS Independent',
         'Programming Language :: Python',
-        'Programming Language :: Python :: 2',
-        'Programming Language :: Python :: 2.7',
         'Programming Language :: Python :: 3',
-        'Programming Language :: Python :: 3.3',
         'Programming Language :: Python :: 3.4',
         'Programming Language :: Python :: 3.5',
         'Programming Language :: Python :: 3.6',

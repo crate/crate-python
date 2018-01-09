@@ -26,8 +26,6 @@ import logging
 import os
 import io
 import ssl
-import sys
-import six
 import urllib3
 import urllib3.exceptions
 from urllib3.util.retry import Retry
@@ -38,7 +36,7 @@ from decimal import Decimal
 import calendar
 import threading
 import re
-from six.moves.urllib.parse import urlparse
+from urllib.parse import urlparse
 from crate.client.exceptions import (
     ConnectionError,
     DigestNotFoundException,
@@ -49,8 +47,6 @@ from crate.client.exceptions import (
 
 logger = logging.getLogger(__name__)
 
-if sys.version_info[0] > 2:
-    basestring = str
 
 _HTTP_PAT = pat = re.compile('https?://.+', re.I)
 SRV_UNAVAILABLE_STATUSES = set((502, 503, 504, 509))
@@ -146,11 +142,11 @@ class Server(object):
 
 def _json_from_response(response):
     try:
-        return json.loads(six.text_type(response.data, 'utf-8'))
+        return json.loads(response.data.decode('utf-8'))
     except ValueError:
         raise ProgrammingError(
-            u"Invalid server response of content-type '{}':\n{}"
-            .format(response.headers.get("content-type", "unknown"), six.text_type(response.data, 'utf-8')))
+            "Invalid server response of content-type '{}':\n{}"
+            .format(response.headers.get("content-type", "unknown"), response.data.decode('utf-8')))
 
 
 def _blob_path(table, digest):
@@ -174,7 +170,7 @@ def _raise_for_status(response):
     if response.status == 503:
         raise ConnectionError(message)
     if response.headers.get("content-type", "").startswith("application/json"):
-        data = json.loads(six.text_type(response.data, 'utf-8'))
+        data = json.loads(response.data.decode('utf-8'))
         error = data.get('error', {})
         error_trace = data.get('error_trace', None)
         if "results" in data:
@@ -212,7 +208,7 @@ def _server_url(server):
 
 
 def _to_server_list(servers):
-    if isinstance(servers, basestring):
+    if isinstance(servers, str):
         servers = servers.split()
     return [_server_url(s) for s in servers]
 
@@ -239,7 +235,7 @@ def _remove_certs_for_non_https(server, kwargs):
 
 
 def _create_sql_payload(stmt, args, bulk_args):
-    if not isinstance(stmt, basestring):
+    if not isinstance(stmt, str):
         raise ValueError('stmt is not a string')
     if args and bulk_args:
         raise ValueError('Cannot provide both: args and bulk_args')

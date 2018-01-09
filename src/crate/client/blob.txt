@@ -24,7 +24,7 @@ stream like object.
 
 Store a StringIO stream::
 
-    >>> from six import BytesIO
+    >>> from io import BytesIO
     >>> f = BytesIO(b'StringIO data')
     >>> stringio_bob = container.put(f)
     >>> stringio_bob

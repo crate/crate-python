@@ -5,6 +5,10 @@ Changes for crate
 Unreleased
 ==========
 
+ - BREAKING: Dropped support for Python 2.7 and 3.3
+   If you are using crate with Python 2.7 or 3.3 already, you will not be able
+   to install newer versions of this package.
+
 2018/01/03 0.21.1
 =================
 

@@ -158,11 +158,25 @@ Uploading a blob to a table with disabled blob support throws an exception::
 Error Handling
 ==============
 
-It's possible to define a HTTP timeout in seconds on client instantiation, so a timeout exception
-is raised when timeout is reached::
+.. hide::
 
-    >>> http_client = HttpClient(crate_host, timeout=0)
-    >>> http_client.sql('select name from locations')
+    Create a function that takes a lot of time to return so we can run into a
+    timeout exception::
+
+    >>> http_client = HttpClient(crate_host)
+    >>> http_client.sql('''
+    ... CREATE FUNCTION fib(LONG) RETURNS LONG
+    ... LANGUAGE JAVASCRIPT AS '
+    ...   var fib = function fib(n) { return n < 2 ? n : fib(n-1) + fib(n-2); }
+    ... '
+    ... ''')
+    {...}
+
+It's possible to define a HTTP timeout in seconds on client instantiation, so
+an exception is raised when the timeout is reached::
+
+    >>> http_client = HttpClient(crate_host, timeout=0.1)
+    >>> http_client.sql('select fib(32)')
     Traceback (most recent call last):
     ...
     ConnectionError: No more Servers available, exception from last server: ...

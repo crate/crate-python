@@ -2,10 +2,10 @@
 SQLAlchemy Support
 ==================
 
-Since most people prefer to use an ORM the `crate` client library provides
+Since most people prefer to use an ORM the ``crate`` client library provides
 support for SQLAlchemy out of the box.
 
-The Dialect is installed and registered by default (e.g. if `crate` was
+The Dialect is installed and registered by default (e.g. if ``crate`` was
 installed using pip) and can be used without further configuration.
 
 .. rubric:: Table of Contents
@@ -16,7 +16,7 @@ installed using pip) and can be used without further configuration.
 Connection String
 -----------------
 
-In SQLAlchemy a connection is established using the `create_engine` function.
+In SQLAlchemy a connection is established using the ``create_engine`` function.
 This function takes a connection string that varies from database to database.
 
 In order to connect to a CrateDB cluster the following connection strings are
@@ -36,7 +36,7 @@ it is recommended to connect to all of them. This enables the DB-API layer to
 use round-robin to distribute the load and skip a server if it becomes
 unavailable.
 
-The `connect_args` parameter has to be used to do so::
+The ``connect_args`` parameter has to be used to do so::
 
     >>> sa.create_engine('crate://', connect_args={
     ...     'servers': ['host1:4200', 'host2:4200']
@@ -46,7 +46,7 @@ The `connect_args` parameter has to be used to do so::
 
 As defined in :ref:`https_connection` the client does not validate
 SSL server certificates by default. To configure this behaviour,
-SSL verification options can be given via `connect_args` too::
+SSL verification options can be given via ``connect_args`` too::
 
     >>> ssl_engine = sa.create_engine(
     ...     'crate://',
@@ -59,7 +59,7 @@ SSL verification options can be given via `connect_args` too::
 Supported Operations and Limitations
 ====================================
 
-Currently CrateDB only implements a subset of the `SQL` standard. Therefore
+Currently CrateDB only implements a subset of the SQL standard. Therefore
 many operations that SQLAlchemy provides are currently not supported.
 
 An overview of supported operations::
@@ -77,14 +77,14 @@ RDBMS but instead is document oriented with `eventual consistency
 This means that there is no transaction support and the database should be
 modeled without relationships.
 
-In SQLAlchemy a `Session` object is used to query the database. This `Session`
-object contains a `rollback` method that in `Crate` won't do anything at all.
-Similar the `commit` method will only `flush` but not actually commit, as there
-is no commit in CrateDB.
+In SQLAlchemy a ``Session`` object is used to query the database. This
+``Session`` object contains a ``rollback`` method that in ``Crate``
+won't do anything at all. Similar the ``commit`` method will only
+``flush`` but not actually commit, as there is no commit in CrateDB.
 
 Please refer to the `SQLAlchemy documentation
 <http://docs.sqlalchemy.org/en/rel_0_8/orm/tutorial.html#adding-new-objects>`_
-for more information about the session management and the concept of `flush`.
+for more information about the session management and the concept of ``flush``.
 
 Type Mapping
 ============
@@ -118,9 +118,10 @@ ObjectArray (extension)  array(object)
 Complex Types
 =============
 
-In a document oriented database it is a common pattern to store complex objects
-within a single field. For such cases the `crate` package provides the `Object`
-type. The `Object` type can be seen as some kind of dictionary or map like type.
+In a document oriented database it is a common pattern to store complex
+objects within a single field. For such cases the ``crate`` package
+provides the ``Object`` type. The ``Object`` type can be seen as some
+kind of dictionary or map like type.
 
 Below is a schema definition using `SQLAlchemy's declarative approach
 <http://docs.sqlalchemy.org/en/rel_0_8/orm/extensions/declarative.html>`_::
@@ -146,7 +147,7 @@ Below is a schema definition using `SQLAlchemy's declarative approach
 
 Using the `Session
 <http://docs.sqlalchemy.org/en/rel_0_8/orm/session.html?highlight=session#>`_
-two characters are added that have additional attributes inside the `details`
+two characters are added that have additional attributes inside the ``details``
 column that weren't defined in the schema::
 
     >>> arthur = Character(name='Arthur Dent')
@@ -164,7 +165,7 @@ column that weren't defined in the schema::
     >>> session.add(trillian)
     >>> session.commit()
 
-After `INSERT` statements are sent to the database the newly inserted rows
+After ``INSERT`` statements are sent to the database the newly inserted rows
 aren't immediately available for search because the index is only updated
 periodically::
 
@@ -182,12 +183,12 @@ A regular select query will then fetch the whole documents::
     [('Arthur Dent', 'male'), ('Tricia McMillan', 'female')]
 
 But it is also possible to just select a part of the document, even inside the
-`Object` type::
+``Object`` type::
 
     >>> sorted(session.query(Character.details['gender']).all())
     [('female',), ('male',)]
 
-In addition, filtering on the attributes inside the `details` column is also
+In addition, filtering on the attributes inside the ``details`` column is also
 possible::
 
     >>> query = session.query(Character.name)
@@ -197,10 +198,10 @@ possible::
 Updating Complex Types
 ----------------------
 
-The SQLAlchemy CrateDB dialect supports change tracking deep down the nested
-levels of a `Object` type field. For example the following query will only
-update the `gender` key. The `species` key which is on the same level will be
-left untouched.
+The SQLAlchemy CrateDB dialect supports change tracking deep down the
+nested levels of a ``Object`` type field. For example the following
+query will only update the ``gender`` key. The ``species`` key which is
+on the same level will be left untouched.
 
 ::
 
@@ -218,12 +219,13 @@ left untouched.
 Object Array
 ------------
 
-In addition to the `Object` type the CrateDB sqlalchemy dialect also includes a
-type called `ObjectArray`. This type maps to a Python list of dictionaries.
+In addition to the ``Object`` type the CrateDB sqlalchemy dialect also
+includes a type called ``ObjectArray``. This type maps to a Python list
+of dictionaries.
 
-Note that opposed to the `Object` type the `ObjectArray` type isn't smart and
-doesn't have an intelligent change tracking. Therefore the generated UPDATE
-statement will affect the whole list::
+Note that opposed to the ``Object`` type the ``ObjectArray`` type isn't
+smart and doesn't have an intelligent change tracking. Therefore the
+generated UPDATE statement will affect the whole list::
 
     >>> char.more_details = [{'foo': 1, 'bar': 10}, {'foo': 2}]
     >>> session.commit()
@@ -237,10 +239,10 @@ This will generate an UPDATE statement roughly like this::
 
     >>> refresh("characters")
 
-To do queries against fields of `ObjectArray`s
-you have to use the ``.any(value, operator=operators.eq)`` method on a subscript,
-because accessing fields of object arrays (e.g. ``Character.more_details['foo']``)
-returns an array of the field type.
+To do queries against fields of ``ObjectArray``s you have to use the
+``.any(value, operator=operators.eq)`` method on a subscript, because
+accessing fields of object arrays (e.g.
+``Character.more_details['foo']``) returns an array of the field type.
 
 Only one of the objects inside the array has to match
 in order for the result to be returned::
@@ -289,7 +291,7 @@ ways::
     The column that is passed to the count method has to be the primary key.
     Other columns won't work.
 
-Using the `group_by` clause is similar::
+Using the ``group_by`` clause is similar::
 
     >>> session.query(sa.func.count(Character.id), Character.name) \
     ...     .group_by(Character.name) \
@@ -300,11 +302,12 @@ Using the `group_by` clause is similar::
 Fulltext Search with MATCH Predicate
 ------------------------------------
 
-Fulltext Search in CrateDB is performed using the MATCH Predicate. The CrateDB
-SQLAlchemy driver comes with a `match` function in the `predicates` namespace,
-which can be used to search on one or multiple fields.
+Fulltext Search in CrateDB is performed using the MATCH Predicate. The
+CrateDB SQLAlchemy driver comes with a ``match`` function in the
+``predicates`` namespace, which can be used to search on one or multiple
+fields.
 
-The `match` function takes the following options:
+The ``match`` function takes the following options:
 
 :param column: A reference to an index column or an existing column
  that is of type string and is indexed. It's also allowed to pass multiple
@@ -328,16 +331,17 @@ The `match` function takes the following options:
 
 .. note::
 
-    In order to use fulltext searches on a column, a fulltext index with an analyzer
-    must be created on the related column.
-    See `Indices and fulltext search <https://crate.io/docs/stable/sql/ddl.html#sql-ddl-index-fulltext>`_
+    In order to use fulltext searches on a column, a fulltext index with
+    an analyzer must be created on the related column. See `Indices and
+    fulltext search
+    <https://crate.io/docs/stable/sql/ddl.html#sql-ddl-index-fulltext>`_
     for details.
 
-To get the relevance of a matching row, an internal system column `_score` can be
-selected. It's a numeric value which is relative to the other rows.
-The higher the score value, the more relevant the row.
-In most cases `_score` is not part of the SQLAlchemy Table definition, so it must
-be passed as a string::
+To get the relevance of a matching row, an internal system column
+``_score`` can be selected. It's a numeric value which is relative to
+the other rows. The higher the score value, the more relevant the row.
+In most cases ``_score`` is not part of the SQLAlchemy Table definition,
+so it must be passed as a string::
 
     >>> session.query(Character.name, '_score') \
     ...     .filter(match(Character.quote_ft, 'space')) \
@@ -345,8 +349,8 @@ be passed as a string::
     [('Tricia McMillan', ...)]
 
 To search on multiple columns you have to pass a dictionary with columns
-and `boost` attached. `boost` is a factor that increases the relevance of a column
-in respect to the other columns::
+and ``boost`` attached. ``boost`` is a factor that increases the
+relevance of a column in respect to the other columns::
 
     >>> session.query(Character.name) \
     ...           .filter(match({Character.name_ft: 1.5, Character.quote_ft: 0.1},
@@ -355,7 +359,7 @@ in respect to the other columns::
     ...     .all()
     [('Arthur Dent',), ('Tricia McMillan',)]
 
-The match type determines how the query_term is applied and the `_score` is
+The match type determines how the query_term is applied and the ``_score`` is
 created, thus it influences which documents are considered more relevant.
 The default match_type is best_fields::
 
@@ -441,7 +445,7 @@ Insert From Select
 
 In SQLAlchemy, the ``insert().from_select()`` function returns a new ``Insert``
 construct which represents an ``INSERT...FROM SELECT`` statement.
-This functionality is now supported by the `crate` client library.
+This functionality is now supported by the ``crate`` client library.
 Here is an example that uses ``insert().from_select()``:
 
 First let's define and create the tables::
@@ -474,7 +478,8 @@ Let's add a task to the ``Todo`` table::
     >>> session.commit()
     >>> refresh("todos")
 
-Using ``insert().from_select()`` to archive the task in ``ArchivedTasks`` table::
+Using ``insert().from_select()`` to archive the task in
+``ArchivedTasks`` table::
 
     >>> sel = select([Todos.id, Todos.content]).where(Todos.status=="done")
     >>> ins = insert(ArchivedTasks).from_select(['id','content'], sel)

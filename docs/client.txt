@@ -55,7 +55,7 @@ database operations::
     ... (name, date, kind, position) VALUES (?, ?, ?, ?)""",
     ...                ('Einstein Cross', '2007-03-11', 'Quasar', 7))
 
-To bulk insert data you can use the `executemany` function::
+To bulk insert data you can use the ``executemany`` function::
 
     >>> cursor.executemany("""INSERT INTO locations
     ... (name, date, kind, position) VALUES (?, ?, ?, ?)""",
@@ -63,9 +63,9 @@ To bulk insert data you can use the `executemany` function::
     ...                 ('Old Faithful', '2007-03-11', 'Quasar', 7)])
     [{u'rowcount': 1}, {u'rowcount': 1}]
 
-`executemany` returns a list of results for every parameter. Each result
+``executemany`` returns a list of results for every parameter. Each result
 contains a rowcount. If an error occures the rowcount is -2 and the result
-may contain an `error_message` depending on the error.
+may contain an ``error_message`` depending on the error.
 
 .. note::
 

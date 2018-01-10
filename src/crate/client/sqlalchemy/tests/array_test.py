@@ -54,7 +54,7 @@ class SqlAlchemyArrayTypeTest(TestCase):
         self.session = Session()
 
     def assertSQL(self, expected_str, actual_expr):
-            self.assertEquals(expected_str, str(actual_expr).replace('\n', ''))
+            self.assertEqual(expected_str, str(actual_expr).replace('\n', ''))
 
 
     def test_create_with_array(self):
@@ -105,5 +105,5 @@ class SqlAlchemyArrayTypeTest(TestCase):
             t1.create(self.engine)
         except NotImplementedError as e:
             err = e
-        self.assertEquals(str(err),
-                          "CrateDB doesn't support multidimensional arrays")
+        self.assertEqual(str(err),
+                         "CrateDB doesn't support multidimensional arrays")

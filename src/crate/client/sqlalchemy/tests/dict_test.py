@@ -47,7 +47,7 @@ class SqlAlchemyDictTypeTest(TestCase):
                                 sa.Column('data', Craty))
 
     def assertSQL(self, expected_str, actual_expr):
-        self.assertEquals(expected_str, str(actual_expr).replace('\n', ''))
+        self.assertEqual(expected_str, str(actual_expr).replace('\n', ''))
 
     def test_select_with_dict_column(self):
         mytable = self.mytable

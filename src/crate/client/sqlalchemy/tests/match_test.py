@@ -49,7 +49,7 @@ class SqlAlchemyMatchTest(TestCase):
         self.maxDiff = None
 
     def assertSQL(self, expected_str, actual_expr):
-        self.assertEquals(expected_str, str(actual_expr).replace('\n', ''))
+        self.assertEqual(expected_str, str(actual_expr).replace('\n', ''))
 
     def set_up_character_and_session(self):
         Base = declarative_base(bind=self.engine)
@@ -130,4 +130,4 @@ class SqlAlchemyMatchTest(TestCase):
             err = e
         msg = "missing match_type. " + \
               "It's not allowed to specify options without match_type"
-        self.assertEquals(str(err), msg)
+        self.assertEqual(str(err), msg)

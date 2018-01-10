@@ -111,7 +111,7 @@ class HttpClientTest(TestCase):
         try:
             client.sql('select 1')
         except ProgrammingError as e:
-            self.assertEquals("this shouldn't be raised", e.message)
+            self.assertEqual("this shouldn't be raised", e.message)
         else:
             self.assertTrue(False)
         finally:
@@ -299,7 +299,7 @@ class ThreadSafeHttpClientTest(TestCase):
                 with self.client._lock:
                     num_servers = len(self.client._active_servers) + \
                         len(self.client._inactive_servers)
-                self.assertEquals(
+                self.assertEqual(
                     expected_num_servers,
                     num_servers,
                     "expected %d but got %d" % (expected_num_servers,
@@ -401,7 +401,7 @@ class ParamsTest(TestCase):
         from six.moves.urllib.parse import urlparse, parse_qs
         parsed = urlparse(client.path)
         params = parse_qs(parsed.query)
-        self.assertEquals(params["error_trace"], ["true"])
+        self.assertEqual(params["error_trace"], ["true"])
         client.close()
 
     def test_no_params(self):

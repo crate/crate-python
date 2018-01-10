@@ -40,7 +40,7 @@ FakeCursor.return_value = fake_cursor
 class SqlAlchemyInsertFromSelectTest(TestCase):
 
     def assertSQL(self, expected_str, actual_expr):
-        self.assertEquals(expected_str, str(actual_expr).replace('\n', ''))
+        self.assertEqual(expected_str, str(actual_expr).replace('\n', ''))
 
     def setUp(self):
         self.engine = sa.create_engine('crate://')

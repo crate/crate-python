@@ -309,17 +309,26 @@ fields.
 
 The ``match`` function takes the following options:
 
-:param column: A reference to an index column or an existing column
- that is of type string and is indexed. It's also allowed to pass multiple
- columns and boosts as dict
-:param term: The term to search for. This string is analyzed
- and the resulting tokens are compared to the already indexed ones.
-:param match_type (optional): The match type determines how the query_term
- is applied and the _score is created
- See `Match Types <https://crate.io/docs/stable/sql/fulltext.html?highlight=fulltext#match-types>`_
-:param options (optional): The match options further distinguish the way the
- matching process using a certain match type works.
- See `Match Options <https://crate.io/docs/stable/sql/fulltext.html?highlight=fulltext#options>`_
+:param column:
+  A reference to an index column or an existing column that is of type
+  string and is indexed. It's also allowed to pass multiple columns and
+  boosts as dict
+
+:param term:
+  The term to search for. This string is analyzed and the resulting
+  tokens are compared to the already indexed ones.
+
+:param match_type (optional):
+  The match type determines how the query_term is applied and the _score
+  is created.
+
+  See `Match Types <https://crate.io/docs/stable/sql/fulltext.html?highlight=fulltext#match-types>`_
+
+:param options (optional):
+  The match options further distinguish the way the matching process
+  using a certain match type works.
+
+  See `Match Options <https://crate.io/docs/stable/sql/fulltext.html?highlight=fulltext#options>`_
 
 ::
 

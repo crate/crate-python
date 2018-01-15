@@ -44,6 +44,11 @@ using the optional parameter ``timeout``::
 
     >>> connection = client.connect([crate_host, invalid_host], timeout=5)
 
+To connect to a CrateDB host with a username and password, define them with the
+``username`` and ``password`` parameters::
+
+    >>> connection = client.connect([crate_host], username='user', password='pass')
+
 Inserting Data
 ==============
 

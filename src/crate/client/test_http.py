@@ -37,12 +37,14 @@ import datetime as dt
 import urllib3.exceptions
 from base64 import b64decode
 from urllib.parse import urlparse, parse_qs
+from setuptools.ssl_support import find_ca_bundle
 
 from .http import Client, _remove_certs_for_non_https
 from .exceptions import ConnectionError, ProgrammingError
 
 
 REQUEST = 'crate.client.http.Server.request'
+CA_CERT_PATH = find_ca_bundle()
 
 
 def fake_request(response=None):
@@ -412,14 +414,16 @@ class ParamsTest(TestCase):
 
 class RequestsCaBundleTest(TestCase):
 
+
     def test_open_client(self):
-        os.environ["REQUESTS_CA_BUNDLE"] = "/etc/ssl/certs/ca-certificates.crt"
+        os.environ["REQUESTS_CA_BUNDLE"] = CA_CERT_PATH
         try:
             Client('http://127.0.0.1:4200')
         except ProgrammingError:
             self.fail("HTTP not working with REQUESTS_CA_BUNDLE")
         finally:
             os.unsetenv('REQUESTS_CA_BUNDLE')
+            os.environ["REQUESTS_CA_BUNDLE"] = ''
 
     def test_remove_certs_for_non_https(self):
         d = _remove_certs_for_non_https('https', {"ca_certs": 1})

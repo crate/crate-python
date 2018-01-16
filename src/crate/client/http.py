@@ -215,6 +215,9 @@ def _to_server_list(servers):
 
 def _pool_kw_args(verify_ssl_cert, ca_cert, client_cert, client_key):
     ca_cert = ca_cert or os.environ.get('REQUESTS_CA_BUNDLE', None)
+    if ca_cert and not os.path.exists(ca_cert):
+        # Sanity check
+        raise IOError('CA bundle file "{}" does not exist.'.format(ca_cert))
     return {
         'ca_certs': ca_cert,
         'cert_reqs': ssl.CERT_REQUIRED if verify_ssl_cert else ssl.CERT_NONE,

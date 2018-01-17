@@ -269,9 +269,6 @@ class CrateLayer(object):
             "http.port": http_port,
             "path.conf": os.path.dirname(crate_config),
             "transport.tcp.port": transport_port,
-            "license.enterprise": "true",
-            "lang.js.enabled": "true",
-            "udc.enabled": "false",
         }
         if further_settings:
             settings.update(further_settings)

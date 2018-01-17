@@ -29,6 +29,7 @@ import tempfile
 from zope.testing.renormalizing import RENormalizing
 from .test_layer import LayerUtilsTest
 
+
 def docs_path(*parts):
     return os.path.join(os.path.dirname(os.path.dirname(__file__)), *parts)
 

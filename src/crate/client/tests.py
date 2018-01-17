@@ -96,6 +96,18 @@ def setUpMocked(test):
     test.globs['connection_client_mocked'] = ClientMocked()
 
 
+settings = {
+    'udc.enabled': 'false',
+    'license.enterprise': 'true',
+    'lang.js.enabled': 'true',
+    'auth.host_based.enabled': 'true',
+    'auth.host_based.config.0.user': 'crate',
+    'auth.host_based.config.0.method': 'trust',
+    'auth.host_based.config.98.user': 'trusted_me',
+    'auth.host_based.config.98.method': 'trust',
+    'auth.host_based.config.99.user': 'me',
+    'auth.host_based.config.99.method': 'password',
+}
 crate_port = 44209
 crate_transport_port = 44309
 local = '127.0.0.1'
@@ -103,7 +115,8 @@ crate_layer = CrateLayer('crate',
                          crate_home=crate_path(),
                          port=crate_port,
                          host=local,
-                         transport_port=crate_transport_port)
+                         transport_port=crate_transport_port,
+                         settings=settings)
 
 crate_host = "{host}:{port}".format(host=local, port=crate_port)
 crate_uri = "http://%s" % crate_host
@@ -140,6 +153,9 @@ def setUpWithCrateLayer(test):
         # create blob table
         cursor.execute("create blob table myfiles clustered into 1 shards " +
                        "with (number_of_replicas=0)")
+        # create users
+        cursor.execute("CREATE USER me WITH (password = 'my_secret_pw')")
+        cursor.execute("CREATE USER trusted_me")
 
 
 def setUpCrateLayerAndSqlAlchemy(test):
@@ -252,22 +268,23 @@ def setUpWithHttps(test):
     test.globs['print'] = cprint
 
 
+def _try_execute(cursor, stmt):
+    try:
+        cursor.execute(stmt)
+    except Exception:
+        pass
+
+
 def tearDownWithCrateLayer(test):
     # clear testing data
     with connect(crate_host) as conn:
-        cursor = conn.cursor()
-        try:
-            cursor.execute("drop table locations")
-        except Exception:
-            pass
-        try:
-            cursor.execute("drop blob table myfiles")
-        except Exception:
-            pass
-        try:
-            cursor.execute("drop table characters")
-        except Exception:
-            pass
+        for stmt in ["DROP TABLE locations",
+                     "DROP BLOB TABLE myfiles",
+                     "DROP TABLE characters",
+                     "DROP USER me",
+                     "DROP USER trusted_me",
+                     ]:
+            _try_execute(conn.cursor(), stmt)
 
 
 def test_suite():

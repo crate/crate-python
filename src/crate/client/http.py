@@ -115,7 +115,7 @@ class Server(object):
         if username is not None:
             if 'Authorization' not in headers and username is not None:
                 credentials = username + ':'
-                if (password is not None):
+                if password is not None:
                     credentials += password
                 headers['Authorization'] = 'Basic %s' % b64encode(credentials.encode('utf-8')).decode('utf-8')
             # For backwards compatibility with Crate <= 2.2

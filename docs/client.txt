@@ -44,13 +44,31 @@ using the optional parameter ``timeout``::
 
     >>> connection = client.connect([crate_host, invalid_host], timeout=5)
 
-To connect to a CrateDB host with a username and password, define them with the
-``username`` and ``password`` parameters::
+Authentication
+--------------
 
-    >>> connection = client.connect([crate_host], username='user', password='pass')
+Users that are trusted as by definition of the ``auth.host_based.config``
+setting do not need a password, but only require the ``username`` argument to
+connect::
+
+    >>> connection = client.connect([crate_host],
+    ...                             username='trusted_me')
+
+To connect to CrateDB with as a user that requires password authentication, you
+also need to provide ``password`` as argument for the ``connect()`` call::
+
+    >>> connection = client.connect([crate_host],
+    ...                             username='me',
+    ...                             password='my_secret_pw')
 
 Inserting Data
 ==============
+
+.. hide::
+
+   Use user "crate" for rest of the tests::
+
+    >>> connection = client.connect([crate_host], timeout=2)
 
 Before executing any statement a cursor has to be opened to perform
 database operations::

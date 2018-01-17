@@ -88,8 +88,8 @@ class CrateJsonEncoder(json.JSONEncoder):
 
 class Server(object):
 
-    def __init__(self, server, **kwargs):
-        self.pool = urllib3.connection_from_url(server, **kwargs)
+    def __init__(self, server, **pool_kw):
+        self.pool = urllib3.connection_from_url(server, **pool_kw)
 
     def request(self,
                 method,
@@ -280,10 +280,10 @@ class Client(object):
             servers = _to_server_list(servers)
         self._active_servers = servers
         self._inactive_servers = []
-        self._http_timeout = timeout
         pool_kw = _pool_kw_args(verify_ssl_cert, ca_cert, cert_file, key_file)
+        pool_kw['timeout'] = timeout
         self.server_pool = {}
-        self._update_server_pool(servers, timeout=timeout, **pool_kw)
+        self._update_server_pool(servers, **pool_kw)
         self._pool_kw = pool_kw
         self._lock = threading.RLock()
         self._local = threading.local()
@@ -298,13 +298,13 @@ class Client(object):
         for server in self.server_pool.values():
             server.close()
 
-    def _create_server(self, server, **kwargs):
-        kwargs = _remove_certs_for_non_https(server, kwargs)
+    def _create_server(self, server, **pool_kw):
+        kwargs = _remove_certs_for_non_https(server, pool_kw)
         self.server_pool[server] = Server(server, **kwargs)
 
-    def _update_server_pool(self, servers, **kwargs):
+    def _update_server_pool(self, servers, **pool_kw):
         for server in servers:
-            self._create_server(server, **kwargs)
+            self._create_server(server, **pool_kw)
 
     def sql(self, stmt, parameters=None, bulk_parameters=None):
         """
@@ -427,6 +427,7 @@ class Client(object):
         """
         Issue request against the crate HTTP API.
         """
+
         response = self._request(method, path, data=data)
         _raise_for_status(response)
         if len(response.data) > 0:

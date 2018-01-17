@@ -175,7 +175,7 @@ Error Handling
 It's possible to define a HTTP timeout in seconds on client instantiation, so
 an exception is raised when the timeout is reached::
 
-    >>> http_client = HttpClient(crate_host, timeout=0.1)
+    >>> http_client = HttpClient(crate_host, timeout=0.01)
     >>> http_client.sql('select fib(32)')
     Traceback (most recent call last):
     ...

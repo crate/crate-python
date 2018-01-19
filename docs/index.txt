@@ -10,5 +10,5 @@ CrateDB Python Client
    client.txt
    sqlalchemy.txt
    blobs.txt
-   advanced_usage.txt
+   advanced-usage.txt
    https.txt

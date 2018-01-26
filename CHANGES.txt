@@ -6,6 +6,11 @@ Unreleased
 ==========
 
 
+ - BREAKING: In the testing layer, the custom setting of
+ `cluster.routing.allocation.disk.watermark.low` (1b) and
+ `cluster.routing.allocation.disk.watermark.high` (1b) has been removed.
+ These now default to 85% and 90%, respectively.
+
 2018/01/03 0.21.1
 =================
 

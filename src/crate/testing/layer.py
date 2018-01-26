@@ -260,8 +260,6 @@ class CrateLayer(object):
                         further_settings=None):
         settings = {
             "discovery.type": "zen",
-            "cluster.routing.allocation.disk.watermark.low": "1b",
-            "cluster.routing.allocation.disk.watermark.high": "1b",
             "discovery.initial_state_timeout": 0,
             "node.name": node_name,
             "cluster.name": cluster_name,

@@ -83,7 +83,7 @@ won't do anything at all. Similar the ``commit`` method will only
 ``flush`` but not actually commit, as there is no commit in CrateDB.
 
 Please refer to the `SQLAlchemy documentation
-<http://docs.sqlalchemy.org/en/rel_0_8/orm/tutorial.html#adding-new-objects>`_
+<http://docs.sqlalchemy.org/en/latest/orm/session_basics.html#adding-new-or-existing-items>`_
 for more information about the session management and the concept of ``flush``.
 
 Type Mapping
@@ -124,7 +124,7 @@ provides the ``Object`` type. The ``Object`` type can be seen as some
 kind of dictionary or map like type.
 
 Below is a schema definition using `SQLAlchemy's declarative approach
-<http://docs.sqlalchemy.org/en/rel_0_8/orm/extensions/declarative.html>`_::
+<http://docs.sqlalchemy.org/en/latest/orm/extensions/declarative/>`_::
 
     >>> from crate.client.sqlalchemy.types import Object, ObjectArray
     >>> from uuid import uuid4
@@ -146,9 +146,9 @@ Below is a schema definition using `SQLAlchemy's declarative approach
     ...     }
 
 Using the `Session
-<http://docs.sqlalchemy.org/en/rel_0_8/orm/session.html?highlight=session#>`_
-two characters are added that have additional attributes inside the ``details``
-column that weren't defined in the schema::
+<http://docs.sqlalchemy.org/en/latest/orm/session.html>`_ two characters are
+added that have additional attributes inside the ``details`` column that weren't
+defined in the schema::
 
     >>> arthur = Character(name='Arthur Dent')
     >>> arthur.details = {}
@@ -271,7 +271,7 @@ Count and Group By
 
 SQLAlchemy supports different approaches to issue a query with a count
 aggregate function. Take a look at the `Counting section in the tutorial
-<http://docs.sqlalchemy.org/en/rel_0_8/orm/tutorial.html#counting>`_ for a full
+<http://docs.sqlalchemy.org/en/latest/orm/tutorial.html#counting>`_ for a full
 overview.
 
 CrateDB currently doesn't support all variants as it can't handle the

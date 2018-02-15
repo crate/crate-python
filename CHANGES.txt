@@ -9,13 +9,16 @@ Unreleased
   If you are using crate with Python 2.7 or 3.3 already, you will not be able
   to install newer versions of this package.
 
+- Added configuration for the sphinx_sitemap extension which allows to
+  create a sitemap.xml from the documentation.
+
+2018/02/15 0.21.2
+=================
+
 - BREAKING: In the testing layer, the custom setting of
   `cluster.routing.allocation.disk.watermark.low` (1b) and
   `cluster.routing.allocation.disk.watermark.high` (1b) has been removed.
   These now default to 85% and 90%, respectively.
-
-- Added configuration for the sphinx_sitemap extension which allows to 
-  create a sitemap.xml from the documentation.
 
 2018/01/03 0.21.1
 =================

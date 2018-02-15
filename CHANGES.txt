@@ -5,6 +5,8 @@ Changes for crate
 Unreleased
 ==========
 
+2018/02/15 0.21.2
+=================
 
  - BREAKING: In the testing layer, the custom setting of
  `cluster.routing.allocation.disk.watermark.low` (1b) and

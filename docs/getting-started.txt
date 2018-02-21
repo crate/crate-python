@@ -1,9 +1,9 @@
-=====================
-Install and First Use
-=====================
+===============
+Getting Started
+===============
 
-This page shows you how to install the :ref:`Python client library for
-CrateDB <index>` and then walks you through a simple first use scenario.
+This page shows you how to get started with the :ref:`Python client library for
+CrateDB <index>`.
 
 Prerequisites
 =============

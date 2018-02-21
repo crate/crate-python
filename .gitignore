@@ -10,7 +10,7 @@
 /develop-eggs/
 /dist
 /eggs
-/out
+out/
 /parts/
 crate.egg-info
 htmlcov/

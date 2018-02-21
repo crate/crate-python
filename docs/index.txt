@@ -16,12 +16,12 @@ This library:
 .. toctree::
    :maxdepth: 2
 
-   install-first-use.txt
-   client.txt
-   sqlalchemy.txt
-   blobs.txt
-   advanced_usage.txt
-   https.txt
+   getting-started
+   client
+   sqlalchemy
+   blobs
+   advanced_usage
+   https
 
 .. _CrateDB: https://crate.io/products/cratedb/
 .. _DB API 2.0: http://www.python.org/dev/peps/pep-0249/

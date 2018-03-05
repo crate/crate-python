@@ -5,6 +5,9 @@ Changes for crate
 Unreleased
 ==========
 
+- Fixed an issue that caused ``metadata.create_all(bind=engine)`` to fail
+  creating tables that contain an ``ObjectArray`` column.
+
 - BREAKING: Dropped support for Python 2.7 and 3.3
   If you are using crate with Python 2.7 or 3.3 already, you will not be able
   to install newer versions of this package.

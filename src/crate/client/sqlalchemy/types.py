@@ -208,5 +208,8 @@ class _ObjectArray(sqltypes.UserDefinedType):
     type = MutableList
     comparator_factory = Comparator
 
+    def get_col_spec(self, **kws):
+        return "ARRAY(OBJECT)"
+
 
 ObjectArray = MutableList.as_mutable(_ObjectArray)

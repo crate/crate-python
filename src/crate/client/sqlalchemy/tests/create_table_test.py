@@ -22,7 +22,7 @@
 import sqlalchemy as sa
 from sqlalchemy.ext.declarative import declarative_base
 
-from crate.client.sqlalchemy.types import Object
+from crate.client.sqlalchemy.types import Object, ObjectArray
 from crate.client.cursor import Cursor
 
 from mock import patch, MagicMock
@@ -149,3 +149,16 @@ class CreateTableTest(TestCase):
              'PRIMARY KEY (pk, p)\n'
              ') CLUSTERED BY (p) INTO 3 SHARDS\n\n'),
             ())
+
+    def test_table_with_object_array(self):
+        class DummyTable(self.Base):
+            __tablename__ = 't'
+            pk = sa.Column(sa.String, primary_key=True)
+            tags = sa.Column(ObjectArray)
+
+        self.Base.metadata.create_all()
+        fake_cursor.execute.assert_called_with(
+            ('\nCREATE TABLE t (\n\t'
+             'pk STRING, \n\t'
+             'tags ARRAY(OBJECT), \n\t'
+             'PRIMARY KEY (pk)\n)\n\n'), ())

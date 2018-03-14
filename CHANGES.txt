@@ -5,6 +5,9 @@ Changes for crate
 Unreleased
 ==========
 
+2018/03/14 0.21.3
+=================
+
 - Fixed an issue that caused ``metadata.create_all(bind=engine)`` to fail
   creating tables that contain an ``ObjectArray`` column.
 

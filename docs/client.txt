@@ -159,8 +159,6 @@ fetchall()
      ['Arkintoofle Minor'],
      ['Bartledan'],
      ['Cloverleaf'],
-     ['Creameries'],
-     ['Double Quasar'],
      ['Einstein Cross'],
      ['Folfanga'],
      ['Galactic Sector QQ7 Active J Gamma'],

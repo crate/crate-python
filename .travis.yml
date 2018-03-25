@@ -14,8 +14,9 @@ addons:
 before_install:
   # clean existing dependencies to avoid clashes
   - pip freeze | xargs pip uninstall -y
-  - pip install --upgrade setuptools
+  - pip uninstall -y setuptools
 install:
+  - pip freeze
   - python bootstrap.py
   - sed -ir "s/SQLAlchemy.*/SQLAlchemy = ${SA_VERSION}/g" versions.cfg
   - bin/buildout -c base.cfg

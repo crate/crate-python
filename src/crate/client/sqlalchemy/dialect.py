@@ -34,6 +34,7 @@ from crate.client.exceptions import TimezoneUnawareException
 from .types import Object, ObjectArray
 
 SCHEMA_MIN_VERSION = (0, 57, 0)
+TABLE_TYPE_MIN_VERSION = (2, 0, 0)
 
 TYPES_MAP = {
     "boolean": sqltypes.Boolean,
@@ -209,10 +210,13 @@ class CrateDialect(default.DefaultDialect):
 
     @reflection.cache
     def get_table_names(self, connection, schema=None, **kw):
+        table_filter = "AND table_type = 'BASE TABLE' " \
+            if self.server_version_info >= TABLE_TYPE_MIN_VERSION else ""
         cursor = connection.execute(
-            "select table_name from information_schema.tables "
-            "where {0} = ? "
-            "order by table_name asc, {0} asc".format(self.schema_column),
+            "SELECT table_name FROM information_schema.tables "
+            "WHERE {0} = ? {1}"
+            "ORDER BY table_name ASC, {0} ASC".format(self.schema_column,
+                                                      table_filter),
             [schema or self.default_schema_name]
         )
         return [row[0] for row in cursor.fetchall()]
@@ -222,9 +226,9 @@ class CrateDialect(default.DefaultDialect):
     def get_columns(self, connection, table_name, schema=None, **kw):
         query = "SELECT column_name, data_type " \
                 "FROM information_schema.columns " \
-                "WHERE table_name = ? AND {schema_col}=? " \
+                "WHERE table_name = ? AND {0} = ? " \
                 "AND column_name !~ ?" \
-                .format(schema_col=self.schema_column)
+                .format(self.schema_column)
         cursor = connection.execute(
             query,
             [table_name,

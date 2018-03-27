@@ -37,13 +37,15 @@ class DialectTest(TestCase):
 
     def setUp(self):
         self.engine = sa.create_engine('crate://')
-        self.queries = []
+        self.executed_statement = None
 
         def execute_wrapper(query, *args, **kwargs):
-            self.queries.append(query)
+            self.executed_statement = query
             return fake_cursor
 
         self.engine.execute = execute_wrapper
+        self.connection = self.engine.connect()
+        self.connection.execute = execute_wrapper
         self.base = declarative_base(bind=self.engine)
 
         class Character(self.base):
@@ -67,7 +69,7 @@ class DialectTest(TestCase):
         fake_cursor.fetchone = MagicMock(return_value=[["id", "id2", "id3"]])
         eq_(insp.get_pk_constraint("characters")['constrained_columns'], {"id", "id2", "id3"})
         fake_cursor.fetchone.assert_called_once_with()
-        in_("information_schema.table_constraints", self.queries[0])
+        in_("information_schema.table_constraints", self.executed_statement)
 
         # test the new pk retrieval
         insp = inspect(meta.bind)
@@ -76,4 +78,27 @@ class DialectTest(TestCase):
         fake_cursor.fetchall = MagicMock(return_value=[["id"], ["id2"], ["id3"]])
         eq_(insp.get_pk_constraint("characters")['constrained_columns'], {"id", "id2", "id3"})
         fake_cursor.fetchall.assert_called_once_with()
-        in_("information_schema.key_column_usage", self.queries[1])
+        in_("information_schema.key_column_usage", self.executed_statement)
+
+
+    def test_get_table_names(self):
+        fake_cursor.rowcount = 1
+        fake_cursor.fetchall = MagicMock(return_value=[["t1"], ["t2"]])
+
+        insp = inspect(self.character.metadata.bind)
+        self.engine.dialect.server_version_info = (2, 0, 0)
+        eq_(insp.get_table_names(self.connection, "doc"),
+            ['t1', 't2'])
+        in_("AND table_type = 'BASE TABLE' ORDER BY", self.executed_statement)
+
+        insp = inspect(self.character.metadata.bind)
+        self.engine.dialect.server_version_info = (1, 0, 0)
+        eq_(insp.get_table_names(self.connection, "doc"),
+            ['t1', 't2'])
+        in_("WHERE table_schema = ? ORDER BY", self.executed_statement)
+
+        insp = inspect(self.character.metadata.bind)
+        self.engine.dialect.server_version_info = (0, 56, 0)
+        eq_(insp.get_table_names(self.connection, "doc"),
+            ['t1', 't2'])
+        in_("WHERE schema_name = ? ORDER BY", self.executed_statement)

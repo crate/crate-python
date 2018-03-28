@@ -14,13 +14,12 @@ addons:
 before_install:
   # clean existing dependencies to avoid clashes
   - pip freeze | xargs pip uninstall -y
-  - pip uninstall -y setuptools
-  - pip install setuptools==33.1.1  # pin specific version in virtualenv
+  - pip install --upgrade setuptools
   - pip freeze --all  # debug
 install:
   - python bootstrap.py
   - sed -ir "s/SQLAlchemy.*/SQLAlchemy = ${SA_VERSION}/g" versions.cfg
-  - bin/buildout -c base.cfg
+  - bin/buildout -n -c base.cfg
 env:
   - SA_VERSION=1.1.15
   - SA_VERSION=1.2.0

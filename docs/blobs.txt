@@ -1,100 +1,167 @@
 .. _blobs:
 
-================
-CrateDB BLOB API
-================
+=====
+Blobs
+=====
 
-The CrateDB client library provides an API to access the powerful Blob storage
-capabilities of the CrateDB server.
-
-First, a connection object is required. This can be retrieved by importing the
-client module and then connecting to one or more CrateDB server::
-
-    >>> from crate import client
-    >>> connection = client.connect(crate_host)
-
-Every table which has Blob support enabled, may act as a container for
-Blobs. The ``BlobContainer`` object for a specific table can be
-retrieved like this::
-
-    >>> blob_container = connection.get_blob_container('myfiles')
-    >>> blob_container
-    <BlobContainer 'myfiles'>
-
-The returned container object can now be used to manage the contained
-Blobs.
+The CrateDB Python client library provides full access to the powerful `blob
+storage capabilities`_ of your CrateDB cluster.
 
 .. rubric:: Table of Contents
 
 .. contents::
    :local:
 
-Uploading Blobs
-===============
+Get a Blob Container
+====================
 
-To upload a Blob the ``put`` method can be used. This method takes a
-file like object and an optional SHA-1 digest as argument.
+The first thing you will need to do is connect to CrateDB. Follow the
+instructions in the :ref:`connection document <connect>` for more detailed
+information.
 
-In this example we upload a file without specifying the SHA-1 digest::
+For the sake of this example, we will do the following:
 
-    >>> from tempfile import TemporaryFile
-    >>> f = TemporaryFile()
-    >>> _ = f.write(b"this is the content of the file")
-    >>> f.flush()
+    >>> from crate import client
+    >>> connection = client.connect("http://localhost:4200/")
 
-The actual ``put`` - it returns the computed SHA-1 digest upon completion::
+This is a simple connection that connects to a CrateDB node running on
+the local host with the `HTTP endpoint`_ listening on port 4200 (the default).
 
-    >>> print(blob_container.put(f))
-    6d46af79aa5113bd7e6a67fae9ab5228648d3f81
+To work with blobs in CrateDB, you must specifically `create blob tables`_.
 
-.. note::
+The CrateDB Python client allows you to interact with these blob tables via a
+blob container, which you can create like this::
 
-  Omitting the SHA-1 digest results in one extra read of the file
-  contents to compute the digest before the actual upload
-  starts. Therefore, if the application already has a SHA-1 digest for
-  the content, or is able to compute the digest on another read
-  upfront, providing the digest will lead to better performance.
+    >>> blob_container = connection.get_blob_container('my_blobs')
+    >>> blob_container
+    <BlobContainer 'my_blobs'>
 
-Here is another example, which provides the digest in the call::
+Here, we have created a ``BlobContainer`` for the ``my_blobs`` table, using
+``connection`` object.
 
-    >>> _ = f.seek(0)
-    >>> blob_container.put(f, digest='6d46af79aa5113bd7e6a67fae9ab5228648d3f81')
+Now we can start working with our blob container.
+
+Working With the Blob Container
+===============================
+
+Upload Blobs
+------------
+
+The blob container can work with files or *file-like objects*, as long as
+produce bytes when read.
+
+What is a file-like object? Well, to put it simply, any object that provides a
+``read()`` method.
+
+The stream objects provided by the Python standard library `io`_ module and
+`tempfile`_ module are the most commonly used file-like objects.
+
+The `StringIO`_ class is not suitable, as it produces Unicode strings when
+read. But you can easily encode a Unicode string and feed it to a `BytesIO`_
+object.
+
+Here's a trivial example::
+
+    >>> import io
+    >>> bytestream = "An example sentence.".encode("utf8")
+    >>> file = io.BytesIO(bytestream)
+
+This file can then be uploaded to the blob table using the ``put`` method::
+
+    >>> blob_container.put(file)
+    '6f10281ad07d4a35c6ec2f993e6376032b77181d'
+
+Notice that this method computes and returns a `SHA-1 digest`_. This is
+necessary for attempting to save the blob to CrateDB.
+
+If you already have the SHA-1 digest computed, or are able to compute it as part
+of an existing read, this may improve the performance of your application.
+
+If you pass in a SHA-1 digest, it will not be recomputed::
+
+    >>> file.seek(0) # seek to the beginning before attempting to re-upload
+
+    >>> digest = "6f10281ad07d4a35c6ec2f993e6376032b77181d"
+    >>> blob_container.put(file, digest=digest)
     False
 
-.. note::
+Notice that the method returned ``False`` this time. If you specify a digest,
+the return value of the ``put`` method is a boolean indicating whether the
+object was written or not. In this instance, it was not written, because the
+digest is the same as an existing object.
 
-  The above call returned ``False`` because the object already
-  existed. Since the digest is already known by the caller and it makes no
-  sense to return it again, a boolean gets returned which indicates if
-  the Blob was newly created or not.
+Let's make a new object:
 
-Retrieving Blobs
-================
+    >>> bytestream = "Another example sentence.".encode("utf8")
+    >>> digest = hashlib.sha1(bytestream).hexdigest()
+    >>> another_file = io.BytesIO(bytestream)
 
-Retrieving a blob can be done by using the ``get`` method like this::
+And upload it:
 
-    >>> res = blob_container.get('6d46af79aa5113bd7e6a67fae9ab5228648d3f81')
-
-The result is a generator object which returns one chunk per iteration::
-
-    >>> print(next(res))
-    this is the content of the file
-
-The default size of these chunks is 128 kilobytes, but this can be changed by
-using the ``get`` method and suppling the desired chunk size::
-
-    >>> res = blob_container.get('6d46af79aa5113bd7e6a67fae9ab5228648d3f81', 1024 * 128)
-
-It is also possible to check if a blob exists like this::
-
-    >>> blob_container.exists('6d46af79aa5113bd7e6a67fae9ab5228648d3f81')
+    >>> blob_container.put(another_file, digest)
     True
 
-Deleting Blobs
-==============
+The ``put`` method returns ``True``, indicating that the object has been
+written to the blob container.
 
-To delete a blob just call the ``delete`` method, the resulting boolean
-states whether a blob existed under the given digest or not::
+Retrieve Blobs
+--------------
 
-    >>> blob_container.delete('6d46af79aa5113bd7e6a67fae9ab5228648d3f81')
+To retrieve a blob, you need to know its digest.
+
+Let's use the ``digest`` variable we created before to check whether that object
+exists with the ``exists`` method:
+
+    >>> blob_container.exists(digest)
     True
+
+This method returns a boolean value. And in this instance, ``True`` indicates
+that the blob we're interested in is contained within the blob container.
+
+You can get the blob, with the ``get`` method, like so:
+
+    >>> blob_generator = blob_container.get(digest)
+
+Blobs are read in chunks. The default size of these chunks is 128 kilobytes,
+but this can be changed by suppling the desired chunk size to the ``get``
+method, like so::
+
+    >>> res = blob_container.get(digest, 1024 * 128)
+
+The ``blob`` object is a Python `generator`_, meaning that you can call
+``next(blob)`` for each new chunk you want to read, until you encounter a
+``StopIteration`` exception.
+
+Instead of calling ``next()`` manually, the idiomatic way to iterate over a
+generator is like so:
+
+    >>> blob_content = b''
+    >>> for chunk in blob_container.get(digest):
+    ...     blob_content += chunk
+
+
+Delete Blobs
+------------
+
+You can delete a blob with the ``delete`` method and the blob digest, like so::
+
+    >>> blob_container.delete(digest)
+    True
+
+This method returns a boolean status value. In this instance, ``True``
+indicates that the blob was deleted.
+
+We can verify that, like so:
+
+    >>> blob_container.exists(digest)
+    False
+
+.. _blob storage capabilities: https://crate.io/docs/crate/reference/en/latest/general/blobs.html
+.. _BytesIO: https://docs.python.org/3/library/io.html#binary-i-o
+.. _create blob tables: https://crate.io/docs/crate/reference/en/latest/general/blobs.html#creating-a-table-for-blobs
+.. _generator: https://stackoverflow.com/a/1756156
+.. _HTTP endpoint: https://crate.io/docs/crate/reference/en/latest/interfaces/http.html
+.. _io: https://docs.python.org/3/library/io.html
+.. _SHA-1 digest: https://docs.python.org/3/library/hashlib.html
+.. _StringIO: https://docs.python.org/3/library/io.html#io.StringIO
+.. _tempfile: https://docs.python.org/3/library/tempfile.html

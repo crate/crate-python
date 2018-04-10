@@ -1,70 +1,77 @@
+.. _getting-started:
+
 ===============
 Getting Started
 ===============
 
-This page shows you how to get started with the :ref:`Python client library for
-CrateDB <index>`.
+Learn how to install and get started the :ref:`CrateDB Python client library
+<index>`.
+
+.. rubric:: Table of Contents
+
+.. contents::
+   :local:
 
 Prerequisites
 =============
 
-Recent versions of this library require Python 3 (>= 3.4) to run.
+Python 3.4 is recommended.
 
-Use version 0.21.x if you are running Python 2.7/3.3 or version 0.14.x if you
-are running Python 2.6.
+However, :ref:`older versions of Python <python-versions>` can still be used.
+
+`Pip`_ should be installed on your system.
 
 Install
 =======
 
-The CrateDB Python client is available as a `pip`_ package.
+The CrateDB Python client is `available`_ as a `PyPI`_ package.
 
-To install, run:
+To install the package, run:
 
 .. code-block:: sh
 
    sh$ pip install crate
 
-To update, run:
+After that is done, you can import the library, like so:
 
-.. code-block:: sh
+    >>> from crate import client
 
-   sh$ pip install -U crate
+Interactive Use
+===============
 
-If you use Python 2.7 or 3.3 with a recent version of pip, it will install only
-version 0.21.x by default, because newer versions of this package are not
-compatible with Python 2.7/3.3 any more.
+Python provides a REPL_, also known as an interactive language shell. It's a
+handy way to experiment with code and try out new libraries. We recommend
+`iPython`_, which you can install, like so::
 
-Connect to CrateDB
-==================
+    sh$ pip install iPython
 
-Import the client module from the ``crate`` package:
+Once installed, you can start it up, like this::
 
-.. code-block:: python
+    sh$ ipython
 
-   from crate import client
+From there, try importing the CrateDB Python client library and seeing how far
+you get with the built-in ``help()`` function (that can be called on any
+object), iPython's autocompletion, and many other features.
 
-Use the ``client`` module to create a connection:
+.. SEEALSO::
 
-.. code-block:: python
+   `The iPython Documentation`_
 
-   connection = client.connect(SERVER_IP)
+Set Up as a Dependency
+======================
 
-Open a cursor to the database to enable queries.
+There are `many ways`_ to handle Python project dependencies. The official PyPI
+package should be compatible with all of them.
 
-.. code-block:: python
+Next Steps
+==========
 
-   cursor = connection.cursor()
+Learn how to :ref:`connect to CrateDB <connect>`.
 
-Learning More
-=============
-
-Crate.io maintains a `sample Python application`_ that uses this library, which
-may be a good starting point as you learn to use it for the first time. And be
-sure to check out out the `application documentation`_.
-
-Browse the rest of the Python client :ref:`reference documentation <index>` for
-more information.
-
-.. _sample Python application: https://github.com/crate/crate-sample-apps/tree/master/python
-.. _application documentation: https://github.com/crate/crate-sample-apps/blob/master/python/documentation.md
-.. _pip: https://pypi.python.org/pypi/pip
+.. _available: https://pypi.python.org/pypi/pip
+.. _iPython: https://ipython.org/
+.. _many ways: https://packaging.python.org/key_projects/
+.. _Pip: https://pip.pypa.io/en/stable/installing/
+.. _PyPI: https://pypi.org/
+.. _REPL: https://en.wikipedia.org/wiki/Read%E2%80%93eval%E2%80%93print_loop
+.. _The iPython Documentation: https://ipython.readthedocs.io/en/stable/

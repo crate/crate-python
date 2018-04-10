@@ -5,6 +5,10 @@ Changes for crate
 Unreleased
 ==========
 
+- The client now allows to define a different default schema when connecting to
+  CrateDB with the ``schema`` keyword argument. This causes all statements and
+  queries that do not specify a schema explicitly to use the provided schema.
+
 - BREAKING: Dropped support for Python 2.7 and 3.3
   If you are using crate with Python 2.7 or 3.3 already, you will not be able
   to install newer versions of this package.

@@ -61,6 +61,15 @@ also need to provide ``password`` as argument for the ``connect()`` call::
     ...                             username='me',
     ...                             password='my_secret_pw')
 
+Default Schema
+--------------
+
+To connect to CrateDB and use a different default schema than ``doc``, you can
+provide the ``schema`` keyword argument in the ``connect()`` method, like so::
+
+    >>> connection = client.connect([crate_host],
+    ...                             schema='custom_schema')
+
 Inserting Data
 ==============
 

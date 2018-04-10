@@ -99,6 +99,7 @@ class Server(object):
                 headers=None,
                 username=None,
                 password=None,
+                schema=None,
                 **kwargs):
         """Send a request
 
@@ -122,6 +123,8 @@ class Server(object):
             if 'X-User' not in headers:
                 headers['X-User'] = username
 
+        if schema is not None:
+            headers['Default-Schema'] = schema
         headers['Accept'] = 'application/json'
         headers['Content-Type'] = 'application/json'
         kwargs['assert_same_host'] = False
@@ -276,7 +279,8 @@ class Client(object):
                  cert_file=None,
                  key_file=None,
                  username=None,
-                 password=None):
+                 password=None,
+                 schema=None):
         if not servers:
             servers = [self.default_server]
         else:
@@ -292,6 +296,7 @@ class Client(object):
         self._local = threading.local()
         self.username = username
         self.password = password
+        self.schema = schema
 
         self.path = self.SQL_PATH
         if error_trace:
@@ -397,7 +402,7 @@ class Client(object):
             next_server = server or self._get_server()
             try:
                 response = self.server_pool[next_server].request(
-                    method, path, username=self.username, password=self.password, **kwargs)
+                    method, path, username=self.username, password=self.password, schema=self.schema, **kwargs)
                 redirect_location = response.get_redirect_location()
                 if redirect_location and 300 <= response.status <= 308:
                     redirect_server = _server_url(redirect_location)

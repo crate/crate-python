@@ -27,9 +27,11 @@ from distutils.version import StrictVersion
 
 
 class Connection(object):
+
     def __init__(self, servers=None, timeout=None, client=None,
                  verify_ssl_cert=False, ca_cert=None, error_trace=False,
-                 cert_file=None, key_file=None, username=None, password=None):
+                 cert_file=None, key_file=None, username=None, password=None,
+                 schema=None):
         if client:
             self.client = client
         else:
@@ -41,7 +43,8 @@ class Connection(object):
                                  cert_file=cert_file,
                                  key_file=key_file,
                                  username=username,
-                                 password=password)
+                                 password=password,
+                                 schema=schema)
         self.lowest_server_version = self._lowest_server_version()
         self._closed = False
 
@@ -107,7 +110,8 @@ def connect(servers=None,
             cert_file=None,
             key_file=None,
             username=None,
-            password=None):
+            password=None,
+            schema=None):
     """ Create a :class:Connection object
 
     :param servers:
@@ -149,4 +153,5 @@ def connect(servers=None,
                       cert_file=cert_file,
                       key_file=key_file,
                       username=username,
-                      password=password)
+                      password=password,
+                      schema=schema)

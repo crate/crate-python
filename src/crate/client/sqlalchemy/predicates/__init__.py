@@ -70,15 +70,18 @@ class Match(ColumnElement):
 def match(column, term, match_type=None, options=None):
     """Generates match predicate for fulltext search
 
-    :param column: A reference to an index column or an existing column
-     that is of type string and is indexed. It's also allowed to pass multiple
-     columns and boosts as dict
-    :param term: The term to search for. This string is analyzed
-     and the resulting tokens are compared to the already indexed ones.
-    :param match_type (optional): The match type determines how the query_term
-     is applied and the _score is created
-    :param options (optional): The match options further distinguish the way
-     the matching process using a certain match type works.
+    :param column: A reference to a column or an index, or a subcolumn, or a
+     dictionary of subcolumns with boost values.
+
+    :param term: The term to match against. This string is analyzed and the
+     resulting tokens are compared to the index.
+
+    :param match_type (optional): The match type. Determine how the term is
+     applied and the score calculated.
+
+    :param options (optional): The match options. Specify match type behaviour.
+     (Not possible without a specified match type.) Match options must be
+     supplied as a dictionary.
     """
     return Match(column, term, match_type, options)
 

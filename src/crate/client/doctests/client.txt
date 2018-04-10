@@ -2,11 +2,6 @@
 Client Usage
 ============
 
-.. rubric:: Table of Contents
-
-.. contents::
-   :local:
-
 Connect to a Database
 =====================
 
@@ -33,9 +28,8 @@ If no ``servers`` are given, the default one ``http://127.0.0.1:4200`` is used::
     >>> connection.client._active_servers
     ['http://127.0.0.1:4200']
 
-
-If the option ``error_trace`` is set to ``True``, the client will print a whole traceback
-if a server error occurs::
+If the option ``error_trace`` is set to ``True``, the client will print a whole
+traceback if a server error occurs::
 
     >>> connection = client.connect([crate_host], error_trace=True)
 
@@ -73,9 +67,7 @@ provide the ``schema`` keyword argument in the ``connect()`` method, like so::
 Inserting Data
 ==============
 
-.. hide::
-
-   Use user "crate" for rest of the tests::
+Use user "crate" for rest of the tests::
 
     >>> connection = client.connect([crate_host], timeout=2)
 
@@ -99,7 +91,7 @@ To bulk insert data you can use the ``executemany`` function::
 contains a rowcount. If an error occures the rowcount is -2 and the result
 may contain an ``error_message`` depending on the error.
 
-.. Hidden: refresh locations
+Refresh locations:
 
     >>> cursor.execute("REFRESH TABLE locations")
 
@@ -131,16 +123,16 @@ If no more data is available, an empty result is returned::
 fetchmany()
 -----------
 
-``fetch_many()`` returns a list of all remaining rows, containing no more than the specified
-size of rows::
+``fetch_many()`` returns a list of all remaining rows, containing no more than
+the specified size of rows::
 
     >>> cursor.execute("SELECT name FROM locations order by name")
     >>> result = cursor.fetchmany(2)
     >>> pprint(result)
     [[u'Aldebaran'], [u'Algol']]
 
-If a size is not given, the cursor's arraysize, which defaults to '1', determines the number
-of rows to be fetched::
+If a size is not given, the cursor's arraysize, which defaults to '1',
+determines the number of rows to be fetched::
 
     >>> cursor.fetchmany()
     [[u'Allosimanius Syneca']]
@@ -179,8 +171,9 @@ fetchall()
 Cursor Description
 ==================
 
-The ``description`` property of the cursor returns a sequence of 7-item sequences containing the
-column name as first parameter. Just the name field is supported, all other fields are 'None'::
+The ``description`` property of the cursor returns a sequence of 7-item
+sequences containing the column name as first parameter. Just the name field is
+supported, all other fields are 'None'::
 
     >>> cursor.execute("SELECT * FROM locations order by name")
     >>> result = cursor.fetchone()
@@ -217,7 +210,9 @@ The following command closes the cursor::
     >>> cursor.close()
 
 If a cursor is closed, it will be unusable from this point forward.
-If any operation is attempted to a closed cursor an ``ProgrammingError`` will be raised.
+
+If any operation is attempted to a closed cursor an ``ProgrammingError`` will
+be raised.
 
     >>> cursor.execute("SELECT * FROM locations")
     Traceback (most recent call last):
@@ -231,9 +226,9 @@ The following command closes the connection::
 
     >>> connection.close()
 
-If a connection is closed, it will be unusable from this point forward.
-If any operation using the connection is attempted to a closed connection an ``ProgrammingError``
-will be raised::
+If a connection is closed, it will be unusable from this point forward. If any
+operation using the connection is attempted to a closed connection an
+``ProgrammingError`` will be raised::
 
     >>> cursor.execute("SELECT * FROM locations")
     Traceback (most recent call last):

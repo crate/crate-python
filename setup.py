@@ -35,9 +35,7 @@ def read(path):
 
 
 long_description = (
-    read('README.rst') + '\n' +
-    read('docs/client.txt') + '\n' +
-    read('docs/blobs.txt')
+    read('README.rst')
 )
 
 versionf_content = read("src/crate/client/__init__.py")

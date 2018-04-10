@@ -1,9 +1,6 @@
-==================
-Advanced API Usage
-==================
-
+==============
 Client Mocking
---------------
+==============
 
 For testing purposes it is often useful to replace the client used for
 communication with the CrateDB server with a stub or mock.

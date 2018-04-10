@@ -50,7 +50,7 @@ def test_suite():
         (re.compile(r"<type "), "<class "),
     ])
 
-    s = doctest.DocFileSuite('layer.txt',
+    s = doctest.DocFileSuite('doctests/layer.txt',
                              setUp=setUp,
                              optionflags=doctest.NORMALIZE_WHITESPACE |
                              doctest.ELLIPSIS,

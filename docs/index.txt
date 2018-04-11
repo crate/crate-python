@@ -20,7 +20,7 @@ This library:
    client
    sqlalchemy
    blobs
-   advanced_usage
+   advanced-usage
    https
 
 .. _CrateDB: https://crate.io/products/cratedb/

@@ -358,7 +358,7 @@ def test_suite():
         'http.txt',
         'blob.txt',
         '../../../docs/client.txt',
-        '../../../docs/advanced_usage.txt',
+        '../../../docs/advanced-usage.txt',
         '../../../docs/blobs.txt',
         checker=checker,
         setUp=setUpWithCrateLayer,

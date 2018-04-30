@@ -394,7 +394,6 @@ class CrateCompiler(compiler.SQLCompiler):
             _column_as_key, _getattr_col_key, _col_bind_name = \
                 crud._key_getters_for_crud_column(compiler)
 
-
         # if we have statement parameters - set defaults in the
         # compiled params
         if compiler.column_keys is None:

@@ -80,7 +80,6 @@ class DialectTest(TestCase):
         fake_cursor.fetchall.assert_called_once_with()
         in_("information_schema.key_column_usage", self.executed_statement)
 
-
     def test_get_table_names(self):
         fake_cursor.rowcount = 1
         fake_cursor.fetchall = MagicMock(return_value=[["t1"], ["t2"]])

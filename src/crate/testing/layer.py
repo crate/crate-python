@@ -180,7 +180,6 @@ class CrateLayer(object):
             layer.tearDown = new_teardown
         return layer
 
-
     def __init__(self,
                  name,
                  crate_home,
@@ -315,7 +314,6 @@ class CrateLayer(object):
             self._wait_for_start()
             self._wait_for_master()
             sys.stderr.write('\nCrate instance ready.\n')
-
 
     def stop(self):
         if self.process:

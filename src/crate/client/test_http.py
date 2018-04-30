@@ -222,7 +222,6 @@ class HttpClientTest(TestCase):
         finally:
             client.close()
 
-
     @patch(REQUEST, autospec=True)
     def test_decimal_serialization(self, request):
         client = Client(servers="localhost:4200")

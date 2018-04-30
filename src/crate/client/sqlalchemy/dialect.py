@@ -221,7 +221,6 @@ class CrateDialect(default.DefaultDialect):
         )
         return [row[0] for row in cursor.fetchall()]
 
-
     @reflection.cache
     def get_columns(self, connection, table_name, schema=None, **kw):
         query = "SELECT column_name, data_type " \

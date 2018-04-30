@@ -32,6 +32,7 @@ from .test_layer import LayerUtilsTest
 def docs_path(*parts):
     return os.path.join(os.path.dirname(os.path.dirname(__file__)), *parts)
 
+
 def crate_path(*parts):
     return os.path.abspath(docs_path('..', '..', 'parts', 'crate', *parts))
 

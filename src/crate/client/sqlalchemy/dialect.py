@@ -65,6 +65,7 @@ except:
 
 log = logging.getLogger(__name__)
 
+
 class Date(sqltypes.Date):
     def bind_processor(self, dialect):
         def process(value):

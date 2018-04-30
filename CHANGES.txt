@@ -5,19 +5,19 @@ Changes for crate
 Unreleased
 ==========
 
+2018/05/02 0.22.0
+=================
+
+- BREAKING: Dropped support for Python 2.7 and 3.3
+  If you are using this package with Python 2.7 or 3.3 already, you will not be
+  able to install newer versions of this package.
+
 - The client now allows to define a different default schema when connecting to
   CrateDB with the ``schema`` keyword argument. This causes all statements and
   queries that do not specify a schema explicitly to use the provided schema.
 
-- BREAKING: Dropped support for Python 2.7 and 3.3
-  If you are using crate with Python 2.7 or 3.3 already, you will not be able
-  to install newer versions of this package.
-
 - Updated ``get_table_names()`` method in SqlAlchemy dialect to only return
-  tables but not views.
-
-- Added configuration for the sphinx_sitemap extension which allows to
-  create a sitemap.xml from the documentation.
+  tables but not views. This enables compatibility with CrateDB 3.0 and newer.
 
 2018/03/14 0.21.3
 =================

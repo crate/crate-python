@@ -457,7 +457,8 @@ class SharedStateRequestHandler(BaseHTTPRequestHandler):
         self.server.SHARED['schema'] = self.headers.get('Default-Schema')
 
         if self.headers.get('Authorization') is not None:
-            credentials = b64decode(self.headers['Authorization'].replace('Basic ','')).decode('utf-8').split(":", 1)
+            auth_header = self.headers['Authorization'].replace('Basic ', '')
+            credentials = b64decode(auth_header).decode('utf-8').split(":", 1)
             self.server.SHARED['username'] = credentials[0]
             if len(credentials) > 1 and credentials[1]:
                 self.server.SHARED['password'] = credentials[1]

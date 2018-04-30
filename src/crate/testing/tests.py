@@ -22,7 +22,6 @@
 
 import os
 import re
-import socket
 import unittest
 import doctest
 import tempfile

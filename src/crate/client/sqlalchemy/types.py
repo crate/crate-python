@@ -47,6 +47,9 @@ class MutableList(Mutable, list):
         list.__setitem__(self, key, value)
         self.changed()
 
+    def __eq__(self, other):
+        return list.__eq__(self, other)
+
     def append(self, item):
         list.append(self, item)
         self.changed()
@@ -121,6 +124,9 @@ class MutableDict(Mutable, dict):
         if isinstance(value, dict) and not isinstance(value, MutableDict):
             return MutableDict(value, self.to_update, overwrite_key)
         return value
+
+    def __eq__(self, other):
+        return dict.__eq__(self, other)
 
 
 class _Craty(sqltypes.UserDefinedType):

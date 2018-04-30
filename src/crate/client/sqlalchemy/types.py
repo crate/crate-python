@@ -55,10 +55,6 @@ class MutableList(Mutable, list):
         list.insert(self, idx, item)
         self.changed()
 
-    def __setslice__(self, i, j, other):
-        list.__setslice__(self, i, j, other)
-        self.changed()
-
     def extend(self, iterable):
         list.extend(self, iterable)
         self.changed()

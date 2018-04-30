@@ -224,8 +224,8 @@ def _pool_kw_args(verify_ssl_cert, ca_cert, client_cert, client_key):
     return {
         'ca_certs': ca_cert,
         'cert_reqs': ssl.CERT_REQUIRED if verify_ssl_cert else ssl.CERT_NONE,
-        'cert_file' : client_cert,
-        'key_file' : client_key,
+        'cert_file': client_cert,
+        'key_file': client_key,
     }
 
 

@@ -94,7 +94,7 @@ class SqlAlchemyUpdateTest(TestCase):
         self.session.query(self.character).update({
             # change everyone's name to Julia
             self.character.name: 'Julia',
-            self.character.obj: {'favorite_book' : 'Romeo & Juliet'}
+            self.character.obj: {'favorite_book': 'Romeo & Juliet'}
         })
 
         self.session.commit()

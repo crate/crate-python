@@ -380,7 +380,6 @@ class SqlAlchemyDictTypeTest(TestCase):
         session.commit()
         return session, char
 
-
     @patch('crate.client.connection.Cursor', FakeCursor)
     def test_nested_object_change_tracking(self):
         session, char = self._setup_nested_object_char()
@@ -392,7 +391,6 @@ class SqlAlchemyDictTypeTest(TestCase):
              "WHERE characters.name = ?"),
             ({'y': {'z': 2}, 'x': 3}, 'Trillian')
         )
-
 
     @patch('crate.client.connection.Cursor', FakeCursor)
     def test_deep_nested_object_change_tracking(self):
@@ -419,7 +417,6 @@ class SqlAlchemyDictTypeTest(TestCase):
              "WHERE characters.name = ?"),
             ({'y': {}, 'x': 1}, 'Trillian')
         )
-
 
     @patch('crate.client.connection.Cursor', FakeCursor)
     def test_object_array_append_change_tracking(self):

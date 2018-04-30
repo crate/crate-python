@@ -59,11 +59,12 @@ try:
     TYPES_MAP["double_array"] = ARRAY(sqltypes.DECIMAL)
     TYPES_MAP["float_array"] = ARRAY(sqltypes.Float)
     TYPES_MAP["string_array"] = ARRAY(sqltypes.String)
-except:
+except Exception:
     pass
 
 
 log = logging.getLogger(__name__)
+
 
 class Date(sqltypes.Date):
     def bind_processor(self, dialect):
@@ -221,7 +222,6 @@ class CrateDialect(default.DefaultDialect):
         )
         return [row[0] for row in cursor.fetchall()]
 
-
     @reflection.cache
     def get_columns(self, connection, table_name, schema=None, **kw):
         query = "SELECT column_name, data_type " \
@@ -243,6 +243,7 @@ class CrateDialect(default.DefaultDialect):
             query = """SELECT column_name
                     FROM information_schema.key_column_usage
                     WHERE table_name = ? AND table_catalog = ?"""
+
             def result_fun(result):
                 rows = result.fetchall()
                 return set(map(lambda el: el[0], rows))
@@ -252,9 +253,11 @@ class CrateDialect(default.DefaultDialect):
                    WHERE table_name = ? AND {schema_col} = ?
                    AND constraint_type='PRIMARY_KEY'
                    """.format(schema_col=self.schema_column)
+
             def result_fun(result):
                 rows = result.fetchone()
                 return set(rows[0] if rows else [])
+
         pk_result = engine.execute(
             query,
             [table_name, schema or self.default_schema_name]

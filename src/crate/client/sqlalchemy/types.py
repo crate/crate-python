@@ -24,7 +24,9 @@ from sqlalchemy.sql import operators, expression
 from sqlalchemy.sql import default_comparator
 from sqlalchemy.ext.mutable import Mutable
 
+
 class MutableList(Mutable, list):
+
     @classmethod
     def coerce(cls, key, value):
         """ Convert plain list to MutableList """

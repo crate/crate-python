@@ -76,6 +76,7 @@ def _download_and_extract(uri, directory):
         with tarfile.open(fileobj=tmpfile) as t:
             t.extractall(directory)
 
+
 def wait_for_http_url(log, timeout=30, verbose=False):
     start = time.time()
     while True:
@@ -179,7 +180,6 @@ class CrateLayer(object):
                 tearDown(*args, **kws)
             layer.tearDown = new_teardown
         return layer
-
 
     def __init__(self,
                  name,
@@ -315,7 +315,6 @@ class CrateLayer(object):
             self._wait_for_start()
             self._wait_for_master()
             sys.stderr.write('\nCrate instance ready.\n')
-
 
     def stop(self):
         if self.process:

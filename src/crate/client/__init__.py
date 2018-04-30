@@ -22,6 +22,11 @@
 from .connection import connect
 from .exceptions import Error
 
+__all__ = [
+    connect,
+    Error,
+]
+
 # version string read from setup.py using a regex. Take care not to break the
 # regex!
 __version__ = "0.22.0.dev0"

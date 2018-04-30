@@ -128,6 +128,7 @@ def refresh(table):
         cursor = conn.cursor()
         cursor.execute("refresh table %s" % table)
 
+
 def setUpWithCrateLayer(test):
     test.globs['HttpClient'] = http.Client
     test.globs['crate_host'] = crate_host

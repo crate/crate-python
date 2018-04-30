@@ -56,7 +56,6 @@ class SqlAlchemyArrayTypeTest(TestCase):
     def assertSQL(self, expected_str, actual_expr):
             self.assertEqual(expected_str, str(actual_expr).replace('\n', ''))
 
-
     def test_create_with_array(self):
         t1 = sa.Table('t', self.metadata,
                       sa.Column('int_array', sa.ARRAY(sa.Integer)),

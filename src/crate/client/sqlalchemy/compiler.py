@@ -196,18 +196,16 @@ class CrateCompiler(compiler.SQLCompiler):
         if not crud_params and \
                 not self.dialect.supports_default_values and \
                 not self.dialect.supports_empty_insert:
-            raise NotImplementedError("The '%s' dialect with current database "
-                                   "version settings does not support empty "
-                                   "inserts." %
-                                   self.dialect.name)
+            raise NotImplementedError(
+                "The '%s' dialect with current database version settings does "
+                "not support empty inserts." % self.dialect.name)
 
         if insert_stmt._has_multi_parameters:
             if not self.dialect.supports_multivalues_insert:
                 raise NotImplementedError(
                     "The '%s' dialect with current database "
                     "version settings does not support "
-                    "in-place multirow inserts." %
-                    self.dialect.name)
+                    "in-place multirow inserts." % self.dialect.name)
             crud_params_single = crud_params[0]
         else:
             crud_params_single = crud_params
@@ -393,7 +391,6 @@ class CrateCompiler(compiler.SQLCompiler):
         else:
             _column_as_key, _getattr_col_key, _col_bind_name = \
                 crud._key_getters_for_crud_column(compiler)
-
 
         # if we have statement parameters - set defaults in the
         # compiled params

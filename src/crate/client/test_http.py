@@ -516,7 +516,7 @@ class TestingHttpServerTestCase(TestCase):
             try:
                 with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
                     s.connect(self.server_address)
-            except:
+            except Exception:
                 time.sleep(.25)
             else:
                 break

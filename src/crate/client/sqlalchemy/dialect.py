@@ -59,7 +59,7 @@ try:
     TYPES_MAP["double_array"] = ARRAY(sqltypes.DECIMAL)
     TYPES_MAP["float_array"] = ARRAY(sqltypes.Float)
     TYPES_MAP["string_array"] = ARRAY(sqltypes.String)
-except:
+except Exception:
     pass
 
 

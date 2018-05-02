@@ -27,7 +27,7 @@ matrix:
   allow_failures:
     - python: nightly
 before_script:
-  - bin/flake8 --ignore E501,C901 --count src
+  - bin/flake8
 script:
   - bin/coverage run bin/test -vv1
 after_success:

@@ -70,14 +70,16 @@ class BlobContainer(object):
             return created
         return actual_digest
 
-    def get(self, digest):
+    def get(self, digest, chunk_size=1024 * 128):
         """
         Return the contents of a blob
 
         :param digest: the hex digest of the blob to return
+        :param chunk_size: the size of the chunks returned on each iteration
         :return: generator returning chunks of data
         """
-        return self.conn.client.blob_get(self.container_name, digest)
+        return self.conn.client.blob_get(self.container_name, digest,
+                                         chunk_size)
 
     def delete(self, digest):
         """

@@ -5,6 +5,8 @@ Changes for crate
 Unreleased
 ==========
 
+- Added ability to specify chunk size when getting a blob from the blob container
+
 2018/05/02 0.22.0
 =================
 

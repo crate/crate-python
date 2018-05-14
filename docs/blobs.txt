@@ -80,6 +80,11 @@ The result is a generator object which returns one chunk per iteration::
     >>> print(next(res))
     this is the content of the file
 
+The default size of these chunks is 128 kilobytes, but this can be changed by
+using the ``get`` method and suppling the desired chunk size::
+
+    >>> res = blob_container.get('6d46af79aa5113bd7e6a67fae9ab5228648d3f81', 1024 * 128)
+
 It is also possible to check if a blob exists like this::
 
     >>> blob_container.exists('6d46af79aa5113bd7e6a67fae9ab5228648d3f81')

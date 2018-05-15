@@ -1,61 +1,24 @@
-Crate Python Adapter
-Copyright 2013-2015 CRATE Technology GmbH ("Crate")
+CrateDB Python Adapter
+Copyright 2013-2018 Crate.IO GmbH ("Crate")
 
 
-Third party dependencies:
+Licensed to Crate.IO GmbH (referred to in this notice as "Crate") under one or
+more contributor license agreements.
 
-=========================================================================
+Unless otherwise stated, every component of the CrateDB Python Adapter is
+licensed under the Apache License, Version 2.0.
 
-Buildout
-http://www.buildout.org
-Copyright (c) 2006 Zope Foundation and Contributors.
-License: Zope Public License, Version 2.1 (ZPL)
+Third-party components bundled with the CrateDB Python Adapter are listed in
+the LICENSE file along with their respective licenses. Any additional mandatory
+notices pertaining to those dependencies will be reproduced in this file.
 
-=========================================================================
+Crate provides pre-built releases for convenience, also known as convenience
+releases. Building the CrateDB Python Adapter from source pulls in a number of
+additional third-party dependencies. Hence, convenience releases will contain a
+mix of CrateDB Python Adapter source code and third-party build-time
+dependencies not listed in the LICENSE file or in this file.
 
-PrettyTable
-http://code.google.com/p/prettytable/
-Copyright (c) 2009-2012 Luke Maurits <luke@maurits.id.au>
-License: BSD-3-Clause (http://opensource.org/licenses/BSD-3-Clause)
-
-=========================================================================
-
-appdirs
-https://github.com/ActiveState/appdirs
-Copyright (c) 2010 ActiveState Software Inc.
-License: MIT (http://opensource.org/licenses/MIT)
-
-=========================================================================
-
-six
-http://pypi.python.org/pypi/six/
-Copyright (c) 2010-2014 Benjamin Peterson
-License: MIT (http://opensource.org/licenses/MIT)
-
-=========================================================================
-
-Requests
-http://requests-library.org
-Copyright 2014 Kenneth Reitz
-License: Apache License v2 (http://www.apache.org/licenses)
-
--------------------------------------------------------------------------
-
-Urllib3
-https://github.com/shazow/urllib3
-Copyright 2008-2011 Andrey Petrov and contributors (https://github.com/shazow/urllib3/blob/master/CONTRIBUTORS.txt)
-License: MIT (http://www.opensource.org/licenses/mit-license.php)
-
--------------------------------------------------------------------------
-
-Charade
-https://github.com/sigmavirus24/charade
-Maintained by Ian Cordasco
-License: GNU Lesser General Public License, Version 2.1
-
--------------------------------------------------------------------------
-
-CA Bundle License
-License: GNU Lesser General Public License, Version 2.1
-
-=========================================================================
+Crate is committed to only using permissively licensed third-party code.
+However, for the time being, if you make use of convenience releases, it is
+your responsibility to check the licensing status of the bundled third-party
+build-time dependencies.

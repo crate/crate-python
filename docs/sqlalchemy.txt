@@ -44,7 +44,7 @@ Database URLs
 An SQLAlchemy database is represented by special type of *Uniform Resource
 Locator* (URL) called a `database URL`_.
 
-The basic form of database URL for CrateDB looks like this::
+The simplest database URL for CrateDB looks like this::
 
     crate://<HOST>
 

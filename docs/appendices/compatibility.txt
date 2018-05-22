@@ -1,8 +1,8 @@
 .. _compatibility:
 
-===================
-Compatibility Notes
-===================
+=============
+Compatibility
+=============
 
 .. rubric:: Table of Contents
 
@@ -11,8 +11,8 @@ Compatibility Notes
 
 .. _versions:
 
-Supported Versions
-==================
+Version Notes
+=============
 
 .. _python-versions:
 
@@ -113,8 +113,8 @@ Consult the following table for CrateDB version compatibility notes:
 
 .. _implementations:
 
-Implementations
-===============
+Implementation Notes
+====================
 
 .. _sqlalchemy-implementation:
 
@@ -196,10 +196,10 @@ Version Notes
 
 .. _earlier-versions:
 
-Earlier Versions
-================
+Older Versions
+==============
 
-For information about earlier versions of the client, consult `the 0.14.2
+For information about older versions of the client, consult `the 0.14.2
 changelog`_.
 
 .. _commit(): http://docs.sqlalchemy.org/en/latest/orm/session_api.html#sqlalchemy.orm.session.Session.commit

@@ -78,7 +78,7 @@ described in the previous section.
 
 You can pass in as many node URLs as you like.
 
-.. NOTE::
+.. TIP::
 
     For every query, the client will attempt to connect to each node in sequence
     until a successful connection is made. Nodes are moved to the end of the
@@ -218,7 +218,7 @@ Next Steps
 
 Once you're connected, you can :ref:`query CrateDB <query>`.
 
-.. TIP::
+.. SEEALSO::
 
    Check out the `sample application`_ (and the corresponding `documentation`_)
    for a practical demonstration of this driver in use.

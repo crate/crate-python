@@ -5,6 +5,9 @@ Changes for crate
 Unreleased
 ==========
 
+- Client no longer removes servers from the active server list when encountering a
+  connection reset or a broken pipe error.
+
 2018/05/02 0.22.0
 =================
 

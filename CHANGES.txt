@@ -7,6 +7,9 @@ Unreleased
 
 - Added ability to specify chunk size when getting a blob from the blob container
 
+- Client no longer removes servers from the active server list when encountering a
+  connection reset or a broken pipe error.
+
 2018/05/02 0.22.0
 =================
 

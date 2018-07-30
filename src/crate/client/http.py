@@ -50,6 +50,7 @@ logger = logging.getLogger(__name__)
 
 _HTTP_PAT = pat = re.compile('https?://.+', re.I)
 SRV_UNAVAILABLE_STATUSES = set((502, 503, 504, 509))
+PRESERVE_ACTIVE_SERVER_EXCEPTIONS = set((ConnectionResetError, BrokenPipeError))
 SSL_ONLY_ARGS = set(('ca_certs', 'cert_reqs', 'cert_file', 'key_file'))
 
 
@@ -425,9 +426,16 @@ class Client(object):
                     raise ConnectionError(
                         "Server not available, exception: %s" % ex_message
                     )
-                with self._lock:
-                    # drop server from active ones
-                    self._drop_server(next_server, ex_message)
+                preserve_server = False
+                if isinstance(ex, urllib3.exceptions.ProtocolError):
+                    preserve_server = any(
+                        t in [type(arg) for arg in ex.args]
+                        for t in PRESERVE_ACTIVE_SERVER_EXCEPTIONS
+                    )
+                if (not preserve_server):
+                    with self._lock:
+                        # drop server from active ones
+                        self._drop_server(next_server, ex_message)
             except Exception as e:
                 raise ProgrammingError(_ex_to_message(e))
 

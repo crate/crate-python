@@ -96,6 +96,23 @@ def fail_sometimes(*args, **kwargs):
 
 class HttpClientTest(TestCase):
 
+    @patch(REQUEST, fake_request([fake_response(200),
+                                  fake_response(104, 'Connection reset by peer'),
+                                  fake_response(503, 'Service Unavailable')]))
+    def test_connection_reset_exception(self):
+        client = Client(servers="localhost:4200")
+        client.sql('select 1')
+        client.sql('select 2')
+        self.assertEqual(['http://localhost:4200'], list(client._active_servers))
+        try:
+            client.sql('select 3')
+        except ProgrammingError:
+            self.assertEqual([], list(client._active_servers))
+        else:
+            self.assertTrue(False)
+        finally:
+            client.close()
+
     def test_no_connection_exception(self):
         client = Client()
         self.assertRaises(ConnectionError, client.sql, 'select foo')

@@ -7,15 +7,8 @@ crate-docs-theme
 
 sphinx-autobuild==0.6.0
 
-# the next section should exact copy of the hosted RTD environment (please
-# update if you notice that this is not the case)
+# the next section should mirror the RTD environment
 
 alabaster>=0.7,<0.8,!=0.7.5
-commonmark==0.5.4
-docutils==0.13.1
-mock==1.0.1
-pillow==2.6.1
-Pygments==2.2.0
-recommonmark==0.4.0
-setuptools==37.0.0
-sphinx==1.6.5
+setuptools<41
+sphinx==1.7.4

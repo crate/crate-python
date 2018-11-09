@@ -203,7 +203,7 @@
    limitations under the License.
 
 
-================================================================================
+===============================================================================
 
 For the `bootstrap.py` file:
 
@@ -256,3 +256,48 @@ PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF
 LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
 NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE,
 EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+
+
+===============================================================================
+
+For the `docs` directory:
+
+The source files for the documentation are licensed under the Apache License
+Version 2.0. These source files are used by the project maintainers to build
+online documentation for end-users:
+
+  <https://crate.io/docs/clients/python/en/latest/>
+
+If you want to make contributions to the documentation, it may be necessary for
+you to build the documentation yourself by following the instructions in the
+`DEVELOP.rst` file. If you do this, a number of third-party software components
+are necessary.
+
+We do not ship the source code for these optional third-party software
+components or their dependencies, so we cannot make any guarantees about the
+licensing status of these components.
+
+However, for convenience, the documentation build system explicitly references
+the following software components (grouped by license):
+
+PSF License:
+
+ - Python 3 <https://docs.python.org/3/license.html>
+
+MIT License:
+
+ - pip <https://pypi.org/project/pip/>
+ - setuptools <https://pypi.org/project/setuptools/>
+ - sphinx-autobuild <https://pypi.org/project/sphinx-autobuild/>
+
+BSD License:
+
+ - alabaster <https://pypi.org/project/alabaster/>
+ - sphinx <https://pypi.org/project/Sphinx/>
+
+Apache License 2.0:
+
+ - crate-docs-theme <https://pypi.org/project/crate-docs-theme/>
+
+Please note that each of these components may specify its own dependencies and
+those dependencies may be licensed differently.

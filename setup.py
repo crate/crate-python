@@ -50,7 +50,7 @@ setup(
     name='crate',
     version=version,
     url='https://github.com/crate/crate-python',
-    author='CRATE Technology GmbH',
+    author='Crate.io',
     author_email='office@crate.io',
     package_dir={'': 'src'},
     description='CrateDB Python Client',

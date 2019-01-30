@@ -319,6 +319,7 @@ class CrateLayer(object):
     def stop(self):
         if self.process:
             self.process.terminate()
+            self.process.__exit__(None, None, None)
         self.process = None
         self.monitor.stop()
         self._clean()

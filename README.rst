@@ -73,19 +73,16 @@ Help
 
 Looking for more help?
 
-- Read `the project documentation`_
-- Check `StackOverflow`_ for common problems
-- Chat with us on `Slack`_
-- Get `paid support`_
+- Read the `project docs`_
+- Check out our `support channels`_
 
 .. _contribution docs: CONTRIBUTING.rst
 .. _Crate.io: http://crate.io/
 .. _CrateDB: https://github.com/crate/crate
 .. _DB API 2.0: http://www.python.org/dev/peps/pep-0249/
 .. _developer docs: DEVELOP.rst
-.. _paid support: https://crate.io/pricing/
 .. _pip: https://pypi.python.org/pypi/pip
-.. _Slack: https://crate.io/docs/support/slackin/
 .. _SQLAlchemy: http://www.sqlalchemy.org
 .. _StackOverflow: https://stackoverflow.com/tags/crate
-.. _the project documentation: https://crate.io/docs/reference/python/
+.. _support channels: https://crate.io/support/
+.. _project docs: https://crate.io/docs/reference/python/

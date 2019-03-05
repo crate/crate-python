@@ -44,12 +44,12 @@ log = logging.getLogger(__name__)
 
 CRATE_CONFIG_ERROR = 'crate_config must point to a folder or to a file named "crate.yml"'
 HTTP_ADDRESS_RE = re.compile(
-    '.*\[(http|.*HttpServer.*)\s*] \[.*\] .*'
+    r'.*\[(http|.*HttpServer.*)\s*] \[.*\] .*'
     'publish_address {'
-    '(?:inet\[[\w\d\.-]*/|\[)?'
-    '(?:[\w\d\.-]+/)?'
-    '(?P<addr>[\d\.:]+)'
-    '(?:\])?'
+    r'(?:inet\[[\w\d\.-]*/|\[)?'
+    r'(?:[\w\d\.-]+/)?'
+    r'(?P<addr>[\d\.:]+)'
+    r'(?:\])?'
     '}'
 )
 
@@ -131,7 +131,6 @@ class CrateLayer(object):
 
     tmpdir = tempfile.gettempdir()
     wait_interval = 0.2
-    conn_pool = urllib3.PoolManager(num_pools=1)
 
     @staticmethod
     def from_uri(uri,
@@ -157,7 +156,7 @@ class CrateLayer(object):
         """
         directory = directory or tempfile.mkdtemp()
         filename = os.path.basename(uri)
-        crate_dir = re.sub('\.tar(\.gz)?$', '', filename)
+        crate_dir = re.sub(r'\.tar(\.gz)?$', '', filename)
         crate_home = os.path.join(directory, crate_dir)
 
         if os.path.exists(crate_home):
@@ -224,6 +223,7 @@ class CrateLayer(object):
         self.env = env or {}
         self.env.setdefault('CRATE_USE_IPV4', 'true')
         self._stdout_consumers = []
+        self.conn_pool = urllib3.PoolManager(num_pools=1)
 
         crate_home = os.path.abspath(crate_home)
         if crate_exec is None:
@@ -319,7 +319,10 @@ class CrateLayer(object):
     def stop(self):
         if self.process:
             self.process.terminate()
-        self.process = None
+            self.process.communicate(timeout=10)
+            self.process.stdout.close()
+            self.process = None
+        self.conn_pool.clear()
         self.monitor.stop()
         self._clean()
 

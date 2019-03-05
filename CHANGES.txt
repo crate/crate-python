@@ -5,6 +5,8 @@ Changes for crate
 Unreleased
 ==========
 
+- Fixed a resource leak in ``CrateLayer``
+
 - Added ability to specify chunk size when getting a blob from the blob container
 
 2018/08/08 0.22.1

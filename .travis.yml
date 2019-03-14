@@ -7,10 +7,14 @@ python:
   - nightly
 sudo:
   false
-addons:
-  apt:
-    packages:
-      - oracle-java8-set-default
+jdk:
+  - openjdk11
+matrix:
+  include:
+    - jdk: openjdk11
+      before_install:
+        - rm "${JAVA_HOME}/lib/security/cacerts"
+        - ln -s /etc/ssl/certs/java/cacerts "${JAVA_HOME}/lib/security/cacerts"
 before_install:
   # clean existing dependencies to avoid clashes
   - pip freeze | xargs pip uninstall -y

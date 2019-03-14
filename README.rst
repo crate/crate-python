@@ -22,8 +22,8 @@ CrateDB Python Client
     :target: https://pypi.python.org/pypi/crate/
     :alt: Wheel
 
-.. image:: https://img.shields.io/coveralls/crate/crate-python.svg
-    :target: https://coveralls.io/r/crate/crate-python?branch=master
+.. image:: https://coveralls.io/repos/github/crate/crate-python/badge.svg?branch=master
+    :target: https://coveralls.io/github/crate/crate-python?branch=master
     :alt: Coverage
 
 |

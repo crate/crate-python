@@ -230,7 +230,7 @@ tarball::
 
     >>> import configparser
     >>> config = configparser.ConfigParser()
-    >>> config.read(os.path.join(os.getcwd(), "..", "..", "versions.cfg"))
+    >>> config.read(project_root("versions.cfg"))
     ['.../versions.cfg']
 
     >>> version = config["versions"]["crate_server"]

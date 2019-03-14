@@ -30,14 +30,27 @@ from .test_layer import LayerUtilsTest
 
 
 def docs_path(*parts):
-    return os.path.join(os.path.dirname(os.path.dirname(__file__)), *parts)
+    return os.path.abspath(
+        os.path.join(
+            os.path.dirname(os.path.dirname(__file__)), *parts
+        )
+    )
+
+
+def project_root(*parts):
+    return os.path.abspath(
+        os.path.join(docs_path("..", ".."), *parts)
+    )
 
 
 def crate_path(*parts):
-    return os.path.abspath(docs_path('..', '..', 'parts', 'crate', *parts))
+    return os.path.abspath(
+        project_root("parts", "crate", *parts)
+    )
 
 
 def setUp(test):
+    test.globs['project_root'] = project_root
     test.globs['crate_path'] = crate_path
     test.globs['tempfile'] = tempfile
     test.globs['os'] = os

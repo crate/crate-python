@@ -5,6 +5,8 @@ Changes for crate
 Unreleased
 ==========
 
+- Added support for Python 3.7 and made that version the recommended one.
+
 2019/03/05 0.23.0
 =================
 

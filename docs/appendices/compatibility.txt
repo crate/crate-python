@@ -19,7 +19,7 @@ Version Notes
 Python
 ------
 
-Python 3.4 and the latest client library version is recommended.
+Python 3.7 and the latest client library version is recommended.
 
 However, if you are running an older version of Python, older versions of the
 CrateDB Python client library can be used.

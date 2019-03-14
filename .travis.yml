@@ -26,7 +26,7 @@ install:
   - bin/buildout -n -c base.cfg
 env:
   - SA_VERSION=1.1.15
-  - SA_VERSION=1.2.0
+  - SA_VERSION=1.2.18
 matrix:
   allow_failures:
     - python: nightly

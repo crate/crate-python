@@ -69,7 +69,7 @@ setup(
     extras_require=dict(
         test=['zope.testing',
               'zc.customdoctests>=1.0.1'],
-        sqlalchemy=['sqlalchemy>=1.0.0']
+        sqlalchemy=['sqlalchemy>=1.0,<1.3']
     ),
     python_requires='>=3.4',
     install_requires=requirements,

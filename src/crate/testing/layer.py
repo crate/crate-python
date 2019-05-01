@@ -78,10 +78,10 @@ def _download_and_extract(uri, directory):
 
 
 def wait_for_http_url(log, timeout=30, verbose=False):
-    start = time.time()
+    start = time.monotonic()
     while True:
         line = log.readline().decode('utf-8').strip()
-        elapsed = time.time() - start
+        elapsed = time.monotonic() - start
         if verbose:
             sys.stderr.write('[{:>4.1f}s]{}\n'.format(elapsed, line))
         m = HTTP_ADDRESS_RE.match(line)
@@ -330,13 +330,13 @@ class CrateLayer(object):
         self.stop()
 
     def _wait_for(self, validator):
-        start = time.time()
+        start = time.monotonic()
 
         line_buf = LineBuffer()
         self.monitor.consumers.append(line_buf)
 
         while True:
-            wait_time = time.time() - start
+            wait_time = time.monotonic() - start
             try:
                 if validator():
                     break

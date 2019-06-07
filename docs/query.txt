@@ -24,7 +24,7 @@ Query CrateDB
 .. contents::
    :local:
 
-Using a Cursor
+Using a cursor
 ==============
 
 After :ref:`connecting to CrateDB <connect>`, you can execute queries via a
@@ -36,10 +36,10 @@ Open a cursor like so::
 
 .. _inserts:
 
-Inserting Data
+Inserting data
 ==============
 
-Regular Inserts
+Regular inserts
 ---------------
 
 Regular inserts are possible with the ``execute()`` method, like so:
@@ -60,7 +60,7 @@ in the order they appear.
    Always use the string interpolation feature of the client library (per the
    above example) to guard against malicious input.
 
-Bulk Inserts
+Bulk inserts
 ------------
 
 `Bulk inserts`_ are possible with the ``executemany()`` method, which takes a
@@ -80,10 +80,10 @@ dictionary may additionally have an ``error_message`` key.
 
 .. _selects:
 
-Selecting Data
+Selecting data
 ==============
 
-Executing a Query
+Executing a query
 -----------------
 
 Selects can be performed with the ``execute()`` method, like so::
@@ -101,7 +101,7 @@ argument) where the ``?`` character appears.
 After executing a query, you can fetch the results using one of three fetch
 methods, detailed below.
 
-Fetching Results
+Fetching results
 ----------------
 
 ``fetchone()``
@@ -154,7 +154,7 @@ remaining rows::
      ['Old Faithful'],
      ['Outer Eastern Rim']]
 
-Accessing Column Names
+Accessing column names
 ======================
 
 Result rows are lists, not dictionaries. Which means that they do use contain

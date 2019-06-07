@@ -15,7 +15,7 @@ section for further information.
 
 .. _data-types-db-api:
 
-Database API Client
+Database API client
 ===================
 
 This section documents data types for the CrateDB :ref:`Database API client
@@ -107,7 +107,7 @@ This section documents data types for the CrateDB :ref:`SQLAlchemy dialect
 
 .. _sqlalchemy-type-map:
 
-Type Map
+Type map
 --------
 
 The CrateDB dialect maps between data types like so:

@@ -12,7 +12,7 @@ storage capabilities`_ of your CrateDB cluster.
 .. contents::
    :local:
 
-Get a Blob Container
+Get a blob container
 ====================
 
 The first thing you will need to do is connect to CrateDB. Follow the
@@ -41,10 +41,10 @@ Here, we have created a ``BlobContainer`` for the ``my_blobs`` table, using
 
 Now we can start working with our blob container.
 
-Working With the Blob Container
+Working with the blob container
 ===============================
 
-Upload Blobs
+Upload blobs
 ------------
 
 The blob container can work with files or *file-like objects*, as long as
@@ -104,7 +104,7 @@ And upload it:
 The ``put`` method returns ``True``, indicating that the object has been
 written to the blob container.
 
-Retrieve Blobs
+Retrieve blobs
 --------------
 
 To retrieve a blob, you need to know its digest.
@@ -140,7 +140,7 @@ generator is like so:
     ...     blob_content += chunk
 
 
-Delete Blobs
+Delete blobs
 ------------
 
 You can delete a blob with the ``delete`` method and the blob digest, like so::

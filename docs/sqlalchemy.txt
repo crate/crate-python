@@ -71,10 +71,10 @@ Example host strings:
     If ``<HOST>`` is blank (i.e. just ``crate://``) then ``localhost:4200`` will
     be assumed.
 
-Getting a Connection
+Getting a connection
 --------------------
 
-Create an Engine
+Create an engine
 ................
 
 
@@ -121,7 +121,7 @@ too::
 Here, ``<PATH_TO_CA_CERT>`` should be replaced with the path to the correct CA
 certificate.
 
-Get a Session
+Get a session
 .............
 
 Once you have an CrateDB ``engine`` set up, you can create and use an SQLAlchemy
@@ -145,7 +145,7 @@ Tables
 
 .. _table-definition:
 
-Table Definition
+Table definition
 ----------------
 
 Here is an example SQLAlchemy table definition using the `declarative
@@ -200,7 +200,7 @@ In this example, we:
 
 .. _using-extension-types:
 
-Extension Types
+Extension types
 ---------------
 
 In the :ref:`example SQLAlchemy table definition <table-definition>` above, we
@@ -349,7 +349,7 @@ for all matching rows::
 
 .. _aggregate-functions:
 
-Aggregate Functions
+Aggregate functions
 -------------------
 
 SQLAlchemy supports different ways to `count result rows`_. However, because
@@ -382,7 +382,7 @@ these methods, like so:
     ...     .order_by(Character.name).all()
     [(1, u'Arthur Dent'), (1, u'Tricia McMillan')]
 
-Fulltext Search
+Fulltext search
 ---------------
 
 Matching

@@ -11,7 +11,7 @@ Compatibility
 
 .. _versions:
 
-Version Notes
+Version notes
 =============
 
 .. _python-versions:
@@ -113,7 +113,7 @@ Consult the following table for CrateDB version compatibility notes:
 
 .. _implementations:
 
-Implementation Notes
+Implementation notes
 ====================
 
 .. _sqlalchemy-implementation:
@@ -123,7 +123,7 @@ SQLAlchemy
 
 .. _sqlalchemy-features:
 
-Supported Features
+Supported features
 ..................
 
 Currently, CrateDB only implements a subset of the SQL standard. Additionally,
@@ -173,7 +173,7 @@ Consult the following table for specifics:
 
 .. _sqlalchemy-version-notes:
 
-Version Notes
+Version notes
 .............
 
 +----------------+-----------------+-------------------------------------------+
@@ -196,7 +196,7 @@ Version Notes
 
 .. _earlier-versions:
 
-Older Versions
+Older versions
 ==============
 
 For information about older versions of the client, consult `the 0.14.2

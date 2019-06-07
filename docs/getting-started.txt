@@ -36,7 +36,7 @@ After that is done, you can import the library, like so:
 
     >>> from crate import client
 
-Interactive Use
+Interactive use
 ===============
 
 Python provides a REPL_, also known as an interactive language shell. It's a
@@ -57,13 +57,13 @@ object), iPython's autocompletion, and many other features.
 
    `The iPython Documentation`_
 
-Set Up as a Dependency
+Set up as a dependency
 ======================
 
 There are `many ways`_ to handle Python project dependencies. The official PyPI
 package should be compatible with all of them.
 
-Next Steps
+Next steps
 ==========
 
 Learn how to :ref:`connect to CrateDB <connect>`.

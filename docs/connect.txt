@@ -26,7 +26,7 @@ Connect to CrateDB
 
 .. _single-node:
 
-Connect to a Single Node
+Connect to a single node
 ========================
 
 To connect to a single CrateDB node, use the ``connect()`` function, like so:
@@ -65,7 +65,7 @@ for HTTP requests on port 4200, the node URL would be
 
 .. _multiple-nodes:
 
-Connect to Multiple Nodes
+Connect to multiple nodes
 =========================
 
 To connect to one of multiple nodes, pass a list of database URLs to the
@@ -89,7 +89,7 @@ You can pass in as many node URLs as you like.
 
 .. _connection-options:
 
-Connection Options
+Connection options
 ==================
 
 HTTPS
@@ -109,7 +109,7 @@ URL:
     The CrateDB reference has a section on `setting up SSL`_. This will be
     useful background reading for the following two subsections.
 
-Server Verification
+Server verification
 ...................
 
 You can enable server SSL certificate verification by passing in the
@@ -126,7 +126,7 @@ Here's how you might do that::
 Here, replace ``<CA_CERT_FILE>`` with the path to the CA certificate file.
 
 
-Client Verification
+Client verification
 ...................
 
 The client also supports client verification via client certificates.
@@ -196,7 +196,7 @@ and password.
 
 .. _schema-selection:
 
-Schema Selection
+Schema selection
 ================
 
 You can select a schema using the optional ``schema`` argument, like so:
@@ -213,7 +213,7 @@ with the rest of your arguments.
 
    However, you can query any schema you like by specifying it in the query.
 
-Next Steps
+Next steps
 ==========
 
 Once you're connected, you can :ref:`query CrateDB <query>`.

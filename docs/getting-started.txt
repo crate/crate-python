@@ -1,13 +1,13 @@
 .. _getting-started:
 
 ===============
-Getting Started
+Getting started
 ===============
 
 Learn how to install and get started the :ref:`CrateDB Python client library
 <index>`.
 
-.. rubric:: Table of Contents
+.. rubric:: Table of contents
 
 .. contents::
    :local:

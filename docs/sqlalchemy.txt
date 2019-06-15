@@ -1,7 +1,7 @@
 .. _using-sqlalchemy:
 
 ============================
-Using the SQLAlchemy Dialect
+Using the SQLAlchemy dialect
 ============================
 
 `SQLAlchemy`_ is a popular `Object-Relational Mapping`_ (ORM) tool for Python.
@@ -29,7 +29,7 @@ The CrateDB Python client library works with SQLAlchemy versions ``1.0``,
    For general help using SQLAlchemy, consult the `SQLAlchemy tutorial`_ or the
    `SQLAlchemy library`_ .
 
-.. rubric:: Table of Contents
+.. rubric:: Table of contents
 
 .. contents::
    :local:

@@ -1,14 +1,14 @@
 .. _data-types:
 
 ==========
-Data Types
+Data types
 ==========
 
 The :ref:`Database API client <connect>` and the :ref:`SQLAlchemy dialect
 <using-sqlalchemy>` use different Python data types. Consult the corresponding
 section for further information.
 
-.. rubric:: Table of Contents
+.. rubric:: Table of contents
 
 .. contents::
    :local:

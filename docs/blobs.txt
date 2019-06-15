@@ -7,7 +7,7 @@ Blobs
 The CrateDB Python client library provides full access to the powerful `blob
 storage capabilities`_ of your CrateDB cluster.
 
-.. rubric:: Table of Contents
+.. rubric:: Table of contents
 
 .. contents::
    :local:

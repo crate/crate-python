@@ -19,7 +19,7 @@ Query CrateDB
 
    For general help using the Database API, consult `PEP 0249`_.
 
-.. rubric:: Table of Contents
+.. rubric:: Table of contents
 
 .. contents::
    :local:

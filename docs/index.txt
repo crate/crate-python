@@ -1,7 +1,7 @@
 .. _index:
 
 =====================
-CrateDB Python Client
+CrateDB Python client
 =====================
 
 A Python client library for `CrateDB`_.
@@ -26,7 +26,7 @@ A :ref:`CrateDB dialect <using-sqlalchemy>` for `SQLAlchemy`_ is also included.
    The CrateDB Python client library is an open source project and is `hosted
    on GitHub`_.
 
-.. rubric:: Table of Contents
+.. rubric:: Table of contents
 
 .. toctree::
    :maxdepth: 2

@@ -99,7 +99,6 @@ def setUpMocked(test):
 
 settings = {
     'udc.enabled': 'false',
-    'license.enterprise': 'true',
     'lang.js.enabled': 'true',
     'auth.host_based.enabled': 'true',
     'auth.host_based.config.0.user': 'crate',

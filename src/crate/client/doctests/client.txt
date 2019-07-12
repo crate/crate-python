@@ -178,29 +178,31 @@ supported, all other fields are 'None'::
     >>> cursor.execute("SELECT * FROM locations order by name")
     >>> result = cursor.fetchone()
     >>> pprint(result)
-    [1373932800000,
-     None,
-     u'Max Quordlepleen claims that the only thing left ...',
-     None,
-     None,
-     u'Star System',
-     u'Aldebaran',
+    ['Aldebaran',
+     1373932800000,
      None,
      None,
-     1]
+     None,
+     'Star System',
+     None,
+     1,
+     'Max Quordlepleen claims that the only thing left after the end of the '
+     'Universe will be the sweets trolley and a fine selection of Aldebaran '
+     'liqueurs.',
+     None]
 
     >>> result = cursor.description
     >>> pprint(result)
-    ((u'date', None, None, None, None, None, None),
-     (u'datetime', None, None, None, None, None, None),
-     (u'description', None, None, None, None, None, None),
-     (u'details', None, None, None, None, None, None),
-     (u'flag', None, None, None, None, None, None),
-     (u'kind', None, None, None, None, None, None),
-     (u'name', None, None, None, None, None, None),
-     (u'nullable_date', None, None, None, None, None, None),
-     (u'nullable_datetime', None, None, None, None, None, None),
-     (u'position', None, None, None, None, None, None))
+    (('name', None, None, None, None, None, None),
+     ('date', None, None, None, None, None, None),
+     ('datetime', None, None, None, None, None, None),
+     ('nullable_datetime', None, None, None, None, None, None),
+     ('nullable_date', None, None, None, None, None, None),
+     ('kind', None, None, None, None, None, None),
+     ('flag', None, None, None, None, None, None),
+     ('position', None, None, None, None, None, None),
+     ('description', None, None, None, None, None, None),
+     ('details', None, None, None, None, None, None))
 
 Closing the Cursor
 ==================

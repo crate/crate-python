@@ -308,9 +308,9 @@ In order to create all missing tables the ``create_all`` method can be used::
     ...         "where table_name = 'departments' "
     ...         "order by column_name")
     >>> pprint([str(r) for r in conn.execute(stmt)])
-    ["('departments', 'code', 1, 'integer')",
-     "('departments', 'id', 2, 'string')",
-     "('departments', 'name', 3, 'string')"]
+    ["('departments', 'code', 3, 'integer')",
+     "('departments', 'id', 1, 'text')",
+     "('departments', 'name', 2, 'text')"]
 
 Delete Tables
 -------------

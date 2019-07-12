@@ -5,6 +5,9 @@ Changes for crate
 Unreleased
 ==========
 
+- Extended the type mapping for SQLAlchemy for the upcoming type name changes
+  in CrateDB 4.0.
+
 - Added support for Python 3.7 and made that version the recommended one.
 
 2019/03/05 0.23.0

@@ -36,5 +36,5 @@ jobs:
 
       - script: |
           bin/flake8
-          bin/coverage run bin/test -vv1
+          JAVA_HOME=$JAVA_HOME_12_X64 bin/coverage run bin/test -vv1
         displayName: 'test'

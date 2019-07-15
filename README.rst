@@ -2,9 +2,9 @@
 CrateDB Python Client
 =====================
 
-.. image:: https://img.shields.io/travis/crate/crate-python.svg
-   :target: https://travis-ci.org/crate/crate-python
-   :alt: TravisCI
+.. image:: https://dev.azure.com/cratedb/crate-python/_apis/build/status/crate.crate-python?branchName=master
+   :target: https://dev.azure.com/cratedb/crate-python/_build/latest?definitionId=2&branchName=master
+   :alt: Azure Pipeline
 
 .. image:: https://img.shields.io/pypi/v/crate.svg
    :target: https://pypi.python.org/pypi/crate/

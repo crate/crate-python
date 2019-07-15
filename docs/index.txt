@@ -1,7 +1,7 @@
 .. _index:
 
 =====================
-CrateDB Python client
+CrateDB Python Client
 =====================
 
 A Python client library for `CrateDB`_.

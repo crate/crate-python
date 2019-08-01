@@ -25,7 +25,6 @@ import json
 import os
 import unittest
 import doctest
-import re
 from pprint import pprint
 from datetime import datetime, date
 from http.server import HTTPServer, BaseHTTPRequestHandler
@@ -33,8 +32,6 @@ import ssl
 import time
 import threading
 import logging
-
-from zope.testing.renormalizing import RENormalizing
 
 from crate.testing.layer import CrateLayer
 from crate.testing.tests import crate_path, docs_path
@@ -291,27 +288,10 @@ def tearDownWithCrateLayer(test):
 def test_suite():
     suite = unittest.TestSuite()
     flags = (doctest.NORMALIZE_WHITESPACE | doctest.ELLIPSIS)
-    checker = RENormalizing([
-        # python 3 drops the u" prefix on unicode strings
-        (re.compile(r"u('[^']*')"), r"\1"),
-
-        # python 3 includes module name in exceptions
-        (re.compile(r"crate.client.exceptions.ProgrammingError:"),
-         "ProgrammingError:"),
-        (re.compile(r"crate.client.exceptions.ConnectionError:"),
-         "ConnectionError:"),
-        (re.compile(r"crate.client.exceptions.DigestNotFoundException:"),
-         "DigestNotFoundException:"),
-        (re.compile(r"crate.client.exceptions.BlobLocationNotFoundException:"),
-         "BlobLocationNotFoundException:"),
-        (re.compile(r"<type "),
-         "<class "),
-    ])
 
     s = doctest.DocFileSuite(
         'doctests/cursor.txt',
         'doctests/connection.txt',
-        checker=checker,
         setUp=setUpMocked,
         optionflags=flags,
         encoding='utf-8'
@@ -333,7 +313,6 @@ def test_suite():
 
     s = doctest.DocFileSuite(
         'doctests/https.txt',
-        checker=checker,
         setUp=setUpWithHttps,
         optionflags=flags,
         encoding='utf-8'
@@ -345,7 +324,6 @@ def test_suite():
         'sqlalchemy/doctests/itests.txt',
         'sqlalchemy/doctests/dialect.txt',
         'sqlalchemy/doctests/reflection.txt',
-        checker=checker,
         setUp=setUpCrateLayerAndSqlAlchemy,
         tearDown=tearDownWithCrateLayer,
         optionflags=flags,
@@ -360,7 +338,6 @@ def test_suite():
         'doctests/client.txt',
         'doctests/mocking.txt',
         'doctests/blob.txt',
-        checker=checker,
         setUp=setUpWithCrateLayer,
         tearDown=tearDownWithCrateLayer,
         optionflags=flags,
@@ -371,7 +348,6 @@ def test_suite():
 
     s = doctest.DocFileSuite(
         'doctests/sqlalchemy.txt',
-        checker=checker,
         setUp=setUpCrateLayerAndSqlAlchemy,
         tearDown=tearDownWithCrateLayer,
         optionflags=flags,

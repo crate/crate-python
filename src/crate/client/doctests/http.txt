@@ -69,22 +69,22 @@ Issue a select statement against our with test data pre-filled crate instance::
     >>> http_client = HttpClient(crate_host)
     >>> result = http_client.sql('select name from locations order by name')
     >>> pprint(result)
-    {u'cols': [u'name'],
-     u'duration': ...,
-     u'rowcount': 13,
-     u'rows': [['Aldebaran'],
-                ['Algol'],
-                ['Allosimanius Syneca'],
-                ['Alpha Centauri'],
-                ['Altair'],
-                ['Argabuthon'],
-                ['Arkintoofle Minor'],
-                ['Bartledan'],
-                ['Folfanga'],
-                ['Galactic Sector QQ7 Active J Gamma'],
-                ['Galaxy'],
-                ['North West Ripple'],
-                ['Outer Eastern Rim']]}
+    {'cols': ['name'],
+     'duration': ...,
+     'rowcount': 13,
+     'rows': [['Aldebaran'],
+              ['Algol'],
+              ['Allosimanius Syneca'],
+              ['Alpha Centauri'],
+              ['Altair'],
+              ['Argabuthon'],
+              ['Arkintoofle Minor'],
+              ['Bartledan'],
+              ['Folfanga'],
+              ['Galactic Sector QQ7 Active J Gamma'],
+              ['Galaxy'],
+              ['North West Ripple'],
+              ['Outer Eastern Rim']]}
 
 Blobs
 =====
@@ -99,7 +99,7 @@ Trying to get a non-existing blob throws an exception::
     >>> http_client.blob_get('myfiles', '041f06fd774092478d450774f5ba30c5da78acc8')
     Traceback (most recent call last):
     ...
-    DigestNotFoundException: myfiles/041f06fd774092478d450774f5ba30c5da78acc8
+    crate.client.exceptions.DigestNotFoundException: myfiles/041f06fd774092478d450774f5ba30c5da78acc8
 
 Creating a new blob - this method returns True if the blob was newly
 created, false if it already exists::
@@ -153,7 +153,7 @@ Uploading a blob to a table with disabled blob support throws an exception::
     ...     'locations', '040f06fd774092478d450774f5ba30c5da78acc8', f)
     Traceback (most recent call last):
     ...
-    BlobLocationNotFoundException: locations/040f06fd774092478d450774f5ba30c5da78acc8
+    crate.client.exceptions.BlobLocationNotFoundException: locations/040f06fd774092478d450774f5ba30c5da78acc8
 
 Error Handling
 ==============
@@ -179,7 +179,7 @@ an exception is raised when the timeout is reached::
     >>> http_client.sql('select fib(32)')
     Traceback (most recent call last):
     ...
-    ConnectionError: No more Servers available, exception from last server: ...
+    crate.client.exceptions.ConnectionError: No more Servers available, exception from last server: ...
 
 When connecting to non Crate servers the HttpClient will raise a ConnectionError like this::
 
@@ -187,7 +187,7 @@ When connecting to non Crate servers the HttpClient will raise a ConnectionError
     >>> http_client.server_infos(http_client._get_server())
     Traceback (most recent call last):
     ...
-    ProgrammingError: Invalid server response of content-type 'text/html; charset=UTF-8':
+    crate.client.exceptions.ProgrammingError: Invalid server response of content-type 'text/html; charset=UTF-8':
     ...
 
 When using the ``error_trace`` kwarg a full traceback of the server exception

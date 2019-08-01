@@ -11,7 +11,7 @@ Using the connection to execute a select statement::
     13
 
     >>> result.first()
-    (u'Aldebaran',)
+    ('Aldebaran',)
 
 Using the ORM to query the locations::
 
@@ -29,14 +29,14 @@ With filter::
 
     >>> location = session.query(Location).filter_by(name='Algol').one()
     >>> location.name
-    u'Algol'
+    'Algol'
 
 Order by::
 
     >>> locations = session.query(Location).filter(Location.name != None).order_by(sa.desc(Location.name))
     >>> locations = locations.limit(2)
     >>> [l.name for l in locations]
-    [u'Outer Eastern Rim', u'North West Ripple']
+    ['Outer Eastern Rim', 'North West Ripple']
 
 
 Insert a new location::
@@ -58,13 +58,13 @@ Inserted location is available::
 
     >>> location = session.query(Location).filter_by(name='Earth').one()
     >>> location.name
-    u'Earth'
+    'Earth'
 
 Retrieve the location from the database::
 
     >>> session.refresh(location)
     >>> location.name
-    u'Earth'
+    'Earth'
 
 Date should have been set at the insert due to default value via python method::
 
@@ -87,10 +87,10 @@ Date should have been set at the insert due to default value via python method::
 Verify the return type of date and datetime::
 
     >>> type(location.date)
-    <type 'datetime.date'>
+    <class 'datetime.date'>
 
     >>> type(location.datetime)
-    <type 'datetime.datetime'>
+    <class 'datetime.datetime'>
 
 the location also has a date and datetime property which both are nullable and
 aren't set when the row is inserted as there is no default method::
@@ -165,7 +165,7 @@ Test that objects can be used as list too::
     >>> session.refresh(location)
 
     >>> location.details
-    [{u'size': u'huge'}, {u'clima': u'cold'}]
+    [{'size': 'huge'}, {'clima': 'cold'}]
 
 Update the clima::
 
@@ -175,7 +175,7 @@ Update the clima::
     >>> session.refresh(location)
 
     >>> location.details
-    [{u'size': u'huge'}, {u'clima': u'hot'}]
+    [{'size': 'huge'}, {'clima': 'hot'}]
 
 Reset the clima::
 

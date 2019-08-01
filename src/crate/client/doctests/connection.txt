@@ -34,17 +34,17 @@ raise a ``ProgrammingError``::
     >>> cursor = connection.cursor()
     Traceback (most recent call last):
     ...
-    ProgrammingError: Connection closed
+    crate.client.exceptions.ProgrammingError: Connection closed
 
     >>> cursor.execute('')
     Traceback (most recent call last):
     ...
-    ProgrammingError: Connection closed
+    crate.client.exceptions.ProgrammingError: Connection closed
 
     >>> connection.commit()
     Traceback (most recent call last):
     ...
-    ProgrammingError: Connection closed
+    crate.client.exceptions.ProgrammingError: Connection closed
 
     >>> connection = connect(client=connection_client_mocked)
     >>> cursor = connection.cursor()

@@ -21,11 +21,9 @@
 # software solely pursuant to the terms of the relevant commercial agreement.
 
 import os
-import re
 import unittest
 import doctest
 import tempfile
-from zope.testing.renormalizing import RENormalizing
 from .test_layer import LayerUtilsTest
 
 
@@ -58,16 +56,10 @@ def setUp(test):
 
 def test_suite():
     suite = unittest.TestSuite()
-    checker = RENormalizing([
-        (re.compile(r"u('[^']*')"), r"\1"),
-        (re.compile(r"<type "), "<class "),
-    ])
-
     s = doctest.DocFileSuite('doctests/layer.txt',
                              setUp=setUp,
                              optionflags=doctest.NORMALIZE_WHITESPACE |
                              doctest.ELLIPSIS,
-                             checker=checker,
                              encoding='utf-8')
     suite.addTest(s)
     suite.addTest(unittest.makeSuite(LayerUtilsTest))

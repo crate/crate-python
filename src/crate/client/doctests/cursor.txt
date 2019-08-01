@@ -61,7 +61,7 @@ in an error::
     >>> new_cursor.fetchone()
     Traceback (most recent call last):
     ...
-    ProgrammingError: No result available. execute() or executemany() must be called first.
+    crate.client.exceptions.ProgrammingError: No result available. execute() or executemany() must be called first.
 
 
 fetchmany()
@@ -154,7 +154,7 @@ Iterating over a new cursor without results will immediately raise a Programming
     >>> next(new_cursor)
     Traceback (most recent call last):
     ...
-    ProgrammingError: No result available. execute() or executemany() must be called first.
+    crate.client.exceptions.ProgrammingError: No result available. execute() or executemany() must be called first.
 
 description
 ===========
@@ -296,20 +296,20 @@ closed connection an ``ProgrammingError`` exception will be raised::
     >>> cursor.fetchone()
     Traceback (most recent call last):
     ...
-    ProgrammingError: Cursor closed
+    crate.client.exceptions.ProgrammingError: Cursor closed
 
     >>> cursor.fetchmany()
     Traceback (most recent call last):
     ...
-    ProgrammingError: Cursor closed
+    crate.client.exceptions.ProgrammingError: Cursor closed
 
     >>> cursor.fetchall()
     Traceback (most recent call last):
     ...
-    ProgrammingError: Cursor closed
+    crate.client.exceptions.ProgrammingError: Cursor closed
 
     >>> cursor.next()
     Traceback (most recent call last):
     ...
-    ProgrammingError: Cursor closed
+    crate.client.exceptions.ProgrammingError: Cursor closed
 

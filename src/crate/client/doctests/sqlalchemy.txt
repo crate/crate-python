@@ -135,10 +135,10 @@ be left untouched.
     >>> session.refresh(char)
 
     >>> char.details['gender']
-    u'manly man'
+    'manly man'
 
     >>> char.details['species']
-    u'human'
+    'human'
 
 Object Array
 ------------
@@ -173,7 +173,7 @@ to be returned::
     >>> from sqlalchemy.sql import operators
     >>> query = session.query(Character.name)
     >>> query.filter(Character.more_details['foo'].any(1, operator=operators.eq)).all()
-    [(u'Arthur Dent',)]
+    [('Arthur Dent',)]
 
 Querying a field of an object array will result in an array of
 all values of that field of all objects in that object array::
@@ -208,7 +208,7 @@ Using the ``group_by`` clause is similar::
     ...     .group_by(Character.name) \
     ...     .order_by(sa.desc(sa.func.count(Character.id))) \
     ...     .order_by(Character.name).all()
-    [(1, u'Arthur Dent'), (1, u'Tricia McMillan')]
+    [(1, 'Arthur Dent'), (1, 'Tricia McMillan')]
 
 Fulltext Search with MATCH Predicate
 ====================================
@@ -260,7 +260,7 @@ The default match_type is best_fields::
     ...                 options={'fuzziness': 3})
     ...     ) \
     ...     .all()
-    [(u'Arthur Dent',)]
+    [('Arthur Dent',)]
 
 It's not possible to specify options without the match_type argument::
 
@@ -376,4 +376,4 @@ This will result in the following query::
     ... "(SELECT todos.id, todos.content FROM todos WHERE todos.status = 'done')"
 
     >>> pprint([str(r) for r in session.execute("Select content from archived_tasks")])
-    ["(u'Write Tests',)"]
+    ["('Write Tests',)"]

@@ -1,0 +1,2 @@
+*.rst @crate/docs
+docs/ @crate/docs

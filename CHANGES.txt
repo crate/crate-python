@@ -5,6 +5,9 @@ Changes for crate
 Unreleased
 ==========
 
+- Fixed a bug in the ``CrateLayer`` which caused ``CrateDB`` not to start up,
+  in case the ``JAVA_HOME`` environment variable was not set.
+
 2019/08/01 0.23.1
 =================
 

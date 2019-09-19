@@ -19,9 +19,11 @@
 # with Crate these terms will supersede the license and you may use the
 # software solely pursuant to the terms of the relevant commercial agreement.
 
-from unittest import TestCase
+import os
+import tempfile
+from unittest import TestCase, mock
 from io import BytesIO
-from .layer import prepend_http, http_url_from_host_port, wait_for_http_url
+from .layer import CrateLayer, prepend_http, http_url_from_host_port, wait_for_http_url
 
 
 class LayerUtilsTest(TestCase):
@@ -55,3 +57,28 @@ class LayerUtilsTest(TestCase):
         log = BytesIO(b'[i.c.p.h.CrateNettyHttpServerTransport] [crate] publish_address {}')
         addr = wait_for_http_url(log=log, timeout=1)
         self.assertEqual(None, addr)
+
+    @mock.patch.dict('os.environ', {}, clear=True)
+    def test_java_home_env_not_set(self):
+        with tempfile.TemporaryDirectory() as tmpdir:
+            layer = CrateLayer('java-home-test', tmpdir)
+            # JAVA_HOME must not be set to `None`, since it would be interpreted as a
+            # string 'None', and therefore intepreted as a path
+            self.assertEqual(layer.env['JAVA_HOME'], '')
+
+    @mock.patch.dict('os.environ', {}, clear=True)
+    def test_java_home_env_set(self):
+        java_home = '/usr/lib/jvm/java-11-openjdk-amd64'
+        with tempfile.TemporaryDirectory() as tmpdir:
+            os.environ['JAVA_HOME'] = java_home
+            layer = CrateLayer('java-home-test', tmpdir)
+            self.assertEqual(layer.env['JAVA_HOME'], java_home)
+
+    @mock.patch.dict('os.environ', {}, clear=True)
+    def test_java_home_env_override(self):
+        java_11_home = '/usr/lib/jvm/java-11-openjdk-amd64'
+        java_12_home = '/usr/lib/jvm/java-12-openjdk-amd64'
+        with tempfile.TemporaryDirectory() as tmpdir:
+            os.environ['JAVA_HOME'] = java_11_home
+            layer = CrateLayer('java-home-test', tmpdir, env={'JAVA_HOME': java_12_home})
+            self.assertEqual(layer.env['JAVA_HOME'], java_12_home)

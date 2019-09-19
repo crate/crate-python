@@ -134,7 +134,7 @@ Verbosity
 
 The test layer hides the standard output of Crate per default. To increase the
 verbosity level the additional keyword argument ``verbose`` needs to be set
-to ``True``.
+to ``True``::
 
     >>> layer =  CrateLayer('crate',
     ...                     crate_home=crate_path(),
@@ -150,7 +150,7 @@ Environment variables
 ---------------------
 
 It is possible to provide  enviromental variables for the ``Crate`` testing
-layer. 
+layer::
 
     >>> layer =  CrateLayer('crate',
     ...                     crate_home=crate_path(),

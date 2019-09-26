@@ -12,6 +12,7 @@ from .insert_from_select_test import SqlAlchemyInsertFromSelectTest
 from .create_table_test import CreateTableTest
 from .array_test import SqlAlchemyArrayTypeTest
 from .dialect_test import DialectTest
+from .function_test import FunctionTest
 from ..sa_version import SA_1_1, SA_VERSION
 
 
@@ -28,6 +29,7 @@ def test_suite():
     tests.addTest(makeSuite(SqlAlchemyInsertFromSelectTest))
     tests.addTest(makeSuite(SqlAlchemyInsertFromSelectTest))
     tests.addTest(makeSuite(DialectTest))
+    tests.addTest(makeSuite(FunctionTest))
     if SA_VERSION >= SA_1_1:
         tests.addTest(makeSuite(SqlAlchemyArrayTypeTest))
     return tests

@@ -24,6 +24,7 @@ from datetime import datetime, date
 
 from sqlalchemy import types as sqltypes
 from sqlalchemy.engine import default, reflection
+from sqlalchemy.sql import functions
 
 from .compiler import (
     CrateCompiler,
@@ -306,3 +307,8 @@ class CrateDialect(default.DefaultDialect):
 
     def _resolve_type(self, type_):
         return TYPES_MAP.get(type_, sqltypes.UserDefinedType)
+
+
+class DateTrunc(functions.GenericFunction):
+    name = "date_trunc"
+    type = sqltypes.TIMESTAMP

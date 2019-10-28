@@ -1,2 +1,2 @@
-from crate.theme.rtd.conf.crate_python import *
+from crate.theme.rtd.conf.clients_python import *
 html_favicon = None

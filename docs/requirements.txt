@@ -1,7 +1,7 @@
 # don't pin crate version numbers so the latest will always be pulled when you
 # set up your environment from scratch
 
-crate-docs-theme
+crate-docs-theme>=0.7
 
 # packages for local dev
 

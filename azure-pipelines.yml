@@ -20,6 +20,9 @@ jobs:
         Python37-SA-1.2:
           python.version: '3.7'
           sqla.version: '1.2.18'
+        Python38-SA-1.2:
+          python.version: '3.8'
+          sqla.version: '1.2.18'
 
     steps:
       - task: UsePythonVersion@0

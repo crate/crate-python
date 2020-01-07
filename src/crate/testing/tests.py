@@ -56,11 +56,12 @@ def setUp(test):
 
 def test_suite():
     suite = unittest.TestSuite()
-    s = doctest.DocFileSuite('doctests/layer.txt',
-                             setUp=setUp,
-                             optionflags=doctest.NORMALIZE_WHITESPACE |
-                             doctest.ELLIPSIS,
-                             encoding='utf-8')
+    s = doctest.DocFileSuite(
+        'doctests/layer.txt',
+        setUp=setUp,
+        optionflags=doctest.NORMALIZE_WHITESPACE | doctest.ELLIPSIS,
+        encoding='utf-8'
+    )
     suite.addTest(s)
     suite.addTest(unittest.makeSuite(LayerUtilsTest))
     return suite

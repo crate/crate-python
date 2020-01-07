@@ -246,7 +246,7 @@ class CrateDialect(default.DefaultDialect):
             query,
             [table_name,
              schema or self.default_schema_name,
-             "(.*)\[\'(.*)\'\]"]  # regex to filter subscript
+             r"(.*)\[\'(.*)\'\]"]  # regex to filter subscript
         )
         return [self._create_column_info(row) for row in cursor.fetchall()]
 

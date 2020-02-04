@@ -8,6 +8,9 @@ Unreleased
 - Made it so that the SQLAlchemy dialect is now aware of the return type of the
   ``date_trunc`` function.
 
+- Added optional ``backoff_factor`` parameter to a connection so that retries
+  (against unavailable servers, for example) can be retried at lengthening time intervals.
+
 2019/09/19 0.23.2
 =================
 

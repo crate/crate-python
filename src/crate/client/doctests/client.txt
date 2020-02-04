@@ -38,6 +38,16 @@ using the optional parameter ``timeout``::
 
     >>> connection = client.connect([crate_host, invalid_host], timeout=5)
 
+It is also possible to define a ``backoff_factor`` between HTTP retries. This is so that when
+attempting to connect or query an unavailable server, retries will have linearly increasing
+intervals between each one. This can be defined as::
+
+    >>> connection = client.connect([crate_host, invalid_host], backoff_factor=0.01)
+
+The formula for this backoff is::
+
+    {backoff factor} * (2 ** ({current retry} - 1))
+
 Authentication
 --------------
 

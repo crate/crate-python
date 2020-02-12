@@ -28,7 +28,7 @@ from distutils.version import StrictVersion
 
 class Connection(object):
 
-    def __init__(self, servers=None, timeout=None, client=None,
+    def __init__(self, servers=None, timeout=None, backoff_factor=0, client=None,
                  verify_ssl_cert=False, ca_cert=None, error_trace=False,
                  cert_file=None, key_file=None, username=None, password=None,
                  schema=None):
@@ -37,6 +37,7 @@ class Connection(object):
         else:
             self.client = Client(servers,
                                  timeout=timeout,
+                                 backoff_factor=backoff_factor,
                                  verify_ssl_cert=verify_ssl_cert,
                                  ca_cert=ca_cert,
                                  error_trace=error_trace,
@@ -103,6 +104,7 @@ class Connection(object):
 
 def connect(servers=None,
             timeout=None,
+            backoff_factor=0,
             client=None,
             verify_ssl_cert=False,
             ca_cert=None,
@@ -140,12 +142,15 @@ def connect(servers=None,
         the username in the database.
     :param password:
         the password of the user in the database.
-
+    :param backoff_factor:
+        (optional)
+        define the retry interval for unreachable servers in seconds
     >>> connect(['host1:4200', 'host2:4200'])
     <Connection <Client ['http://host1:4200', 'http://host2:4200']>>
     """
     return Connection(servers=servers,
                       timeout=timeout,
+                      backoff_factor=backoff_factor,
                       client=client,
                       verify_ssl_cert=verify_ssl_cert,
                       ca_cert=ca_cert,

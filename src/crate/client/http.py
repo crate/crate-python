@@ -101,6 +101,7 @@ class Server(object):
                 username=None,
                 password=None,
                 schema=None,
+                backoff_factor=0,
                 **kwargs):
         """Send a request
 
@@ -130,7 +131,7 @@ class Server(object):
         headers['Content-Type'] = 'application/json'
         kwargs['assert_same_host'] = False
         kwargs['redirect'] = False
-        kwargs['retries'] = Retry(read=0)
+        kwargs['retries'] = Retry(read=0,backoff_factor=backoff_factor)
         return self.pool.urlopen(
             method,
             path,
@@ -274,6 +275,7 @@ class Client(object):
     def __init__(self,
                  servers=None,
                  timeout=None,
+                 backoff_factor=0,
                  verify_ssl_cert=False,
                  ca_cert=None,
                  error_trace=False,
@@ -290,6 +292,7 @@ class Client(object):
         self._inactive_servers = []
         pool_kw = _pool_kw_args(verify_ssl_cert, ca_cert, cert_file, key_file)
         pool_kw['timeout'] = timeout
+        self.backoff_factor = backoff_factor
         self.server_pool = {}
         self._update_server_pool(servers, **pool_kw)
         self._pool_kw = pool_kw
@@ -403,7 +406,7 @@ class Client(object):
             next_server = server or self._get_server()
             try:
                 response = self.server_pool[next_server].request(
-                    method, path, username=self.username, password=self.password, schema=self.schema, **kwargs)
+                    method, path, username=self.username, password=self.password,backoff_factor=self.backoff_factor, schema=self.schema, **kwargs)
                 redirect_location = response.get_redirect_location()
                 if redirect_location and 300 <= response.status <= 308:
                     redirect_server = _server_url(redirect_location)

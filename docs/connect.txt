@@ -169,6 +169,19 @@ the optional ``error_trace`` argument to ``True``, like so::
 
 .. _authentication:
 
+Backoff Factor
+..............
+
+When attempting to make a request, the connection can be configured so that retries
+are made at lengthening time intervals. This can be configured like so:
+    >>>connection = client.connect(..., backoff_factor=0.1)
+
+The formula for this backoff_factor is:
+
+If ``backoff_factor`` is set to 0.1, then the delay between retries will be
+0.0, 0.1, 0.2, 0.4, 0.8, etc. The maximum backoff factor cannot exceed 120 seconds.
+By default this setting is 0, meaning that no backoff factor is present between retries.
+
 Authentication
 ==============
 

@@ -5,6 +5,8 @@ Changes for crate
 Unreleased
 ==========
 
+- Added ``backoff_factor`` in connection to configure retry interval.
+
 - Added official Python 3.8 support.
 
 - Made it so that the SQLAlchemy dialect is now aware of the return type of the

@@ -142,7 +142,9 @@ def connect(servers=None,
         the username in the database.
     :param password:
         the password of the user in the database.
-
+    :param backoff_factor:
+        (optional)
+        define the retry interval for unreachable servers in seconds
     >>> connect(['host1:4200', 'host2:4200'])
     <Connection <Client ['http://host1:4200', 'http://host2:4200']>>
     """

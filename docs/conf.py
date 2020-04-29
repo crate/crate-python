@@ -1,7 +1,7 @@
-from crate.theme.rtd.conf.clients_python import *
+from crate.theme.rtd.conf.python import *
 html_favicon = None
 
-site_url = 'https://crate.io/docs/clients/python/en/latest/'
+site_url = 'https://crate.io/docs/python/en/latest/'
 extensions = ['sphinx_sitemap']
 
 rst_prolog = """

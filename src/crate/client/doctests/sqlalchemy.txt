@@ -242,10 +242,11 @@ To search on multiple columns you have to pass a dictionary with columns
 and ``boost`` attached. ``boost`` is a factor that increases the
 relevance of a column in respect to the other columns::
 
+    >>> from sqlalchemy.sql import text
     >>> session.query(Character.name) \
     ...           .filter(match({Character.name_ft: 1.5, Character.quote_ft: 0.1},
     ...                         'Arthur')) \
-    ...     .order_by(sa.desc('_score')) \
+    ...     .order_by(sa.desc(text('_score'))) \
     ...     .all()
     [('Arthur Dent',), ('Tricia McMillan',)]
 

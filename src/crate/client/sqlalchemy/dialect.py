@@ -159,6 +159,7 @@ colspecs = {
 
 class CrateDialect(default.DefaultDialect):
     name = 'crate'
+    driver = 'crate-python'
     statement_compiler = CrateCompiler
     ddl_compiler = CrateDDLCompiler
     type_compiler = CrateTypeCompiler

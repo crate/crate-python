@@ -13,6 +13,8 @@ Unreleased
 
 - Made it so that the SQLAlchemy dialect is now aware of the return type of the
   ``date_trunc`` function.
+  
+- Added driver attribute, as SQLAlchemy relies on interfaces having that string for identification.
 
 2019/09/19 0.23.2
 =================

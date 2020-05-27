@@ -2,8 +2,8 @@
 Changes for crate
 =================
 
-Unreleased
-==========
+2020/05/27 0.24.0
+=================
 
 - Upgraded SQLAlchemy support to 1.3.
 
@@ -13,7 +13,7 @@ Unreleased
 
 - Made it so that the SQLAlchemy dialect is now aware of the return type of the
   ``date_trunc`` function.
-  
+
 - Added driver attribute, as SQLAlchemy relies on interfaces having that string for identification.
 
 2019/09/19 0.23.2

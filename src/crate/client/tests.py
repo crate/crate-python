@@ -185,6 +185,7 @@ def setUpCrateLayerAndSqlAlchemy(test):
         datetime = sa.Column(sa.DateTime, default=datetime.utcnow)
         nullable_datetime = sa.Column(sa.DateTime)
         nullable_date = sa.Column(sa.Date)
+        time = sa.Column(sa.Time, default=lambda: datetime.utcnow().time())
         flag = sa.Column(sa.Boolean)
         details = sa.Column(ObjectArray)
 

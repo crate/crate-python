@@ -76,15 +76,15 @@ database operations::
 
     >>> cursor = connection.cursor()
     >>> cursor.execute("""INSERT INTO locations
-    ... (name, date, kind, position) VALUES (?, ?, ?, ?)""",
-    ...                ('Einstein Cross', '2007-03-11', 'Quasar', 7))
+    ... (name, date, time, kind, position) VALUES (?, ?, ?, ?)""",
+    ...                ('Einstein Cross', '2007-03-11', '14:20:00', 'Quasar', 7))
 
 To bulk insert data you can use the ``executemany`` function::
 
     >>> cursor.executemany("""INSERT INTO locations
     ... (name, date, kind, position) VALUES (?, ?, ?, ?)""",
-    ...                [('Cloverleaf', '2007-03-11', 'Quasar', 7),
-    ...                 ('Old Faithful', '2007-03-11', 'Quasar', 7)])
+    ...                [('Cloverleaf', '2007-03-11', '17:00:00', 'Quasar', 7),
+    ...                 ('Old Faithful', '2007-03-11', '09:45:45', 'Quasar', 7)])
     [{'rowcount': 1}, {'rowcount': 1}]
 
 ``executemany`` returns a list of results for every parameter. Each result
@@ -198,6 +198,7 @@ supported, all other fields are 'None'::
      ('datetime', None, None, None, None, None, None),
      ('nullable_datetime', None, None, None, None, None, None),
      ('nullable_date', None, None, None, None, None, None),
+     ('time', None, None, None, None, None, None),
      ('kind', None, None, None, None, None, None),
      ('flag', None, None, None, None, None, None),
      ('position', None, None, None, None, None, None),

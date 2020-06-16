@@ -43,6 +43,8 @@ TYPES_MAP = {
     "smallint": sqltypes.SmallInteger,
     "timestamp": sqltypes.TIMESTAMP,
     "timestamp with time zone": sqltypes.TIMESTAMP,
+    "time with time zone": sqltypes.TIME,
+    "timetz": sqltypes.TIME,
     "object": Object,
     "integer": sqltypes.Integer,
     "long": sqltypes.NUMERIC,
@@ -64,6 +66,8 @@ try:
     TYPES_MAP["smallint_array"] = ARRAY(sqltypes.SmallInteger)
     TYPES_MAP["timestamp_array"] = ARRAY(sqltypes.TIMESTAMP)
     TYPES_MAP["timestamp with time zone_array"] = ARRAY(sqltypes.TIMESTAMP)
+    TYPES_MAP["time with time zone_array"] = ARRAY(sqltypes.TIME)
+    TYPES_MAP["timetz_array"] = ARRAY(sqltypes.TIME)
     TYPES_MAP["long_array"] = ARRAY(sqltypes.NUMERIC)
     TYPES_MAP["bigint_array"] = ARRAY(sqltypes.NUMERIC)
     TYPES_MAP["double_array"] = ARRAY(sqltypes.DECIMAL)

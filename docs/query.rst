@@ -45,9 +45,9 @@ Regular inserts
 Regular inserts are possible with the ``execute()`` method, like so:
 
     >>> cursor.execute(
-    ...     """INSERT INTO locations (name, date, kind, position)
+    ...     """INSERT INTO locations (name, date, time, kind, position)
     ...             VALUES (?, ?, ?, ?)""",
-    ...     ("Einstein Cross", "2007-03-11", "Quasar", 7))
+    ...     ("Einstein Cross", "2007-03-11", "14:20:0", "Quasar", 7))
 
 Here, the values of the `tuple`_  (the second argument) are safely interpolated
 into the query string (the first argument) where the ``?`` characters appear,
@@ -67,10 +67,10 @@ Bulk inserts
 `list`_ of tuples to insert::
 
     >>> cursor.executemany(
-    ...     """INSERT INTO locations (name, date, kind, position)
+    ...     """INSERT INTO locations (name, date, time, kind, position)
     ...             VALUES (?, ?, ?, ?)""",
-    ...     [('Cloverleaf', '2007-03-11', 'Quasar', 7),
-    ...      ('Old Faithful', '2007-03-11', 'Quasar', 7)])
+    ...     [('Cloverleaf', '2007-03-11', '17:00:00', 'Quasar', 7),
+    ...      ('Old Faithful', '2007-03-11', '09:45:45', 'Quasar', 7)])
     [{'rowcount': 1}, {'rowcount': 1}]
 
 The ``executemany()`` method returns a result `dictionary`_ for every tuple.

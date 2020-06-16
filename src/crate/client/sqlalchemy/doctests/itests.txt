@@ -66,11 +66,12 @@ Retrieve the location from the database::
     >>> location.name
     'Earth'
 
-Date should have been set at the insert due to default value via python method::
+Date and time should have been set at the insert due to default value via python method::
 
     >>> from datetime import datetime
     >>> now = datetime.utcnow()
     >>> dt = location.date
+    >>> t = location.time
 
     >>> dt.year == now.year
     True
@@ -81,13 +82,19 @@ Date should have been set at the insert due to default value via python method::
     >>> dt.day == now.day
     True
 
+    >>> t.hour == now.hour
+    True
+
     >>> (now - location.datetime).seconds < 4
     True
 
-Verify the return type of date and datetime::
+Verify the return type of date, time and datetime::
 
     >>> type(location.date)
     <class 'datetime.date'>
+
+    >>> type(location.time)
+    <class 'datetime.time'>
 
     >>> type(location.datetime)
     <class 'datetime.datetime'>

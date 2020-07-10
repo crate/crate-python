@@ -182,6 +182,53 @@ all values of that field of all objects in that object array::
     >>> query.all()
     [([1, 2, 3],), (None,)]
 
+
+Geospatial Types
+================
+
+Geospatial types, such as ``geo_point`` and ``geo_area`` can also be used as
+part of a sqlalchemy schema::
+
+    >>> from crate.client.sqlalchemy.types import Geopoint, Geoshape
+
+    >>> class City(Base):
+    ...    __tablename__ = 'cities'
+    ...    name = sa.Column(sa.String, primary_key=True)
+    ...    coordinate = sa.Column(Geopoint)
+    ...    area = sa.Column(Geoshape)
+
+One way of inserting these types is using the Geojson library, to create
+points or shapes::
+
+    >>> from geojson import Point, Polygon
+    >>> area = Polygon(
+    ...     [
+    ...         [
+    ...             (139.806, 35.515),
+    ...             (139.919, 35.703),
+    ...             (139.768, 35.817),
+    ...             (139.575, 35.760),
+    ...             (139.584, 35.619),
+    ...             (139.806, 35.515),
+    ...         ]
+    ...     ]
+    ... )
+    >>> point = Point(coordinates=(139.76, 35.68))
+
+These two objects can then be added to an sqlalchemy model and added to the
+session::
+
+    >>> tokyo = City(coordinate=point, area=area, name='Tokyo')
+    >>> session.add(tokyo)
+    >>> session.commit()
+
+When retrieved, they are retrieved as the corresponding geojson objects::
+
+    >>> refresh("cities")
+    >>> query = session.query(City.name, City.coordinate, City.area)
+    >>> query.all()
+     [('Tokyo', (139.76, 35.68), {"coordinates": [[[139.806, 35.515], [139.919, 35.703], [139.768, 35.817], [139.575, 35.76], [139.584, 35.619], [139.806, 35.515]]], "type": "Polygon"})]
+
 Count and Group By
 ==================
 

@@ -174,6 +174,14 @@ def setUpCrateLayerAndSqlAlchemy(test):
           INDEX quote_ft using fulltext(quote) with (analyzer = 'english')
     ) """)
 
+    with connect(crate_host) as conn:
+        cursor = conn.cursor()
+        cursor.execute("""create table cities (
+          name string primary key,
+          coordinate geo_point,
+          area geo_shape
+    ) """)
+
     engine = sa.create_engine('crate://{0}'.format(crate_host))
     Base = declarative_base()
 
@@ -279,6 +287,7 @@ def tearDownWithCrateLayer(test):
         for stmt in ["DROP TABLE locations",
                      "DROP BLOB TABLE myfiles",
                      "DROP TABLE characters",
+                     "DROP TABLE cities",
                      "DROP USER me",
                      "DROP USER trusted_me",
                      ]:

@@ -284,6 +284,59 @@ The resulting object will look like this::
     change, the `UPDATE`_ statement sent to CrateDB will include all of the
     ``ObjectArray`` data.
 
+.. _geopoint:
+.. _geoshape:
+
+``Geopoint`` and ``Geoshape``
+.............................
+
+The CrateDB SQLAlchemy dialect provides two geospatial types:
+
+- ``Geopoint``, which represents a longitude and latitude coordinate
+- ``Geoshape``, which is used to store geometric `GeoJSON geometry objects`_
+
+To use these types, you can create columns, like so::
+
+    >>> class City(Base):
+    ...
+    ...    __tablename__ = 'cities'
+    ...    name = sa.Column(sa.String, primary_key=True)
+    ...    coordinate = sa.Column(types.Geopoint)
+    ...    area = sa.Column(types.Geoshape)
+
+There are multiple ways of creating a geopoint. Firstly, you can define it as
+a tuple of ``(longitude, latitude)``::
+
+    >>> point = (139.76, 35.68)
+
+Secondly, you can define it as a geojson ``Point`` object::
+
+    >>> from geojson import Point
+    >>> point = Point(coordinates=(139.76, 35.68))
+
+To create a geoshape, you can use a geojson shape object, such as a ``Polygon``::
+
+    >>> from geojson import Point, Polygon
+    >>> area = Polygon(
+    ...     [
+    ...         [
+    ...             (139.806, 35.515),
+    ...             (139.919, 35.703),
+    ...             (139.768, 35.817),
+    ...             (139.575, 35.760),
+    ...             (139.584, 35.619),
+    ...             (139.806, 35.515),
+    ...         ]
+    ...     ]
+    ... )
+
+You can then set the values of the ``Geopoint`` and ``Geoshape`` columns::
+
+    >>> tokyo = City(name="Tokyo", coordinate=point, area=area)
+    >>> session.add(tokyo)
+    >>> session.commit()
+
+
 Querying
 ========
 
@@ -535,3 +588,4 @@ column on the ``Character`` class.
 .. _score: https://crate.io/docs/crate/reference/en/latest/general/dql/fulltext.html#usage
 .. _working with tables: http://docs.sqlalchemy.org/en/latest/core/metadata.html
 .. _UUIDs: https://docs.python.org/3/library/uuid.html
+.. _geojson geometry objects: https://tools.ietf.org/html/rfc7946#section-3.1

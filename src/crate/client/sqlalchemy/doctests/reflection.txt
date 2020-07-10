@@ -12,7 +12,7 @@ List all schemas::
 List all tables::
 
     >>> inspector.get_table_names()
-    ['characters', 'locations']
+    ['characters', 'cities', 'locations']
 
     >>> set(['checks', 'cluster', 'jobs', 'jobs_log']).issubset(inspector.get_table_names(schema='sys'))
     True

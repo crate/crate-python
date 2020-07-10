@@ -2,6 +2,12 @@
 Changes for crate
 =================
 
+Unreleased
+==========
+
+- Added support for ``geo_point`` and ``geo_json`` types to the SQLAlchemy
+  dialect.
+
 2020/05/27 0.24.0
 =================
 

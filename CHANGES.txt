@@ -5,6 +5,12 @@ Changes for crate
 Unreleased
 ==========
 
+- Added support for the ``RETURNING`` clause to the SQLAlchemy dialect. This
+  requires CrateDB 4.2 or greater. In case you use any server side generated
+  columns in your primary key constraint with earlier CrateDB versions, you can
+  turn this feature off by passing ``implicit_returning=False`` in the
+  ``create_engine()`` call.
+
 - Added support for ``geo_point`` and ``geo_json`` types to the SQLAlchemy
   dialect.
 

@@ -165,6 +165,7 @@ class CrateDialect(default.DefaultDialect):
     type_compiler = CrateTypeCompiler
     supports_native_boolean = True
     colspecs = colspecs
+    implicit_returning = True
 
     def __init__(self, *args, **kwargs):
         super(CrateDialect, self).__init__(*args, **kwargs)

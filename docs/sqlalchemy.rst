@@ -198,6 +198,45 @@ In this example, we:
     The SQLAlchemy documentation has more information about `working with
     tables`_.
 
+``_id`` as primary key
+......................
+
+As with version 4.2 CrateDB supports the ``RETURNING`` clause, which makes it
+possible to use the ``_id`` column as fetched value for the ``PRIMARY KEY``
+constraint, since the SQLAlchemy ORM always **requires** a primary key.
+
+A table schema like this
+
+.. code-block:: sql
+
+   CREATE TABLE "doc"."logs" (
+     "ts" TIMESTAMP WITH TIME ZONE,
+     "level" TEXT,
+     "message" TEXT
+   )
+
+would translate into the following declarative model::
+
+    >>> from sqlalchemy.schema import FetchedValue
+
+    >>> class Log(Base):
+    ...
+    ...     __tablename__ = 'logs'
+    ...     __mapper_args__ = {
+    ...         'exclude_properties': ['id']
+    ...     }
+    ...
+    ...     id = sa.Column("_id", sa.String, server_default=FetchedValue(), primary_key=True)
+    ...     ts = sa.Column(sa.DateTime, server_default=sa.func.current_timestamp())
+    ...     level = sa.Column(sa.String)
+    ...     message = sa.Column(sa.String)
+
+    >>> log = Log(level="info", message="Hello World")
+    >>> session.add(log)
+    >>> session.commit()
+    >>> log.id
+    ...
+
 .. _using-extension-types:
 
 Extension types
@@ -336,10 +375,8 @@ You can then set the values of the ``Geopoint`` and ``Geoshape`` columns::
     >>> session.add(tokyo)
     >>> session.commit()
 
-
 Querying
 ========
-
 
 When the ``commit`` method is called, two ``INSERT`` statements are sent to
 CrateDB. However, the newly inserted rows aren't immediately available for
@@ -544,7 +581,7 @@ The score is made available via the ``_score`` column, which is a virtual
 column, meaning that it doesn't exist on the source table, and in most cases,
 should not be included in your :ref:`table definition <table-definition>`.
 
-You can select ``_score`` as part of a query, like this:
+You can select ``_score`` as part of a query, like this::
 
     >>> session.query(Character.name, '_score') \
     ...     .filter(match(Character.quote_ft, 'space')) \
@@ -556,6 +593,7 @@ index. And we're selecting the ``name`` column of the character by using the
 table definition But notice that we select the associated score by passing in
 the virtual column name as a string (``_score``) instead of using a defined
 column on the ``Character`` class.
+
 
 .. _SQLAlchemy: http://www.sqlalchemy.org/
 .. _Object-Relational Mapping: https://en.wikipedia.org/wiki/Object-relational_mapping

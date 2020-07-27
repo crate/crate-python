@@ -177,6 +177,13 @@ class CrateCompiler(compiler.SQLCompiler):
             self.process(element.right, **kw)
         )
 
+    def returning_clause(self, stmt, returning_cols):
+        columns = [
+            self._label_select_column(None, c, True, False, {})
+            for c in sa.sql.expression._select_iterables(returning_cols)
+        ]
+        return "RETURNING " + ", ".join(columns)
+
     def visit_insert(self, insert_stmt, asfrom=False, **kw):
         """
         used to compile <sql.expression.Insert> expressions.

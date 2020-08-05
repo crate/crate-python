@@ -5,6 +5,9 @@ Changes for crate
 Unreleased
 ==========
 
+2020/08/05 0.25.0
+=================
+
 - Added support for the ``RETURNING`` clause to the SQLAlchemy dialect. This
   requires CrateDB 4.2 or greater. In case you use any server side generated
   columns in your primary key constraint with earlier CrateDB versions, you can

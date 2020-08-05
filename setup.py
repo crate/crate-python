@@ -34,10 +34,7 @@ def read(path):
         return f.read()
 
 
-long_description = (
-    read('README.rst')
-)
-
+long_description = read('README.rst')
 versionf_content = read("src/crate/client/__init__.py")
 version_rex = r'^__version__ = [\'"]([^\'"]*)[\'"]$'
 m = re.search(version_rex, versionf_content, re.M)

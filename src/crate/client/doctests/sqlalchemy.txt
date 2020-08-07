@@ -227,7 +227,7 @@ When retrieved, they are retrieved as the corresponding geojson objects::
     >>> refresh("cities")
     >>> query = session.query(City.name, City.coordinate, City.area)
     >>> query.all()
-     [('Tokyo', (139.76, 35.68), {"coordinates": [[[139.806, 35.515], [139.919, 35.703], [139.768, 35.817], [139.575, 35.76], [139.584, 35.619], [139.806, 35.515]]], "type": "Polygon"})]
+     [('Tokyo', (139.75999999791384, 35.67999996710569), {"coordinates": [[[139.806, 35.515], [139.919, 35.703], [139.768, 35.817], [139.575, 35.76], [139.584, 35.619], [139.806, 35.515]]], "type": "Polygon"})]
 
 Count and Group By
 ==================

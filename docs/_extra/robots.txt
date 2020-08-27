@@ -1,4 +1,4 @@
 User-agent: *
 Disallow: /
 
-Sitemap: https://crate.io/docs/python/en/latest/sitemap.xml
+Sitemap: https://crate.io/docs/python/en/latest/site.xml

@@ -24,7 +24,10 @@ from sqlalchemy.sql import operators, expression
 from sqlalchemy.sql import default_comparator
 from sqlalchemy.ext.mutable import Mutable
 
-import geojson
+try:
+    import geojson
+except ImportError:
+    geojson = None
 
 
 class MutableList(Mutable, list):
@@ -235,6 +238,11 @@ class Geopoint(sqltypes.UserDefinedType):
 
     def bind_processor(self, dialect):
         def process(value):
+            if geojson is None:
+                raise RuntimeError(
+                    "To use Geopoints with SQLAlchemy and the crate-python "
+                    "binding, please ensure geojson is installed."
+                )
             if isinstance(value, geojson.Point):
                 return value.coordinates
             return value
@@ -259,6 +267,11 @@ class Geoshape(sqltypes.UserDefinedType):
         return 'GEO_SHAPE'
 
     def result_processor(self, dialect, coltype):
+        if geojson is None:
+            raise RuntimeError(
+                "To use Geoshapes with SQLAlchemy and the crate-python "
+                "binding, please ensure geojson is installed."
+            )
         return geojson.GeoJSON.to_instance
 
     comparator_factory = Comparator

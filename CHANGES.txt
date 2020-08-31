@@ -5,6 +5,9 @@ Changes for crate
 Unreleased
 ==========
 
+- Fixed a regression in 0.25.0 which required ``geojson`` to be installed even
+  if not used.
+
 2020/08/05 0.25.0
 =================
 

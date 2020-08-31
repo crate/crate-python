@@ -64,9 +64,10 @@ setup(
         ]
     },
     extras_require=dict(
+        geo=['geojson>=2.5.0'],
         test=['zope.testing',
               'zc.customdoctests>=1.0.1'],
-        sqlalchemy=['sqlalchemy>=1.0,<1.4', 'geojson>=2.5.0']
+        sqlalchemy=['sqlalchemy>=1.0,<1.4']
     ),
     python_requires='>=3.4',
     install_requires=requirements,

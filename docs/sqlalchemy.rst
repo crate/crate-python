@@ -6,12 +6,25 @@ Using the SQLAlchemy dialect
 
 `SQLAlchemy`_ is a popular `Object-Relational Mapping`_ (ORM) tool for Python.
 
-The CrateDB Python client library provides support for SQLAlchemy. A CrateDB
-`dialect`_ is registered at installation time and can be used without further
-configuration.
+The CrateDB Python client library provides support for SQLAlchemy when
+installed with the ``sqlalchemy`` extra:
 
-The CrateDB Python client library works with SQLAlchemy versions ``1.0``,
-``1.1`` and ``1.2``.
+.. code-block:: shell
+
+    $ python -m pip install 'crate[sqlalchemy]'
+
+For optional geospatial support with SQLAlchemy, the ``geo`` extra needs to be
+installed as well:
+
+.. code-block:: shell
+
+    $ python -m pip install 'crate[geo]'
+
+A CrateDB `dialect`_ is registered at installation time and can be used without
+further configuration.
+
+The CrateDB Python client library works with SQLAlchemy versions ``1.0`` to
+``1.3``.
 
 .. NOTE::
 
@@ -323,13 +336,15 @@ The resulting object will look like this::
     change, the `UPDATE`_ statement sent to CrateDB will include all of the
     ``ObjectArray`` data.
 
+.. _geo:
 .. _geopoint:
 .. _geoshape:
 
 ``Geopoint`` and ``Geoshape``
 .............................
 
-The CrateDB SQLAlchemy dialect provides two geospatial types:
+The CrateDB SQLAlchemy dialect provides optional suppoort for two geospatial
+types:
 
 - ``Geopoint``, which represents a longitude and latitude coordinate
 - ``Geoshape``, which is used to store geometric `GeoJSON geometry objects`_

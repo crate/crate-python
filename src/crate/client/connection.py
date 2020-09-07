@@ -28,10 +28,20 @@ from distutils.version import StrictVersion
 
 class Connection(object):
 
-    def __init__(self, servers=None, timeout=None, backoff_factor=0, client=None,
-                 verify_ssl_cert=False, ca_cert=None, error_trace=False,
-                 cert_file=None, key_file=None, username=None, password=None,
-                 schema=None):
+    def __init__(self,
+                 servers=None,
+                 timeout=None,
+                 backoff_factor=0,
+                 client=None,
+                 verify_ssl_cert=False,
+                 ca_cert=None,
+                 error_trace=False,
+                 cert_file=None,
+                 key_file=None,
+                 username=None,
+                 password=None,
+                 schema=None,
+                 pool_size=None):
         if client:
             self.client = client
         else:
@@ -45,7 +55,8 @@ class Connection(object):
                                  key_file=key_file,
                                  username=username,
                                  password=password,
-                                 schema=schema)
+                                 schema=schema,
+                                 pool_size=pool_size)
         self.lowest_server_version = self._lowest_server_version()
         self._closed = False
 
@@ -113,7 +124,8 @@ def connect(servers=None,
             key_file=None,
             username=None,
             password=None,
-            schema=None):
+            schema=None,
+            pool_size=None):
     """ Create a :class:Connection object
 
     :param servers:
@@ -122,6 +134,9 @@ def connect(servers=None,
     :param timeout:
         (optional)
         define the retry timeout for unreachable servers in seconds
+    :param backoff_factor:
+        (optional)
+        define the retry interval for unreachable servers in seconds
     :param client:
         (optional - for testing)
         client used to communicate with crate.
@@ -142,15 +157,17 @@ def connect(servers=None,
         the username in the database.
     :param password:
         the password of the user in the database.
-    :param backoff_factor:
+    :param pool_size:
         (optional)
-        define the retry interval for unreachable servers in seconds
+        Number of connections to save that can be reused.
+        More than 1 is useful in multithreaded situations.
     >>> connect(['host1:4200', 'host2:4200'])
     <Connection <Client ['http://host1:4200', 'http://host2:4200']>>
     """
     return Connection(servers=servers,
                       timeout=timeout,
                       backoff_factor=backoff_factor,
+                      pool_size=pool_size,
                       client=client,
                       verify_ssl_cert=verify_ssl_cert,
                       ca_cert=ca_cert,

@@ -283,7 +283,8 @@ class Client(object):
                  key_file=None,
                  username=None,
                  password=None,
-                 schema=None):
+                 schema=None,
+                 pool_size=None):
         if not servers:
             servers = [self.default_server]
         else:
@@ -292,6 +293,8 @@ class Client(object):
         self._inactive_servers = []
         pool_kw = _pool_kw_args(verify_ssl_cert, ca_cert, cert_file, key_file)
         pool_kw['timeout'] = timeout
+        if pool_size is not None:
+            pool_kw['maxsize'] = pool_size
         self.backoff_factor = backoff_factor
         self.server_pool = {}
         self._update_server_pool(servers, **pool_kw)

@@ -5,6 +5,9 @@ Changes for crate
 Unreleased
 ==========
 
+- Propagate connect parameter ``pool_size`` to urllib3 as ``maxsize`` parameter
+  in order to make the connection pool size configurable.
+
 2020/08/05 0.25.0
 =================
 

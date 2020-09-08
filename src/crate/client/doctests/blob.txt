@@ -7,7 +7,7 @@ bloba API.
 
 Create a connection::
 
-    >>> from crate.client.connection import connect
+    >>> from crate.client import connect
     >>> client = connect([crate_host])
 
 Get a blob container::

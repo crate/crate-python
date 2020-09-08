@@ -40,7 +40,7 @@ from base64 import b64decode
 from urllib.parse import urlparse, parse_qs
 from setuptools.ssl_support import find_ca_bundle
 
-from .http import Client, _remove_certs_for_non_https
+from .http import Client, _get_socket_opts, _remove_certs_for_non_https
 from .exceptions import ConnectionError, ProgrammingError
 
 
@@ -192,7 +192,7 @@ class HttpClientTest(TestCase):
         # the new non-https server must not contain any SSL only arguments
         # regression test for github issue #179/#180
         self.assertEqual(
-            {},
+            {'socket_options': _get_socket_opts(keepalive=True)},
             client.server_pool['http://localhost:4201'].pool.conn_kw
         )
         client.close()
@@ -275,6 +275,14 @@ class HttpClientTest(TestCase):
         data = json.loads(request.call_args[1]['data'])
         self.assertEqual(data['args'], [1461196800000])
         client.close()
+
+    def test_socket_options_contain_keepalive(self):
+        server = 'http://localhost:4200'
+        client = Client(servers=server)
+        conn_kw = client.server_pool[server].pool.conn_kw
+        self.assertTrue(
+            (socket.SOL_SOCKET, socket.SO_KEEPALIVE, 1) in conn_kw['socket_options']
+        )
 
 
 @patch(REQUEST, fail_sometimes)

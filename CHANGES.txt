@@ -5,8 +5,34 @@ Changes for crate
 Unreleased
 ==========
 
+- Propagate connect parameter ``pool_size`` to urllib3 as ``maxsize`` parameter
+  in order to make the connection pool size configurable.
+
+2020/08/05 0.25.0
+=================
+
+- Added support for the ``RETURNING`` clause to the SQLAlchemy dialect. This
+  requires CrateDB 4.2 or greater. In case you use any server side generated
+  columns in your primary key constraint with earlier CrateDB versions, you can
+  turn this feature off by passing ``implicit_returning=False`` in the
+  ``create_engine()`` call.
+
+- Added support for ``geo_point`` and ``geo_json`` types to the SQLAlchemy
+  dialect.
+
+2020/05/27 0.24.0
+=================
+
+- Upgraded SQLAlchemy support to 1.3.
+
+- Added ``backoff_factor`` in connection to configure retry interval.
+
+- Added official Python 3.8 support.
+
 - Made it so that the SQLAlchemy dialect is now aware of the return type of the
   ``date_trunc`` function.
+
+- Added driver attribute, as SQLAlchemy relies on interfaces having that string for identification.
 
 2019/09/19 0.23.2
 =================

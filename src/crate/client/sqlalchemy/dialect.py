@@ -159,11 +159,13 @@ colspecs = {
 
 class CrateDialect(default.DefaultDialect):
     name = 'crate'
+    driver = 'crate-python'
     statement_compiler = CrateCompiler
     ddl_compiler = CrateDDLCompiler
     type_compiler = CrateTypeCompiler
     supports_native_boolean = True
     colspecs = colspecs
+    implicit_returning = True
 
     def __init__(self, *args, **kwargs):
         super(CrateDialect, self).__init__(*args, **kwargs)
@@ -246,7 +248,7 @@ class CrateDialect(default.DefaultDialect):
             query,
             [table_name,
              schema or self.default_schema_name,
-             "(.*)\[\'(.*)\'\]"]  # regex to filter subscript
+             r"(.*)\[\'(.*)\'\]"]  # regex to filter subscript
         )
         return [self._create_column_info(row) for row in cursor.fetchall()]
 

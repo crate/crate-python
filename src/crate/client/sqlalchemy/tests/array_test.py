@@ -44,17 +44,17 @@ class SqlAlchemyArrayTypeTest(TestCase):
         self.metadata = sa.MetaData()
 
         class User(Base):
-                __tablename__ = 'users'
+            __tablename__ = 'users'
 
-                name = sa.Column(sa.String, primary_key=True)
-                friends = sa.Column(sa.ARRAY(sa.String))
-                scores = sa.Column(sa.ARRAY(sa.Integer))
+            name = sa.Column(sa.String, primary_key=True)
+            friends = sa.Column(sa.ARRAY(sa.String))
+            scores = sa.Column(sa.ARRAY(sa.Integer))
 
         self.User = User
         self.session = Session()
 
     def assertSQL(self, expected_str, actual_expr):
-            self.assertEqual(expected_str, str(actual_expr).replace('\n', ''))
+        self.assertEqual(expected_str, str(actual_expr).replace('\n', ''))
 
     def test_create_with_array(self):
         t1 = sa.Table('t', self.metadata,

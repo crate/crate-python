@@ -34,10 +34,7 @@ def read(path):
         return f.read()
 
 
-long_description = (
-    read('README.rst')
-)
-
+long_description = read('README.rst')
 versionf_content = read("src/crate/client/__init__.py")
 version_rex = r'^__version__ = [\'"]([^\'"]*)[\'"]$'
 m = re.search(version_rex, versionf_content, re.M)
@@ -69,7 +66,7 @@ setup(
     extras_require=dict(
         test=['zope.testing',
               'zc.customdoctests>=1.0.1'],
-        sqlalchemy=['sqlalchemy>=1.0,<1.3']
+        sqlalchemy=['sqlalchemy>=1.0,<1.4', 'geojson>=2.5.0']
     ),
     python_requires='>=3.4',
     install_requires=requirements,
@@ -85,6 +82,7 @@ setup(
         'Programming Language :: Python :: 3.5',
         'Programming Language :: Python :: 3.6',
         'Programming Language :: Python :: 3.7',
+        'Programming Language :: Python :: 3.8',
         'Programming Language :: Python :: Implementation :: CPython',
         'Programming Language :: Python :: Implementation :: PyPy',
         'Topic :: Database'

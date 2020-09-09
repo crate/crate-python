@@ -149,7 +149,7 @@ to ``True``::
 Environment variables
 ---------------------
 
-It is possible to provide  enviromental variables for the ``Crate`` testing
+It is possible to provide environment variables for the ``Crate`` testing
 layer::
 
     >>> layer =  CrateLayer('crate',
@@ -165,7 +165,7 @@ layer::
     ...     body='{"stmt": "select heap[\'max\'] from sys.nodes"}')
     >>> json_response = json.loads(response.data.decode('utf-8'))
     >>> json_response["rows"][0][0]
-    304087040
+    314572800
 
     >>> layer.stop()
 
@@ -228,12 +228,11 @@ From Uri
 The CrateLayer can also be created by providing a URI that points to a Crate
 tarball::
 
-    >>> import configparser
-    >>> config = configparser.ConfigParser()
-    >>> config.read(project_root("versions.cfg"))
-    ['.../versions.cfg']
-
-    >>> version = config["versions"]["crate_server"]
+    >>> import urllib.request
+    >>> import json
+    >>> with urllib.request.urlopen('http://crate.io/versions.json') as response:
+    ...     versions = json.loads(response.read().decode())
+    ...     version = versions['crate_testing']
 
     >>> uri = 'https://cdn.crate.io/downloads/releases/crate-{}.tar.gz'.format(version)
     >>> tmpdir = tempfile.mkdtemp()

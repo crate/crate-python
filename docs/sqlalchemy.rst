@@ -198,6 +198,45 @@ In this example, we:
     The SQLAlchemy documentation has more information about `working with
     tables`_.
 
+``_id`` as primary key
+......................
+
+As with version 4.2 CrateDB supports the ``RETURNING`` clause, which makes it
+possible to use the ``_id`` column as fetched value for the ``PRIMARY KEY``
+constraint, since the SQLAlchemy ORM always **requires** a primary key.
+
+A table schema like this
+
+.. code-block:: sql
+
+   CREATE TABLE "doc"."logs" (
+     "ts" TIMESTAMP WITH TIME ZONE,
+     "level" TEXT,
+     "message" TEXT
+   )
+
+would translate into the following declarative model::
+
+    >>> from sqlalchemy.schema import FetchedValue
+
+    >>> class Log(Base):
+    ...
+    ...     __tablename__ = 'logs'
+    ...     __mapper_args__ = {
+    ...         'exclude_properties': ['id']
+    ...     }
+    ...
+    ...     id = sa.Column("_id", sa.String, server_default=FetchedValue(), primary_key=True)
+    ...     ts = sa.Column(sa.DateTime, server_default=sa.func.current_timestamp())
+    ...     level = sa.Column(sa.String)
+    ...     message = sa.Column(sa.String)
+
+    >>> log = Log(level="info", message="Hello World")
+    >>> session.add(log)
+    >>> session.commit()
+    >>> log.id
+    ...
+
 .. _using-extension-types:
 
 Extension types
@@ -284,9 +323,60 @@ The resulting object will look like this::
     change, the `UPDATE`_ statement sent to CrateDB will include all of the
     ``ObjectArray`` data.
 
+.. _geopoint:
+.. _geoshape:
+
+``Geopoint`` and ``Geoshape``
+.............................
+
+The CrateDB SQLAlchemy dialect provides two geospatial types:
+
+- ``Geopoint``, which represents a longitude and latitude coordinate
+- ``Geoshape``, which is used to store geometric `GeoJSON geometry objects`_
+
+To use these types, you can create columns, like so::
+
+    >>> class City(Base):
+    ...
+    ...    __tablename__ = 'cities'
+    ...    name = sa.Column(sa.String, primary_key=True)
+    ...    coordinate = sa.Column(types.Geopoint)
+    ...    area = sa.Column(types.Geoshape)
+
+There are multiple ways of creating a geopoint. Firstly, you can define it as
+a tuple of ``(longitude, latitude)``::
+
+    >>> point = (139.76, 35.68)
+
+Secondly, you can define it as a geojson ``Point`` object::
+
+    >>> from geojson import Point
+    >>> point = Point(coordinates=(139.76, 35.68))
+
+To create a geoshape, you can use a geojson shape object, such as a ``Polygon``::
+
+    >>> from geojson import Point, Polygon
+    >>> area = Polygon(
+    ...     [
+    ...         [
+    ...             (139.806, 35.515),
+    ...             (139.919, 35.703),
+    ...             (139.768, 35.817),
+    ...             (139.575, 35.760),
+    ...             (139.584, 35.619),
+    ...             (139.806, 35.515),
+    ...         ]
+    ...     ]
+    ... )
+
+You can then set the values of the ``Geopoint`` and ``Geoshape`` columns::
+
+    >>> tokyo = City(name="Tokyo", coordinate=point, area=area)
+    >>> session.add(tokyo)
+    >>> session.commit()
+
 Querying
 ========
-
 
 When the ``commit`` method is called, two ``INSERT`` statements are sent to
 CrateDB. However, the newly inserted rows aren't immediately available for
@@ -491,7 +581,7 @@ The score is made available via the ``_score`` column, which is a virtual
 column, meaning that it doesn't exist on the source table, and in most cases,
 should not be included in your :ref:`table definition <table-definition>`.
 
-You can select ``_score`` as part of a query, like this:
+You can select ``_score`` as part of a query, like this::
 
     >>> session.query(Character.name, '_score') \
     ...     .filter(match(Character.quote_ft, 'space')) \
@@ -503,6 +593,7 @@ index. And we're selecting the ``name`` column of the character by using the
 table definition But notice that we select the associated score by passing in
 the virtual column name as a string (``_score``) instead of using a defined
 column on the ``Character`` class.
+
 
 .. _SQLAlchemy: http://www.sqlalchemy.org/
 .. _Object-Relational Mapping: https://en.wikipedia.org/wiki/Object-relational_mapping
@@ -535,3 +626,4 @@ column on the ``Character`` class.
 .. _score: https://crate.io/docs/crate/reference/en/latest/general/dql/fulltext.html#usage
 .. _working with tables: http://docs.sqlalchemy.org/en/latest/core/metadata.html
 .. _UUIDs: https://docs.python.org/3/library/uuid.html
+.. _geojson geometry objects: https://tools.ietf.org/html/rfc7946#section-3.1

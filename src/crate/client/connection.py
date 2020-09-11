@@ -28,10 +28,78 @@ from distutils.version import StrictVersion
 
 class Connection(object):
 
-    def __init__(self, servers=None, timeout=None, backoff_factor=0, client=None,
-                 verify_ssl_cert=False, ca_cert=None, error_trace=False,
-                 cert_file=None, key_file=None, username=None, password=None,
-                 schema=None):
+    def __init__(self,
+                 servers=None,
+                 timeout=None,
+                 backoff_factor=0,
+                 client=None,
+                 verify_ssl_cert=False,
+                 ca_cert=None,
+                 error_trace=False,
+                 cert_file=None,
+                 key_file=None,
+                 username=None,
+                 password=None,
+                 schema=None,
+                 pool_size=None,
+                 socket_keepalive=True,
+                 socket_tcp_keepidle=None,
+                 socket_tcp_keepintvl=None,
+                 socket_tcp_keepcnt=None,
+                 ):
+        """
+        :param servers:
+            either a string in the form of '<hostname>:<port>'
+            or a list of servers in the form of ['<hostname>:<port>', '...']
+        :param timeout:
+            (optional)
+            define the retry timeout for unreachable servers in seconds
+        :param backoff_factor:
+            (optional)
+            define the retry interval for unreachable servers in seconds
+        :param client:
+            (optional - for testing)
+            client used to communicate with crate.
+        :param verify_ssl_cert:
+            if set to ``True`` verify the servers SSL server certificate.
+            defaults to ``False``
+        :param ca_cert:
+            a path to a CA certificate to use when verifying the SSL server
+            certificate.
+        :param error_trace:
+            if set to ``True`` return a whole stacktrace of any server error if
+            one occurs
+        :param cert_file:
+            a path to the client certificate to present to the server.
+        :param key_file:
+            a path to the client key to use when communicating with the server.
+        :param username:
+            the username in the database.
+        :param password:
+            the password of the user in the database.
+        :param pool_size:
+            (optional)
+            Number of connections to save that can be reused.
+            More than 1 is useful in multithreaded situations.
+        :param socket_keepalive:
+            (optional, defaults to ``True``)
+            Enable TCP keepalive on socket level.
+        :param socket_tcp_keepidle:
+            (optional)
+            Set the ``TCP_KEEPIDLE`` socket option, which overrides
+            ``net.ipv4.tcp_keepalive_time`` kernel setting if ``socket_keepalive``
+            is ``True``.
+        :param socket_tcp_keepintvl:
+            (optional)
+            Set the ``TCP_KEEPINTVL`` socket option, which overrides
+            ``net.ipv4.tcp_keepalive_intvl`` kernel setting if ``socket_keepalive``
+            is ``True``.
+        :param socket_tcp_keepcnt:
+            (optional)
+            Set the ``TCP_KEEPCNT`` socket option, which overrides
+            ``net.ipv4.tcp_keepalive_probes`` kernel setting if ``socket_keepalive``
+            is ``True``.
+        """
         if client:
             self.client = client
         else:
@@ -45,7 +113,13 @@ class Connection(object):
                                  key_file=key_file,
                                  username=username,
                                  password=password,
-                                 schema=schema)
+                                 schema=schema,
+                                 pool_size=pool_size,
+                                 socket_keepalive=socket_keepalive,
+                                 socket_tcp_keepidle=socket_tcp_keepidle,
+                                 socket_tcp_keepintvl=socket_tcp_keepintvl,
+                                 socket_tcp_keepcnt=socket_tcp_keepcnt,
+                                 )
         self.lowest_server_version = self._lowest_server_version()
         self._closed = False
 
@@ -102,61 +176,5 @@ class Connection(object):
         self.close()
 
 
-def connect(servers=None,
-            timeout=None,
-            backoff_factor=0,
-            client=None,
-            verify_ssl_cert=False,
-            ca_cert=None,
-            error_trace=False,
-            cert_file=None,
-            key_file=None,
-            username=None,
-            password=None,
-            schema=None):
-    """ Create a :class:Connection object
-
-    :param servers:
-        either a string in the form of '<hostname>:<port>'
-        or a list of servers in the form of ['<hostname>:<port>', '...']
-    :param timeout:
-        (optional)
-        define the retry timeout for unreachable servers in seconds
-    :param client:
-        (optional - for testing)
-        client used to communicate with crate.
-    :param verify_ssl_cert:
-        if set to ``True`` verify the servers SSL server certificate.
-        defaults to ``False``
-    :param ca_cert:
-        a path to a CA certificate to use when verifying the SSL server
-        certificate.
-    :param error_trace:
-        if set to ``True`` return a whole stacktrace of any server error if
-        one occurs
-    :param cert_file:
-        a path to the client certificate to present to the server.
-    :param key_file:
-        a path to the client key to use when communicating with the server.
-    :param username:
-        the username in the database.
-    :param password:
-        the password of the user in the database.
-    :param backoff_factor:
-        (optional)
-        define the retry interval for unreachable servers in seconds
-    >>> connect(['host1:4200', 'host2:4200'])
-    <Connection <Client ['http://host1:4200', 'http://host2:4200']>>
-    """
-    return Connection(servers=servers,
-                      timeout=timeout,
-                      backoff_factor=backoff_factor,
-                      client=client,
-                      verify_ssl_cert=verify_ssl_cert,
-                      ca_cert=ca_cert,
-                      error_trace=error_trace,
-                      cert_file=cert_file,
-                      key_file=key_file,
-                      username=username,
-                      password=password,
-                      schema=schema)
+# For backwards compatibility and not to break existing imports
+connect = Connection

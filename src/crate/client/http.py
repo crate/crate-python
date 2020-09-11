@@ -20,28 +20,37 @@
 # software solely pursuant to the terms of the relevant commercial agreement.
 
 
+import calendar
 import heapq
+import io
 import json
 import logging
 import os
-import io
+import re
+import socket
 import ssl
-import urllib3
-import urllib3.exceptions
-from urllib3.util.retry import Retry
+import threading
+from urllib.parse import urlparse
 from base64 import b64encode
 from time import time
 from datetime import datetime, date
 from decimal import Decimal
-import calendar
-import threading
-import re
-from urllib.parse import urlparse
+from urllib3 import connection_from_url
+from urllib3.connection import HTTPConnection
+from urllib3.exceptions import (
+    HTTPError,
+    MaxRetryError,
+    ProtocolError,
+    ProxyError,
+    ReadTimeoutError,
+    SSLError,
+)
+from urllib3.util.retry import Retry
 from crate.client.exceptions import (
     ConnectionError,
+    BlobLocationNotFoundException,
     DigestNotFoundException,
     ProgrammingError,
-    BlobLocationNotFoundException,
 )
 
 
@@ -90,7 +99,17 @@ class CrateJsonEncoder(json.JSONEncoder):
 class Server(object):
 
     def __init__(self, server, **pool_kw):
-        self.pool = urllib3.connection_from_url(server, **pool_kw)
+        socket_options = _get_socket_opts(
+            pool_kw.pop('socket_keepalive', False),
+            pool_kw.pop('socket_tcp_keepidle', None),
+            pool_kw.pop('socket_tcp_keepintvl', None),
+            pool_kw.pop('socket_tcp_keepcnt', None),
+        )
+        self.pool = connection_from_url(
+            server,
+            socket_options=socket_options,
+            **pool_kw,
+        )
 
     def request(self,
                 method,
@@ -218,17 +237,23 @@ def _to_server_list(servers):
     return [_server_url(s) for s in servers]
 
 
-def _pool_kw_args(verify_ssl_cert, ca_cert, client_cert, client_key):
+def _pool_kw_args(verify_ssl_cert, ca_cert, client_cert, client_key,
+                  timeout=None, pool_size=None):
     ca_cert = ca_cert or os.environ.get('REQUESTS_CA_BUNDLE', None)
     if ca_cert and not os.path.exists(ca_cert):
         # Sanity check
         raise IOError('CA bundle file "{}" does not exist.'.format(ca_cert))
-    return {
+
+    kw = {
         'ca_certs': ca_cert,
         'cert_reqs': ssl.CERT_REQUIRED if verify_ssl_cert else ssl.CERT_NONE,
         'cert_file': client_cert,
         'key_file': client_key,
+        'timeout': timeout,
     }
+    if pool_size is not None:
+        kw['maxsize'] = pool_size
+    return kw
 
 
 def _remove_certs_for_non_https(server, kwargs):
@@ -258,6 +283,33 @@ def _create_sql_payload(stmt, args, bulk_args):
     return json.dumps(data, cls=CrateJsonEncoder)
 
 
+def _get_socket_opts(keepalive=True,
+                     tcp_keepidle=None,
+                     tcp_keepintvl=None,
+                     tcp_keepcnt=None):
+    """
+    Return an optional list of socket options for urllib3's HTTPConnection
+    constructor.
+    """
+    if not keepalive:
+        return None
+
+    # always use TCP keepalive
+    opts = [(socket.SOL_SOCKET, socket.SO_KEEPALIVE, 1)]
+
+    # hasattr check because some of the options depend on system capabilities
+    # see https://docs.python.org/3/library/socket.html#socket.SOMAXCONN
+    if hasattr(socket, 'TCP_KEEPIDLE') and tcp_keepidle is not None:
+        opts.append((socket.IPPROTO_TCP, socket.TCP_KEEPIDLE, tcp_keepidle))
+    if hasattr(socket, 'TCP_KEEPINTVL') and tcp_keepintvl is not None:
+        opts.append((socket.IPPROTO_TCP, socket.TCP_KEEPINTVL, tcp_keepintvl))
+    if hasattr(socket, 'TCP_KEEPCNT') and tcp_keepcnt is not None:
+        opts.append((socket.IPPROTO_TCP, socket.TCP_KEEPCNT, tcp_keepcnt))
+
+    # additionally use urllib3's default socket options
+    return HTTPConnection.default_socket_options + opts
+
+
 class Client(object):
     """
     Crate connection client using crate's HTTP API.
@@ -283,15 +335,28 @@ class Client(object):
                  key_file=None,
                  username=None,
                  password=None,
-                 schema=None):
+                 schema=None,
+                 pool_size=None,
+                 socket_keepalive=True,
+                 socket_tcp_keepidle=None,
+                 socket_tcp_keepintvl=None,
+                 socket_tcp_keepcnt=None,
+                 ):
         if not servers:
             servers = [self.default_server]
         else:
             servers = _to_server_list(servers)
         self._active_servers = servers
         self._inactive_servers = []
-        pool_kw = _pool_kw_args(verify_ssl_cert, ca_cert, cert_file, key_file)
-        pool_kw['timeout'] = timeout
+        pool_kw = _pool_kw_args(
+            verify_ssl_cert, ca_cert, cert_file, key_file, timeout, pool_size,
+        )
+        pool_kw.update({
+            'socket_keepalive': socket_keepalive,
+            'socket_tcp_keepidle': socket_tcp_keepidle,
+            'socket_tcp_keepintvl': socket_tcp_keepintvl,
+            'socket_tcp_keepcnt': socket_tcp_keepcnt,
+        })
         self.backoff_factor = backoff_factor
         self.server_pool = {}
         self._update_server_pool(servers, **pool_kw)
@@ -426,18 +491,18 @@ class Client(object):
                         self._drop_server(next_server, response.reason)
                 else:
                     return response
-            except (urllib3.exceptions.MaxRetryError,
-                    urllib3.exceptions.ReadTimeoutError,
-                    urllib3.exceptions.SSLError,
-                    urllib3.exceptions.HTTPError,
-                    urllib3.exceptions.ProxyError,) as ex:
+            except (MaxRetryError,
+                    ReadTimeoutError,
+                    SSLError,
+                    HTTPError,
+                    ProxyError,) as ex:
                 ex_message = _ex_to_message(ex)
                 if server:
                     raise ConnectionError(
                         "Server not available, exception: %s" % ex_message
                     )
                 preserve_server = False
-                if isinstance(ex, urllib3.exceptions.ProtocolError):
+                if isinstance(ex, ProtocolError):
                     preserve_server = any(
                         t in [type(arg) for arg in ex.args]
                         for t in PRESERVE_ACTIVE_SERVER_EXCEPTIONS

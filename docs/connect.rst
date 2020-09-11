@@ -167,19 +167,50 @@ the optional ``error_trace`` argument to ``True``, like so::
 
     >>> connection = client.connect(..., error_trace=True)
 
-.. _authentication:
-
 Backoff Factor
-..............
+--------------
 
 When attempting to make a request, the connection can be configured so that
 retries are made in increasing time intervals. This can be configured like so::
 
     >>> connection = client.connect(..., backoff_factor=0.1)
 
-If ``backoff_factor``is set to 0.1, then the delay between retries will be 0.0,
+If ``backoff_factor`` is set to 0.1, then the delay between retries will be 0.0,
 0.1, 0.2, 0.4 etc. The maximum backoff factor cannot exceed 120 seconds and by
 default its value is 0.
+
+Socket Options
+--------------
+
+Creating connections uses `urllib3 default socket options`_ but additionally
+enables TCP keepalive by setting ``socket.SO_KEEPALIVE`` to ``1``.
+
+Keepalive can be disabled using the ``socket_keepalive`` argument, like so::
+
+    >>> connection = client.connect(..., socket_keepalive=False)
+
+If keepalive is enabled (default), there are three additional, optional socket
+options that can be configured via connection arguments.
+
+:``socket_tcp_keepidle``:
+
+    Set the ``TCP_KEEPIDLE`` socket option, which overrides
+    ``net.ipv4.tcp_keepalive_time`` kernel setting if ``socket_keepalive`` is
+    ``True``.
+
+:``socket_tcp_keepintvl``:
+
+    Set the ``TCP_KEEPINTVL`` socket option, which overrides
+    ``net.ipv4.tcp_keepalive_intvl`` kernel setting if ``socket_keepalive`` is
+    ``True``.
+
+:``socket_tcp_keepcnt``:
+
+    Set the ``TCP_KEEPCNT`` socket option, which overrides
+    ``net.ipv4.tcp_keepalive_probes`` kernel setting if ``socket_keepalive`` is
+    ``True``.
+
+.. _authentication:
 
 Authentication
 ==============
@@ -247,3 +278,4 @@ Once you're connected, you can :ref:`query CrateDB <query>`.
 .. _socket timeout: https://docs.python.org/2/library/socket.html#socket.getdefaulttimeout
 .. _SQLAlchemy: http://www.sqlalchemy.org/
 .. _tracebacks: https://docs.python.org/3/library/traceback.html
+.. _urllib3 default socket options: https://urllib3.readthedocs.io/en/latest/reference/urllib3.connection.html#urllib3.connection.HTTPConnection

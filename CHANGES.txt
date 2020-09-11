@@ -5,6 +5,16 @@ Changes for crate
 Unreleased
 ==========
 
+- Enabled TCP keepalive on socket level and support for setting socket options
+  when creating the connection. The supported options are:
+
+  - ``TCP_KEEPIDLE`` (overriding ``net.ipv4.tcp_keepalive_time``)
+  - ``TCP_KEEPINTVL`` (overriding ``net.ipv4.tcp_keepalive_intvl``)
+  - ``TCP_KEEPCNT`` (overriding ``net.ipv4.tcp_keepalive_probes``)
+
+- Propagate connect parameter ``pool_size`` to urllib3 as ``maxsize`` parameter
+  in order to make the connection pool size configurable.
+
 2020/08/05 0.25.0
 =================
 

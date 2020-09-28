@@ -5,6 +5,9 @@ Changes for crate
 Unreleased
 ==========
 
+2020/09/28 0.26.0
+=================
+
 - Enabled TCP keepalive on socket level and support for setting socket options
   when creating the connection. The supported options are:
 

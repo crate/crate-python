@@ -59,7 +59,8 @@ In the release branch:
 
 - Push to origin/<release_branch>
 
-- Create a tag by running ``./devtools/create_tag.sh``
+- Create a tag by running ``./devtools/create_tag.sh``. This will trigger a
+  Github action which releases the new version to PyPi.
 
 On master:
 
@@ -67,39 +68,7 @@ On master:
 
 Next:
 
-- Deploy to PyPI (see section below)
-
 - Archive docs for old releases (see section below)
-
-PyPI Deployment
----------------
-
-To create the package use::
-
-    $ bin/py setup.py sdist bdist_wheel
-
-Then, use twine_ to upload the package to PyPI_::
-
-    $ bin/twine upload dist/*
-
-For this to work, you will need a personal PyPI account that is set up as a project admin.
-
-You'll also need to create a ``~/.pypirc`` file, like so::
-
-    [distutils]
-    index-servers =
-      pypi
-
-    [pypi]
-    repository=https://pypi.python.org/pypi
-    username=<USERNAME>
-    password=<PASSWORD>
-
-Here, ``<USERNAME>`` and ``<PASSWORD>`` should be replaced with your username and password, respectively.
-
-If you want to check the PyPI description before uploading, run::
-
-    $ bin/py setup.py check --strict --restructuredtext
 
 Archiving Docs Versions
 -----------------------

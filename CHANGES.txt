@@ -5,6 +5,8 @@ Changes for crate
 Unreleased
 ==========
 
+- Added official Python 3.9 support.
+
 2020/09/28 0.26.0
 =================
 

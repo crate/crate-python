@@ -105,7 +105,7 @@ the ``connect_args`` argument, like so::
 When you do this, the Database API layer will use its :ref:`round-robin
 <multiple-nodes>` implementation.
 
-The client does not validate `SSL server certificates`_ by default. To configure
+The client validates `SSL server certificates`_ by default. To configure
 this behaviour, SSL verification options can be passed in via ``connect_args``
 too::
 

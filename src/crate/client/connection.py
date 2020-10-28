@@ -33,7 +33,7 @@ class Connection(object):
                  timeout=None,
                  backoff_factor=0,
                  client=None,
-                 verify_ssl_cert=False,
+                 verify_ssl_cert=True,
                  ca_cert=None,
                  error_trace=False,
                  cert_file=None,
@@ -62,7 +62,7 @@ class Connection(object):
             client used to communicate with crate.
         :param verify_ssl_cert:
             if set to ``True`` verify the servers SSL server certificate.
-            defaults to ``False``
+            defaults to ``True``
         :param ca_cert:
             a path to a CA certificate to use when verifying the SSL server
             certificate.

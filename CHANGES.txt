@@ -7,6 +7,10 @@ Unreleased
 
 - Added official Python 3.9 support.
 
+- BREAKING CHANGE: The driver now verifies SSL certificates when connecting via
+  HTTP by default. Previously, this setting defaulted to false. This setting
+  can be changed via the ``verify_ssl_cert`` connection parameter.
+
 2020/09/28 0.26.0
 =================
 

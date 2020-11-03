@@ -40,6 +40,13 @@ jobs:
         run: |
           ./devtools/setup_ci.sh --cratedb-version=${{ matrix.cratedb-version }} --sqlalchemy-version=${{ matrix.sqla-version }}
 
+      - name: Fix Windows environment
+        if: matrix.os == 'windows-2019'
+        shell: bash
+        run: |
+          # Disable firewall.
+          netsh advfirewall set allprofiles state off
+
       - name: Invoke tests
         shell: bash
         run: |

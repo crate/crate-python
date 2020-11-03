@@ -225,6 +225,8 @@ class CrateLayer(object):
         self.verbose = verbose
         self.env = env or {}
         self.env.setdefault('CRATE_USE_IPV4', 'true')
+        if sys.platform == 'win32':
+            self.env.setdefault('_JAVA_OPTIONS', '-Djava.net.preferIPv4Stack=true')
         self.env.setdefault('JAVA_HOME', os.environ.get('JAVA_HOME', ''))
         self._stdout_consumers = []
         self.conn_pool = urllib3.PoolManager(num_pools=1)

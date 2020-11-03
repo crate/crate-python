@@ -50,6 +50,11 @@ jobs:
           # Reset IP stack.
           netsh winsock reset
 
+          # Disable IPv6.
+          netsh interface teredo set state disabled
+          netsh interface ipv6 6to4 set state state=disabled undoonstop=disabled
+          netsh interface ipv6 isatap set state state=disabled
+
       - name: Invoke tests
         shell: bash
         run: |

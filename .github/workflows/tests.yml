@@ -47,6 +47,9 @@ jobs:
           # Disable firewall.
           netsh advfirewall set allprofiles state off
 
+          # Reset IP stack.
+          netsh winsock reset
+
       - name: Invoke tests
         shell: bash
         run: |

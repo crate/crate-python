@@ -53,12 +53,14 @@ function main() {
   # Replace SQLAlchemy version.
   sed -ir "s/SQLAlchemy.*/SQLAlchemy = ${sqlalchemy_version}/g" versions.cfg
 
-  # Replace CrateDB version.
-  if [ ${cratedb_version} = "nightly" ]; then
-    sed -ir "s/releases/releases\/nightly/g" base.cfg
-    sed -ir "s/crate_server.*/crate_server = latest/g" versions.cfg
-  else
-    sed -ir "s/crate_server.*/crate_server = ${cratedb_version}/g" versions.cfg
+  # Adjust CrateDB version, only on Linux.
+  if [ ${{ matrix.os }} = "ubuntu-latest" ]; then
+    if [ ${cratedb_version} = "nightly" ]; then
+      sed -ir "s/releases/releases\/nightly/g" base.cfg
+      sed -ir "s/crate_server.*/crate_server = latest/g" versions.cfg
+    else
+      sed -ir "s/crate_server.*/crate_server = ${cratedb_version}/g" versions.cfg
+    fi
   fi
 
   buildout -n -c base.cfg

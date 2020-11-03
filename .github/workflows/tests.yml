@@ -36,10 +36,12 @@ jobs:
           echo "/usr/local/opt/gnu-getopt/bin" >> $GITHUB_PATH
 
       - name: Install dependencies
+        shell: bash
         run: |
           ./devtools/setup_ci.sh --cratedb-version=${{ matrix.cratedb-version }} --sqlalchemy-version=${{ matrix.sqla-version }}
 
       - name: Invoke tests
+        shell: bash
         run: |
           bin/flake8
           bin/coverage run bin/test -vv1

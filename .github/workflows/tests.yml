@@ -51,6 +51,7 @@ jobs:
           netsh winsock reset
 
           # Disable IPv6.
+          # https://superuser.com/questions/1545288/disable-ipv6-connectivity-on-windows-without-restarting-the-computer
           netsh interface teredo set state disabled
           netsh interface ipv6 6to4 set state state=disabled undoonstop=disabled
           netsh interface ipv6 isatap set state state=disabled

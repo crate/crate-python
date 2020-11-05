@@ -326,12 +326,17 @@ class CrateLayer(object):
 
     def stop(self):
         if self.process:
-            self.process.terminate()
             try:
                 self.process.communicate(timeout=10)
             except subprocess.TimeoutExpired:
                 # On GHA/Windows, it always runs into a timeout, even after 45 seconds.
-                pass
+                #
+                # The child process is not killed if the timeout expires, so in order
+                # to cleanup properly a well-behaved application should kill the child
+                # process and finish communication.
+                # https://docs.python.org/3/library/subprocess.html#subprocess.Popen.communicate
+                self.process.kill()
+                self.process.communicate()
             self.process.stdout.close()
             self.process = None
         self.conn_pool.clear()

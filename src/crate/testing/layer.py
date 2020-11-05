@@ -297,7 +297,7 @@ class CrateLayer(object):
 
     def start(self):
         self._clean()
-        log.info("Starting process '{}'".format(self.start_cmd))
+        sys.stderr.write("Starting process '{}'\n".format(self.start_cmd))
         self.process = subprocess.Popen(self.start_cmd,
                                         env=self.env,
                                         stdout=subprocess.PIPE)

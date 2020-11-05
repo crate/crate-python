@@ -327,7 +327,11 @@ class CrateLayer(object):
     def stop(self):
         if self.process:
             self.process.terminate()
-            self.process.communicate(timeout=45)
+            try:
+                self.process.communicate(timeout=10)
+            except subprocess.TimeoutExpired:
+                # On GHA/Windows, it always runs into a timeout, even after 45 seconds.
+                pass
             self.process.stdout.close()
             self.process = None
         self.conn_pool.clear()

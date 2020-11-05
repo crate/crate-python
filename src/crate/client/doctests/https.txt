@@ -76,7 +76,7 @@ certificate and key file.
 Below an example, in this case it fails because the supplied certificate is
 invalid::
 
-    >>> client = HttpClient([crate_host], cert_file=invalid_ca_cert, key_file=invalid_ca_cert)
+    >>> client = HttpClient([crate_host], cert_file=invalid_ca_cert, key_file=invalid_ca_cert, verify_ssl_cert=True)
     >>> client.server_infos(crate_host)
     Traceback (most recent call last):
     ...

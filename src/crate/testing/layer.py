@@ -326,6 +326,7 @@ class CrateLayer(object):
 
     def stop(self):
         if self.process:
+            self.process.terminate()
             try:
                 self.process.communicate(timeout=10)
             except subprocess.TimeoutExpired:

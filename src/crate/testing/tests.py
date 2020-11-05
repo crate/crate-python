@@ -21,8 +21,6 @@
 # software solely pursuant to the terms of the relevant commercial agreement.
 
 import os
-import pathlib
-import sys
 import unittest
 import doctest
 import tempfile
@@ -35,8 +33,6 @@ def docs_path(*parts):
             os.path.dirname(os.path.dirname(__file__)), *parts
         )
     )
-    if sys.platform == 'win32':
-        path = pathlib.PureWindowsPath(path).as_uri()
     return path
 
 

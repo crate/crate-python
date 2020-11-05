@@ -21,6 +21,8 @@
 # software solely pursuant to the terms of the relevant commercial agreement.
 
 import os
+import pathlib
+import sys
 import unittest
 import doctest
 import tempfile
@@ -28,11 +30,14 @@ from .test_layer import LayerUtilsTest
 
 
 def docs_path(*parts):
-    return os.path.abspath(
+    path = os.path.abspath(
         os.path.join(
             os.path.dirname(os.path.dirname(__file__)), *parts
         )
     )
+    if sys.platform == 'win32':
+        path = pathlib.PureWindowsPath(path).as_uri()
+    return path
 
 
 def project_root(*parts):

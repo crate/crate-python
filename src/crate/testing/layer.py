@@ -327,7 +327,7 @@ class CrateLayer(object):
     def stop(self):
         if self.process:
             self.process.terminate()
-            self.process.communicate(timeout=20)
+            self.process.communicate(timeout=45)
             self.process.stdout.close()
             self.process = None
         self.conn_pool.clear()

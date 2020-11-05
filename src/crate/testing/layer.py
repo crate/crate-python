@@ -337,7 +337,7 @@ class CrateLayer(object):
                 # process and finish communication.
                 # https://docs.python.org/3/library/subprocess.html#subprocess.Popen.communicate
                 self.process.kill()
-                self.process.communicate()
+                # self.process.communicate()
             self.process.stdout.close()
             self.process = None
         self.conn_pool.clear()

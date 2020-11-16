@@ -11,7 +11,7 @@ The CrateDB Python client library provides support for SQLAlchemy. A CrateDB
 configuration.
 
 The CrateDB Python client library is validated to work with SQLAlchemy versions
-``1.3``.
+``1.3`` and ``1.4``.
 
 .. NOTE::
 

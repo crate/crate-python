@@ -23,3 +23,5 @@ import sqlalchemy as sa
 from distutils.version import StrictVersion as V
 
 SA_VERSION = V(sa.__version__)
+
+SA_1_4 = V('1.4.0b1')

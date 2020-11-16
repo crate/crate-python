@@ -33,7 +33,12 @@ Run all tests::
 
 Run specific tests::
 
-    # Ignore all tests below src/crate/testing
+    ./bin/test -vvvv -t SqlAlchemyCompilerTest
+    ./bin/test -vvvv -t test_score
+    ./bin/test -vvvv -t sqlalchemy
+
+Ignore specific test directories::
+
     ./bin/test -vvvv --ignore_dir=testing
 
 You can run the tests against multiple Python interpreters with tox_::

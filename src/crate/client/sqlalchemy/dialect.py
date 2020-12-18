@@ -238,6 +238,15 @@ class CrateDialect(default.DefaultDialect):
         return [row[0] for row in cursor.fetchall()]
 
     @reflection.cache
+    def get_view_names(self, connection, schema=None, **kw):
+        cursor = connection.execute(
+            "SELECT table_name FROM information_schema.views "
+            "ORDER BY table_name ASC, {0} ASC".format(self.schema_column),
+            [schema or self.default_schema_name]
+        )
+        return [row[0] for row in cursor.fetchall()]
+
+    @reflection.cache
     def get_columns(self, connection, table_name, schema=None, **kw):
         query = "SELECT column_name, data_type " \
                 "FROM information_schema.columns " \

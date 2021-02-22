@@ -78,7 +78,7 @@ class DialectTest(TestCase):
         )
         self.fake_cursor.fetchall = MagicMock(return_value=[["id"], ["id2"], ["id3"]])
 
-        eq_(insp.get_pk_constraint("characters")['constrained_columns'], {"id", "id2", "id3"})
+        eq_(insp.get_pk_constraint("characters")['constrained_columns'], ["id", "id2", "id3"])
         self.fake_cursor.fetchall.assert_called_once_with()
         in_("information_schema.key_column_usage", self.executed_statement)
 

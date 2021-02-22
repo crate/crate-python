@@ -271,7 +271,7 @@ class CrateDialect(default.DefaultDialect):
 
             def result_fun(result):
                 rows = result.fetchall()
-                return set(map(lambda el: el[0], rows))
+                return list(set(map(lambda el: el[0], rows)))
         else:
             query = """SELECT constraint_name
                    FROM information_schema.table_constraints

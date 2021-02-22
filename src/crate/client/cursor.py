@@ -22,6 +22,7 @@
 from .exceptions import ProgrammingError
 from distutils.version import StrictVersion
 import warnings
+from datetime import datetime
 
 BULK_INSERT_MIN_VERSION = StrictVersion("0.42.0")
 
@@ -53,7 +54,34 @@ class Cursor(object):
         self._result = self.connection.client.sql(sql, parameters,
                                                   bulk_parameters)
         if "rows" in self._result:
+            if "col_types" in self._result:
+                col_types = self._result["col_types"]
+                tmp_data = self._result["rows"]
+
+                rows_to_convert = self._get_rows_to_convert_to_date(col_types)
+                tmp_data = self._convert_dates_to_datetime(tmp_data, rows_to_convert)
+
+                self._result["rows"] = tmp_data
+
             self.rows = iter(self._result["rows"])
+
+    @staticmethod
+    def _get_rows_to_convert_to_date(col_types):
+        return [True if col_type == 11 or col_type == 15 else False for col_type in col_types]
+
+    @staticmethod
+    def _date_to_datetime(row, rows_to_convert):
+        return list(
+            map(lambda x, y:
+                datetime.fromtimestamp(float(str(x)[0:10])) if y else x,
+                row,
+                rows_to_convert))
+
+    def _convert_dates_to_datetime(self, rows, rows_to_convert):
+        return list(
+            map(lambda x:
+                self._date_to_datetime(x, rows_to_convert),
+                rows))
 
     def executemany(self, sql, seq_of_parameters):
         """

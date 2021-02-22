@@ -315,7 +315,7 @@ class Client(object):
     Crate connection client using crate's HTTP API.
     """
 
-    SQL_PATH = '/_sql'
+    SQL_PATH = '/_sql?types'
     """Crate URI path for issuing SQL statements."""
 
     retry_interval = 30

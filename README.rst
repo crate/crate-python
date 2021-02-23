@@ -2,29 +2,42 @@
 CrateDB Python Client
 =====================
 
-.. image:: https://dev.azure.com/cratedb/crate-python/_apis/build/status/crate.crate-python?branchName=master
-   :target: https://dev.azure.com/cratedb/crate-python/_build/latest?definitionId=2&branchName=master
-   :alt: Azure Pipeline
-
-.. image:: https://img.shields.io/pypi/v/crate.svg
-   :target: https://pypi.python.org/pypi/crate/
-   :alt: PyPI Version
-
-.. image:: https://img.shields.io/pypi/pyversions/crate.svg
-   :target: https://pypi.python.org/pypi/crate/
-   :alt: Python Version
-
-.. image:: https://img.shields.io/pypi/dw/crate.svg
-    :target: https://pypi.python.org/pypi/crate/
-    :alt: PyPI Downloads
-
-.. image:: https://img.shields.io/pypi/wheel/crate.svg
-    :target: https://pypi.python.org/pypi/crate/
-    :alt: Wheel
+.. image:: https://github.com/crate/crate-python/workflows/Tests/badge.svg
+    :target: https://github.com/crate/crate-python/actions?workflow=Tests
+    :alt: Build status
 
 .. image:: https://coveralls.io/repos/github/crate/crate-python/badge.svg?branch=master
     :target: https://coveralls.io/github/crate/crate-python?branch=master
     :alt: Coverage
+
+.. image:: https://readthedocs.org/projects/crate-python/badge/
+    :target: https://crate.io/docs/python/
+    :alt: Build status (documentation)
+
+.. image:: https://img.shields.io/pypi/v/crate.svg
+    :target: https://pypi.org/project/crate/
+    :alt: PyPI Version
+
+.. image:: https://img.shields.io/pypi/pyversions/crate.svg
+    :target: https://pypi.org/project/crate/
+    :alt: Python Version
+
+.. image:: https://img.shields.io/pypi/dw/crate.svg
+    :target: https://pypi.org/project/crate/
+    :alt: PyPI Downloads
+
+.. image:: https://img.shields.io/pypi/wheel/crate.svg
+    :target: https://pypi.org/project/crate/
+    :alt: Wheel
+
+.. image:: https://img.shields.io/pypi/status/crate.svg
+    :target: https://pypi.org/project/crate/
+    :alt: Status
+
+.. image:: https://img.shields.io/pypi/l/crate.svg
+    :target: https://pypi.org/project/crate/
+    :alt: License
+
 
 |
 

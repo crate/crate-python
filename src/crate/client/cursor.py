@@ -56,9 +56,26 @@ class Cursor(object):
         if "rows" in self._result:
             if "col_types" in self._result:
                 rows_to_convert = self._get_rows_to_convert_to_date(self._result["col_types"])
-                self.rows = self._convert_dates_to_datetime(self._result["rows"], rows_to_convert)
+                for flag in rows_to_convert:
+                    if flag:
+                        t_rows = (row for row in self._result["rows"])
+                        t_values = (self._transform_date_columns(row, rows_to_convert) for row in t_rows)
+                        self._result["rows"] = [value for value in t_values]
+                        break
+            self.rows = iter(self._result["rows"])
+
+    @staticmethod
+    def _transform_date_columns(row, flags):
+        """
+        Generates a list of boolean. True if the column is type timestamp (11 - 15)
+        """
+        gen_flags = (flag for flag in flags)
+        for value in row:
+            flag = next(gen_flags)
+            if not flag or value is None:
+                yield value
             else:
-                self.rows = iter(self._result["rows"])
+                yield datetime.fromtimestamp(float(str(value)[0:10]))
 
     @staticmethod
     def _get_rows_to_convert_to_date(col_types):
@@ -66,24 +83,6 @@ class Cursor(object):
         Generates a list of boolean. True if the column is type timestamp (11 - 15)
         """
         return [True if col_type == 11 or col_type == 15 else False for col_type in col_types]
-
-    @staticmethod
-    def _date_to_datetime(row, rows_to_convert):
-        """
-        Converts all values epoch to a datetime object in a given row
-        """
-        return map(lambda value, flag:
-                   datetime.fromtimestamp(float(str(value)[0:10])) if (flag and value is not None) else value,
-                   row,
-                   rows_to_convert)
-
-    def _convert_dates_to_datetime(self, rows, rows_to_convert):
-        """
-        Takes a list of rows and map each row to convert date columns to timestamp
-        """
-        return map(lambda x:
-                   self._date_to_datetime(x, (flag for flag in rows_to_convert)),
-                   rows)
 
     def executemany(self, sql, seq_of_parameters):
         """

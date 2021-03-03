@@ -67,7 +67,7 @@ class DialectTest(TestCase):
         self.engine.dialect.server_version_info = (0, 54, 0)
         fake_cursor.rowcount = 1
         fake_cursor.fetchone = MagicMock(return_value=[["id", "id2", "id3"]])
-        eq_(insp.get_pk_constraint("characters")['constrained_columns'], {"id", "id2", "id3"})
+        eq_(insp.get_pk_constraint("characters")['constrained_columns'], ["id", "id2", "id3"])
         fake_cursor.fetchone.assert_called_once_with()
         in_("information_schema.table_constraints", self.executed_statement)
 

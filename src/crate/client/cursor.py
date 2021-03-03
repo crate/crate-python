@@ -56,7 +56,7 @@ class Cursor(object):
                 for flag in rows_to_convert:
                     if flag:
                         t_rows = (row for row in self._result["rows"])
-                        t_values = (self._transform_date_columns(row, rows_to_convert) for row in t_rows)
+                        t_values = [self._transform_date_columns(row, rows_to_convert) for row in t_rows]
                         self._result["rows"] = [value for value in t_values]
                         break
             self.rows = iter(self._result["rows"])

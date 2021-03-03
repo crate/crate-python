@@ -179,7 +179,7 @@ supported, all other fields are 'None'::
     >>> result = cursor.fetchone()
     >>> pprint(result)
     ['Aldebaran',
-     1373932800000,
+     datetime.datetime(2013, 7, 15, 18, 0),
      None,
      None,
      None,

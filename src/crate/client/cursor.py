@@ -51,15 +51,19 @@ class Cursor(object):
         self._result = self.connection.client.sql(sql, parameters,
                                                   bulk_parameters)
         if "rows" in self._result:
+            print(self._result["rows"])
             if "col_types" in self._result:
+                print('testing')
                 rows_to_convert = self._get_rows_to_convert_to_date(self._result["col_types"])
                 for flag in rows_to_convert:
                     if flag:
                         t_rows = (row for row in self._result["rows"])
-                        t_values = [self._transform_date_columns(row, rows_to_convert) for row in t_rows]
-                        self._result["rows"] = [value for value in t_values]
+                        t_values = (self._transform_date_columns(row, rows_to_convert) for row in t_rows)
+                        self._result["rows"] = [[value for value in row] for row in t_values]
                         break
             self.rows = iter(self._result["rows"])
+            print(self._result["rows"])
+            print(self.rows)
 
     @staticmethod
     def _transform_date_columns(row, flags):
@@ -72,7 +76,8 @@ class Cursor(object):
             if not flag or value is None:
                 yield value
             else:
-                yield datetime.fromtimestamp(float(str(value)[0:10]))
+                value = datetime.fromtimestamp(float(str(value)[0:10]))
+                yield value
 
     @staticmethod
     def _get_rows_to_convert_to_date(col_types):

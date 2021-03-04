@@ -56,17 +56,17 @@ class Cursor(object):
                 for flag in rows_to_convert:
                     if flag:
                         t_rows = (row for row in self._result["rows"])
-                        t_values = (self._transform_date_columns(row, rows_to_convert) for row in t_rows)
+                        t_values = (self._transform_date_columns(row, (flag for flag in rows_to_convert))
+                                    for row in t_rows)
                         self._result["rows"] = [[value for value in row] for row in t_values]
                         break
             self.rows = iter(self._result["rows"])
 
     @staticmethod
-    def _transform_date_columns(row, flags):
+    def _transform_date_columns(row, gen_flags):
         """
         Generates a list of boolean. True if the column is type timestamp (11 - 15)
         """
-        gen_flags = (flag for flag in flags)
         for value in row:
             flag = next(gen_flags)
             if not flag or value is None:

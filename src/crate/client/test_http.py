@@ -627,7 +627,3 @@ class TestUsernameSentAsHeader(TestingHttpServerTestCase):
         self.assertEqual(TestingHTTPServer.SHARED['usernameFromXUser'], 'testDBUser')
         self.assertEqual(TestingHTTPServer.SHARED['username'], 'testDBUser')
         self.assertEqual(TestingHTTPServer.SHARED['password'], 'test:password')
-
-pt = ParamsTest()
-pt.test_params()
-pt.test_no_params()

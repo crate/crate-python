@@ -51,9 +51,7 @@ class Cursor(object):
         self._result = self.connection.client.sql(sql, parameters,
                                                   bulk_parameters)
         if "rows" in self._result:
-            print(self._result["rows"])
             if "col_types" in self._result:
-                print('testing')
                 rows_to_convert = self._get_rows_to_convert_to_date(self._result["col_types"])
                 for flag in rows_to_convert:
                     if flag:
@@ -62,8 +60,6 @@ class Cursor(object):
                         self._result["rows"] = [[value for value in row] for row in t_values]
                         break
             self.rows = iter(self._result["rows"])
-            print(self._result["rows"])
-            print(self.rows)
 
     @staticmethod
     def _transform_date_columns(row, flags):

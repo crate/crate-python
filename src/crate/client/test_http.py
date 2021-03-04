@@ -428,7 +428,8 @@ class ParamsTest(TestCase):
         client = Client(['127.0.0.1:4200'], error_trace=True)
         parsed = urlparse(client.path)
         params = parse_qs(parsed.query)
-        self.assertEqual(params["error_trace"], ["true"])
+        print(params)
+        self.assertEqual(params["types?error_trace"], ["true"])
         client.close()
 
     def test_no_params(self):
@@ -623,3 +624,7 @@ class TestUsernameSentAsHeader(TestingHttpServerTestCase):
         self.assertEqual(TestingHTTPServer.SHARED['usernameFromXUser'], 'testDBUser')
         self.assertEqual(TestingHTTPServer.SHARED['username'], 'testDBUser')
         self.assertEqual(TestingHTTPServer.SHARED['password'], 'test:password')
+
+pt = ParamsTest()
+pt.test_params()
+pt.test_no_params()

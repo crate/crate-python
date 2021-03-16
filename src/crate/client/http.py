@@ -544,8 +544,8 @@ class Client(object):
                                        (ts, server, message))
                     else:
                         self._active_servers.append(server)
-                        logger.warn("Restored server %s into active pool",
-                                    server)
+                        logger.warning("Restored server %s into active pool",
+                                       server)
 
             # if none is old enough, use oldest
             if not self._active_servers:

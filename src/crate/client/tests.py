@@ -110,6 +110,7 @@ crate_transport_port = 44309
 local = '127.0.0.1'
 crate_host = "{host}:{port}".format(host=local, port=crate_port)
 crate_uri = "http://%s" % crate_host
+crate_layer = None
 
 
 def ensure_cratedb_layer():
@@ -213,7 +214,7 @@ def setUpCrateLayerAndSqlAlchemy(test):
     test.globs['CrateDialect'] = CrateDialect
 
 
-class HttpsTestServerLayer(object):
+class HttpsTestServerLayer:
     PORT = 65534
     HOST = "localhost"
     CERT_FILE = os.path.abspath(os.path.join(os.path.dirname(__file__),
@@ -241,11 +242,11 @@ class HttpsTestServerLayer(object):
 
         def do_GET(self):
             self.send_response(200)
-            self.send_header("Content-Length", len(self.payload))
+            payload = self.payload.encode('UTF-8')
+            self.send_header("Content-Length", len(payload))
             self.send_header("Content-Type", "application/json; charset=UTF-8")
             self.end_headers()
-            self.wfile.write(self.payload.encode('UTF-8'))
-            return
+            self.wfile.write(payload)
 
     def __init__(self):
         self.server = self.HttpsServer(
@@ -257,7 +258,7 @@ class HttpsTestServerLayer(object):
         thread = threading.Thread(target=self.serve_forever)
         thread.daemon = True  # quit interpreter when only thread exists
         thread.start()
-        time.sleep(1)
+        time.sleep(0.5)
 
     def serve_forever(self):
         print("listening on", self.HOST, self.PORT)

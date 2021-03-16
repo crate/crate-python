@@ -108,15 +108,21 @@ settings = {
 crate_port = 44209
 crate_transport_port = 44309
 local = '127.0.0.1'
-crate_layer = CrateLayer('crate',
-                         crate_home=crate_path(),
-                         port=crate_port,
-                         host=local,
-                         transport_port=crate_transport_port,
-                         settings=settings)
-
 crate_host = "{host}:{port}".format(host=local, port=crate_port)
 crate_uri = "http://%s" % crate_host
+
+
+def ensure_cratedb_layer():
+    global crate_layer
+
+    if crate_layer is None:
+        crate_layer = CrateLayer('crate',
+                                 crate_home=crate_path(),
+                                 port=crate_port,
+                                 host=local,
+                                 transport_port=crate_transport_port,
+                                 settings=settings)
+    return crate_layer
 
 
 def refresh(table):
@@ -348,7 +354,7 @@ def test_suite():
         optionflags=flags,
         encoding='utf-8'
     )
-    s.layer = crate_layer
+    s.layer = ensure_cratedb_layer()
     suite.addTest(s)
 
     s = doctest.DocFileSuite(
@@ -362,7 +368,7 @@ def test_suite():
         optionflags=flags,
         encoding='utf-8'
     )
-    s.layer = crate_layer
+    s.layer = ensure_cratedb_layer()
     suite.addTest(s)
 
     s = doctest.DocFileSuite(
@@ -372,7 +378,7 @@ def test_suite():
         optionflags=flags,
         encoding='utf-8'
     )
-    s.layer = crate_layer
+    s.layer = ensure_cratedb_layer()
     suite.addTest(s)
 
     return suite

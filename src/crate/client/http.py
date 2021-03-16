@@ -312,7 +312,7 @@ def _get_socket_opts(keepalive=True,
 
 class Client(object):
     """
-    Crate connection client using crate's HTTP API.
+    Crate connection client using CrateDB's HTTP API.
     """
 
     SQL_PATH = '/_sql'
@@ -328,7 +328,7 @@ class Client(object):
                  servers=None,
                  timeout=None,
                  backoff_factor=0,
-                 verify_ssl_cert=False,
+                 verify_ssl_cert=True,
                  ca_cert=None,
                  error_trace=False,
                  cert_file=None,

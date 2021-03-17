@@ -29,7 +29,7 @@ Connect to CrateDB
 Connect to a single node
 ========================
 
-To connect to a single CrateDB node, use the ``connect()`` function, like so:
+To connect to a single CrateDB node, use the ``connect()`` function, like so::
 
     >>> connection = client.connect("<NODE_URL>", username="<USERNAME>")
 
@@ -69,7 +69,7 @@ Connect to multiple nodes
 =========================
 
 To connect to one of multiple nodes, pass a list of database URLs to the
-connect() function, like so:
+connect() function, like so::
 
     >>> connection = client.connect(["<NODE_1_URL>", "<NODE_2_URL>"], ...)
 
@@ -220,9 +220,13 @@ Authentication
 
    See the :ref:`compatibility notes <cratedb-versions>` for more information.
 
-You can authenticate with CrateDB like so:
+You can authenticate with CrateDB like so::
 
     >>> connection = client.connect(..., username="<USERNAME>", password="<PASSWORD>")
+
+At your disposal, you can also embed the credentials into the URI, like so::
+
+    >>> connection = client.connect("https://<USERNAME>:<PASSWORD>@cratedb.example.org:4200")
 
 Here, replace ``<USERNAME>`` and ``<PASSWORD>`` with the appropriate username
 and password.
@@ -238,7 +242,7 @@ and password.
 Schema selection
 ================
 
-You can select a schema using the optional ``schema`` argument, like so:
+You can select a schema using the optional ``schema`` argument, like so::
 
     >>> connection = client.connect(..., schema="<SCHEMA>")
 

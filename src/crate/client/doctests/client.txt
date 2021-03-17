@@ -47,6 +47,16 @@ connect::
 
     >>> connection = client.connect([crate_host],
     ...                             username='trusted_me')
+    >>> connection.client.username
+    'trusted_me'
+    >>> connection.client.password
+
+The username for trusted users can also be provided in the URL::
+
+    >>> connection = client.connect(['http://trusted_me@' + crate_host])
+    >>> connection.client.username
+    'trusted_me'
+    >>> connection.client.password
 
 To connect to CrateDB with as a user that requires password authentication, you
 also need to provide ``password`` as argument for the ``connect()`` call::
@@ -54,6 +64,19 @@ also need to provide ``password`` as argument for the ``connect()`` call::
     >>> connection = client.connect([crate_host],
     ...                             username='me',
     ...                             password='my_secret_pw')
+    >>> connection.client.username
+    'me'
+    >>> connection.client.password
+    'my_secret_pw'
+
+The authentication credentials can also be provided in the URL::
+
+    >>> connection = client.connect(['http://me:my_secret_pw@' + crate_host])
+    >>> connection.client.username
+    'me'
+    >>> connection.client.password
+    'my_secret_pw'
+
 
 Default Schema
 --------------

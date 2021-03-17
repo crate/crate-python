@@ -346,6 +346,22 @@ class Client(object):
             servers = [self.default_server]
         else:
             servers = _to_server_list(servers)
+
+        # Try to derive credentials from first server argument if not
+        # explicitly given.
+        if servers and not username:
+            try:
+                url = urlparse(servers[0])
+                if url.username is not None:
+                    username = url.username
+                if url.password is not None:
+                    password = url.password
+            except Exception as ex:
+                logger.warning("Unable to decode credentials from database "
+                               "URI, so connecting to CrateDB without "
+                               "authentication: {ex}"
+                               .format(ex=ex))
+
         self._active_servers = servers
         self._inactive_servers = []
         pool_kw = _pool_kw_args(

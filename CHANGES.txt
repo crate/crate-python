@@ -11,6 +11,8 @@ Unreleased
   HTTP by default. Previously, this setting defaulted to false. This setting
   can be changed via the ``verify_ssl_cert`` connection parameter.
 
+- Adjusted connect arguments to accept credentials within the HTTP URI.
+
 2020/09/28 0.26.0
 =================
 

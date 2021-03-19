@@ -211,7 +211,9 @@ class HttpsTestServerLayer(object):
     PORT = 65534
     HOST = "localhost"
     CERT_FILE = os.path.abspath(os.path.join(os.path.dirname(__file__),
-                                "test_https.pem"))
+                                "pki/server_valid.pem"))
+    CACERT_FILE = os.path.abspath(os.path.join(os.path.dirname(__file__),
+                                  "pki/cacert_valid.pem"))
 
     __name__ = "httpsserver"
     __bases__ = tuple()
@@ -223,6 +225,7 @@ class HttpsTestServerLayer(object):
                                      keyfile=HttpsTestServerLayer.CERT_FILE,
                                      certfile=HttpsTestServerLayer.CERT_FILE,
                                      cert_reqs=ssl.CERT_OPTIONAL,
+                                     ca_certs=HttpsTestServerLayer.CACERT_FILE,
                                      server_side=True)
             return socket, client_address
 
@@ -264,14 +267,21 @@ def setUpWithHttps(test):
     test.globs['crate_host'] = "https://{0}:{1}".format(
         HttpsTestServerLayer.HOST, HttpsTestServerLayer.PORT
     )
-    test.globs['invalid_ca_cert'] = os.path.abspath(
-        os.path.join(os.path.dirname(__file__), "invalid_ca.pem")
-    )
-    test.globs['valid_ca_cert'] = os.path.abspath(
-        os.path.join(os.path.dirname(__file__), "test_https_ca.pem")
-    )
     test.globs['pprint'] = pprint
     test.globs['print'] = cprint
+
+    test.globs['cacert_valid'] = os.path.abspath(
+        os.path.join(os.path.dirname(__file__), "pki/cacert_valid.pem")
+    )
+    test.globs['cacert_invalid'] = os.path.abspath(
+        os.path.join(os.path.dirname(__file__), "pki/cacert_invalid.pem")
+    )
+    test.globs['clientcert_valid'] = os.path.abspath(
+        os.path.join(os.path.dirname(__file__), "pki/client_valid.pem")
+    )
+    test.globs['clientcert_invalid'] = os.path.abspath(
+        os.path.join(os.path.dirname(__file__), "pki/client_invalid.pem")
+    )
 
 
 def _try_execute(cursor, stmt):

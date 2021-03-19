@@ -23,59 +23,82 @@ with the path to the CA certificate file using the keyword argument
    :local:
 
 Examples
---------
+========
 
-When switching on verification without a ``ca_cert`` file provided, the
-connection will fail because we are using a self-signed server certificate::
+All of the following examples will connect to a host using a self-signed
+certificate.
 
-    >>> verifying_client = HttpClient([crate_host])
-    >>> verifying_client.server_infos(crate_host)
-    Traceback (most recent call last):
-    ...
-    crate.client.exceptions.ConnectionError: Server not available, ...certificate verify failed...
 
-Also, when providing an invalid ``ca_cert`` an error is raised::
+With certificate verification
+-----------------------------
 
-    >>> verifying_client = HttpClient([crate_host], ca_cert=invalid_ca_cert)
-    >>> verifying_client.server_infos(crate_host)
-    Traceback (most recent call last):
-    ...
-    crate.client.exceptions.ConnectionError: Server not available, ...certificate verify failed...
+When using a valid CA certificate, the connection will be successful::
 
-Connecting to a host whose certificate is verified with a valid CA certificate::
-
-    >>> verifying_valid_client = HttpClient([crate_host], ca_cert=valid_ca_cert)
-    >>> verifying_valid_client.server_infos(verifying_valid_client._get_server())
+    >>> client = HttpClient([crate_host], ca_cert=cacert_valid)
+    >>> client.server_infos(client._get_server())
     ('https://localhost:65534', 'test', '0.0.0')
 
-When turning off certificate verification, calling the server will succeed::
+When not providing a ``ca_cert`` file, the connection will fail::
 
-    >>> non_verifying_client = HttpClient([crate_host], verify_ssl_cert=False)
-    >>> non_verifying_client.server_infos(crate_host)
+    >>> client = HttpClient([crate_host])
+    >>> client.server_infos(crate_host)
+    Traceback (most recent call last):
+    ...
+    crate.client.exceptions.ConnectionError: Server not available, ...certificate verify failed...
+
+Also, when providing an invalid ``ca_cert``, an error is raised::
+
+    >>> client = HttpClient([crate_host], ca_cert=cacert_invalid)
+    >>> client.server_infos(crate_host)
+    Traceback (most recent call last):
+    ...
+    crate.client.exceptions.ConnectionError: Server not available, ...certificate verify failed...
+
+
+Without certificate verification
+--------------------------------
+
+When turning off certificate verification, calling the server will succeed,
+even when not providing a valid CA certificate::
+
+    >>> client = HttpClient([crate_host], verify_ssl_cert=False)
+    >>> client.server_infos(crate_host)
     ('https://localhost:65534', 'test', '0.0.0')
 
 Without verification, calling the server will even work when using an invalid
 ``ca_cert``::
 
-    >>> non_verifying_client = HttpClient([crate_host], verify_ssl_cert=False, ca_cert=invalid_ca_cert)
-    >>> non_verifying_client.server_infos(crate_host)
+    >>> client = HttpClient([crate_host], verify_ssl_cert=False, ca_cert=cacert_invalid)
+    >>> client.server_infos(crate_host)
     ('https://localhost:65534', 'test', '0.0.0')
+
 
 
 Client certificate
 ------------------
 
-The client supports client certificates.
+The CrateDB driver also supports client certificates.
 
 The ``HttpClient`` constructor takes two keyword arguments: ``cert_file`` and
-``key_file``. Both should be a string pointing to the path of the client
-certificate and key file.
+``key_file``. Both should be strings pointing to the path of the client
+certificate and key file::
 
-This example uses that options, however it fails because the certificate is
-invalid::
+    >>> client = HttpClient([crate_host], ca_cert=cacert_valid, cert_file=clientcert_valid, key_file=clientcert_valid)
+    >>> client.server_infos(crate_host)
+    ('https://localhost:65534', 'test', '0.0.0')
 
-    >>> client = HttpClient([crate_host], cert_file=invalid_ca_cert, key_file=invalid_ca_cert, timeout=10)
+When using an invalid client certificate, the connection will fail::
+
+    >>> client = HttpClient([crate_host], ca_cert=cacert_valid, cert_file=clientcert_invalid, key_file=clientcert_invalid)
     >>> client.server_infos(crate_host)
     Traceback (most recent call last):
     ...
-    crate.client.exceptions.ConnectionError: Server not available, exception: ...[SSL: ...
+    crate.client.exceptions.ConnectionError: Server not available, exception: HTTPSConnectionPool...
+
+The connection will also fail when providing an invalid CA certificate::
+
+    >>> client = HttpClient([crate_host], ca_cert=cacert_invalid, cert_file=clientcert_valid, key_file=clientcert_valid)
+    >>> client.server_infos(crate_host)
+    Traceback (most recent call last):
+    ...
+    crate.client.exceptions.ConnectionError: Server not available, exception: HTTPSConnectionPool...

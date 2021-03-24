@@ -100,30 +100,26 @@ URL:
 
     >>> connection = client.connect('https://localhost:4200/', ...)
 
-.. CAUTION::
-
-    By default, server certificates are *not* verified.
-
 .. SEEALSO::
 
     The CrateDB reference has a section on `setting up SSL`_. This will be
-    useful background reading for the following two subsections.
+    a useful background reading for the following two subsections.
 
 Server verification
 ...................
 
-You can enable server SSL certificate verification by passing in the
-``verify_ssl_cert`` keyword argument and setting it to ``True``.
+Server certificates are verified by default. In order to connect to a
+SSL-enabled host using self-signed certificates, you will need to provide the
+CA certificate file used to sign the server SSL certificate::
 
-However, in order to do so, you also need to specify the certificate file of
-the *Certificate Authority* (CA) used to sign the server SSL certificate. You
-can do this using the ``ca_cert`` keyword argument.
-
-Here's how you might do that::
-
-    >>> connection = client.connect(..., ca_cert="<CA_CERT_FILE>", verify_ssl_cert=True)
+    >>> connection = client.connect(..., ca_cert="<CA_CERT_FILE>")
 
 Here, replace ``<CA_CERT_FILE>`` with the path to the CA certificate file.
+
+You can disable server SSL certificate verification by using the
+``verify_ssl_cert`` keyword argument and setting it to ``False``::
+
+    >>> connection = client.connect(..., verify_ssl_cert=False)
 
 
 Client verification
@@ -148,7 +144,7 @@ Timeout
 -------
 
 Connection timeouts (in seconds) can be configured with the optional
-``timeout`` argument:
+``timeout`` argument::
 
     >>> connection = client.connect(..., timeout=5)
 

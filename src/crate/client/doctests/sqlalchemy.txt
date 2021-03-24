@@ -32,17 +32,26 @@ The ``connect_args`` parameter has to be used to do so::
     ... })
     Engine(crate://)
 
-As defined in :ref:`https_connection` the client validates SSL server
-certificates by default. To configure this behaviour, SSL verification options
-can be given via ``connect_args`` too::
+As defined in :ref:`https_connection`, the client validates SSL server
+certificates by default. To configure this further, use e.g. the ``ca_cert``
+attribute within the ``connect_args``, like::
 
     >>> ssl_engine = sa.create_engine(
     ...     'crate://',
     ...     connect_args={
     ...         'servers': ['https://host1:4200'],
-    ...         'verify_ssl_cert': True,
     ...         'ca_cert': '/path/to/cacert.pem',
     ...     })
+
+In order to disable SSL verification, use ``verify_ssl_cert = False``, like::
+
+    >>> ssl_engine = sa.create_engine(
+    ...     'crate://',
+    ...     connect_args={
+    ...         'servers': ['https://host1:4200'],
+    ...         'verify_ssl_cert': False,
+    ...     })
+
 
 Complex Types
 =============

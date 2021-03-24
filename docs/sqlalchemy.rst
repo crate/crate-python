@@ -105,21 +105,29 @@ the ``connect_args`` argument, like so::
 When you do this, the Database API layer will use its :ref:`round-robin
 <multiple-nodes>` implementation.
 
-The client validates `SSL server certificates`_ by default. To configure
-this behaviour, SSL verification options can be passed in via ``connect_args``
-too::
+The client validates `SSL server certificates`_ by default. For further
+adjusting this behaviour, SSL verification options can be passed in by using
+the ``connect_args`` dictionary. For example, use ``ca_cert`` for providing
+a path to the CA certificate used for signing the server certificate::
 
     >>> engine = sa.create_engine(
     ...     'crate://',
     ...     connect_args={
     ...         'servers': ['198.51.100.1:4200', '198.51.100.2:4200'],
-    ...         'verify_ssl_cert': True,
     ...         'ca_cert': '<PATH_TO_CA_CERT>',
     ...     }
     ... )
 
-Here, ``<PATH_TO_CA_CERT>`` should be replaced with the path to the correct CA
-certificate.
+In order to disable SSL verification, use ``verify_ssl_cert = False``, like::
+
+    >>> engine = sa.create_engine(
+    ...     'crate://',
+    ...     connect_args={
+    ...         'servers': ['198.51.100.1:4200', '198.51.100.2:4200'],
+    ...         'verify_ssl_cert': False,
+    ...     }
+    ... )
+
 
 Get a session
 .............

@@ -23,6 +23,7 @@ from __future__ import absolute_import
 
 import json
 import os
+import socket
 import unittest
 import doctest
 from pprint import pprint
@@ -32,6 +33,8 @@ import ssl
 import time
 import threading
 import logging
+
+import stopit
 
 from crate.testing.layer import CrateLayer
 from crate.testing.tests import crate_path, docs_path
@@ -258,7 +261,7 @@ class HttpsTestServerLayer:
         thread = threading.Thread(target=self.serve_forever)
         thread.daemon = True  # quit interpreter when only thread exists
         thread.start()
-        time.sleep(0.5)
+        self.waitForServer()
 
     def serve_forever(self):
         print("listening on", self.HOST, self.PORT)
@@ -267,6 +270,29 @@ class HttpsTestServerLayer:
 
     def tearDown(self):
         self.server.shutdown()
+
+    def isUp(self):
+        """
+        Test if a host is up.
+        """
+        s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        ex = s.connect_ex((self.HOST, self.PORT))
+        s.close()
+        return ex == 0
+
+    def waitForServer(self, timeout=5):
+        """
+        Wait for the host to be available.
+        """
+        with stopit.ThreadingTimeout(timeout) as to_ctx_mgr:
+            while True:
+                if self.isUp():
+                    break
+                time.sleep(0.001)
+
+        if not to_ctx_mgr:
+            raise TimeoutError("Could not properly start embedded webserver "
+                               "within {} seconds".format(timeout))
 
 
 def setUpWithHttps(test):

@@ -117,6 +117,19 @@ crate_layer = None
 
 
 def ensure_cratedb_layer():
+    """
+    In order to skip individual tests by manually disabling them within
+    `def test_suite()`, it is crucial make the test layer not run on each
+    and every occasion. So, things like this will be possible::
+
+        ./bin/test -vvvv --ignore_dir=testing
+
+    TODO: Through a subsequent patch, the possibility to individually
+          unselect specific tests might be added to `def test_suite()`
+          on behalf of environment variables.
+          A blueprint for this kind of logic can be found at
+          https://github.com/crate/crate/commit/414cd833.
+    """
     global crate_layer
 
     if crate_layer is None:

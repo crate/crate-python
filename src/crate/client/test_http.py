@@ -310,7 +310,7 @@ class ThreadSafeHttpClientTest(TestCase):
 
     def setUp(self):
         self.client = Client(self.servers)
-        self.client.retry_interval = 0.1  # faster retry
+        self.client.retry_interval = 0.2  # faster retry
 
     def tearDown(self):
         self.client.close()

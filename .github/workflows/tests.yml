@@ -12,7 +12,6 @@ jobs:
   test:
     name: "Python: ${{ matrix.python-version }}
      SQLA: ${{ matrix.sqla-version }}
-     CrateDB: ${{ matrix.cratedb-version }}
      on ${{ matrix.os }}"
     runs-on: ${{ matrix.os }}
     strategy:

@@ -22,7 +22,7 @@
 from .exceptions import ProgrammingError
 from distutils.version import StrictVersion
 import warnings
-import pandas as pd
+from datetime import datetime
 
 BULK_INSERT_MIN_VERSION = StrictVersion("0.42.0")
 
@@ -75,7 +75,10 @@ class Cursor(object):
         Generates iterates over each value from a row and converts timestamps to pandas TIMESTAMP
         """
         for value in row:
-            flag = next(gen_flags)
+            try:
+                flag = next(gen_flags)
+            except StopIteration:
+                break
 
             if not flag or value is None:
                 yield value
@@ -83,7 +86,7 @@ class Cursor(object):
                 if value < 0:
                     yield None
                 else:
-                    value = pd.Timestamp(float(str(value)[0:13]), unit='ms')
+                    value = datetime.fromtimestamp(value/1000)
                     yield value
 
     def executemany(self, sql, seq_of_parameters):

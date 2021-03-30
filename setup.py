@@ -26,6 +26,7 @@ import re
 
 requirements = [
     'urllib3>=1.9',
+    "pandas>=1.2.2, <1.3",
 ]
 
 

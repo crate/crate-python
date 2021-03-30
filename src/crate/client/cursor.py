@@ -86,7 +86,7 @@ class Cursor(object):
                 if value < 0:
                     yield None
                 else:
-                    value = datetime.fromtimestamp(value/1000)
+                    value = datetime.fromtimestamp(value / 1000)
                     yield value
 
     def executemany(self, sql, seq_of_parameters):

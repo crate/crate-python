@@ -49,10 +49,9 @@ Insert a new location::
     >>> session.add(location)
     >>> session.flush()
 
-Currently refresh option is missing, therefore sleep for now::
+Refresh "locations" table:
 
-    >>> from time import sleep
-    >>> sleep(1)
+    >>> _ = connection.execute("REFRESH TABLE locations")
 
 Inserted location is available::
 
@@ -106,7 +105,10 @@ The datetime and date can be set using a update statement::
     >>> location.nullable_date = datetime.today()
     >>> location.nullable_datetime = datetime.utcnow()
     >>> session.flush()
-    >>> sleep(1.1)  # wait for index refresh
+
+Refresh "locations" table:
+
+    >>> _ = connection.execute("REFRESH TABLE locations")
 
 Boolean values get set natively::
 
@@ -140,7 +142,11 @@ Update multiple Locations::
     ...     session.add(loc)
     ...     session.flush()
 
-    >>> sleep(2)  # give crate some time to settle
+Refresh "locations" table:
+
+    >>> _ = connection.execute("REFRESH TABLE locations")
+
+Query database:
 
     >>> result = connection.execute("update locations set flag=true where kind='Update'")
     >>> result.rowcount
@@ -154,7 +160,10 @@ documents in the table::
     True
 
     >>> session.commit()
-    >>> sleep(2)  # give crate some time to settle
+
+Refresh "locations" table:
+
+    >>> _ = connection.execute("REFRESH TABLE locations")
 
 Test that objects can be used as list too::
 
@@ -202,7 +211,10 @@ test updated nested dict::
     >>> char.details['name']['first'] = 'Trillian'
     >>> char.details['size'] = 45
     >>> session.commit()
-    >>> sleep(1.1)  # wait for index refresh
+
+Refresh "characters" table:
+
+    >>> _ = connection.execute("REFRESH TABLE characters")
 
     >>> session.refresh(char)
     >>> import pprint

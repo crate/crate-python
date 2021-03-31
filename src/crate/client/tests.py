@@ -23,6 +23,7 @@ from __future__ import absolute_import
 
 import json
 import os
+import socket
 import unittest
 import doctest
 from pprint import pprint
@@ -32,6 +33,8 @@ import ssl
 import time
 import threading
 import logging
+
+import stopit
 
 from crate.testing.layer import CrateLayer
 from crate.testing.tests import crate_path, docs_path
@@ -108,15 +111,35 @@ settings = {
 crate_port = 44209
 crate_transport_port = 44309
 local = '127.0.0.1'
-crate_layer = CrateLayer('crate',
-                         crate_home=crate_path(),
-                         port=crate_port,
-                         host=local,
-                         transport_port=crate_transport_port,
-                         settings=settings)
-
 crate_host = "{host}:{port}".format(host=local, port=crate_port)
 crate_uri = "http://%s" % crate_host
+crate_layer = None
+
+
+def ensure_cratedb_layer():
+    """
+    In order to skip individual tests by manually disabling them within
+    `def test_suite()`, it is crucial make the test layer not run on each
+    and every occasion. So, things like this will be possible::
+
+        ./bin/test -vvvv --ignore_dir=testing
+
+    TODO: Through a subsequent patch, the possibility to individually
+          unselect specific tests might be added to `def test_suite()`
+          on behalf of environment variables.
+          A blueprint for this kind of logic can be found at
+          https://github.com/crate/crate/commit/414cd833.
+    """
+    global crate_layer
+
+    if crate_layer is None:
+        crate_layer = CrateLayer('crate',
+                                 crate_home=crate_path(),
+                                 port=crate_port,
+                                 host=local,
+                                 transport_port=crate_transport_port,
+                                 settings=settings)
+    return crate_layer
 
 
 def refresh(table):
@@ -207,11 +230,13 @@ def setUpCrateLayerAndSqlAlchemy(test):
     test.globs['CrateDialect'] = CrateDialect
 
 
-class HttpsTestServerLayer(object):
+class HttpsTestServerLayer:
     PORT = 65534
     HOST = "localhost"
     CERT_FILE = os.path.abspath(os.path.join(os.path.dirname(__file__),
-                                "test_https.pem"))
+                                "pki/server_valid.pem"))
+    CACERT_FILE = os.path.abspath(os.path.join(os.path.dirname(__file__),
+                                  "pki/cacert_valid.pem"))
 
     __name__ = "httpsserver"
     __bases__ = tuple()
@@ -223,6 +248,7 @@ class HttpsTestServerLayer(object):
                                      keyfile=HttpsTestServerLayer.CERT_FILE,
                                      certfile=HttpsTestServerLayer.CERT_FILE,
                                      cert_reqs=ssl.CERT_OPTIONAL,
+                                     ca_certs=HttpsTestServerLayer.CACERT_FILE,
                                      server_side=True)
             return socket, client_address
 
@@ -232,11 +258,11 @@ class HttpsTestServerLayer(object):
 
         def do_GET(self):
             self.send_response(200)
-            self.send_header("Content-Length", len(self.payload))
+            payload = self.payload.encode('UTF-8')
+            self.send_header("Content-Length", len(payload))
             self.send_header("Content-Type", "application/json; charset=UTF-8")
             self.end_headers()
-            self.wfile.write(self.payload.encode('UTF-8'))
-            return
+            self.wfile.write(payload)
 
     def __init__(self):
         self.server = self.HttpsServer(
@@ -248,7 +274,7 @@ class HttpsTestServerLayer(object):
         thread = threading.Thread(target=self.serve_forever)
         thread.daemon = True  # quit interpreter when only thread exists
         thread.start()
-        time.sleep(1)
+        self.waitForServer()
 
     def serve_forever(self):
         print("listening on", self.HOST, self.PORT)
@@ -258,20 +284,50 @@ class HttpsTestServerLayer(object):
     def tearDown(self):
         self.server.shutdown()
 
+    def isUp(self):
+        """
+        Test if a host is up.
+        """
+        s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        ex = s.connect_ex((self.HOST, self.PORT))
+        s.close()
+        return ex == 0
+
+    def waitForServer(self, timeout=5):
+        """
+        Wait for the host to be available.
+        """
+        with stopit.ThreadingTimeout(timeout) as to_ctx_mgr:
+            while True:
+                if self.isUp():
+                    break
+                time.sleep(0.001)
+
+        if not to_ctx_mgr:
+            raise TimeoutError("Could not properly start embedded webserver "
+                               "within {} seconds".format(timeout))
+
 
 def setUpWithHttps(test):
     test.globs['HttpClient'] = http.Client
     test.globs['crate_host'] = "https://{0}:{1}".format(
         HttpsTestServerLayer.HOST, HttpsTestServerLayer.PORT
     )
-    test.globs['invalid_ca_cert'] = os.path.abspath(
-        os.path.join(os.path.dirname(__file__), "invalid_ca.pem")
-    )
-    test.globs['valid_ca_cert'] = os.path.abspath(
-        os.path.join(os.path.dirname(__file__), "test_https_ca.pem")
-    )
     test.globs['pprint'] = pprint
     test.globs['print'] = cprint
+
+    test.globs['cacert_valid'] = os.path.abspath(
+        os.path.join(os.path.dirname(__file__), "pki/cacert_valid.pem")
+    )
+    test.globs['cacert_invalid'] = os.path.abspath(
+        os.path.join(os.path.dirname(__file__), "pki/cacert_invalid.pem")
+    )
+    test.globs['clientcert_valid'] = os.path.abspath(
+        os.path.join(os.path.dirname(__file__), "pki/client_valid.pem")
+    )
+    test.globs['clientcert_invalid'] = os.path.abspath(
+        os.path.join(os.path.dirname(__file__), "pki/client_invalid.pem")
+    )
 
 
 def _try_execute(cursor, stmt):
@@ -338,7 +394,7 @@ def test_suite():
         optionflags=flags,
         encoding='utf-8'
     )
-    s.layer = crate_layer
+    s.layer = ensure_cratedb_layer()
     suite.addTest(s)
 
     s = doctest.DocFileSuite(
@@ -352,7 +408,7 @@ def test_suite():
         optionflags=flags,
         encoding='utf-8'
     )
-    s.layer = crate_layer
+    s.layer = ensure_cratedb_layer()
     suite.addTest(s)
 
     s = doctest.DocFileSuite(
@@ -362,7 +418,7 @@ def test_suite():
         optionflags=flags,
         encoding='utf-8'
     )
-    s.layer = crate_layer
+    s.layer = ensure_cratedb_layer()
     suite.addTest(s)
 
     return suite

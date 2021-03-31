@@ -18,11 +18,15 @@
 # However, if you have executed another commercial license agreement
 # with Crate these terms will supersede the license and you may use the
 # software solely pursuant to the terms of the relevant commercial agreement.
-
+import json
 import os
 import tempfile
+import urllib
+from distutils.version import LooseVersion
 from unittest import TestCase, mock
 from io import BytesIO
+
+import crate
 from .layer import CrateLayer, prepend_http, http_url_from_host_port, wait_for_http_url
 
 
@@ -57,6 +61,22 @@ class LayerUtilsTest(TestCase):
         log = BytesIO(b'[i.c.p.h.CrateNettyHttpServerTransport] [crate] publish_address {}')
         addr = wait_for_http_url(log=log, timeout=1)
         self.assertEqual(None, addr)
+
+    @mock.patch.object(crate.testing.layer, "_download_and_extract", lambda uri, directory: None)
+    def test_layer_from_uri(self):
+        """
+        The CrateLayer can also be created by providing an URI that points to
+        a CrateDB tarball.
+        """
+        with urllib.request.urlopen("https://crate.io/versions.json") as response:
+            versions = json.loads(response.read().decode())
+            version = versions["crate_testing"]
+
+        self.assertGreaterEqual(LooseVersion(version), LooseVersion("4.5.0"))
+
+        uri = "https://cdn.crate.io/downloads/releases/crate-{}.tar.gz".format(version)
+        layer = CrateLayer.from_uri(uri, name="crate-by-uri", http_port=42203)
+        self.assertIsInstance(layer, CrateLayer)
 
     @mock.patch.dict('os.environ', {}, clear=True)
     def test_java_home_env_not_set(self):

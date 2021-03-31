@@ -61,7 +61,7 @@ class Connection(object):
             (optional - for testing)
             client used to communicate with crate.
         :param verify_ssl_cert:
-            if set to ``True`` verify the servers SSL server certificate.
+            if set to ``False``, disable SSL server certificate verification.
             defaults to ``True``
         :param ca_cert:
             a path to a CA certificate to use when verifying the SSL server

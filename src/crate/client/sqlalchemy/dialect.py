@@ -89,6 +89,8 @@ class Date(sqltypes.Date):
         def process(value):
             if not value:
                 return
+            if isinstance(value, datetime):
+                return value.date()
             try:
                 return datetime.utcfromtimestamp(value / 1e3).date()
             except TypeError:
@@ -128,6 +130,8 @@ class DateTime(sqltypes.DateTime):
         def process(value):
             if not value:
                 return
+            if isinstance(value, datetime):
+                return value
             try:
                 return datetime.utcfromtimestamp(value / 1e3)
             except TypeError:

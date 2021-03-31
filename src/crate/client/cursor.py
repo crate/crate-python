@@ -53,10 +53,14 @@ class Cursor(object):
 
         self._result = self.connection.client.sql(sql, parameters,
                                                   bulk_parameters)
+
         if "rows" in self._result:
+            transformed_result = False
             if "col_types" in self._result:
+                transformed_result = True
                 self.rows = self.result_set_transformed()
-            if self.rows is None:
+
+            if not transformed_result:
                 self.rows = iter(self._result["rows"])
 
     def result_set_transformed(self):
@@ -67,7 +71,7 @@ class Cursor(object):
                            self._result["col_types"]]
         for row in self._result["rows"]:
             gen_flags = (flag for flag in rows_to_convert)
-            yield self._transform_date_columns(row, gen_flags)
+            yield [t_row for t_row in self._transform_date_columns(row, gen_flags)]
 
     @staticmethod
     def _transform_date_columns(row, gen_flags):

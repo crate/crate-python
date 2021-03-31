@@ -64,8 +64,9 @@ setup(
         ]
     },
     extras_require=dict(
-        test=['zope.testing',
-              'zc.customdoctests>=1.0.1'],
+        test=['zope.testing>=4,<5',
+              'zc.customdoctests>=1.0.1,<2',
+              'stopit>=1.1.2,<2'],
         sqlalchemy=['sqlalchemy>=1.0,<1.4', 'geojson>=2.5.0']
     ),
     python_requires='>=3.4',

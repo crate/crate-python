@@ -72,6 +72,8 @@ def prepend_http(host):
 
 
 def _download_and_extract(uri, directory):
+    sys.stderr.write("\nINFO:    Downloading CrateDB archive from {} into {}".format(uri, directory))
+    sys.stderr.flush()
     with io.BytesIO(urlopen(uri).read()) as tmpfile:
         with tarfile.open(fileobj=tmpfile) as t:
             t.extractall(directory)
@@ -160,7 +162,8 @@ class CrateLayer(object):
         crate_home = os.path.join(directory, crate_dir)
 
         if os.path.exists(crate_home):
-            sys.stderr.write('Not extracting Crate tarball because folder already exists')
+            sys.stderr.write("\nWARNING: Not extracting Crate tarball because folder already exists")
+            sys.stderr.flush()
         else:
             _download_and_extract(uri, directory)
 

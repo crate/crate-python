@@ -1,4 +1,5 @@
-.coverage/
+.venv*
+.coverage
 .idea/
 .installed.cfg
 .tox/

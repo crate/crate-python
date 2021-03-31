@@ -1,5 +1,5 @@
 ===============
-Developer Guide
+Developer guide
 ===============
 
 Setup
@@ -7,40 +7,51 @@ Setup
 
 This project uses buildout_ to set up the development environment.
 
-To start things off, run::
+To start things off, create a Python virtualenv and install buildout::
 
-    $ python bootstrap.py
+    python3 -m venv .venv
+    source .venv/bin/activate
+
+    # Workaround for Python 3.5
+    python -m pip install --upgrade "setuptools>=31,<51"
+
+    pip install zc.buildout==2.13.4
 
 Then, run::
 
-    $ ./bin/buildout -N
+    buildout -N
 
-Running Tests
+Running tests
 =============
 
-The tests are run using the zope.testrunner_::
+All tests will be invoked using the Python interpreter that was used when
+creating the Python virtualenv. The test runner is zope.testrunner_.
 
-    $ ./bin/test
+Run all tests::
 
-This will run all tests using the Python interpreter that was used to
-bootstrap buildout.
+    ./bin/test
+
+Run specific tests::
+
+    # Ignore all tests below src/crate/testing
+    ./bin/test -vvvv --ignore_dir=testing
 
 You can run the tests against multiple Python interpreters with tox_::
 
-    $ ./bin/tox
+    ./bin/tox
 
-To do this, you will need ``python2.7``, ``python3.3``, and ``pypy`` on your
-``$PATH``.
+To do this, you will need the respective Python interpreter versions available
+on your ``$PATH``.
 
-To run against a single interpreter, you can also do::
+To run against a single interpreter, you can also invoke::
 
-    $ ./bin/tox -e py33
+    ./bin/tox -e py37
 
-*Note*: before running tests make sure to stop all CrateDB instances which
-listening on the default CrateDB transport port to avoid side effects with the
-test layer.
+*Note*: before running the tests, make sure to stop all CrateDB instances which
+are listening on the default CrateDB transport port to avoid side effects with
+the test layer.
 
-Preparing a Release
+Preparing a release
 ===================
 
 To create a new release, you must:
@@ -70,7 +81,7 @@ Next:
 
 - Archive docs for old releases (see section below)
 
-Archiving Docs Versions
+Archiving docs versions
 -----------------------
 
 Check the `versions hosted on ReadTheDocs`_.
@@ -81,7 +92,7 @@ patch versions for the last two minor releases.
 To make changes to the RTD configuration (e.g., to activate or deactivate a
 release version), please contact the `@crate/docs`_ team.
 
-Writing Documentation
+Writing documentation
 =====================
 
 The docs live under the ``docs`` directory.
@@ -90,7 +101,7 @@ The docs are written written with ReStructuredText_ and processed with Sphinx_.
 
 Build the docs by running::
 
-    $ bin/sphinx
+    ./bin/sphinx
 
 The output can then be found in the ``out/html`` directory.
 

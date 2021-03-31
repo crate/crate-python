@@ -29,10 +29,10 @@ import queue
 import random
 import traceback
 from http.server import BaseHTTPRequestHandler, HTTPServer
+from multiprocessing.context import ForkProcess
 from unittest import TestCase
 from unittest.mock import patch, MagicMock
 from threading import Thread, Event
-from multiprocessing import Process
 from decimal import Decimal
 import datetime as dt
 import urllib3.exceptions
@@ -310,7 +310,7 @@ class ThreadSafeHttpClientTest(TestCase):
 
     def setUp(self):
         self.client = Client(self.servers)
-        self.client.retry_interval = 0.1  # faster retry
+        self.client.retry_interval = 0.2  # faster retry
 
     def tearDown(self):
         self.client.close()
@@ -396,7 +396,7 @@ class KeepAliveClientTest(TestCase):
 
     def __init__(self, *args, **kwargs):
         super(KeepAliveClientTest, self).__init__(*args, **kwargs)
-        self.server_process = Process(target=self._run_server)
+        self.server_process = ForkProcess(target=self._run_server)
 
     def setUp(self):
         super(KeepAliveClientTest, self).setUp()
@@ -530,8 +530,8 @@ class TestingHttpServerTestCase(TestCase):
         super().__init__(*args, **kwargs)
         self.assertIsNotNone(self.request_handler)
         self.server_address = ('127.0.0.1', random.randint(65000, 65535))
-        self.server_process = Process(target=TestingHTTPServer.run_server,
-                                      args=(self.server_address, self.request_handler))
+        self.server_process = ForkProcess(target=TestingHTTPServer.run_server,
+                                          args=(self.server_address, self.request_handler))
 
     def setUp(self):
         self.server_process.start()

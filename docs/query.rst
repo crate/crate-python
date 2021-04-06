@@ -24,6 +24,8 @@ Query CrateDB
 .. contents::
    :local:
 
+.. _cursor:
+
 Using a cursor
 ==============
 
@@ -104,6 +106,8 @@ methods, detailed below.
 Fetching results
 ----------------
 
+.. _fetchone:
+
 ``fetchone()``
 ..............
 
@@ -122,6 +126,8 @@ If no more rows are available, ``None`` is returned.
    The ``cursor`` object is an `iterator`_, and the ``fetchone()`` method is an
    alias for ``next()``.
 
+.. _fetchmany:
+
 ``fetchmany()``
 ...............
 
@@ -138,6 +144,8 @@ list with one result row:
 
     >>> cursor.fetchmany()
     [['Allosimanius Syneca']]
+
+.. _fetchall:
 
 ``fetchall()``
 ..............

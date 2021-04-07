@@ -202,9 +202,9 @@ Older versions
 For information about older versions of the client, consult `the 0.14.2
 changelog`_.
 
-.. _commit(): http://docs.sqlalchemy.org/en/latest/orm/session_api.html#sqlalchemy.orm.session.Session.commit
+.. _commit(): http://docs.sqlalchemy.org/en/latest/orm/session_api.html#sqlalchemy.orm.Session.commit
 .. _correlated updates: http://docs.sqlalchemy.org/en/latest/core/tutorial.html#correlated-updates
-.. _count(): http://docs.sqlalchemy.org/en/latest/orm/query.html#sqlalchemy.orm.query.Query.count
+.. _count(): http://docs.sqlalchemy.org/en/latest/orm/query.html#sqlalchemy.orm.Query.count
 .. _create your own users: https://crate.io/docs/crate/reference/en/latest/admin/user-management.html
 .. _date: https://docs.python.org/3/library/datetime.html#date-objects
 .. _datetime: https://docs.python.org/3/library/datetime.html#datetime-objects
@@ -214,23 +214,23 @@ changelog`_.
 .. _DQL: http://docs.sqlalchemy.org/en/latest/orm/query.html
 .. _enterprise edition: https://crate.io/products/cratedb-enterprise/
 .. _eventual consistency: https://crate.io/docs/crate/guide/en/latest/architecture/storage-consistency.html
-.. _filter_by(): http://docs.sqlalchemy.org/en/latest/orm/query.html#sqlalchemy.orm.query.Query.filter_by
-.. _filter(): http://docs.sqlalchemy.org/en/latest/orm/query.html#sqlalchemy.orm.query.Query.filter
+.. _filter_by(): http://docs.sqlalchemy.org/en/latest/orm/query.html#sqlalchemy.orm.Query.filter_by
+.. _filter(): http://docs.sqlalchemy.org/en/latest/orm/query.html#sqlalchemy.orm.Query.filter
 .. _flush(): http://docs.sqlalchemy.org/en/latest/orm/session_basics.html#flushing
 .. _from_select(): http://docs.sqlalchemy.org/en/latest/core/dml.html#sqlalchemy.sql.expression.Insert.from_select
 .. _get_columns(): http://docs.sqlalchemy.org/en/latest/core/reflection.html#sqlalchemy.engine.reflection.Inspector.get_columns
 .. _get_pk_constraint(): http://docs.sqlalchemy.org/en/latest/core/reflection.html#sqlalchemy.engine.reflection.Inspector.get_pk_constraint
 .. _get_table_names(): http://docs.sqlalchemy.org/en/latest/core/reflection.html#sqlalchemy.engine.reflection.Inspector.get_table_names
-.. _group_by(): http://docs.sqlalchemy.org/en/latest/orm/query.html#sqlalchemy.orm.query.Query.group_by
+.. _group_by(): http://docs.sqlalchemy.org/en/latest/orm/query.html#sqlalchemy.orm.Query.group_by
 .. _insert(): http://docs.sqlalchemy.org/en/latest/core/tutorial.html#inserts-and-updates
-.. _join(): http://docs.sqlalchemy.org/en/latest/orm/query.html?sqlalchemy.orm.query.Query.join
-.. _limit(): http://docs.sqlalchemy.org/en/latest/orm/query.html#sqlalchemy.orm.query.Query.limit
-.. _offset(): http://docs.sqlalchemy.org/en/latest/orm/query.html#sqlalchemy.orm.query.Query.offset
-.. _order_by(): http://docs.sqlalchemy.org/en/latest/orm/query.html#sqlalchemy.orm.query.Query.order_by
+.. _join(): http://docs.sqlalchemy.org/en/latest/orm/query.html?sqlalchemy.orm.Query.join
+.. _limit(): http://docs.sqlalchemy.org/en/latest/orm/query.html#sqlalchemy.orm.Query.limit
+.. _offset(): http://docs.sqlalchemy.org/en/latest/orm/query.html#sqlalchemy.orm.Query.offset
+.. _order_by(): http://docs.sqlalchemy.org/en/latest/orm/query.html#sqlalchemy.orm.Query.order_by
 .. _PyPI: https://pypi.org/
-.. _rollback(): http://docs.sqlalchemy.org/en/latest/orm/session_api.html#sqlalchemy.orm.session.Session.rollback
+.. _rollback(): http://docs.sqlalchemy.org/en/latest/orm/session_api.html#sqlalchemy.orm.Session.rollback
 .. _Session: http://docs.sqlalchemy.org/en/latest/orm/session_api.html
-.. _subquery(): http://docs.sqlalchemy.org/en/latest/orm/query.html?sqlalchemy.orm.query.Query.subquery
+.. _subquery(): http://docs.sqlalchemy.org/en/latest/orm/query.html?sqlalchemy.orm.Query.subquery
 .. _the 0.14.2 changelog: https://github.com/crate/crate-python/blob/415ee6d1eb3de2fe55a342e57f46841b769f1d44/CHANGES.txt
 .. _types.ARRAY: http://docs.sqlalchemy.org/en/latest/core/type_basics.html#sqlalchemy.types.ARRAY
 .. _update(): http://docs.sqlalchemy.org/en/latest/core/tutorial.html#inserts-and-updates

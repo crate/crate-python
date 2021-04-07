@@ -48,7 +48,7 @@ CrateDB       Python
 
 __ https://crate.io/docs/crate/reference/en/latest/general/ddl/data-types.html#boolean
 __ https://docs.python.org/3/library/stdtypes.html#boolean-values
-__ https://crate.io/docs/crate/reference/en/latest/general/ddl/data-types.html#string
+__ https://crate.io/docs/crate/reference/en/latest/general/ddl/data-types.html#character-data-types
 __ https://docs.python.org/3/library/stdtypes.html#str
 __ https://crate.io/docs/crate/reference/en/latest/general/ddl/data-types.html#numeric-types
 __ https://docs.python.org/3/library/functions.html#int
@@ -82,15 +82,15 @@ Python        CrateDB
 ============= ====================================
 
 __ https://docs.python.org/3/library/decimal.html
-__ https://crate.io/docs/crate/reference/en/latest/general/ddl/data-types.html#string
-__ https://docs.python.org/3/library/datetime.html?highlight=date#date-objects
+__ https://crate.io/docs/crate/reference/en/latest/general/ddl/data-types.html#character-data-types
+__ https://docs.python.org/3/library/datetime.html#date-objects
 __ https://crate.io/docs/crate/reference/en/latest/general/ddl/data-types.html#numeric-types
 __ https://crate.io/docs/crate/reference/en/latest/general/ddl/data-types.html#numeric-types
-__ https://crate.io/docs/crate/reference/en/latest/general/ddl/data-types.html#string
-__ https://docs.python.org/3/library/datetime.html?highlight=date#datetime-objects
+__ https://crate.io/docs/crate/reference/en/latest/general/ddl/data-types.html#character-data-types
+__ https://docs.python.org/3/library/datetime.html#datetime-objects
 __ https://crate.io/docs/crate/reference/en/latest/general/ddl/data-types.html#numeric-types
 __ https://crate.io/docs/crate/reference/en/latest/general/ddl/data-types.html#numeric-types
-__ https://crate.io/docs/crate/reference/en/latest/general/ddl/data-types.html#string
+__ https://crate.io/docs/crate/reference/en/latest/general/ddl/data-types.html#character-data-types
 
 .. NOTE::
 
@@ -131,6 +131,7 @@ CrateDB           SQLAlchemy
 `geo_shape`__     :ref:`geoshape` |nbsp| (extension type)
 ================= =========================================
 
+
 __ https://crate.io/docs/crate/reference/en/latest/general/ddl/data-types.html#boolean
 __ http://docs.sqlalchemy.org/en/latest/core/type_basics.html#sqlalchemy.types.Boolean
 __ https://crate.io/docs/crate/reference/en/latest/general/ddl/data-types.html#numeric-types
@@ -145,9 +146,9 @@ __ https://crate.io/docs/crate/reference/en/latest/general/ddl/data-types.html#n
 __ http://docs.sqlalchemy.org/en/latest/core/type_basics.html#sqlalchemy.types.Float
 __ https://crate.io/docs/crate/reference/en/latest/general/ddl/data-types.html#numeric-types
 __ http://docs.sqlalchemy.org/en/latest/core/type_basics.html#sqlalchemy.types.DECIMAL
-__ https://crate.io/docs/crate/reference/en/latest/general/ddl/data-types.html#timestamp
+__ https://crate.io/docs/crate/reference/en/latest/general/ddl/data-types.html#date-time-types
 __ http://docs.sqlalchemy.org/en/latest/core/type_basics.html#sqlalchemy.types.TIMESTAMP
-__ https://crate.io/docs/crate/reference/en/latest/general/ddl/data-types.html#string
+__ https://crate.io/docs/crate/reference/en/latest/general/ddl/data-types.html#character-data-types
 __ http://docs.sqlalchemy.org/en/latest/core/type_basics.html#sqlalchemy.types.String
 __ https://crate.io/docs/crate/reference/en/latest/general/ddl/data-types.html#array
 __ http://docs.sqlalchemy.org/en/latest/core/type_basics.html#sqlalchemy.types.ARRAY

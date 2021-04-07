@@ -351,8 +351,8 @@ To use these types, you can create columns, like so::
     ...    coordinate = sa.Column(types.Geopoint)
     ...    area = sa.Column(types.Geoshape)
 
-There are multiple ways of creating a geopoint. Firstly, you can define it as
-a tuple of ``(longitude, latitude)``::
+A geopoint can be created in multiple ways. Firstly, you can define it as a
+tuple of ``(longitude, latitude)``::
 
     >>> point = (139.76, 35.68)
 
@@ -618,7 +618,7 @@ column on the ``Character`` class.
 .. _dynamic values: https://crate.io/docs/crate/reference/en/latest/general/ddl/data-types.html#dynamic
 .. _table refresh: https://crate.io/docs/crate/reference/en/latest/general/dql/refresh.html
 .. _list: https://docs.python.org/3/library/stdtypes.html#lists
-.. _dictionaries: https://docs.python.org/3/library/stdtypes.html?highlight=lists#dict
+.. _dictionaries: https://docs.python.org/3/library/stdtypes.html#dict
 .. _UPDATE: https://crate.io/docs/crate/reference/en/latest/general/dml.html#updating-data
 .. _eq: https://docs.python.org/2/library/operator.html#operator.eq
 .. _operator: https://docs.python.org/2/library/operator.html
@@ -627,7 +627,7 @@ column on the ``Character`` class.
 .. _count result rows: http://docs.sqlalchemy.org/en/latest/orm/tutorial.html#counting
 .. _MATCH predicate: https://crate.io/docs/crate/reference/en/latest/general/dql/fulltext.html#match-predicate
 .. _arguments reference: https://crate.io/docs/crate/reference/en/latest/general/dql/fulltext.html#arguments
-.. _boost values: https://crate.io/docs/crate/reference/en/latest/general/dql/fulltext.html?highlight=fulltext#arguments
+.. _boost values: https://crate.io/docs/crate/reference/en/latest/general/dql/fulltext.html#arguments
 .. _match type: https://crate.io/docs/crate/reference/en/latest/general/dql/fulltext.html#predicates-match-types
 .. _match options: https://crate.io/docs/stable/sql/fulltext.html#options
 .. _fulltext indices reference: https://crate.io/docs/crate/reference/en/latest/general/ddl/fulltext-indices.html

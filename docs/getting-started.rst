@@ -60,8 +60,8 @@ object), iPython's autocompletion, and many other features.
 Set up as a dependency
 ======================
 
-There are `many ways`_ to handle Python project dependencies. The official PyPI
-package should be compatible with all of them.
+In order to handle Python project dependencies, there are `many ways`_.
+The official PyPI package should be compatible with all of them.
 
 Next steps
 ==========

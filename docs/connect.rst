@@ -60,7 +60,7 @@ for HTTP requests on port 4200, the node URL would be
    to connect to CrateDB on the local host with the default HTTP port number,
    i.e. ``http://localhost:4200/``.
 
-   So, if you're just getting started with CrateDB, the first time you connect,
+   If you're just getting started with CrateDB, the first time you connect,
    you can probably omit this argument.
 
 .. _multiple-nodes:

@@ -19,46 +19,10 @@ Version notes
 Python
 ------
 
-Python 3.7 and the latest client library version is recommended.
+Python >= 3.7 and the latest client library version is recommended.
 
 However, if you are running an older version of Python, older versions of the
 CrateDB Python client library can be used.
-
-.. CAUTION::
-
-    The documentation is written for Python 3.
-
-    If you are using older versions of this client library with Python 2, you
-    may find that you need to make adaptations to the instructions and sample
-    code to get things working.
-
-Consult the following table for compatibility notes:
-
-+----------------+----------------+--------------------------------------------+
-| Python Version | Client Version | Notes                                      |
-+================+================+============================================+
-| Any            | < 0.16         | Not supported:                             |
-|                |                |                                            |
-|                |                | - Serialisation of `date`_ and `datetime`_ |
-|                |                |   objects                                  |
-|                |                | - Serialisation of `Decimal`_ objects      |
-+----------------+----------------+--------------------------------------------+
-| 2.6.x          | >= 0.15        | Not supported.                             |
-+----------------+----------------+--------------------------------------------+
-| 2.7.x          | >= 0.22        | Not supported.                             |
-+----------------+----------------+--------------------------------------------+
-| 3.3.x          | >= 0.22        | Not supported.                             |
-+----------------+----------------+--------------------------------------------+
-| 3.4.x          | >= 0.22        | Supported.                                 |
-+----------------+----------------+--------------------------------------------+
-
-.. NOTE::
-
-   If you :ref:`install <getting-started>` via `PyPI`_, a compatible library
-   version is selected automatically.
-
-   So, for instance, if you use ``pip`` with Python 2.7, version 0.21.x of the
-   client library will be installed.
 
 .. _sqlalchemy-versions:
 
@@ -71,6 +35,10 @@ Consult the following table for SQLAlchemy version compatibility notes:
 | Client Version | SQLAlchemy |nbsp| Version | Notes          |
 +================+===========================+================+
 | Any            | 1.0                       | Supported.     |
++----------------+---------------------------+----------------+
+| >= 0.24.0      | 1.3                       | Supported.     |
++----------------+---------------------------+----------------+
+| >= 0.22.0      | 1.2                       | Supported.     |
 +----------------+---------------------------+----------------+
 | >= 0.16.5      | 1.1                       | Supported.     |
 +----------------+---------------------------+----------------+

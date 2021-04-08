@@ -84,11 +84,13 @@ Unreleased
   If you are using this package with Python 2.7 or 3.3 already, you will not be
   able to install newer versions of this package.
 
+- Add support for SQLAlchemy 1.2
+
 - The client now allows to define a different default schema when connecting to
   CrateDB with the ``schema`` keyword argument. This causes all statements and
   queries that do not specify a schema explicitly to use the provided schema.
 
-- Updated ``get_table_names()`` method in SqlAlchemy dialect to only return
+- Updated ``get_table_names()`` method in SQLAlchemy dialect to only return
   tables but not views. This enables compatibility with CrateDB 3.0 and newer.
 
 2018/03/14 0.21.3
@@ -294,7 +296,7 @@ Unreleased
 
 - fixed compatibility issues with SQLAlchemy 1.0.x
 
-- map SqlAlchemy's text column type to Crate's ``STRING`` type
+- map SQLAlchemy's text column type to Crate's ``STRING`` type
 
 2015/03/10 0.13.0
 =================

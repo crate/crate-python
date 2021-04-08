@@ -43,3 +43,10 @@ jobs:
         run: |
           bin/flake8
           bin/coverage run bin/test -vv1
+          bin/coverage xml
+
+      # https://github.com/codecov/codecov-action
+      - name: Upload coverage results to Codecov
+        uses: codecov/codecov-action@v1
+        with:
+          fail_ci_if_error: true

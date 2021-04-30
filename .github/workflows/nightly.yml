@@ -36,3 +36,13 @@ jobs:
         run: |
           bin/flake8
           bin/coverage run bin/test -vv1
+
+      - name: Slack Notification
+        uses: rtCamp/action-slack-notify@v2
+        env:
+          SLACK_CHANNEL: alert-engineering
+          SLACK_COLOR: ${{ job.status }} # or a specific color like 'green' or '#ff00ff'
+          SLACK_MESSAGE: 'Job status was:  ${{ job.status }}'
+          SLACK_TITLE: Build outcome for crate-python
+          SLACK_USERNAME: jenkins
+          SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}

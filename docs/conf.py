@@ -10,7 +10,7 @@ if "intersphinx_mapping" not in globals():
 
 
 intersphinx_mapping.update({
-    'reference': ('https://crate.io/docs/crate/reference/', None),
+    'reference': ('https://crate.io/docs/crate/reference/en/latest/', None),
     'sa': ('https://docs.sqlalchemy.org/en/13/', None),
     })
 

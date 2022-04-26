@@ -13,6 +13,7 @@ The client provides a ``connect()`` function which is used to establish a
 connection, the first argument is the url of the server to connect to::
 
     >>> connection = client.connect(crate_host)
+    >>> connection.close()
 
 CrateDB is a clustered database providing high availability through
 replication. In order for clients to make use of this property it is
@@ -21,22 +22,26 @@ respond, the request is automatically routed to the next server::
 
     >>> invalid_host = 'http://not_responding_host:4200'
     >>> connection = client.connect([invalid_host, crate_host])
+    >>> connection.close()
 
 If no ``servers`` are given, the default one ``http://127.0.0.1:4200`` is used::
 
     >>> connection = client.connect()
     >>> connection.client._active_servers
     ['http://127.0.0.1:4200']
+    >>> connection.close()
 
 If the option ``error_trace`` is set to ``True``, the client will print a whole
 traceback if a server error occurs::
 
     >>> connection = client.connect([crate_host], error_trace=True)
+    >>> connection.close()
 
 It's possible to define a default timeout value in seconds for all servers
 using the optional parameter ``timeout``::
 
     >>> connection = client.connect([crate_host, invalid_host], timeout=5)
+    >>> connection.close()
 
 Authentication
 --------------
@@ -50,6 +55,7 @@ connect::
     >>> connection.client.username
     'trusted_me'
     >>> connection.client.password
+    >>> connection.close()
 
 The username for trusted users can also be provided in the URL::
 
@@ -57,6 +63,7 @@ The username for trusted users can also be provided in the URL::
     >>> connection.client.username
     'trusted_me'
     >>> connection.client.password
+    >>> connection.close()
 
 To connect to CrateDB with as a user that requires password authentication, you
 also need to provide ``password`` as argument for the ``connect()`` call::
@@ -68,6 +75,7 @@ also need to provide ``password`` as argument for the ``connect()`` call::
     'me'
     >>> connection.client.password
     'my_secret_pw'
+    >>> connection.close()
 
 The authentication credentials can also be provided in the URL::
 
@@ -76,6 +84,7 @@ The authentication credentials can also be provided in the URL::
     'me'
     >>> connection.client.password
     'my_secret_pw'
+    >>> connection.close()
 
 
 Default Schema
@@ -86,6 +95,7 @@ provide the ``schema`` keyword argument in the ``connect()`` method, like so::
 
     >>> connection = client.connect([crate_host],
     ...                             schema='custom_schema')
+    >>> connection.close()
 
 Inserting Data
 ==============

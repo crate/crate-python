@@ -116,6 +116,7 @@ class HttpClientTest(TestCase):
     def test_no_connection_exception(self):
         client = Client()
         self.assertRaises(ConnectionError, client.sql, 'select foo')
+        client.close()
 
     @patch(REQUEST)
     def test_http_error_is_re_raised(self, request):
@@ -123,6 +124,7 @@ class HttpClientTest(TestCase):
 
         client = Client()
         self.assertRaises(ProgrammingError, client.sql, 'select foo')
+        client.close()
 
     @patch(REQUEST)
     def test_programming_error_contains_http_error_response_content(self, request):
@@ -283,6 +285,7 @@ class HttpClientTest(TestCase):
         self.assertTrue(
             (socket.SOL_SOCKET, socket.SO_KEEPALIVE, 1) in conn_kw['socket_options']
         )
+        client.close()
 
 
 @patch(REQUEST, fail_sometimes)
@@ -583,8 +586,8 @@ class TestDefaultSchemaHeader(TestingHttpServerTestCase):
         self.client = self.clientWithKwargs(schema='my_custom_schema')
 
     def tearDown(self):
-        super().tearDown()
         self.client.close()
+        super().tearDown()
 
     def test_default_schema(self):
         self.client.sql('SELECT 1')

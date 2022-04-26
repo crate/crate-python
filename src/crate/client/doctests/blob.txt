@@ -39,9 +39,10 @@ Store from a file::
     >>> file_blob = container.put(f)
     >>> file_blob
     'ea6e03a4a4ee8a2366fe5a88af2bde61797973ea'
+    >>> f.close()
 
 If the blob data is not provided as a seekable stream the hash must be
-provided explicetely::
+provided explicitly::
 
     >>> import hashlib
     >>> string_data = b'String data'

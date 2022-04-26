@@ -220,3 +220,7 @@ Refresh "characters" table:
     >>> import pprint
     >>> pprint.pprint(char.details)
     {'name': {'first': 'Trillian', 'last': 'Dent'}, 'size': 45}
+
+.. Hidden: close connection
+
+    >>> connection.close()

@@ -263,6 +263,9 @@ For completeness' sake the cursor description is updated nonetheless::
     ...     "duration":123
     ... })
 
+.. Hidden: close connection
+
+    >>> connection.close()
 
 Usually ``executemany`` sends the ``bulk_args`` parameter to the crate sql 
 endpoint which was introduced with Crate 0.42.0.
@@ -313,3 +316,6 @@ closed connection an ``ProgrammingError`` exception will be raised::
     ...
     crate.client.exceptions.ProgrammingError: Cursor closed
 
+.. Hidden: close connection
+
+    >>> connection.close()

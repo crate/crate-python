@@ -264,13 +264,11 @@ class HttpsTestServerLayer:
             self.end_headers()
             self.wfile.write(payload)
 
-    def __init__(self):
+    def setUp(self):
         self.server = self.HttpsServer(
             (self.HOST, self.PORT),
             self.HttpsHandler
         )
-
-    def setUp(self):
         thread = threading.Thread(target=self.serve_forever)
         thread.daemon = True  # quit interpreter when only thread exists
         thread.start()
@@ -283,6 +281,7 @@ class HttpsTestServerLayer:
 
     def tearDown(self):
         self.server.shutdown()
+        self.server.server_close()
 
     def isUp(self):
         """

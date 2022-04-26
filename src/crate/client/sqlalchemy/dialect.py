@@ -25,6 +25,7 @@ from datetime import datetime, date
 from sqlalchemy import types as sqltypes
 from sqlalchemy.engine import default, reflection
 from sqlalchemy.sql import functions
+from sqlalchemy.util import asbool, to_list
 
 from .compiler import (
     CrateCompiler,
@@ -194,8 +195,12 @@ class CrateDialect(default.DefaultDialect):
             server = '{0}:{1}'.format(host, port or '4200')
         if 'servers' in kwargs:
             server = kwargs.pop('servers')
-        if server:
-            return self.dbapi.connect(servers=server, **kwargs)
+        servers = to_list(server)
+        if servers:
+            use_ssl = asbool(kwargs.pop("ssl", False))
+            if use_ssl:
+                servers = ["https://" + server for server in servers]
+            return self.dbapi.connect(servers=servers, **kwargs)
         return self.dbapi.connect(**kwargs)
 
     def _get_default_schema_name(self, connection):

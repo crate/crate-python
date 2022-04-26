@@ -11,7 +11,7 @@ The CrateDB Python client library provides support for SQLAlchemy. A CrateDB
 configuration.
 
 The CrateDB Python client library works with SQLAlchemy versions ``1.0``,
-``1.1`` and ``1.2``.
+``1.1``, ``1.2`` and ``1.3``.
 
 .. NOTE::
 
@@ -49,27 +49,33 @@ Locator* (URL) called a `database URL`_.
 
 The simplest database URL for CrateDB looks like this::
 
-    crate://<HOST>
+    crate://<HOST>/[?option=value]
 
-Here, ``<HOST>`` is the node *host string*.
+Here, ``<HOST>`` is the node *host string*. After the host, additional query
+parameters can be specified to adjust some connection settings.
 
 A host string looks like this::
 
-    <HOST_ADDR>:<PORT>
+    [<USERNAME>:<PASSWORD>@]<HOST_ADDR>:<PORT>
 
 Here, ``<HOST_ADDR>`` is the hostname or IP address of the CrateDB node and
 ``<PORT>`` is a valid `psql.port`_ number.
 
-Example host strings:
+When authentication is needed, the credentials can be optionally supplied using
+``<USERNAME>:<PASSWORD>@``. For connecting to an SSL-secured HTTP endpoint, you
+can add the query parameter ``?ssl=true`` to the database URI.
 
-- ``localhost:4200``
-- ``crate-1.vm.example.com:4200``
-- ``198.51.100.1:4200``
+Example database URIs:
+
+- ``crate://localhost:4200``
+- ``crate://crate-1.vm.example.com:4200``
+- ``crate://username:password@crate-2.vm.example.com:4200/?ssl=true``
+- ``crate://198.51.100.1:4200``
 
 .. TIP::
 
-    If ``<HOST>`` is blank (i.e. just ``crate://``) then ``localhost:4200`` will
-    be assumed.
+    If ``<HOST>`` is blank (i.e. the database URI is just ``crate://``), then
+    ``localhost:4200`` will be assumed.
 
 Getting a connection
 --------------------

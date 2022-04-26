@@ -94,7 +94,7 @@ Use user "crate" for rest of the tests::
 
     >>> connection = client.connect([crate_host], timeout=2)
 
-Before executing any statement a cursor has to be opened to perform
+Before executing any statement, a cursor has to be opened to perform
 database operations::
 
     >>> cursor = connection.cursor()
@@ -111,7 +111,7 @@ To bulk insert data you can use the ``executemany`` function::
     [{'rowcount': 1}, {'rowcount': 1}]
 
 ``executemany`` returns a list of results for every parameter. Each result
-contains a rowcount. If an error occurs the rowcount is -2 and the result
+contains a rowcount. If an error occurs, the rowcount is ``-2`` and the result
 may contain an ``error_message`` depending on the error.
 
 Refresh locations:

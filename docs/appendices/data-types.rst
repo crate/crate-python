@@ -48,19 +48,19 @@ CrateDB       Python
 
 __ https://crate.io/docs/crate/reference/en/latest/general/ddl/data-types.html#boolean
 __ https://docs.python.org/3/library/stdtypes.html#boolean-values
-__ https://crate.io/docs/crate/reference/en/latest/general/ddl/data-types.html#character-data-types
+__ https://crate.io/docs/crate/reference/en/latest/general/ddl/data-types.html#character-data
 __ https://docs.python.org/3/library/stdtypes.html#str
-__ https://crate.io/docs/crate/reference/en/latest/general/ddl/data-types.html#numeric-types
+__ https://crate.io/docs/crate/reference/en/latest/general/ddl/data-types.html#numeric-data
 __ https://docs.python.org/3/library/functions.html#int
-__ https://crate.io/docs/crate/reference/en/latest/general/ddl/data-types.html#numeric-types
+__ https://crate.io/docs/crate/reference/en/latest/general/ddl/data-types.html#numeric-data
 __ https://docs.python.org/3/library/functions.html#int
-__ https://crate.io/docs/crate/reference/en/latest/general/ddl/data-types.html#numeric-types
+__ https://crate.io/docs/crate/reference/en/latest/general/ddl/data-types.html#numeric-data
 __ https://docs.python.org/3/library/functions.html#int
-__ https://crate.io/docs/crate/reference/en/latest/general/ddl/data-types.html#numeric-types
+__ https://crate.io/docs/crate/reference/en/latest/general/ddl/data-types.html#numeric-data
 __ https://docs.python.org/3/library/functions.html#float
-__ https://crate.io/docs/crate/reference/en/latest/general/ddl/data-types.html#numeric-types
+__ https://crate.io/docs/crate/reference/en/latest/general/ddl/data-types.html#numeric-data
 __ https://docs.python.org/3/library/functions.html#float
-__ https://crate.io/docs/crate/reference/en/latest/general/ddl/data-types.html#numeric-types
+__ https://crate.io/docs/crate/reference/en/latest/general/ddl/data-types.html#numeric-data
 __ https://docs.python.org/3/library/functions.html#int
 __ https://crate.io/docs/crate/reference/en/latest/general/ddl/data-types.html#geo-point
 __ https://docs.python.org/3/library/stdtypes.html#list
@@ -82,15 +82,15 @@ Python        CrateDB
 ============= ====================================
 
 __ https://docs.python.org/3/library/decimal.html
-__ https://crate.io/docs/crate/reference/en/latest/general/ddl/data-types.html#character-data-types
+__ https://crate.io/docs/crate/reference/en/latest/general/ddl/data-types.html#character-data
 __ https://docs.python.org/3/library/datetime.html#date-objects
-__ https://crate.io/docs/crate/reference/en/latest/general/ddl/data-types.html#numeric-types
-__ https://crate.io/docs/crate/reference/en/latest/general/ddl/data-types.html#numeric-types
-__ https://crate.io/docs/crate/reference/en/latest/general/ddl/data-types.html#character-data-types
+__ https://crate.io/docs/crate/reference/en/latest/general/ddl/data-types.html#numeric-data
+__ https://crate.io/docs/crate/reference/en/latest/general/ddl/data-types.html#numeric-data
+__ https://crate.io/docs/crate/reference/en/latest/general/ddl/data-types.html#character-data
 __ https://docs.python.org/3/library/datetime.html#datetime-objects
-__ https://crate.io/docs/crate/reference/en/latest/general/ddl/data-types.html#numeric-types
-__ https://crate.io/docs/crate/reference/en/latest/general/ddl/data-types.html#numeric-types
-__ https://crate.io/docs/crate/reference/en/latest/general/ddl/data-types.html#character-data-types
+__ https://crate.io/docs/crate/reference/en/latest/general/ddl/data-types.html#numeric-data
+__ https://crate.io/docs/crate/reference/en/latest/general/ddl/data-types.html#numeric-data
+__ https://crate.io/docs/crate/reference/en/latest/general/ddl/data-types.html#character-data
 
 .. NOTE::
 
@@ -134,21 +134,21 @@ CrateDB           SQLAlchemy
 
 __ https://crate.io/docs/crate/reference/en/latest/general/ddl/data-types.html#boolean
 __ http://docs.sqlalchemy.org/en/latest/core/type_basics.html#sqlalchemy.types.Boolean
-__ https://crate.io/docs/crate/reference/en/latest/general/ddl/data-types.html#numeric-types
+__ https://crate.io/docs/crate/reference/en/latest/general/ddl/data-types.html#numeric-data
 __ http://docs.sqlalchemy.org/en/latest/core/type_basics.html#sqlalchemy.types.SmallInteger
-__ https://crate.io/docs/crate/reference/en/latest/general/ddl/data-types.html#numeric-types
+__ https://crate.io/docs/crate/reference/en/latest/general/ddl/data-types.html#numeric-data
 __ http://docs.sqlalchemy.org/en/latest/core/type_basics.html#sqlalchemy.types.SmallInteger
-__ https://crate.io/docs/crate/reference/en/latest/general/ddl/data-types.html#numeric-types
+__ https://crate.io/docs/crate/reference/en/latest/general/ddl/data-types.html#numeric-data
 __ http://docs.sqlalchemy.org/en/latest/core/type_basics.html#sqlalchemy.types.Integer
-__ https://crate.io/docs/crate/reference/en/latest/general/ddl/data-types.html#numeric-types
+__ https://crate.io/docs/crate/reference/en/latest/general/ddl/data-types.html#numeric-data
 __ http://docs.sqlalchemy.org/en/latest/core/type_basics.html#sqlalchemy.types.NUMERIC
-__ https://crate.io/docs/crate/reference/en/latest/general/ddl/data-types.html#numeric-types
+__ https://crate.io/docs/crate/reference/en/latest/general/ddl/data-types.html#numeric-data
 __ http://docs.sqlalchemy.org/en/latest/core/type_basics.html#sqlalchemy.types.Float
-__ https://crate.io/docs/crate/reference/en/latest/general/ddl/data-types.html#numeric-types
+__ https://crate.io/docs/crate/reference/en/latest/general/ddl/data-types.html#numeric-data
 __ http://docs.sqlalchemy.org/en/latest/core/type_basics.html#sqlalchemy.types.DECIMAL
-__ https://crate.io/docs/crate/reference/en/latest/general/ddl/data-types.html#date-time-types
+__ https://crate.io/docs/crate/reference/en/latest/general/ddl/data-types.html#dates-and-times
 __ http://docs.sqlalchemy.org/en/latest/core/type_basics.html#sqlalchemy.types.TIMESTAMP
-__ https://crate.io/docs/crate/reference/en/latest/general/ddl/data-types.html#character-data-types
+__ https://crate.io/docs/crate/reference/en/latest/general/ddl/data-types.html#character-data
 __ http://docs.sqlalchemy.org/en/latest/core/type_basics.html#sqlalchemy.types.String
 __ https://crate.io/docs/crate/reference/en/latest/general/ddl/data-types.html#array
 __ http://docs.sqlalchemy.org/en/latest/core/type_basics.html#sqlalchemy.types.ARRAY

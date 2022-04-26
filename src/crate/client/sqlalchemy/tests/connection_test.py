@@ -21,13 +21,14 @@
 
 from unittest import TestCase
 import sqlalchemy as sa
+from sqlalchemy.exc import NoSuchModuleError
 
 
 class SqlAlchemyConnectionTest(TestCase):
 
-    def setUp(self):
-        self.engine = sa.create_engine('crate://')
-        self.connection = self.engine.connect()
+    def test_connection_server_uri_unknown_sa_plugin(self):
+        with self.assertRaises(NoSuchModuleError):
+            sa.create_engine("foobar://otherhost:19201")
 
     def test_default_connection(self):
         engine = sa.create_engine('crate://')
@@ -35,14 +36,44 @@ class SqlAlchemyConnectionTest(TestCase):
         self.assertEqual("<Connection <Client ['http://127.0.0.1:4200']>>",
                          repr(conn.connection))
 
-    def test_connection_server(self):
+    def test_connection_server_uri_http(self):
         engine = sa.create_engine(
             "crate://otherhost:19201")
         conn = engine.raw_connection()
         self.assertEqual("<Connection <Client ['http://otherhost:19201']>>",
                          repr(conn.connection))
 
-    def test_connection_multiple_server(self):
+    def test_connection_server_uri_https(self):
+        engine = sa.create_engine(
+            "crate://otherhost:19201/?ssl=true")
+        conn = engine.raw_connection()
+        self.assertEqual("<Connection <Client ['https://otherhost:19201']>>",
+                         repr(conn.connection))
+
+    def test_connection_server_uri_invalid_port(self):
+        with self.assertRaises(ValueError) as context:
+            sa.create_engine("crate://foo:bar")
+        self.assertTrue("invalid literal for int() with base 10: 'bar'" in str(context.exception))
+
+    def test_connection_server_uri_https_with_trusted_user(self):
+        engine = sa.create_engine(
+            "crate://foo@otherhost:19201/?ssl=true")
+        conn = engine.raw_connection()
+        self.assertEqual("<Connection <Client ['https://otherhost:19201']>>",
+                         repr(conn.connection))
+        self.assertEqual(conn.connection.client.username, "foo")
+        self.assertEqual(conn.connection.client.password, None)
+
+    def test_connection_server_uri_https_with_credentials(self):
+        engine = sa.create_engine(
+            "crate://foo:bar@otherhost:19201/?ssl=true")
+        conn = engine.raw_connection()
+        self.assertEqual("<Connection <Client ['https://otherhost:19201']>>",
+                         repr(conn.connection))
+        self.assertEqual(conn.connection.client.username, "foo")
+        self.assertEqual(conn.connection.client.password, "bar")
+
+    def test_connection_multiple_server_http(self):
         engine = sa.create_engine(
             "crate://", connect_args={
                 'servers': ['localhost:4201', 'localhost:4202']
@@ -52,4 +83,17 @@ class SqlAlchemyConnectionTest(TestCase):
         self.assertEqual(
             "<Connection <Client ['http://localhost:4201', " +
             "'http://localhost:4202']>>",
+            repr(conn.connection))
+
+    def test_connection_multiple_server_https(self):
+        engine = sa.create_engine(
+            "crate://", connect_args={
+                'servers': ['localhost:4201', 'localhost:4202'],
+                'ssl': True,
+            }
+        )
+        conn = engine.raw_connection()
+        self.assertEqual(
+            "<Connection <Client ['https://localhost:4201', " +
+            "'https://localhost:4202']>>",
             repr(conn.connection))

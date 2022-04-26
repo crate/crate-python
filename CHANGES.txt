@@ -13,6 +13,9 @@ Unreleased
 
 - Adjusted connect arguments to accept credentials within the HTTP URI.
 
+- Added support for enabling SSL using SQLAlchemy DB URI with parameter
+  ``?ssl=true``.
+
 2020/09/28 0.26.0
 =================
 

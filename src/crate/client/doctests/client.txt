@@ -102,7 +102,7 @@ Inserting Data
 
 Use user "crate" for rest of the tests::
 
-    >>> connection = client.connect([crate_host], timeout=2)
+    >>> connection = client.connect([crate_host])
 
 Before executing any statement, a cursor has to be opened to perform
 database operations::

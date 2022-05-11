@@ -74,13 +74,19 @@ def crate_before_execute(conn, clauseelement, multiparams, params):
     is_crate = type(conn.dialect).__name__ == 'CrateDialect'
     if is_crate and isinstance(clauseelement, sa.sql.expression.Update):
         if SA_VERSION >= SA_1_4:
-            multiparams = ([params],)
+            if params is None:
+                multiparams = ([],)
+            else:
+                multiparams = ([params],)
             params = {}
 
         clauseelement, multiparams, params = rewrite_update(clauseelement, multiparams, params)
 
         if SA_VERSION >= SA_1_4:
-            params = multiparams[0]
+            if multiparams[0]:
+                params = multiparams[0][0]
+            else:
+                params = multiparams[0]
             multiparams = []
 
     return clauseelement, multiparams, params

@@ -23,8 +23,7 @@ import string
 from collections import defaultdict
 
 import sqlalchemy as sa
-from sqlalchemy.sql import crud, selectable
-from sqlalchemy.sql import compiler
+from sqlalchemy.sql import compiler, crud, selectable
 from .types import MutableDict
 from .sa_version import SA_VERSION, SA_1_4
 
@@ -400,6 +399,10 @@ class CrateCompiler(compiler.SQLCompiler):
         else:
             dialect_hints = None
 
+        if update_stmt._independent_ctes:
+            for cte in update_stmt._independent_ctes:
+                cte._compiler_dispatch(self, **kw)
+
         text += table_text
 
         text += " SET "
@@ -459,8 +462,9 @@ class CrateCompiler(compiler.SQLCompiler):
                 update_stmt, self.returning or update_stmt._returning
             )
 
-        if self.ctes and toplevel:
-            text = self._render_cte_clause() + text
+        if self.ctes:
+            nesting_level = len(self.stack) if not toplevel else None
+            text = self._render_cte_clause(nesting_level=nesting_level) + text
 
         self.stack.pop(-1)
 
@@ -481,7 +485,7 @@ def _get_crud_params_14(compiler, stmt, compile_state, **kw):
     from sqlalchemy.sql.crud import _create_bind_param
     from sqlalchemy.sql.crud import REQUIRED
     from sqlalchemy.sql.crud import _get_stmt_parameter_tuples_params
-    from sqlalchemy.sql.crud import _get_multitable_params
+    from sqlalchemy.sql.crud import _get_update_multitable_params
     from sqlalchemy.sql.crud import _scan_insert_from_select_cols
     from sqlalchemy.sql.crud import _scan_cols
     from sqlalchemy import exc  # noqa: F401
@@ -561,7 +565,7 @@ def _get_crud_params_14(compiler, stmt, compile_state, **kw):
     # special logic that only occurs for multi-table UPDATE
     # statements
     if compile_state.isupdate and compile_state.is_multitable:
-        _get_multitable_params(
+        _get_update_multitable_params(
             compiler,
             stmt,
             compile_state,
@@ -620,9 +624,18 @@ def _get_crud_params_14(compiler, stmt, compile_state, **kw):
 
     if compile_state._has_multi_parameters:
         values = _extend_values_for_multiparams(
-            compiler, stmt, compile_state, values, kw
+            compiler,
+            stmt,
+            compile_state,
+            values,
+            _column_as_key,
+            kw,
         )
-    elif not values and compiler.for_executemany:
+    elif (
+        not values
+        and compiler.for_executemany  # noqa: W503
+        and compiler.dialect.supports_default_metavalue  # noqa: W503
+    ):
         # convert an "INSERT DEFAULT VALUES"
         # into INSERT (firstcol) VALUES (DEFAULT) which can be turned
         # into an in-place multi values.  This supports

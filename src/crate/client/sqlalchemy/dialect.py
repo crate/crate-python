@@ -25,7 +25,7 @@ from datetime import datetime, date
 # FIXME: Workaround to be able to use SQLAlchemy 1.4.
 #        Caveat: This purges the ``cresultproxy`` extension
 #        at runtime, so it will impose a speed bump.
-import crate.client.sqlalchemy.monkey  # noqa:F401
+import crate.client.sqlalchemy.monkey  # noqa:F401, lgtm[py/unused-import]
 
 from sqlalchemy import types as sqltypes
 from sqlalchemy.engine import default, reflection

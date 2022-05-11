@@ -168,7 +168,7 @@ class Any(expression.ColumnElement):
 
     def __init__(self, left, right, operator=operators.eq):
         self.type = sqltypes.Boolean()
-        self.left = expression._literal_as_binds(left)
+        self.left = expression.literal(left)
         self.right = right
         self.operator = operator
 

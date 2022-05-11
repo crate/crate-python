@@ -1,0 +1,7 @@
+queries:
+
+  # Suppress some LGTM warnings.
+
+  # A module is imported with the "import" and "import from" statements.
+  # https://lgtm.com/rules/1818040193/
+  - exclude: py/import-and-import-from

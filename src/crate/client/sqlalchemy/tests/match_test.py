@@ -109,7 +109,8 @@ class SqlAlchemyMatchTest(TestCase):
         )
 
     def test_score(self):
-        query = self.session.query(self.Character.name, '_score') \
+        query = self.session.query(self.Character.name,
+                                   sa.literal_column('_score')) \
                     .filter(match(self.Character.name, 'Trillian'))
         self.assertSQL(
             "SELECT characters.name AS characters_name, _score " +

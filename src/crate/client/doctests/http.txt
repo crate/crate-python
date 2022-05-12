@@ -183,11 +183,11 @@ an exception is raised when the timeout is reached::
 
 When connecting to non Crate servers the HttpClient will raise a ConnectionError like this::
 
-    >>> http_client = HttpClient(["https://crate.io"])
+    >>> http_client = HttpClient(["https://httpbin.org/html"])
     >>> http_client.server_infos(http_client._get_server())
     Traceback (most recent call last):
     ...
-    crate.client.exceptions.ProgrammingError: Invalid server response of content-type 'text/html; charset=UTF-8':
+    crate.client.exceptions.ProgrammingError: Invalid server response of content-type 'text/html; charset=utf-8':
     ...
 
 When using the ``error_trace`` kwarg a full traceback of the server exception

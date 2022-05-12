@@ -92,6 +92,6 @@ class DialectTest(TestCase):
 
         insp = inspect(self.character.metadata.bind)
         self.engine.dialect.server_version_info = (2, 0, 0)
-        eq_(insp.get_table_names(self.connection, "doc"),
+        eq_(insp.get_table_names(schema="doc"),
             ['t1', 't2'])
         in_("WHERE table_schema = ? AND table_type = 'BASE TABLE' ORDER BY", self.executed_statement)

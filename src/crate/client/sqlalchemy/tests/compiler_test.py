@@ -45,14 +45,14 @@ class SqlAlchemyCompilerTest(TestCase):
 
     def test_sqlite_update_not_rewritten(self):
         clauseelement, multiparams, params = crate_before_execute(
-            self.sqlite_engine, self.update, self.values, None
+            self.sqlite_engine, self.update, self.values, {}
         )
 
         assert hasattr(clauseelement, '_crate_specific') is False
 
     def test_crate_update_rewritten(self):
         clauseelement, multiparams, params = crate_before_execute(
-            self.crate_engine, self.update, self.values, None
+            self.crate_engine, self.update, self.values, {}
         )
 
         assert hasattr(clauseelement, '_crate_specific') is True

@@ -181,7 +181,7 @@ an exception is raised when the timeout is reached::
     ...
     crate.client.exceptions.ConnectionError: No more Servers available, exception from last server: ...
 
-When connecting to non Crate servers the HttpClient will raise a ConnectionError like this::
+When connecting to non-CrateDB servers, the HttpClient will raise a ConnectionError like this::
 
     >>> http_client = HttpClient(["https://httpbin.org/html"])
     >>> http_client.server_infos(http_client._get_server())

@@ -24,6 +24,40 @@ Unreleased
 
 - Add support for SQLAlchemy 1.4
 
+
+Breaking changes
+----------------
+
+Textual column expressions
+''''''''''''''''''''''''''
+
+On the update to SQLAlchemy 1.4, some test cases had to be adjusted in order
+to compensate for apparent additional strictness of SQLAlchemy on some details.
+
+Where it was ok to use a textual column expression in plain text beforehand,
+a `SQLAlchemy literal_column`_ type should be used now. Otherwise, for example
+when accessing `CrateDB system columns`_ like ``_score``, the engine might
+complain like::
+
+    sqlalchemy.exc.ArgumentError: Textual column expression '_score' should be
+    explicitly declared with text('_score'), or use column('_score') for more
+    specificity
+
+The changes to be made look like this::
+
+    old: session.query(Character.name, '_score')
+    new: session.query(Character.name, sa.literal_column('_score'))
+
+::
+
+    old: .order_by(sa.desc(sa.text('_score')))
+    new: .order_by(sa.desc(sa.literal_column('_score')))
+
+
+.. _SQLAlchemy literal_column: https://docs.sqlalchemy.org/en/14/core/sqlelement.html#sqlalchemy.sql.expression.literal_column
+.. _CrateDB system columns: https://crate.io/docs/crate/reference/en/4.8/general/ddl/system-columns.html
+
+
 2020/09/28 0.26.0
 =================
 

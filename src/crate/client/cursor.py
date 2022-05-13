@@ -22,6 +22,7 @@
 from .exceptions import ProgrammingError
 from distutils.version import StrictVersion
 import warnings
+from datetime import datetime
 
 BULK_INSERT_MIN_VERSION = StrictVersion("0.42.0")
 
@@ -52,8 +53,45 @@ class Cursor(object):
 
         self._result = self.connection.client.sql(sql, parameters,
                                                   bulk_parameters)
+
         if "rows" in self._result:
-            self.rows = iter(self._result["rows"])
+            transformed_result = False
+            if "col_types" in self._result:
+                transformed_result = True
+                self.rows = self.result_set_transformed()
+
+            if not transformed_result:
+                self.rows = iter(self._result["rows"])
+
+    def result_set_transformed(self):
+        """
+        Generator that iterates over each row from the result set
+        """
+        rows_to_convert = [True if col_type == 11 or col_type == 15 else False for col_type in
+                           self._result["col_types"]]
+        for row in self._result["rows"]:
+            gen_flags = (flag for flag in rows_to_convert)
+            yield [t_row for t_row in self._transform_date_columns(row, gen_flags)]
+
+    @staticmethod
+    def _transform_date_columns(row, gen_flags):
+        """
+        Generates iterates over each value from a row and converts timestamps to pandas TIMESTAMP
+        """
+        for value in row:
+            try:
+                flag = next(gen_flags)
+            except StopIteration:
+                break
+
+            if not flag or value is None:
+                yield value
+            else:
+                if value < 0:
+                    yield None
+                else:
+                    value = datetime.fromtimestamp(value / 1000)
+                    yield value
 
     def executemany(self, sql, seq_of_parameters):
         """

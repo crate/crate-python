@@ -44,6 +44,7 @@ TYPES_MAP = {
     "smallint": sqltypes.SmallInteger,
     "timestamp": sqltypes.TIMESTAMP,
     "timestamp with time zone": sqltypes.TIMESTAMP,
+    "timestamp without time zone": sqltypes.TIMESTAMP,
     "object": Object,
     "integer": sqltypes.Integer,
     "long": sqltypes.NUMERIC,
@@ -65,6 +66,7 @@ try:
     TYPES_MAP["smallint_array"] = ARRAY(sqltypes.SmallInteger)
     TYPES_MAP["timestamp_array"] = ARRAY(sqltypes.TIMESTAMP)
     TYPES_MAP["timestamp with time zone_array"] = ARRAY(sqltypes.TIMESTAMP)
+    TYPES_MAP["timestamp without time zone_array"] = ARRAY(sqltypes.TIMESTAMP)
     TYPES_MAP["long_array"] = ARRAY(sqltypes.NUMERIC)
     TYPES_MAP["bigint_array"] = ARRAY(sqltypes.NUMERIC)
     TYPES_MAP["double_array"] = ARRAY(sqltypes.DECIMAL)
@@ -75,7 +77,6 @@ try:
     TYPES_MAP["text_array"] = ARRAY(sqltypes.String)
 except Exception:
     pass
-
 
 log = logging.getLogger(__name__)
 
@@ -92,6 +93,8 @@ class Date(sqltypes.Date):
         def process(value):
             if not value:
                 return
+            if isinstance(value, datetime):
+                return value.date()
             try:
                 return datetime.utcfromtimestamp(value / 1e3).date()
             except TypeError:
@@ -131,6 +134,8 @@ class DateTime(sqltypes.DateTime):
         def process(value):
             if not value:
                 return
+            if isinstance(value, datetime):
+                return value
             try:
                 return datetime.utcfromtimestamp(value / 1e3)
             except TypeError:
@@ -266,7 +271,7 @@ class CrateDialect(default.DefaultDialect):
 
             def result_fun(result):
                 rows = result.fetchall()
-                return set(map(lambda el: el[0], rows))
+                return list(set(map(lambda el: el[0], rows)))
         else:
             query = """SELECT constraint_name
                    FROM information_schema.table_constraints

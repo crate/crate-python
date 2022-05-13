@@ -69,7 +69,8 @@ Issue a select statement against our with test data pre-filled crate instance::
     >>> http_client = HttpClient(crate_host)
     >>> result = http_client.sql('select name from locations order by name')
     >>> pprint(result)
-    {'cols': ['name'],
+    {'col_types': [4],
+     'cols': ['name'],
      'duration': ...,
      'rowcount': 13,
      'rows': [['Aldebaran'],

@@ -83,7 +83,6 @@ class DialectTest(TestCase):
         in_("information_schema.key_column_usage", self.executed_statement)
 
     def test_get_table_names(self):
-
         self.fake_cursor.rowcount = 1
         self.fake_cursor.description = (
             ('foo', None, None, None, None, None, None),
@@ -95,3 +94,17 @@ class DialectTest(TestCase):
         eq_(insp.get_table_names(schema="doc"),
             ['t1', 't2'])
         in_("WHERE table_schema = ? AND table_type = 'BASE TABLE' ORDER BY", self.executed_statement)
+
+    def test_get_view_names(self):
+        self.fake_cursor.rowcount = 1
+        self.fake_cursor.description = (
+            ('foo', None, None, None, None, None, None),
+        )
+        self.fake_cursor.fetchall = MagicMock(return_value=[["v1"], ["v2"]])
+
+        insp = inspect(self.character.metadata.bind)
+        self.engine.dialect.server_version_info = (2, 0, 0)
+        eq_(insp.get_view_names(schema="doc"),
+            ['v1', 'v2'])
+        eq_(self.executed_statement, "SELECT table_name FROM information_schema.views "
+                                     "ORDER BY table_name ASC, table_schema ASC")

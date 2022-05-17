@@ -167,6 +167,7 @@ class CrateDialect(default.DefaultDialect):
     ddl_compiler = CrateDDLCompiler
     type_compiler = CrateTypeCompiler
     supports_native_boolean = True
+    supports_statement_cache = True
     colspecs = colspecs
     implicit_returning = True
 

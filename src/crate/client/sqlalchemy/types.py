@@ -132,6 +132,7 @@ class MutableDict(Mutable, dict):
 
 
 class _Craty(sqltypes.UserDefinedType):
+    cache_ok = True
 
     class Comparator(sqltypes.TypeEngine.Comparator):
 
@@ -165,6 +166,7 @@ class Any(expression.ColumnElement):
 
     """
     __visit_name__ = 'any'
+    inherit_cache = True
 
     def __init__(self, left, right, operator=operators.eq):
         self.type = sqltypes.Boolean()
@@ -174,6 +176,7 @@ class Any(expression.ColumnElement):
 
 
 class _ObjectArray(sqltypes.UserDefinedType):
+    cache_ok = True
 
     class Comparator(sqltypes.TypeEngine.Comparator):
         def __getitem__(self, key):
@@ -222,6 +225,7 @@ ObjectArray = MutableList.as_mutable(_ObjectArray)
 
 
 class Geopoint(sqltypes.UserDefinedType):
+    cache_ok = True
 
     class Comparator(sqltypes.TypeEngine.Comparator):
 
@@ -247,6 +251,7 @@ class Geopoint(sqltypes.UserDefinedType):
 
 
 class Geoshape(sqltypes.UserDefinedType):
+    cache_ok = True
 
     class Comparator(sqltypes.TypeEngine.Comparator):
 

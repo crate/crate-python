@@ -24,6 +24,7 @@ from sqlalchemy.ext.compiler import compiles
 
 
 class Match(ColumnElement):
+    inherit_cache = True
 
     def __init__(self, column, term, match_type=None, options=None):
         super(Match, self).__init__()

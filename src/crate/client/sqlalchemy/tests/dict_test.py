@@ -138,7 +138,7 @@ class SqlAlchemyDictTypeTest(TestCase):
     @patch('crate.client.connection.Cursor', FakeCursor)
     def test_assign_to_craty_type_after_commit(self):
         session, Character = self.set_up_character_and_cursor(
-            return_value=[('Trillian', None, None)]
+            return_value=[('Trillian', None)]
         )
         char = Character(name='Trillian')
         session.add(char)

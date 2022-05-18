@@ -21,31 +21,39 @@
 
 from datetime import datetime
 from unittest import TestCase
-from unittest.mock import MagicMock
+from unittest.mock import MagicMock, patch
 
 import sqlalchemy as sa
+
+from crate.client.cursor import Cursor
 from crate.client.sqlalchemy.types import Object
 from sqlalchemy import inspect
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import Session
 from sqlalchemy.testing import eq_, in_
 
-fake_cursor = MagicMock(name='fake_cursor')
+FakeCursor = MagicMock(name='FakeCursor', spec=Cursor)
 
 
+@patch('crate.client.connection.Cursor', FakeCursor)
 class DialectTest(TestCase):
 
+    def execute_wrapper(self, query, *args, **kwargs):
+        self.executed_statement = query
+        return self.fake_cursor
+
     def setUp(self):
+
+        self.fake_cursor = MagicMock(name='fake_cursor')
+        FakeCursor.return_value = self.fake_cursor
+
         self.engine = sa.create_engine('crate://')
         self.executed_statement = None
 
-        def execute_wrapper(query, *args, **kwargs):
-            self.executed_statement = query
-            return fake_cursor
-
-        self.engine.execute = execute_wrapper
         self.connection = self.engine.connect()
-        self.connection.execute = execute_wrapper
+
+        self.fake_cursor.execute = self.execute_wrapper
+
         self.base = declarative_base(bind=self.engine)
 
         class Character(self.base):
@@ -59,30 +67,43 @@ class DialectTest(TestCase):
         self.character = Character
         self.session = Session()
 
-    def test_pks_are_retrieved_depending_on_version_set(self):
+    def test_pks_are_retrieved_depending_on_version_set_old(self):
         meta = self.character.metadata
-
-        # test the old pk retrieval
         insp = inspect(meta.bind)
         self.engine.dialect.server_version_info = (0, 54, 0)
-        fake_cursor.rowcount = 1
-        fake_cursor.fetchone = MagicMock(return_value=[["id", "id2", "id3"]])
+
+        self.fake_cursor.rowcount = 1
+        self.fake_cursor.description = (
+            ('foo', None, None, None, None, None, None),
+        )
+        self.fake_cursor.fetchone = MagicMock(return_value=[["id", "id2", "id3"]])
+
         eq_(insp.get_pk_constraint("characters")['constrained_columns'], {"id", "id2", "id3"})
-        fake_cursor.fetchone.assert_called_once_with()
+        self.fake_cursor.fetchone.assert_called_once_with()
         in_("information_schema.table_constraints", self.executed_statement)
 
-        # test the new pk retrieval
+    def test_pks_are_retrieved_depending_on_version_set_new(self):
+        meta = self.character.metadata
         insp = inspect(meta.bind)
         self.engine.dialect.server_version_info = (2, 3, 0)
-        fake_cursor.rowcount = 3
-        fake_cursor.fetchall = MagicMock(return_value=[["id"], ["id2"], ["id3"]])
+
+        self.fake_cursor.rowcount = 3
+        self.fake_cursor.description = (
+            ('foo', None, None, None, None, None, None),
+        )
+        self.fake_cursor.fetchall = MagicMock(return_value=[["id"], ["id2"], ["id3"]])
+
         eq_(insp.get_pk_constraint("characters")['constrained_columns'], {"id", "id2", "id3"})
-        fake_cursor.fetchall.assert_called_once_with()
+        self.fake_cursor.fetchall.assert_called_once_with()
         in_("information_schema.key_column_usage", self.executed_statement)
 
     def test_get_table_names(self):
-        fake_cursor.rowcount = 1
-        fake_cursor.fetchall = MagicMock(return_value=[["t1"], ["t2"]])
+
+        self.fake_cursor.rowcount = 1
+        self.fake_cursor.description = (
+            ('foo', None, None, None, None, None, None),
+        )
+        self.fake_cursor.fetchall = MagicMock(return_value=[["t1"], ["t2"]])
 
         insp = inspect(self.character.metadata.bind)
         self.engine.dialect.server_version_info = (2, 0, 0)

@@ -36,10 +36,14 @@ jobs:
           echo "/usr/local/opt/gnu-getopt/bin" >> $GITHUB_PATH
 
       - name: Install dependencies
+        if: |
+          !(matrix.sqla-version == '1.1.18' && matrix.python-version == '3.10')
         run: |
           ./devtools/setup_ci.sh --cratedb-version=${{ matrix.cratedb-version }} --sqlalchemy-version=${{ matrix.sqla-version }}
 
       - name: Invoke tests
+        if: |
+          !(matrix.sqla-version == '1.1.18' && matrix.python-version == '3.10')
         run: |
           bin/flake8
           bin/coverage run bin/test -vv1
@@ -47,6 +51,8 @@ jobs:
 
       # https://github.com/codecov/codecov-action
       - name: Upload coverage results to Codecov
+        if: |
+          !(matrix.sqla-version == '1.1.18' && matrix.python-version == '3.10')
         uses: codecov/codecov-action@v2
         with:
           fail_ci_if_error: true

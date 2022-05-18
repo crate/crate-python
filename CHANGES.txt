@@ -5,7 +5,7 @@ Changes for crate
 Unreleased
 ==========
 
-- Added official Python 3.9 support.
+- Added official support for Python 3.9 and 3.10.
 
 - BREAKING CHANGE: The driver now verifies SSL certificates when connecting via
   HTTP by default. Previously, this setting defaulted to false. This setting

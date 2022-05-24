@@ -20,10 +20,7 @@ List all tables::
 List all views::
 
     >>> inspector.get_view_names()
-    []
-
-    >>> inspector.get_view_names(schema='sys')
-    []
+    ['characters_view']
 
 Get default schema name::
 

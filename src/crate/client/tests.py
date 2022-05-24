@@ -195,7 +195,8 @@ def setUpCrateLayerAndSqlAlchemy(test):
           more_details array(object),
           INDEX name_ft using fulltext(name) with (analyzer = 'english'),
           INDEX quote_ft using fulltext(quote) with (analyzer = 'english')
-    ) """)
+          )""")
+        cursor.execute("CREATE VIEW characters_view AS SELECT * FROM characters")
 
     with connect(crate_host) as conn:
         cursor = conn.cursor()
@@ -342,6 +343,7 @@ def tearDownWithCrateLayer(test):
         for stmt in ["DROP TABLE locations",
                      "DROP BLOB TABLE myfiles",
                      "DROP TABLE characters",
+                     "DROP VIEW characters_view",
                      "DROP TABLE cities",
                      "DROP USER me",
                      "DROP USER trusted_me",

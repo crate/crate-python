@@ -14,8 +14,7 @@ Connect to CrateDB
 .. SEEALSO::
 
    Supplementary information about the CrateDB Database API client can be found
-   in the :ref:`data types appendix <data-types-db-api>` and the
-   :ref:`compatibility notes <compatibility>`.
+   in the :ref:`data types appendix <data-types-db-api>`.
 
    For general help using the Database API, consult `PEP 0249`_.
 
@@ -217,8 +216,6 @@ Authentication
 
    If you are using CrateDB 2.1.x or later, you must supply a username. If you
    are using earlier versions of CrateDB, this argument is not supported.
-
-   See the :ref:`compatibility notes <cratedb-versions>` for more information.
 
 You can authenticate with CrateDB like so::
 

@@ -13,7 +13,6 @@ Unreleased
 
 - Dropped support for CrateDB < 2.0.0.
 
-
 - BREAKING CHANGE: The driver now verifies SSL certificates when connecting via
   HTTP by default. Previously, this setting defaulted to false. This setting
   can be changed via the ``verify_ssl_cert`` connection parameter.

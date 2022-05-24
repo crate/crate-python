@@ -46,7 +46,7 @@ A Python client library for CrateDB_.
 This library:
 
 - Implements the Python `DB API 2.0`_ specification
-- Includes support for SQLAlchemy_ (>= 1.0.0)
+- Includes support for SQLAlchemy_ (>= 1.3.0)
 
 Prerequisites
 =============

@@ -6,6 +6,8 @@ Unreleased
 ==========
 
 - Added official support for Python 3.9 and 3.10.
+- Dropped support for SQLAlchemy 1.1 and 1.2.
+
 
 - BREAKING CHANGE: The driver now verifies SSL certificates when connecting via
   HTTP by default. Previously, this setting defaulted to false. This setting

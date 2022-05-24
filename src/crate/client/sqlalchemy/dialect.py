@@ -35,7 +35,6 @@ from .compiler import (
 from crate.client.exceptions import TimezoneUnawareException
 from .types import Object, ObjectArray
 
-SCHEMA_MIN_VERSION = (0, 57, 0)
 TABLE_TYPE_MIN_VERSION = (2, 0, 0)
 
 TYPES_MAP = {
@@ -298,9 +297,7 @@ class CrateDialect(default.DefaultDialect):
 
     @property
     def schema_column(self):
-        return "table_schema" \
-            if self.server_version_info >= SCHEMA_MIN_VERSION \
-            else "schema_name"
+        return "table_schema"
 
     def _create_column_info(self, row):
         return {

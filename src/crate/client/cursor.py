@@ -20,10 +20,7 @@
 # software solely pursuant to the terms of the relevant commercial agreement.
 
 from .exceptions import ProgrammingError
-from distutils.version import StrictVersion
 import warnings
-
-BULK_INSERT_MIN_VERSION = StrictVersion("0.42.0")
 
 
 class Cursor(object):
@@ -63,20 +60,14 @@ class Cursor(object):
         """
         row_counts = []
         durations = []
-        if self.connection.lowest_server_version >= BULK_INSERT_MIN_VERSION:
-            self.execute(sql, bulk_parameters=seq_of_parameters)
-            for result in self._result.get('results', []):
-                if result.get('rowcount') > -1:
-                    row_counts.append(result.get('rowcount'))
-            if self.duration > -1:
-                durations.append(self.duration)
-        else:
-            for params in seq_of_parameters:
-                self.execute(sql, parameters=params)
-                if self.rowcount > -1:
-                    row_counts.append(self.rowcount)
-                if self.duration > -1:
-                    durations.append(self.duration)
+        self.execute(sql, bulk_parameters=seq_of_parameters)
+
+        for result in self._result.get('results', []):
+            if result.get('rowcount') > -1:
+                row_counts.append(result.get('rowcount'))
+        if self.duration > -1:
+            durations.append(self.duration)
+
         self._result = {
             "rowcount": sum(row_counts) if row_counts else -1,
             "duration": sum(durations) if durations else -1,

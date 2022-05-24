@@ -10,7 +10,7 @@ We create a new connection object::
 
     >>> connection = connect(client=connection_client_mocked)
     >>> connection.lowest_server_version.version
-    (1, 42, 0)
+    (2, 0, 0)
 
 Calling the ``cursor()`` function on the connection will
 return a cursor object::

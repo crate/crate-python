@@ -35,8 +35,6 @@ from .compiler import (
 from crate.client.exceptions import TimezoneUnawareException
 from .types import Object, ObjectArray
 
-TABLE_TYPE_MIN_VERSION = (2, 0, 0)
-
 TYPES_MAP = {
     "boolean": sqltypes.Boolean,
     "short": sqltypes.SmallInteger,
@@ -230,13 +228,11 @@ class CrateDialect(default.DefaultDialect):
 
     @reflection.cache
     def get_table_names(self, connection, schema=None, **kw):
-        table_filter = "AND table_type = 'BASE TABLE' " \
-            if self.server_version_info >= TABLE_TYPE_MIN_VERSION else ""
         cursor = connection.execute(
             "SELECT table_name FROM information_schema.tables "
-            "WHERE {0} = ? {1}"
-            "ORDER BY table_name ASC, {0} ASC".format(self.schema_column,
-                                                      table_filter),
+            "WHERE {0} = ? "
+            "AND table_type = 'BASE TABLE' "
+            "ORDER BY table_name ASC, {0} ASC".format(self.schema_column),
             [schema or self.default_schema_name]
         )
         return [row[0] for row in cursor.fetchall()]

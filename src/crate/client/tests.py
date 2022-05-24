@@ -75,7 +75,7 @@ class ClientMocked(object):
 
     def __init__(self):
         self.response = {}
-        self._server_infos = ("http://localhost:4200", "my server", "1.42.0")
+        self._server_infos = ("http://localhost:4200", "my server", "2.0.0")
 
     def sql(self, stmt=None, parameters=None, bulk_parameters=None):
         return self.response

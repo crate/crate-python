@@ -10,8 +10,8 @@ The CrateDB Python client library provides support for SQLAlchemy. A CrateDB
 `dialect`_ is registered at installation time and can be used without further
 configuration.
 
-The CrateDB Python client library works with SQLAlchemy versions ``1.0``,
-``1.1``, ``1.2`` and ``1.3``.
+The CrateDB Python client library is validated to work with SQLAlchemy versions
+``1.3``.
 
 .. NOTE::
 

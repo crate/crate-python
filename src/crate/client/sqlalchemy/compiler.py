@@ -26,7 +26,6 @@ import sqlalchemy as sa
 from sqlalchemy.sql import crud
 from sqlalchemy.sql import compiler
 from .types import MutableDict
-from .sa_version import SA_1_1, SA_VERSION
 
 
 def rewrite_update(clauseelement, multiparams, params):
@@ -392,12 +391,8 @@ class CrateCompiler(compiler.SQLCompiler):
         # getters - these are normally just column.key,
         # but in the case of mysql multi-table update, the rules for
         # .key must conditionally take tablename into account
-        if SA_VERSION >= SA_1_1:
-            _column_as_key, _getattr_col_key, _col_bind_name = \
-                crud._key_getters_for_crud_column(compiler, stmt)
-        else:
-            _column_as_key, _getattr_col_key, _col_bind_name = \
-                crud._key_getters_for_crud_column(compiler)
+        _column_as_key, _getattr_col_key, _col_bind_name = \
+            crud._key_getters_for_crud_column(compiler, stmt)
 
         # if we have statement parameters - set defaults in the
         # compiled params

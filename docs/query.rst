@@ -14,8 +14,7 @@ Query CrateDB
 .. SEEALSO::
 
    Supplementary information about the CrateDB Database API client can be found
-   in the :ref:`data types appendix <data-types-db-api>` and the
-   :ref:`compatibility notes <compatibility>`.
+   in the :ref:`data types appendix <data-types-db-api>`.
 
    For general help using the Database API, consult `PEP 0249`_.
 

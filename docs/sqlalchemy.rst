@@ -23,8 +23,7 @@ The CrateDB Python client library is validated to work with SQLAlchemy versions
 .. SEEALSO::
 
    Supplementary information about the CrateDB SQLAlchemy dialect can be found
-   in the :ref:`data types appendix <data-types-sqlalchemy>` and the
-   :ref:`compatibility notes <compatibility>`.
+   in the :ref:`data types appendix <data-types-sqlalchemy>`.
 
    For general help using SQLAlchemy, consult the `SQLAlchemy tutorial`_ or the
    `SQLAlchemy library`_ .

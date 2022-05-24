@@ -12,4 +12,3 @@ Supplementary information for the CrateDB Python client library.
    :maxdepth: 2
 
    data-types
-   compatibility

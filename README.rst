@@ -66,7 +66,7 @@ To install, run::
 
 To update, run::
 
-    $ pip install -U crate
+    $ pip install --upgrade crate
 
 
 Contributing
@@ -86,12 +86,12 @@ Looking for more help?
 - Check out our `support channels`_
 
 .. _contribution docs: CONTRIBUTING.rst
-.. _Crate.io: http://crate.io/
+.. _Crate.io: https://crate.io/
 .. _CrateDB: https://github.com/crate/crate
 .. _DB API 2.0: http://www.python.org/dev/peps/pep-0249/
 .. _developer docs: DEVELOP.rst
 .. _pip: https://pypi.python.org/pypi/pip
-.. _SQLAlchemy: http://www.sqlalchemy.org
-.. _StackOverflow: https://stackoverflow.com/tags/crate
+.. _SQLAlchemy: https://www.sqlalchemy.org
+.. _StackOverflow: https://stackoverflow.com/tags/cratedb
 .. _support channels: https://crate.io/support/
-.. _project docs: https://crate.io/docs/reference/python/
+.. _project docs: https://crate.io/docs/python/

@@ -51,10 +51,9 @@ This library:
 Prerequisites
 =============
 
-Recent versions of this library require **Python 3** (>= 3.4) to run.
+Recent versions of this library are validated on Python 3 (>= 3.7).
+It might also work on earlier versions of Python.
 
-Use version ``0.21.x`` if you are running Python 2.7/3.3 or version ``0.14.x``
-if you are running Python 2.6.
 
 Installation
 ============
@@ -69,9 +68,6 @@ To update, run::
 
     $ pip install -U crate
 
-If you use Python 2.7 or 3.3 with a recent version of pip_, it will install
-only version ``0.21.x`` by default, because newer versions of this package are
-not compatible with Python 2.7/3.3 any more.
 
 Contributing
 ============

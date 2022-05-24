@@ -5,7 +5,10 @@ Changes for crate
 Unreleased
 ==========
 
-- Added official support for Python 3.9 and 3.10.
+- Added support for Python 3.9 and 3.10.
+
+- Dropped support for Python 3.4, 3.5 and 3.6.
+
 - Dropped support for SQLAlchemy 1.1 and 1.2.
 
 - Dropped support for CrateDB < 2.0.0.

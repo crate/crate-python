@@ -8,7 +8,7 @@ Unreleased
 - Added official support for Python 3.9 and 3.10.
 - Dropped support for SQLAlchemy 1.1 and 1.2.
 
-- Dropped support for CrateDB < 1.0.0.
+- Dropped support for CrateDB < 2.0.0.
 
 
 - BREAKING CHANGE: The driver now verifies SSL certificates when connecting via

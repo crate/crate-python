@@ -23,9 +23,9 @@ jobs:
       fail-fast: true
 
     steps:
-      - uses: actions/checkout@master
+      - uses: actions/checkout@v3
       - name: Set up Python ${{ matrix.python-version }}
-        uses: actions/setup-python@v2
+        uses: actions/setup-python@v3
         with:
           python-version: ${{ matrix.python-version }}
 
@@ -53,6 +53,6 @@ jobs:
       - name: Upload coverage results to Codecov
         if: |
           !(matrix.sqla-version == '1.1.18' && matrix.python-version == '3.10')
-        uses: codecov/codecov-action@v2
+        uses: codecov/codecov-action@v3
         with:
           fail_ci_if_error: true

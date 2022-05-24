@@ -9,7 +9,7 @@ The initialize method sets the default schema name and version info::
     >>> dialect.initialize(connection)
 
 
-    >>> dialect.server_version_info >= (0, 54, 6)
+    >>> dialect.server_version_info >= (1, 0, 0)
     True
 
 Check if table exists::

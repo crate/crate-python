@@ -246,7 +246,7 @@ of parameters::
     123
 
 ``executemany()`` is not intended to be used with statements returning result
-sets. The result will alway be empty::
+sets. The result will always be empty::
 
     >>> cursor.fetchall()
     []
@@ -263,26 +263,6 @@ For completeness' sake the cursor description is updated nonetheless::
     ...     "duration":123
     ... })
 
-.. Hidden: close connection
-
-    >>> connection.close()
-
-Usually ``executemany`` sends the ``bulk_args`` parameter to the crate sql 
-endpoint which was introduced with Crate 0.42.0.
-If the client is connected to at least one crate server with an older version
-the client executes the statement once for every parameter within the sequence.
-
-The resulting ``rowcount`` and ``duration`` are the sum of all calls made to
-the server during this method execution.::
-
-    >>> connection_client_mocked.set_next_server_infos("local:4200", "my crate", "0.41.9")
-    >>> connection = connect(client=connection_client_mocked)
-    >>> cursor = connection.cursor()
-    >>> cursor.executemany('', (1,2,3))
-    >>> cursor.rowcount
-    9
-    >>> cursor.duration
-    369
 
 close()
 =======

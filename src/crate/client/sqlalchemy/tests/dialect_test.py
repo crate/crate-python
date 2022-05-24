@@ -67,22 +67,7 @@ class DialectTest(TestCase):
         self.character = Character
         self.session = Session()
 
-    def test_pks_are_retrieved_depending_on_version_set_old(self):
-        meta = self.character.metadata
-        insp = inspect(meta.bind)
-        self.engine.dialect.server_version_info = (0, 54, 0)
-
-        self.fake_cursor.rowcount = 1
-        self.fake_cursor.description = (
-            ('foo', None, None, None, None, None, None),
-        )
-        self.fake_cursor.fetchone = MagicMock(return_value=[["id", "id2", "id3"]])
-
-        eq_(insp.get_pk_constraint("characters")['constrained_columns'], {"id", "id2", "id3"})
-        self.fake_cursor.fetchone.assert_called_once_with()
-        in_("information_schema.table_constraints", self.executed_statement)
-
-    def test_pks_are_retrieved_depending_on_version_set_new(self):
+    def test_primary_keys(self):
         meta = self.character.metadata
         insp = inspect(meta.bind)
         self.engine.dialect.server_version_info = (2, 3, 0)
@@ -116,9 +101,3 @@ class DialectTest(TestCase):
         eq_(insp.get_table_names(self.connection, "doc"),
             ['t1', 't2'])
         in_("WHERE table_schema = ? ORDER BY", self.executed_statement)
-
-        insp = inspect(self.character.metadata.bind)
-        self.engine.dialect.server_version_info = (0, 56, 0)
-        eq_(insp.get_table_names(self.connection, "doc"),
-            ['t1', 't2'])
-        in_("WHERE schema_name = ? ORDER BY", self.executed_statement)

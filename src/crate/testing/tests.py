@@ -28,11 +28,12 @@ from .test_layer import LayerUtilsTest
 
 
 def docs_path(*parts):
-    return os.path.abspath(
+    path = os.path.abspath(
         os.path.join(
             os.path.dirname(os.path.dirname(__file__)), *parts
         )
     )
+    return path
 
 
 def project_root(*parts):

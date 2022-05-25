@@ -16,11 +16,11 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        os: [ubuntu-latest, macos-latest]
+        os: [ubuntu-latest, macos-latest, windows-2019]
         python-version: ['3.7', '3.8', '3.9', '3.10']
         cratedb-version: ['4.8.0']
         sqla-version: ['1.3.24']
-      fail-fast: true
+      fail-fast: false
 
     steps:
       - uses: actions/checkout@v3
@@ -36,13 +36,37 @@ jobs:
           echo "/usr/local/opt/gnu-getopt/bin" >> $GITHUB_PATH
 
       - name: Install dependencies
+        shell: bash
         run: |
           ./devtools/setup_ci.sh --cratedb-version=${{ matrix.cratedb-version }} --sqlalchemy-version=${{ matrix.sqla-version }}
 
+      - name: Fix Windows environment
+        if: matrix.os == 'windows-2019'
+        shell: bash
+        run: |
+          # Disable firewall.
+          netsh advfirewall set allprofiles state off
+
+          # Reset IP stack.
+          netsh winsock reset
+
+          # Disable IPv6.
+          # https://superuser.com/questions/1545288/disable-ipv6-connectivity-on-windows-without-restarting-the-computer
+          netsh interface teredo set state disabled
+          netsh interface ipv6 6to4 set state state=disabled undoonstop=disabled
+          netsh interface ipv6 isatap set state state=disabled
+
       - name: Invoke tests
+        shell: bash
         run: |
           bin/flake8
-          bin/coverage run bin/test -vv1
+
+          test_program=bin/test
+          if [ ${{ matrix.os }} = "windows-2019" ]; then
+            test_program=bin/test-script.py
+          fi
+          bin/coverage run $test_program -vv1
+
           bin/coverage xml
 
       # https://github.com/codecov/codecov-action

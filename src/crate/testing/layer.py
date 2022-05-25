@@ -225,6 +225,9 @@ class CrateLayer(object):
         self.verbose = verbose
         self.env = env or {}
         self.env.setdefault('CRATE_USE_IPV4', 'true')
+        if sys.platform == 'win32':
+            self.env.setdefault('_JAVA_OPTIONS', '-Djava.awt.headless=true -Djava.net.preferIPv4Stack=true')
+            self.env.setdefault('SystemRoot', 'C:\\Windows')
         self.env.setdefault('JAVA_HOME', os.environ.get('JAVA_HOME', ''))
         self._stdout_consumers = []
         self.conn_pool = urllib3.PoolManager(num_pools=1)
@@ -294,6 +297,7 @@ class CrateLayer(object):
 
     def start(self):
         self._clean()
+        sys.stderr.write("Starting process '{}'\n".format(self.start_cmd))
         self.process = subprocess.Popen(self.start_cmd,
                                         env=self.env,
                                         stdout=subprocess.PIPE)
@@ -323,7 +327,17 @@ class CrateLayer(object):
     def stop(self):
         if self.process:
             self.process.terminate()
-            self.process.communicate(timeout=10)
+            try:
+                self.process.communicate(timeout=10)
+            except subprocess.TimeoutExpired:
+                # On GHA/Windows, it always runs into a timeout, even after 45 seconds.
+                #
+                # The child process is not killed if the timeout expires, so in order
+                # to cleanup properly a well-behaved application should kill the child
+                # process and finish communication.
+                # https://docs.python.org/3/library/subprocess.html#subprocess.Popen.communicate
+                self.process.kill()
+                # self.process.communicate()
             self.process.stdout.close()
             self.process = None
         self.conn_pool.clear()
@@ -348,7 +362,7 @@ class CrateLayer(object):
                 self.stop()
                 raise e
 
-            if wait_time > 30:
+            if wait_time > 45:
                 for line in line_buf.lines:
                     log.error(line)
                 self.stop()

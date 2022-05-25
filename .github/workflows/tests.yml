@@ -60,7 +60,13 @@ jobs:
         shell: bash
         run: |
           bin/flake8
-          bin/coverage run bin/test -vv1
+
+          test_program=bin/test
+          if [ ${{ matrix.os }} = "windows-2019" ]; then
+            test_program=bin/test-script.py
+          fi
+          bin/coverage run $test_program -vv1
+
           bin/coverage xml
 
       # https://github.com/codecov/codecov-action

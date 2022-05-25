@@ -77,6 +77,6 @@ class SqlAlchemyInsertFromSelectTest(TestCase):
         self.session.execute(ins)
         self.session.commit()
         self.assertSQL(
-            "INSERT INTO characters_archive (name, age) (SELECT characters.name, characters.age FROM characters WHERE characters.status = ?)",
+            "INSERT INTO characters_archive (name, age) SELECT characters.name, characters.age FROM characters WHERE characters.status = ?",
             ins
         )

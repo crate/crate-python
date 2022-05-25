@@ -15,9 +15,8 @@ Learn how to install and get started the :ref:`CrateDB Python client library
 Prerequisites
 =============
 
-Python 3.7 is recommended.
-
-However, :ref:`older versions of Python <python-versions>` can still be used.
+Recent versions of this library are validated on Python 3 (>= 3.7).
+It may also work on earlier versions of Python.
 
 `Pip`_ should be installed on your system.
 

@@ -52,7 +52,7 @@ Prerequisites
 =============
 
 Recent versions of this library are validated on Python 3 (>= 3.7).
-It might also work on earlier versions of Python.
+It may also work on earlier versions of Python.
 
 
 Installation

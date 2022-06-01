@@ -230,14 +230,14 @@ class CrateCompiler(compiler.SQLCompiler):
                 update_stmt, table_text
             )
 
-        # CrateDB amendment.
+        # CrateDB patch.
         crud_params = self._get_crud_params(update_stmt, **kw)
 
         text += table_text
 
         text += ' SET '
 
-        # CrateDB amendment begin.
+        # CrateDB patch begin.
         include_table = extra_froms and \
             self.render_table_with_column_in_update_from
 
@@ -255,7 +255,7 @@ class CrateCompiler(compiler.SQLCompiler):
                 set_clauses.append(k + ' = ' + self.process(bindparam))
 
         text += ', '.join(set_clauses)
-        # CrateDB amendment end.
+        # CrateDB patch end.
 
         if self.returning or update_stmt._returning:
             if not self.returning:
@@ -393,7 +393,7 @@ class CrateCompiler(compiler.SQLCompiler):
             update_stmt, update_stmt.table, render_extra_froms, **kw
         )
 
-        # CrateDB amendment.
+        # CrateDB patch.
         crud_params = _get_crud_params_14(
             self, update_stmt, compile_state, **kw
         )
@@ -413,7 +413,7 @@ class CrateCompiler(compiler.SQLCompiler):
 
         text += " SET "
 
-        # CrateDB amendment begin.
+        # CrateDB patch begin.
         include_table = extra_froms and \
             self.render_table_with_column_in_update_from
 
@@ -431,7 +431,7 @@ class CrateCompiler(compiler.SQLCompiler):
                 set_clauses.append(clause)
 
         text += ', '.join(set_clauses)
-        # CrateDB amendment end.
+        # CrateDB patch end.
 
         if self.returning or update_stmt._returning:
             if self.returning_precedes_values:
@@ -610,10 +610,23 @@ def _get_crud_params_14(compiler, stmt, compile_state, **kw):
             kw,
         )
 
-    # CrateDB amendment.
-    # The rewriting logic in `rewrite_update` and `visit_update` needs
-    # adjustments here in order to prevent `sqlalchemy.exc.CompileError:
-    # Unconsumed column names: characters_name, data['nested']`
+    # CrateDB patch.
+    #
+    # This sanity check performed by SQLAlchemy currently needs to be
+    # deactivated in order to satisfy the rewriting logic of the CrateDB
+    # dialect in `rewrite_update` and `visit_update`.
+    #
+    # It can be quickly reproduced by activating this section and running the
+    # test cases::
+    #
+    #   ./bin/test -vvvv -t dict_test
+    #
+    # That croaks like::
+    #
+    #   sqlalchemy.exc.CompileError: Unconsumed column names: characters_name, data['nested']
+    #
+    # TODO: Investigate why this is actually happening and eventually mitigate
+    #       the root cause.
     """
     if parameters and stmt_parameter_tuples:
         check = (

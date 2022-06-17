@@ -15,7 +15,7 @@ To start things off, create a Python virtualenv and install buildout::
     # Workaround for Python 3.5
     python -m pip install --upgrade "setuptools>=31,<51"
 
-    pip install zc.buildout==2.13.4
+    pip install zc.buildout==2.13.7
 
 Then, run::
 

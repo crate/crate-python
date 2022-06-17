@@ -65,7 +65,7 @@ function main() {
   # Switch to enable compatibility with older versions of macOS.
   export SYSTEM_VERSION_COMPAT=1
 
-  buildout -vvv -n -c base.cfg
+  buildout -vv -n -c base.cfg
 
 }
 

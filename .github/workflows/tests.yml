@@ -35,6 +35,13 @@ jobs:
           brew install gnu-getopt
           echo "/usr/local/opt/gnu-getopt/bin" >> $GITHUB_PATH
 
+      - name: Debug environment on macOS
+        if: matrix.os == 'macos-latest'
+        run: |
+          sw_vers -productVersion
+          export SYSTEM_VERSION_COMPAT=1
+          sw_vers -productVersion
+
       - name: Install dependencies
         run: |
           ./devtools/setup_ci.sh --cratedb-version=${{ matrix.cratedb-version }} --sqlalchemy-version=${{ matrix.sqla-version }}

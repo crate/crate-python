@@ -48,7 +48,7 @@ function main() {
 
   python -m pip install --upgrade pip
 
-  pip install zc.buildout==2.13.4
+  pip install "zc.buildout>=2,<3"
 
   # Replace SQLAlchemy version.
   sed -ir "s/SQLAlchemy.*/SQLAlchemy = ${sqlalchemy_version}/g" versions.cfg

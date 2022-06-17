@@ -61,6 +61,7 @@ function main() {
     sed -ir "s/crate_server.*/crate_server = ${cratedb_version}/g" versions.cfg
   fi
 
+  export SYSTEM_VERSION_COMPAT=1
   buildout -n -c base.cfg
 
 }

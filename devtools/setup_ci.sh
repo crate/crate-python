@@ -48,6 +48,7 @@ function main() {
 
   python -m pip install --upgrade pip
 
+  pip install --upgrade wheel
   pip install "zc.buildout>=2,<3"
 
   # Replace SQLAlchemy version.

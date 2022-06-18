@@ -28,11 +28,13 @@ jobs:
         with:
           python-version: ${{ matrix.python-version }}
 
-      - name: Install dependencies
+      - name: Propagate matrix information
         run: |
+          source bootstrap.sh
           ./devtools/setup_ci.sh --cratedb-version=${{ matrix.cratedb-version }} --sqlalchemy-version=${{ matrix.sqla-version }}
 
       - name: Invoke tests
         run: |
-          bin/flake8
-          bin/coverage run bin/test -vv1
+          source bootstrap.sh
+          flake8 src bin
+          coverage run bin/test -vv1

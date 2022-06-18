@@ -5,27 +5,22 @@ Developer guide
 Setup
 =====
 
-This project uses buildout_ to set up the development environment.
+To start things off, bootstrap the sandbox environment::
 
-To start things off, create a Python virtualenv and install buildout::
+    source bootstrap.sh
 
-    python3 -m venv .venv
-    source .venv/bin/activate
+This command should automatically install all prerequisites for the development
+sandbox and drop you into the virtualenv, ready for invoking further commands.
 
-    # Workaround for Python 3.5
-    python -m pip install --upgrade "setuptools>=31,<51"
-
-    pip install zc.buildout==2.13.4
-
-Then, run::
-
-    buildout -N
 
 Running tests
 =============
 
 All tests will be invoked using the Python interpreter that was used when
-creating the Python virtualenv. The test runner is zope.testrunner_.
+creating the Python virtualenv. The test runner is `zope.testrunner`_.
+
+Some examples are outlined below. In order to learn about more details,
+see, for example, `useful command-line options for zope-testrunner`_.
 
 Run all tests::
 
@@ -41,18 +36,18 @@ Ignore specific test directories::
 
     ./bin/test -vvvv --ignore_dir=testing
 
-You can run the tests against multiple Python interpreters with tox_::
+You can run the tests against multiple Python interpreters with `tox`_::
 
-    ./bin/tox
+    tox
 
 To do this, you will need the respective Python interpreter versions available
 on your ``$PATH``.
 
 To run against a single interpreter, you can also invoke::
 
-    ./bin/tox -e py37
+    tox -e py37
 
-*Note*: before running the tests, make sure to stop all CrateDB instances which
+*Note*: Before running the tests, make sure to stop all CrateDB instances which
 are listening on the default CrateDB transport port to avoid side effects with
 the test layer.
 
@@ -121,5 +116,6 @@ nothing special you need to do to get the live docs to update.
 .. _Sphinx: http://sphinx-doc.org/
 .. _tox: http://testrun.org/tox/latest/
 .. _twine: https://pypi.python.org/pypi/twine
-.. _zope.testrunner: https://pypi.python.org/pypi/zope.testrunner/4.4.1
+.. _useful command-line options for zope-testrunner: https://pypi.org/project/zope.testrunner/#some-useful-command-line-options-to-get-you-started
 .. _versions hosted on ReadTheDocs: https://readthedocs.org/projects/crate-python/versions/
+.. _zope.testrunner: https://pypi.org/project/zope.testrunner/

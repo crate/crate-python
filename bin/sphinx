@@ -1,0 +1,15 @@
+#!/usr/bin/env python
+import os
+import sys
+
+join = os.path.join
+base = os.path.dirname(os.path.abspath(os.path.realpath(__file__)))
+base = os.path.dirname(base)
+
+
+sys.argv.extend(['-b', 'html', '-E', 'docs', './out/html'])
+import sphinx.cmd.build  # noqa:E402
+
+
+if __name__ == '__main__':
+    sys.exit(sphinx.cmd.build.main())

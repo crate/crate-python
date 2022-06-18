@@ -46,22 +46,16 @@ function main() {
   # Let's go.
   echo "Invoking tests with CrateDB ${cratedb_version} and SQLAlchemy ${sqlalchemy_version}"
 
-  python -m pip install --upgrade pip
-
-  pip install zc.buildout==2.13.4
-
-  # Replace SQLAlchemy version.
-  sed -ir "s/SQLAlchemy.*/SQLAlchemy = ${sqlalchemy_version}/g" versions.cfg
+  # Install designated SQLAlchemy version.
+  pip install "sqlalchemy==${sqlalchemy_version}"
 
   # Replace CrateDB version.
   if [ ${cratedb_version} = "nightly" ]; then
-    sed -ir "s/releases/releases\/nightly/g" base.cfg
+    sed -ir "s/releases/releases\/nightly/g" buildout.cfg
     sed -ir "s/crate_server.*/crate_server = latest/g" versions.cfg
   else
     sed -ir "s/crate_server.*/crate_server = ${cratedb_version}/g" versions.cfg
   fi
-
-  buildout -n -c base.cfg
 
 }
 

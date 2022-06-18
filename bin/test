@@ -1,0 +1,16 @@
+#!/usr/bin/env python
+import os
+import sys
+import zope.testrunner
+
+join = os.path.join
+base = os.path.dirname(os.path.abspath(os.path.realpath(__file__)))
+base = os.path.dirname(base)
+
+
+sys.argv[0] = os.path.abspath(sys.argv[0])
+
+if __name__ == '__main__':
+    sys.exit(zope.testrunner.run((['--auto-color', '--verbose']) + [
+        '--test-path', join(base, 'src'),
+        ]))

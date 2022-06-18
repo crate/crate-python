@@ -35,15 +35,17 @@ jobs:
           brew install gnu-getopt
           echo "/usr/local/opt/gnu-getopt/bin" >> $GITHUB_PATH
 
-      - name: Install dependencies
+      - name: Propagate matrix information
         run: |
+          source bootstrap.sh
           ./devtools/setup_ci.sh --cratedb-version=${{ matrix.cratedb-version }} --sqlalchemy-version=${{ matrix.sqla-version }}
 
       - name: Invoke tests
         run: |
-          bin/flake8
-          bin/coverage run bin/test -vv1
-          bin/coverage xml
+          source bootstrap.sh
+          flake8 src bin
+          coverage run bin/test -vv1
+          coverage xml
 
       # https://github.com/codecov/codecov-action
       - name: Upload coverage results to Codecov

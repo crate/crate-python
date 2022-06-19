@@ -16,6 +16,11 @@
 # Trace all invocations.
 # set -x
 
+# Default variables.
+BUILDOUT_VERSION=${BUILDOUT_VERSION:-2.13.7}
+CRATEDB_VERSION=${CRATEDB_VERSION:-4.8.1}
+SQLALCHEMY_VERSION=${SQLALCHEMY_VERSION:-1.4.37}
+
 
 function print_header() {
     printf '=%.0s' {1..42}; echo
@@ -50,8 +55,8 @@ function before_setup() {
     #
     pip install wheel
 
-    BUILDOUT_VERSION=${BUILDOUT_VERSION:-2.13.7}
-    pip install "zc.buildout==${BUILDOUT_VERSION}"
+    # Install Buildout with designated version, allowing pre-releases.
+    pip install --pre "zc.buildout==${BUILDOUT_VERSION}"
 
 }
 
@@ -70,7 +75,10 @@ function finalize() {
 
     # Some steps before dropping into the activated virtualenv.
     echo
-    python -c 'import sqlalchemy; print(f"SQLAlchemy version: {sqlalchemy.__version__}")'
+    echo "Sandbox environment ready"
+    echo -n "Using SQLAlchemy version: "
+    python -c 'import sqlalchemy; print(sqlalchemy.__version__)'
+    echo
 
 }
 
@@ -84,7 +92,7 @@ function main() {
 }
 
 function lint() {
-    flake8
+    flake8 "$@" src bin
 }
 
 main

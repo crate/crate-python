@@ -29,8 +29,11 @@ jobs:
         with:
           python-version: ${{ matrix.python-version }}
 
-      - name: Invoke tests
+      - name: Adjust environment for macOS
+        if: matrix.os == 'macos-latest'
         run: |
+          brew install gnu-getopt
+          echo "/usr/local/opt/gnu-getopt/bin" >> $GITHUB_PATH
 
       - name: Debug environment on macOS
         if: matrix.os == 'macos-latest'
@@ -43,12 +46,11 @@ jobs:
         run: |
           ./devtools/setup_ci.sh --cratedb-version=${{ matrix.cratedb-version }} --sqlalchemy-version=${{ matrix.sqla-version }}
 
-          # Invoke validation tasks.
-          flake8 src bin
-          coverage run bin/test -vv1
-
-          # Set the stage for the Codecov step.
-          coverage xml
+      - name: Invoke tests
+        run: |
+          bin/flake8
+          bin/coverage run bin/test -vv1
+          bin/coverage xml
 
       # https://github.com/codecov/codecov-action
       - name: Upload coverage results to Codecov

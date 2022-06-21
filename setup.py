@@ -64,17 +64,10 @@ setup(
         ]
     },
     extras_require=dict(
-        sqlalchemy=['sqlalchemy>=1.0,<1.5',
-                    'geojson>=2.5.0'],
-        test=['tox>=3,<4',
-              'zope.testing>=4,<5',
-              'zope.testrunner>=5,<6',
+        test=['zope.testing>=4,<5',
               'zc.customdoctests>=1.0.1,<2',
-              'createcoverage>=1,<2',
-              'stopit>=1.1.2,<2',
-              'flake8>=4,<5'],
-        doc=['sphinx>=3,<4',
-             'crate-docs-theme'],
+              'stopit>=1.1.2,<2'],
+        sqlalchemy=['sqlalchemy>=1.0,<1.5', 'geojson>=2.5.0']
     ),
     python_requires='>=3.4',
     install_requires=requirements,

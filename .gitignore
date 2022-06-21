@@ -6,9 +6,7 @@ coverage.xml
 .tox/
 *.DS_Store
 *.pyc
-bin/*
-!bin/test
-!bin/sphinx
+bin/
 build/
 crate-python.iml
 crate.egg-info

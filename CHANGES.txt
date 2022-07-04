@@ -6,6 +6,13 @@ Unreleased
 ==========
 
 
+2022/07/04 0.27.1
+=================
+
+- Fixed regression introduced by ``0.27.0`` resulting in unavailable servers if
+  all configured servers aren't reachable once.
+
+
 2022/06/02 0.27.0
 =================
 

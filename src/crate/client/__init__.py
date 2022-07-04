@@ -29,7 +29,7 @@ __all__ = [
 
 # version string read from setup.py using a regex. Take care not to break the
 # regex!
-__version__ = "0.27.0"
+__version__ = "0.27.1"
 
 apilevel = "2.0"
 threadsafety = 2

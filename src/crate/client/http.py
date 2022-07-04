@@ -584,15 +584,6 @@ class Client(object):
         """
         Drop server from active list and adds it to the inactive ones.
         """
-
-        # Try to close resource first.
-        try:
-            self.server_pool[server].close()
-        except Exception as ex:
-            logger.warning("When removing server from active pool, "
-                           "resource could not be closed: %s", ex)
-
-        # Apply bookkeeping.
         try:
             self._active_servers.remove(server)
         except ValueError:
@@ -601,7 +592,7 @@ class Client(object):
             heapq.heappush(self._inactive_servers, (time(), server, message))
             logger.warning("Removed server %s from active pool", server)
 
-        # If this is the last server, raise an exception.
+        # if this is the last server raise exception, otherwise try next
         if not self._active_servers:
             raise ConnectionError(
                 ("No more Servers available, "

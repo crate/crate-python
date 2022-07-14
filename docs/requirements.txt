@@ -1,14 +1,1 @@
-# don't pin crate version numbers so the latest will always be pulled when you
-# set up your environment from scratch
-
-crate-docs-theme>=0.7
-
-# packages for local dev
-
-sphinx-autobuild==0.6.0
-
-# the next section should mirror the RTD environment
-
-alabaster>=0.7,<0.8,!=0.7.5
-setuptools<41
-sphinx==1.7.4
+crate-docs-theme

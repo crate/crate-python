@@ -80,7 +80,7 @@ Date should have been set at the insert due to default value via python method::
     >>> dt.day == now.day
     True
 
-    >>> (now - location.datetime).seconds < 4
+    >>> (now - location.datetime_tz).seconds < 4
     True
 
 Verify the return type of date and datetime::
@@ -88,7 +88,10 @@ Verify the return type of date and datetime::
     >>> type(location.date)
     <class 'datetime.date'>
 
-    >>> type(location.datetime)
+    >>> type(location.datetime_tz)
+    <class 'datetime.datetime'>
+
+    >>> type(location.datetime_notz)
     <class 'datetime.datetime'>
 
 the location also has a date and datetime property which both are nullable and

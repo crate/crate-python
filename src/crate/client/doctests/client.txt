@@ -212,8 +212,8 @@ supported, all other fields are 'None'::
     >>> result = cursor.fetchone()
     >>> pprint(result)
     ['Aldebaran',
-     1373932800000,
-     1373932800000,
+     1658167836758,
+     1658167836758,
      None,
      None,
      'Star System',

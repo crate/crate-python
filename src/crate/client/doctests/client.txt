@@ -213,7 +213,7 @@ supported, all other fields are 'None'::
     >>> pprint(result)
     ['Aldebaran',
      1373932800000,
-     None,
+     1373932800000,
      None,
      None,
      'Star System',

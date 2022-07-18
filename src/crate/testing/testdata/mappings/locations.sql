@@ -1,7 +1,8 @@
 create table locations (
     name string primary key,
     date timestamp,
-    datetime timestamp,
+    datetime_tz timestamp with time zone,
+    datetime_notz timestamp without time zone,
     nullable_datetime timestamp,
     nullable_date timestamp,
     kind string,

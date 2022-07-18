@@ -214,6 +214,7 @@ supported, all other fields are 'None'::
     ['Aldebaran',
      1658167836758,
      1658167836758,
+     1658167836758,
      None,
      None,
      'Star System',
@@ -228,7 +229,8 @@ supported, all other fields are 'None'::
     >>> pprint(result)
     (('name', None, None, None, None, None, None),
      ('date', None, None, None, None, None, None),
-     ('datetime', None, None, None, None, None, None),
+     ('datetime_tz', None, None, None, None, None, None),
+     ('datetime_notz', None, None, None, None, None, None),
      ('nullable_datetime', None, None, None, None, None, None),
      ('nullable_date', None, None, None, None, None, None),
      ('kind', None, None, None, None, None, None),

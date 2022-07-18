@@ -187,7 +187,8 @@ The cursor ``description`` might look like this:
 
     >>> cursor.description
     (('date', None, None, None, None, None, None),
-     ('datetime', None, None, None, None, None, None),
+     ('datetime_tz', None, None, None, None, None, None),
+     ('datetime_notz', None, None, None, None, None, None),
      ('description', None, None, None, None, None, None),
     ...
      ('nullable_datetime', None, None, None, None, None, None),
@@ -196,7 +197,7 @@ The cursor ``description`` might look like this:
 You can turn this into something more manageable with a `list comprehension`_::
 
     >>> [column[0] for column in cursor.description]
-    ['date', 'datetime', 'description', ..., 'nullable_datetime', 'position']
+    ['date', 'datetime_tz', 'datetime_notz', ..., 'nullable_datetime', 'position']
 
 .. _Bulk inserts: https://crate.io/docs/crate/reference/en/latest/interfaces/http.html#bulk-operations
 .. _Database API: http://www.python.org/dev/peps/pep-0249/

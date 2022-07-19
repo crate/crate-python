@@ -212,9 +212,9 @@ supported, all other fields are 'None'::
     >>> result = cursor.fetchone()
     >>> pprint(result)
     ['Aldebaran',
-     datetime.datetime(2013, 7, 15, 18, 0),
-     datetime.datetime(2013, 7, 15, 18, 0),
-     datetime.datetime(2013, 7, 15, 18, 0),
+     datetime.datetime(2022, 7, 18, 18, 10, 36, 758000),
+     datetime.datetime(2022, 7, 18, 18, 10, 36, 758000),
+     datetime.datetime(2022, 7, 18, 18, 10, 36, 758000),
      None,
      None,
      'Star System',

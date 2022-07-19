@@ -80,9 +80,6 @@ Date should have been set at the insert due to default value via python method::
     >>> dt.day == now.day
     True
 
-    >>> (now - location.datetime_tz).seconds < 4
-    True
-
 Verify the return type of date and datetime::
 
     >>> type(location.date)

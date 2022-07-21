@@ -27,7 +27,6 @@ import socket
 import unittest
 import doctest
 from pprint import pprint
-from datetime import datetime, date
 from http.server import HTTPServer, BaseHTTPRequestHandler
 import ssl
 import time
@@ -56,6 +55,7 @@ from .test_http import (
 )
 from .sqlalchemy.tests import test_suite as sqlalchemy_test_suite
 from .sqlalchemy.types import ObjectArray
+from ..testing.util import datetime_now_utc_naive, date_now_utc_naive
 
 log = logging.getLogger('crate.testing.layer')
 ch = logging.StreamHandler()
@@ -213,9 +213,9 @@ def setUpCrateLayerAndSqlAlchemy(test):
         __tablename__ = 'locations'
         name = sa.Column(sa.String, primary_key=True)
         kind = sa.Column(sa.String)
-        date = sa.Column(sa.Date, default=date.today)
-        datetime_tz = sa.Column(sa.DateTime, default=datetime.utcnow)
-        datetime_notz = sa.Column(sa.DateTime, default=datetime.utcnow)
+        date = sa.Column(sa.Date, default=date_now_utc_naive)
+        datetime_tz = sa.Column(sa.DateTime, default=datetime_now_utc_naive)
+        datetime_notz = sa.Column(sa.DateTime, default=datetime_now_utc_naive)
         nullable_datetime = sa.Column(sa.DateTime)
         nullable_date = sa.Column(sa.Date)
         flag = sa.Column(sa.Boolean)

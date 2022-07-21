@@ -19,7 +19,6 @@
 # with Crate these terms will supersede the license and you may use the
 # software solely pursuant to the terms of the relevant commercial agreement.
 
-from datetime import datetime
 from unittest import TestCase
 from unittest.mock import patch, MagicMock
 
@@ -29,6 +28,7 @@ from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy import select, insert
 
 from crate.client.cursor import Cursor
+from crate.testing.util import datetime_now_utc_naive
 
 
 fake_cursor = MagicMock(name='fake_cursor')
@@ -51,7 +51,7 @@ class SqlAlchemyInsertFromSelectTest(TestCase):
 
             name = sa.Column(sa.String, primary_key=True)
             age = sa.Column(sa.Integer)
-            ts = sa.Column(sa.DateTime, onupdate=datetime.utcnow)
+            ts = sa.Column(sa.DateTime, onupdate=datetime_now_utc_naive)
             status = sa.Column(sa.String)
 
         class CharacterArchive(Base):
@@ -59,7 +59,7 @@ class SqlAlchemyInsertFromSelectTest(TestCase):
 
             name = sa.Column(sa.String, primary_key=True)
             age = sa.Column(sa.Integer)
-            ts = sa.Column(sa.DateTime, onupdate=datetime.utcnow)
+            ts = sa.Column(sa.DateTime, onupdate=datetime_now_utc_naive)
             status = sa.Column(sa.String)
 
         self.character = Character

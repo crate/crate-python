@@ -65,10 +65,10 @@ Retrieve the location from the database::
     >>> location.name
     'Earth'
 
-Date should have been set at the insert due to default value via python method::
+Date should have been set at the insert due to default value via Python method::
 
-    >>> from datetime import datetime
-    >>> now = datetime.utcnow()
+    >>> from datetime import datetime, timezone
+    >>> now = datetime.now(timezone.utc).replace(tzinfo=None)
     >>> dt = location.date
 
     >>> dt.year == now.year
@@ -78,9 +78,6 @@ Date should have been set at the insert due to default value via python method::
     True
 
     >>> dt.day == now.day
-    True
-
-    >>> (now - location.datetime_tz).seconds < 4
     True
 
 Verify the return type of date and datetime::
@@ -103,10 +100,10 @@ aren't set when the row is inserted as there is no default method::
     >>> location.nullable_date is None
     True
 
-The datetime and date can be set using a update statement::
+The datetime and date can be set using an update statement::
 
-    >>> location.nullable_date = datetime.today()
-    >>> location.nullable_datetime = datetime.utcnow()
+    >>> location.nullable_date = datetime.now(timezone.utc).replace(tzinfo=None).date()
+    >>> location.nullable_datetime = datetime.now(timezone.utc).replace(tzinfo=None)
     >>> session.flush()
 
 Refresh "locations" table:

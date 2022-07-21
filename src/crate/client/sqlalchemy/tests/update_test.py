@@ -30,6 +30,7 @@ from sqlalchemy.orm import Session
 from sqlalchemy.ext.declarative import declarative_base
 
 from crate.client.cursor import Cursor
+from crate.testing.util import datetime_now_utc_naive
 
 
 fake_cursor = MagicMock(name='fake_cursor')
@@ -50,7 +51,7 @@ class SqlAlchemyUpdateTest(TestCase):
             name = sa.Column(sa.String, primary_key=True)
             age = sa.Column(sa.Integer)
             obj = sa.Column(Object)
-            ts = sa.Column(sa.DateTime, onupdate=datetime.utcnow)
+            ts = sa.Column(sa.DateTime, onupdate=datetime_now_utc_naive)
 
         self.character = Character
         self.session = Session()
@@ -60,7 +61,7 @@ class SqlAlchemyUpdateTest(TestCase):
         char = self.character(name='Arthur')
         self.session.add(char)
         self.session.commit()
-        now = datetime.utcnow()
+        now = datetime_now_utc_naive()
 
         fake_cursor.fetchall.return_value = [('Arthur', None)]
         fake_cursor.description = (
@@ -89,7 +90,7 @@ class SqlAlchemyUpdateTest(TestCase):
             Checks whether bulk updates work correctly
             on native types and Crate types.
         """
-        before_update_time = datetime.utcnow()
+        before_update_time = datetime_now_utc_naive()
 
         self.session.query(self.character).update({
             # change everyone's name to Julia

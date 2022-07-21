@@ -20,7 +20,7 @@
 # software solely pursuant to the terms of the relevant commercial agreement.
 
 import logging
-from datetime import datetime, date
+from datetime import datetime, date, timezone
 
 from sqlalchemy import types as sqltypes
 from sqlalchemy.engine import default, reflection
@@ -90,7 +90,8 @@ class Date(sqltypes.Date):
             if not value:
                 return
             try:
-                return datetime.utcfromtimestamp(value / 1e3).date()
+                return datetime.fromtimestamp(value / 1e3, tz=timezone.utc) \
+                    .replace(tzinfo=None).date()
             except TypeError:
                 pass
 
@@ -129,7 +130,8 @@ class DateTime(sqltypes.DateTime):
             if not value:
                 return
             try:
-                return datetime.utcfromtimestamp(value / 1e3)
+                return datetime.fromtimestamp(value / 1e3, tz=timezone.utc) \
+                    .replace(tzinfo=None)
             except TypeError:
                 pass
 

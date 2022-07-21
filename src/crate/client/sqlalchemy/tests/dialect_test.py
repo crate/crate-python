@@ -19,7 +19,6 @@
 # with Crate these terms will supersede the license and you may use the
 # software solely pursuant to the terms of the relevant commercial agreement.
 
-from datetime import datetime
 from unittest import TestCase
 from unittest.mock import MagicMock, patch
 
@@ -31,6 +30,8 @@ from sqlalchemy import inspect
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import Session
 from sqlalchemy.testing import eq_, in_
+
+from crate.testing.util import datetime_now_utc_naive
 
 FakeCursor = MagicMock(name='FakeCursor', spec=Cursor)
 
@@ -62,7 +63,7 @@ class DialectTest(TestCase):
             name = sa.Column(sa.String, primary_key=True)
             age = sa.Column(sa.Integer, primary_key=True)
             obj = sa.Column(Object)
-            ts = sa.Column(sa.DateTime, onupdate=datetime.utcnow)
+            ts = sa.Column(sa.DateTime, onupdate=datetime_now_utc_naive)
 
         self.character = Character
         self.session = Session()

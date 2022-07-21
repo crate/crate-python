@@ -431,7 +431,6 @@ class ParamsTest(TestCase):
         client = Client(['127.0.0.1:4200'], error_trace=True)
         parsed = urlparse(client.path)
         params = parse_qs(parsed.query)
-        print(params)
         self.assertEqual(params["types?error_trace"], ["true"])
         client.close()
 

@@ -5,6 +5,46 @@ Changes for crate
 Unreleased
 ==========
 
+- BREAKING CHANGE: The datetime handling is now independent of the time zone
+  setting of your machine and always uses UTC. See next section for more
+  details.
+
+
+Datetime handling
+-----------------
+
+The datetime handling is now independent of the time zone setting of your
+machine. This has to be considered when working with the SQLAlchemy dialect,
+returning timestamps, and your system time zone is not expressed in UTC.
+
+To find out about your situation, invoke::
+
+    date +"%Z %z"
+
+where you can find out if your system is running on UTC, or not::
+
+    UTC +0000
+    CEST +0200
+
+For more information about this change, please consider reading those sections
+of the Python documentation and corresponding articles.
+
+.. warning::
+
+    Because naive ``datetime`` objects are treated by many ``datetime`` methods
+    as local times, it is preferred to use aware datetimes to represent times
+    in UTC. As such, the recommended way to create an object representing
+
+    - the current time in UTC is by calling ``datetime.now(timezone.utc)``.
+    - a specific timestamp in UTC is by calling ``datetime.fromtimestamp(..., tz=timezone.utc)``.
+
+References:
+
+- https://docs.python.org/3/library/datetime.html#datetime.datetime.utcnow
+- https://docs.python.org/3/library/datetime.html#datetime.datetime.utcfromtimestamp
+- https://blog.ganssle.io/articles/2019/11/utcnow.html
+- https://aaronoellis.com/articles/python-datetime-utcnow-considered-harmful
+
 
 2022/07/04 0.27.1
 =================

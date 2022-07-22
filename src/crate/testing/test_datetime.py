@@ -41,6 +41,9 @@ class UtcNowDatetimeTest(TestCase):
     - https://aaronoellis.com/articles/python-datetime-utcnow-considered-harmful
     """
 
+    def setUp(self) -> None:
+        os.environ.clear()
+
     @mock.patch.dict(os.environ, {"TZ": "UTC"})
     def test_utcnow_depends_on_system_timezone_success_with_utc(self):
         """
@@ -111,6 +114,9 @@ class UtcFromTimestampDatetimeTest(TestCase):
     """
 
     TIMESTAMP_AFTER_MIDNIGHT = 1658450520  # Fri, 22 Jul 2022 00:42:00 GMT
+
+    def setUp(self) -> None:
+        os.environ.clear()
 
     @mock.patch.dict(os.environ, {"TZ": "UTC"})
     def test_utcfromtimestamp_depends_on_system_timezone_success_with_utc(self):

@@ -105,7 +105,7 @@ aren't set when the row is inserted as there is no default method::
 
 The datetime and date can be set using a update statement::
 
-    >>> location.nullable_date = datetime.today()
+    >>> location.nullable_date = datetime.utcnow().date()
     >>> location.nullable_datetime = datetime.utcnow()
     >>> session.flush()
 

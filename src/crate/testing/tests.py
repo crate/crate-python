@@ -25,6 +25,7 @@ import unittest
 import doctest
 import tempfile
 from .test_layer import LayerUtilsTest
+from .test_datetime import UtcNowDatetimeTest, UtcFromTimestampDatetimeTest
 
 
 def docs_path(*parts):
@@ -64,4 +65,6 @@ def test_suite():
     )
     suite.addTest(s)
     suite.addTest(unittest.makeSuite(LayerUtilsTest))
+    suite.addTest(unittest.makeSuite(UtcNowDatetimeTest))
+    suite.addTest(unittest.makeSuite(UtcFromTimestampDatetimeTest))
     return suite

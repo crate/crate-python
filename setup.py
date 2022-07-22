@@ -70,6 +70,8 @@ setup(
               'zope.testing>=4,<5',
               'zope.testrunner>=5,<6',
               'zc.customdoctests>=1.0.1,<2',
+              'freezegun>=1,<2',
+              'time-machine>=2,<3',
               'createcoverage>=1,<2',
               'stopit>=1.1.2,<2',
               'flake8>=4,<5'],

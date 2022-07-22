@@ -27,7 +27,7 @@ import socket
 import unittest
 import doctest
 from pprint import pprint
-from datetime import datetime, date
+from datetime import datetime
 from http.server import HTTPServer, BaseHTTPRequestHandler
 import ssl
 import time
@@ -213,7 +213,7 @@ def setUpCrateLayerAndSqlAlchemy(test):
         __tablename__ = 'locations'
         name = sa.Column(sa.String, primary_key=True)
         kind = sa.Column(sa.String)
-        date = sa.Column(sa.Date, default=date.today)
+        date = sa.Column(sa.Date, default=lambda: datetime.utcnow().date())
         datetime_tz = sa.Column(sa.DateTime, default=datetime.utcnow)
         datetime_notz = sa.Column(sa.DateTime, default=datetime.utcnow)
         nullable_datetime = sa.Column(sa.DateTime)

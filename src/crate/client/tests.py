@@ -149,6 +149,7 @@ def refresh(table):
 
 
 def setUpWithCrateLayer(test):
+    test.globs['os'] = os
     test.globs['HttpClient'] = http.Client
     test.globs['crate_host'] = crate_host
     test.globs['pprint'] = pprint

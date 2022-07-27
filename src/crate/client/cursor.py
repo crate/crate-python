@@ -87,7 +87,7 @@ class Cursor(object):
                 break
 
             if flag and value is not None:
-                value = datetime.fromtimestamp(value / 1e3)
+                value = datetime.utcfromtimestamp(value / 1e3)
 
             yield value
 

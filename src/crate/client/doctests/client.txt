@@ -204,11 +204,6 @@ fetchall()
 Cursor Description
 ==================
 
-.. hidden: Set time zone to UTC to make naive datetime objects deterministic.
-
-    >>> previous_timezone = os.environ.get("TZ")
-    >>> os.environ["TZ"] = "UTC"
-
 The ``description`` property of the cursor returns a sequence of 7-item
 sequences containing the column name as first parameter. Just the name field is
 supported, all other fields are 'None'::
@@ -243,10 +238,6 @@ supported, all other fields are 'None'::
      ('position', None, None, None, None, None, None),
      ('description', None, None, None, None, None, None),
      ('details', None, None, None, None, None, None))
-
-.. hidden: Restore time zone
-
-    >>> if previous_timezone: os.environ["TZ"] = previous_timezone
 
 
 Closing the Cursor

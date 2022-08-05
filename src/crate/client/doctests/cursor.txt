@@ -2,9 +2,18 @@
 Cursor
 ======
 
+
+Setup
+=====
+
+This section sets up a cursor object, inspects some of its attributes, and sets
+up the response for subsequent cursor operations.
+
 ::
 
     >>> from crate.client import connect
+    >>> from crate.client.converter import DefaultTypeConverter
+    >>> from crate.client.cursor import Cursor
 
     >>> connection = connect(client=connection_client_mocked)
     >>> cursor = connection.cursor()
@@ -81,7 +90,7 @@ If the specified number of rows not being available, fewer rows may returned::
 
     >>> cursor.execute('')
 
-If no number of rows are specified it defaults to the current cursor.arraysize::
+If no number of rows are specified it defaults to the current ``cursor.arraysize``::
 
     >>> cursor.arraysize
     1
@@ -179,7 +188,7 @@ The attribute is -1 in case the cursor has been closed::
     >>> cursor.rowcount
     -1
 
-If the last respsonse doesn't contain the rowcount attribute -1 is returned::
+If the last response does not contain the rowcount attribute, ``-1`` is returned::
 
     >>> cursor = connection.cursor()
     >>> connection.client.set_next_response({
@@ -296,6 +305,68 @@ closed connection an ``ProgrammingError`` exception will be raised::
     ...
     crate.client.exceptions.ProgrammingError: Cursor closed
 
+
+Python data type conversion
+===========================
+
+The cursor object can optionally convert database types to native Python data
+types. Currently, this is implemented for the CrateDB data types ``IP`` and
+``TIMESTAMP`` on behalf of the ``DefaultTypeConverter``.
+
+::
+
+    >>> cursor = connection.cursor(converter=DefaultTypeConverter())
+
+    >>> connection.client.set_next_response({
+    ...     "col_types": [4, 5, 11],
+    ...     "rows":[ [ "foo", "10.10.10.1", 1658167836758 ] ],
+    ...     "cols":[ "name", "address", "timestamp" ],
+    ...     "rowcount":1,
+    ...     "duration":123
+    ... })
+
+    >>> cursor.execute('')
+
+    >>> cursor.fetchone()
+    ['foo', IPv4Address('10.10.10.1'), datetime.datetime(2022, 7, 18, 18, 10, 36, 758000)]
+
+
+Custom data type conversion
+===========================
+
+By providing a custom converter instance, you can define your own data type
+conversions. For investigating the list of available data types, please either
+inspect the ``DataType`` enum, or the documentation about the list of available
+`CrateDB data type identifiers for the HTTP interface`_.
+
+To create a simple converter for converging CrateDB's ``BIT`` type to Python's
+``int`` type::
+
+    >>> from crate.client.converter import Converter, DataType
+
+    >>> converter = Converter({DataType.BIT: lambda value: int(value[2:-1], 2)})
+    >>> cursor = connection.cursor(converter=converter)
+
+Proof that the converter works correctly, ``B\'0110\'`` should be converted to
+``6``. CrateDB's ``BIT`` data type has the numeric identifier ``25``::
+
+    >>> connection.client.set_next_response({
+    ...     "col_types": [25],
+    ...     "rows":[ [ "B'0110'" ] ],
+    ...     "cols":[ "value" ],
+    ...     "rowcount":1,
+    ...     "duration":123
+    ... })
+
+    >>> cursor.execute('')
+
+    >>> cursor.fetchone()
+    [6]
+
+
 .. Hidden: close connection
 
     >>> connection.close()
+
+
+.. _CrateDB data type identifiers for the HTTP interface: https://crate.io/docs/crate/reference/en/latest/interfaces/http.html#column-types

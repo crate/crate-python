@@ -199,7 +199,55 @@ You can turn this into something more manageable with a `list comprehension`_::
     >>> [column[0] for column in cursor.description]
     ['date', 'datetime_tz', 'datetime_notz', ..., 'nullable_datetime', 'position']
 
+
+Data type conversion
+====================
+
+The cursor object can optionally convert database types to native Python data
+types. There is a default implementation for the CrateDB data types ``IP`` and
+``TIMESTAMP`` on behalf of the ``DefaultTypeConverter``.
+
+::
+
+    >>> from crate.client.converter import DefaultTypeConverter
+    >>> from crate.client.cursor import Cursor
+    >>> cursor = connection.cursor(converter=DefaultTypeConverter())
+
+    >>> cursor.execute("SELECT datetime_tz, datetime_notz FROM locations ORDER BY name")
+
+    >>> cursor.fetchone()
+    [datetime.datetime(2022, 7, 18, 18, 10, 36, 758000), datetime.datetime(2022, 7, 18, 18, 10, 36, 758000)]
+
+
+Custom data type conversion
+===========================
+
+By providing a custom converter instance, you can define your own data type
+conversions. For investigating the list of available data types, please either
+inspect the ``DataType`` enum, or the documentation about the list of available
+`CrateDB data type identifiers for the HTTP interface`_.
+
+This example creates and applies a simple custom converter for converging
+CrateDB's ``BOOLEAN`` type to Python's ``str`` type. It is using a simple
+converter function defined as ``lambda``, which assigns ``yes`` for boolean
+``True``, and ``no`` otherwise.
+
+::
+
+    >>> from crate.client.converter import Converter, DataType
+
+    >>> converter = Converter()
+    >>> converter.set(DataType.BOOLEAN, lambda value: value is True and "yes" or "no")
+    >>> cursor = connection.cursor(converter=converter)
+
+    >>> cursor.execute("SELECT flag FROM locations ORDER BY name")
+
+    >>> cursor.fetchone()
+    ['no']
+
+
 .. _Bulk inserts: https://crate.io/docs/crate/reference/en/latest/interfaces/http.html#bulk-operations
+.. _CrateDB data type identifiers for the HTTP interface: https://crate.io/docs/crate/reference/en/latest/interfaces/http.html#column-types
 .. _Database API: http://www.python.org/dev/peps/pep-0249/
 .. _database cursor: https://en.wikipedia.org/wiki/Cursor_(databases)
 .. _DB API 2.0: http://www.python.org/dev/peps/pep-0249/

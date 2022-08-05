@@ -19,8 +19,10 @@
 # with Crate these terms will supersede the license and you may use the
 # software solely pursuant to the terms of the relevant commercial agreement.
 
-from .exceptions import ProgrammingError
 import warnings
+
+from .converter import Converter
+from .exceptions import ProgrammingError
 
 
 class Cursor(object):
@@ -30,9 +32,10 @@ class Cursor(object):
     """
     lastrowid = None  # currently not supported
 
-    def __init__(self, connection):
+    def __init__(self, connection, converter: Converter):
         self.arraysize = 1
         self.connection = connection
+        self._converter = converter
         self._closed = False
         self._result = None
         self.rows = None
@@ -50,7 +53,10 @@ class Cursor(object):
         self._result = self.connection.client.sql(sql, parameters,
                                                   bulk_parameters)
         if "rows" in self._result:
-            self.rows = iter(self._result["rows"])
+            if self._converter is None:
+                self.rows = iter(self._result["rows"])
+            else:
+                self.rows = iter(self._convert_rows())
 
     def executemany(self, sql, seq_of_parameters):
         """
@@ -73,9 +79,13 @@ class Cursor(object):
             "duration": sum(durations) if durations else -1,
             "rows": [],
             "cols": self._result.get("cols", []),
+            "col_types": self._result.get("col_types", []),
             "results": self._result.get("results")
         }
-        self.rows = iter(self._result["rows"])
+        if self._converter is None:
+            self.rows = iter(self._result["rows"])
+        else:
+            self.rows = iter(self._convert_rows())
         return self._result["results"]
 
     def fetchone(self):
@@ -210,3 +220,24 @@ class Cursor(object):
                 "duration" not in self._result:
             return -1
         return self._result.get("duration", 0)
+
+    def _convert_rows(self):
+        """
+        Iterate rows, apply type converters, and generate converted rows.
+        """
+        assert "col_types" in self._result and self._result["col_types"], \
+               "Unable to apply type conversion without `col_types` information"
+
+        # Resolve `col_types` definition to converter functions. Running the lookup
+        # redundantly on each row loop iteration would be a huge performance hog.
+        types = self._result["col_types"]
+        converters = [
+            self._converter.get(type) for type in types
+        ]
+
+        # Process result rows with conversion.
+        for row in self._result["rows"]:
+            yield [
+                convert(value)
+                for convert, value in zip(converters, row)
+            ]

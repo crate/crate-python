@@ -315,7 +315,7 @@ class Client(object):
     Crate connection client using CrateDB's HTTP API.
     """
 
-    SQL_PATH = '/_sql'
+    SQL_PATH = '/_sql?types=true'
     """Crate URI path for issuing SQL statements."""
 
     retry_interval = 30
@@ -385,7 +385,7 @@ class Client(object):
 
         self.path = self.SQL_PATH
         if error_trace:
-            self.path += '?error_trace=true'
+            self.path += '&error_trace=true'
 
     def close(self):
         for server in self.server_pool.values():

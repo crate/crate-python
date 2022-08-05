@@ -40,6 +40,7 @@ from crate.testing.layer import CrateLayer
 from crate.testing.tests import crate_path, docs_path
 from crate.client import connect
 from crate.client.sqlalchemy.dialect import CrateDialect
+from crate.client.test_util import ClientMocked
 
 from . import http
 from .test_cursor import CursorTest
@@ -67,30 +68,6 @@ def cprint(s):
     if isinstance(s, bytes):
         s = s.decode('utf-8')
     print(s)
-
-
-class ClientMocked(object):
-
-    active_servers = ["http://localhost:4200"]
-
-    def __init__(self):
-        self.response = {}
-        self._server_infos = ("http://localhost:4200", "my server", "2.0.0")
-
-    def sql(self, stmt=None, parameters=None, bulk_parameters=None):
-        return self.response
-
-    def server_infos(self, server):
-        return self._server_infos
-
-    def set_next_response(self, response):
-        self.response = response
-
-    def set_next_server_infos(self, server, server_name, version):
-        self._server_infos = (server, server_name, version)
-
-    def close(self):
-        pass
 
 
 def setUpMocked(test):
@@ -335,6 +312,10 @@ def _try_execute(cursor, stmt):
     try:
         cursor.execute(stmt)
     except Exception:
+        # FIXME: Why does this croak on statements like ``DROP TABLE cities``?
+        # Note: When needing to debug the test environment, you may want to
+        #       enable this logger statement.
+        # log.exception("Executing SQL statement failed")
         pass
 
 

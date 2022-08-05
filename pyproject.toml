@@ -1,0 +1,5 @@
+[tool.mypy]
+
+# Needed until `mypy-0.990` for `ConverterDefinition` in `converter.py`.
+# https://github.com/python/mypy/issues/731#issuecomment-1260976955
+enable_recursive_aliases = true

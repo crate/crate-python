@@ -436,7 +436,7 @@ class ParamsTest(TestCase):
 
     def test_no_params(self):
         client = Client()
-        self.assertEqual(client.path, "/_sql")
+        self.assertEqual(client.path, "/_sql?types=true")
         client.close()
 
 

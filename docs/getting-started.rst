@@ -25,11 +25,12 @@ Install
 
 The CrateDB Python client is `available`_ as a `PyPI`_ package.
 
-To install the package, run:
+To install the most recent driver version, including the SQLAlchemy dialect
+extension, run:
 
 .. code-block:: sh
 
-   sh$ pip install crate
+   sh$ pip install "crate[sqlalchemy]" --upgrade
 
 After that is done, you can import the library, like so:
 

@@ -18,8 +18,11 @@
 # However, if you have executed another commercial license agreement
 # with Crate these terms will supersede the license and you may use the
 # software solely pursuant to the terms of the relevant commercial agreement.
+from datetime import datetime, timedelta, timezone
 
+from .converter import DataType
 import warnings
+import typing as t
 
 from .converter import Converter
 from .exceptions import ProgrammingError
@@ -32,13 +35,15 @@ class Cursor(object):
     """
     lastrowid = None  # currently not supported
 
-    def __init__(self, connection, converter: Converter):
+    def __init__(self, connection, converter: Converter, **kwargs):
         self.arraysize = 1
         self.connection = connection
         self._converter = converter
         self._closed = False
         self._result = None
         self.rows = None
+        self._time_zone = None
+        self.time_zone = kwargs.get("time_zone")
 
     def execute(self, sql, parameters=None, bulk_parameters=None):
         """
@@ -241,3 +246,72 @@ class Cursor(object):
                 convert(value)
                 for convert, value in zip(converters, row)
             ]
+
+    @property
+    def time_zone(self):
+        """
+        Get the current time zone.
+        """
+        return self._time_zone
+
+    @time_zone.setter
+    def time_zone(self, tz):
+        """
+        Set the time zone.
+
+        Different data types are supported. Available options are:
+
+        - ``datetime.timezone.utc``
+        - ``datetime.timezone(datetime.timedelta(hours=7), name="MST")``
+        - ``pytz.timezone("Australia/Sydney")``
+        - ``zoneinfo.ZoneInfo("Australia/Sydney")``
+        - ``+0530`` (UTC offset in string format)
+
+        When `time_zone` is `None`, the returned `datetime` objects are
+        "naive", without any `tzinfo`, converted using ``datetime.utcfromtimestamp(...)``.
+
+        When `time_zone` is given, the returned `datetime` objects are "aware",
+        with `tzinfo` set, converted using ``datetime.fromtimestamp(..., tz=...)``.
+        """
+
+        # Do nothing when time zone is reset.
+        if tz is None:
+            self._time_zone = None
+            return
+
+        # Requesting datetime-aware `datetime` objects needs the data type converter.
+        # Implicitly create one, when needed.
+        if self._converter is None:
+            self._converter = Converter()
+
+        # When the time zone is given as a string, assume UTC offset format, e.g. `+0530`.
+        if isinstance(tz, str):
+            tz = self._timezone_from_utc_offset(tz)
+
+        self._time_zone = tz
+
+        def _to_datetime_with_tz(value: t.Optional[float]) -> t.Optional[datetime]:
+            """
+            Convert CrateDB's `TIMESTAMP` value to a native Python `datetime`
+            object, with timezone-awareness.
+            """
+            if value is None:
+                return None
+            return datetime.fromtimestamp(value / 1e3, tz=self._time_zone)
+
+        # Register converter function for `TIMESTAMP` type.
+        self._converter.set(DataType.TIMESTAMP_WITH_TZ, _to_datetime_with_tz)
+        self._converter.set(DataType.TIMESTAMP_WITHOUT_TZ, _to_datetime_with_tz)
+
+    @staticmethod
+    def _timezone_from_utc_offset(tz) -> timezone:
+        """
+        Convert UTC offset in string format (e.g. `+0530`) into `datetime.timezone` object.
+        """
+        assert len(tz) == 5, f"Time zone '{tz}' is given in invalid UTC offset format"
+        try:
+            hours = int(tz[:3])
+            minutes = int(tz[0] + tz[3:])
+            return timezone(timedelta(hours=hours, minutes=minutes), name=tz)
+        except Exception as ex:
+            raise ValueError(f"Time zone '{tz}' is given in invalid UTC offset format: {ex}")

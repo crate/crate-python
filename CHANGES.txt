@@ -8,6 +8,10 @@ Unreleased
 - SQLAlchemy: Added support for ``crate_index`` and ``nullable`` attributes in
   ORM column definitions.
 
+- Added support for converting ``TIMESTAMP`` columns to timezone-aware
+  ``datetime`` objects, using the new ``time_zone`` keyword argument.
+
+
 2022/12/02 0.28.0
 =================
 

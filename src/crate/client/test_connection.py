@@ -1,3 +1,5 @@
+import datetime
+
 from .http import Client
 from crate.client import connect
 from unittest import TestCase
@@ -23,7 +25,25 @@ class ConnectionTest(TestCase):
         self.assertEqual((0, 0, 0), connection.lowest_server_version.version)
         connection.close()
 
-    def test_with_is_supported(self):
+    def test_context_manager(self):
         with connect('localhost:4200') as conn:
             pass
         self.assertEqual(conn._closed, True)
+
+    def test_with_timezone(self):
+        """
+        Verify the cursor objects will return timezone-aware `datetime` objects when requested to.
+        When switching the time zone at runtime on the connection object, only new cursor objects
+        will inherit the new time zone.
+        """
+
+        tz_mst = datetime.timezone(datetime.timedelta(hours=7), name="MST")
+        connection = connect('localhost:4200', time_zone=tz_mst)
+        cursor = connection.cursor()
+        self.assertEqual(cursor.time_zone.tzname(None), "MST")
+        self.assertEqual(cursor.time_zone.utcoffset(None), datetime.timedelta(seconds=25200))
+
+        connection.time_zone = datetime.timezone.utc
+        cursor = connection.cursor()
+        self.assertEqual(cursor.time_zone.tzname(None), "UTC")
+        self.assertEqual(cursor.time_zone.utcoffset(None), datetime.timedelta(0))

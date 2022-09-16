@@ -246,6 +246,67 @@ converter function defined as ``lambda``, which assigns ``yes`` for boolean
     ['no']
 
 
+``TIMESTAMP`` conversion with time zone
+=======================================
+
+Based on the data type converter functionality, the driver offers a convenient
+interface to make it return timezone-aware ``datetime`` objects, using the
+desired time zone.
+
+For your reference, in the following examples, epoch 1658167836758 is
+``Mon, 18 Jul 2022 18:10:36 GMT``.
+
+::
+
+    >>> import datetime
+    >>> tz_mst = datetime.timezone(datetime.timedelta(hours=7), name="MST")
+    >>> cursor = connection.cursor(time_zone=tz_mst)
+
+    >>> cursor.execute("SELECT datetime_tz FROM locations ORDER BY name")
+
+    >>> cursor.fetchone()
+    [datetime.datetime(2022, 7, 19, 1, 10, 36, 758000, tzinfo=datetime.timezone(datetime.timedelta(seconds=25200), 'MST'))]
+
+For the ``time_zone`` keyword argument, different data types are supported.
+The available options are:
+
+- ``datetime.timezone.utc``
+- ``datetime.timezone(datetime.timedelta(hours=7), name="MST")``
+- ``pytz.timezone("Australia/Sydney")``
+- ``zoneinfo.ZoneInfo("Australia/Sydney")``
+- ``+0530`` (UTC offset in string format)
+
+Let's exercise all of them.
+
+::
+
+    >>> cursor.time_zone = datetime.timezone.utc
+    >>> cursor.execute("SELECT datetime_tz FROM locations ORDER BY name")
+    >>> cursor.fetchone()
+    [datetime.datetime(2022, 7, 18, 18, 10, 36, 758000, tzinfo=datetime.timezone.utc)]
+
+    >>> import pytz
+    >>> cursor.time_zone = pytz.timezone("Australia/Sydney")
+    >>> cursor.execute("SELECT datetime_tz FROM locations ORDER BY name")
+    >>> cursor.fetchone()
+    ['foo', datetime.datetime(2022, 7, 19, 4, 10, 36, 758000, tzinfo=<DstTzInfo 'Australia/Sydney' AEST+10:00:00 STD>)]
+
+    >>> try:
+    ...     import zoneinfo
+    ... except ImportError:
+    ...     from backports import zoneinfo
+
+    >>> cursor.time_zone = zoneinfo.ZoneInfo("Australia/Sydney")
+    >>> cursor.execute("SELECT datetime_tz FROM locations ORDER BY name")
+    >>> cursor.fetchone()
+    [datetime.datetime(2022, 7, 19, 4, 10, 36, 758000, tzinfo=zoneinfo.ZoneInfo(key='Australia/Sydney'))]
+
+    >>> cursor.time_zone = "+0530"
+    >>> cursor.execute("SELECT datetime_tz FROM locations ORDER BY name")
+    >>> cursor.fetchone()
+    [datetime.datetime(2022, 7, 18, 23, 40, 36, 758000, tzinfo=datetime.timezone(datetime.timedelta(seconds=19800), '+0530'))]
+
+
 .. _Bulk inserts: https://crate.io/docs/crate/reference/en/latest/interfaces/http.html#bulk-operations
 .. _CrateDB data type identifiers for the HTTP interface: https://crate.io/docs/crate/reference/en/latest/interfaces/http.html#column-types
 .. _Database API: http://www.python.org/dev/peps/pep-0249/

@@ -123,6 +123,9 @@ class Converter:
 
         return convert
 
+    def set(self, type_: DataType, converter: ConverterFunction):
+        self._mappings[type_] = converter
+
 
 class DefaultTypeConverter(Converter):
     def __init__(self, more_mappings: Optional[ConverterMapping] = None) -> None:

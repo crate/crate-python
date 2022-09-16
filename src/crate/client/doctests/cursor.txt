@@ -364,6 +364,60 @@ Proof that the converter works correctly, ``B\'0110\'`` should be converted to
     [6]
 
 
+``TIMESTAMP`` conversion with time zone
+=======================================
+
+Based on the data type converter machinery, the driver offers a convenient
+interface to make it return timezone-aware ``datetime`` objects, using the
+desired time zone.
+
+For your reference, epoch 1658167836758 is ``Mon, 18 Jul 2022 18:10:36 GMT``.
+
+::
+
+    >>> import datetime
+    >>> tz_mst = datetime.timezone(datetime.timedelta(hours=7), name="MST")
+    >>> cursor = connection.cursor(time_zone=tz_mst)
+
+    >>> connection.client.set_next_response({
+    ...     "col_types": [4, 11],
+    ...     "rows":[ [ "foo", 1658167836758 ] ],
+    ...     "cols":[ "name", "timestamp" ],
+    ...     "rowcount":1,
+    ...     "duration":123
+    ... })
+
+    >>> cursor.execute('')
+
+    >>> cursor.fetchone()
+    ['foo', datetime.datetime(2022, 7, 19, 1, 10, 36, 758000, tzinfo=datetime.timezone(datetime.timedelta(seconds=25200), 'MST'))]
+
+There are different ways to populate ``time_zone``. Some examples::
+
+- ``datetime.timezone.utc``
+- ``datetime.timezone(datetime.timedelta(hours=7), name="MST")``
+- ``pytz.timezone("Australia/Sydney")``
+- ``+0530`` (UTC offset in string format)
+
+Let's exercise all of them::
+
+    >>> cursor.time_zone = datetime.timezone.utc
+    >>> cursor.execute('')
+    >>> cursor.fetchone()
+    ['foo', datetime.datetime(2022, 7, 18, 18, 10, 36, 758000, tzinfo=datetime.timezone.utc)]
+
+    >>> import pytz
+    >>> cursor.time_zone = pytz.timezone("Australia/Sydney")
+    >>> cursor.execute('')
+    >>> cursor.fetchone()
+    ['foo', datetime.datetime(2022, 7, 19, 4, 10, 36, 758000, tzinfo=<DstTzInfo 'Australia/Sydney' AEST+10:00:00 STD>)]
+
+    >>> cursor.time_zone = "+0530"
+    >>> cursor.execute('')
+    >>> cursor.fetchone()
+    ['foo', datetime.datetime(2022, 7, 18, 23, 40, 36, 758000, tzinfo=datetime.timezone(datetime.timedelta(seconds=19800), '+0530'))]
+
+
 .. Hidden: close connection
 
     >>> connection.close()

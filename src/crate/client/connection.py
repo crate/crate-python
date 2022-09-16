@@ -47,6 +47,7 @@ class Connection(object):
                  socket_tcp_keepintvl=None,
                  socket_tcp_keepcnt=None,
                  converter=None,
+                 time_zone=None,
                  ):
         """
         :param servers:
@@ -103,9 +104,14 @@ class Connection(object):
         :param converter:
             (optional, defaults to ``None``)
             A `Converter` object to propagate to newly created `Cursor` objects.
+        :param time_zone:
+            (optional, defaults to ``None``)
+            A time zone specifier used for returning `TIMESTAMP` types as
+            timezone-aware native Python `datetime` objects.
         """
 
         self._converter = converter
+        self.time_zone = time_zone
 
         if client:
             self.client = client
@@ -135,10 +141,12 @@ class Connection(object):
         Return a new Cursor Object using the connection.
         """
         converter = kwargs.pop("converter", self._converter)
+        time_zone = kwargs.pop("time_zone", self.time_zone)
         if not self._closed:
             return Cursor(
                 connection=self,
                 converter=converter,
+                time_zone=time_zone,
             )
         else:
             raise ProgrammingError("Connection closed")

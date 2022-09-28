@@ -19,7 +19,11 @@ function main() {
   echo "Invoking tests with CrateDB ${CRATEDB_VERSION} and SQLAlchemy ${SQLALCHEMY_VERSION}"
 
   # Install designated SQLAlchemy version.
-  pip install "sqlalchemy==${SQLALCHEMY_VERSION}"
+  if [ ${SQLALCHEMY_VERSION} = "latest" ]; then
+    pip install "sqlalchemy" --upgrade
+  else
+    pip install "sqlalchemy==${SQLALCHEMY_VERSION}"
+  fi
 
   # Replace CrateDB version.
   if [ ${CRATEDB_VERSION} = "nightly" ]; then

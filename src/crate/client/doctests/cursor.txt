@@ -367,7 +367,7 @@ Proof that the converter works correctly, ``B\'0110\'`` should be converted to
 ``TIMESTAMP`` conversion with time zone
 =======================================
 
-Based on the data type converter machinery, the driver offers a convenient
+Based on the data type converter functionality, the driver offers a convenient
 interface to make it return timezone-aware ``datetime`` objects, using the
 desired time zone.
 

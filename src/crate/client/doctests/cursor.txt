@@ -397,6 +397,7 @@ There are different ways to populate ``time_zone``. Some examples::
 - ``datetime.timezone.utc``
 - ``datetime.timezone(datetime.timedelta(hours=7), name="MST")``
 - ``pytz.timezone("Australia/Sydney")``
+- ``zoneinfo.ZoneInfo("Australia/Sydney")``
 - ``+0530`` (UTC offset in string format)
 
 Let's exercise all of them::
@@ -411,6 +412,12 @@ Let's exercise all of them::
     >>> cursor.execute('')
     >>> cursor.fetchone()
     ['foo', datetime.datetime(2022, 7, 19, 4, 10, 36, 758000, tzinfo=<DstTzInfo 'Australia/Sydney' AEST+10:00:00 STD>)]
+
+    >>> import zoneinfo
+    >>> cursor.time_zone = zoneinfo.ZoneInfo("Australia/Sydney")
+    >>> cursor.execute('')
+    >>> cursor.fetchone()
+    ['foo', datetime.datetime(2022, 7, 19, 4, 10, 36, 758000, tzinfo=zoneinfo.ZoneInfo(key='Australia/Sydney'))]
 
     >>> cursor.time_zone = "+0530"
     >>> cursor.execute('')

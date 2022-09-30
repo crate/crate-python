@@ -20,6 +20,7 @@
 # software solely pursuant to the terms of the relevant commercial agreement.
 
 import datetime
+import zoneinfo
 from ipaddress import IPv4Address
 from unittest import TestCase
 from unittest.mock import MagicMock
@@ -70,6 +71,15 @@ class CursorTest(TestCase):
         # Apparently, when using `pytz`, the timezone object does not return an offset.
         # Nevertheless, it works, as demonstrated per doctest in `cursor.txt`.
         self.assertEqual(cursor.time_zone.utcoffset(None), None)
+
+    def test_create_with_timezone_as_zoneinfo_object(self):
+        """
+        Verify the cursor returns timezone-aware `datetime` objects when requested to.
+        Here: Use a `zoneinfo.ZoneInfo` instance.
+        """
+        connection = self.get_mocked_connection()
+        cursor = connection.cursor(time_zone=zoneinfo.ZoneInfo('Australia/Sydney'))
+        self.assertEqual(cursor.time_zone.key, 'Australia/Sydney')
 
     def test_create_with_timezone_as_utc_offset_success(self):
         """

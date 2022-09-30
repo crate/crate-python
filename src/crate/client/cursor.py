@@ -271,6 +271,7 @@ class Cursor(object):
         - ``datetime.timezone.utc``
         - ``datetime.timezone(datetime.timedelta(hours=7), name="MST")``
         - ``pytz.timezone("Australia/Sydney")``
+        - ``zoneinfo.ZoneInfo("Australia/Sydney")``
         - ``+0530`` (UTC offset in string format)
         """
 

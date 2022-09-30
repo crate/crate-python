@@ -392,7 +392,8 @@ For your reference, epoch 1658167836758 is ``Mon, 18 Jul 2022 18:10:36 GMT``.
     >>> cursor.fetchone()
     ['foo', datetime.datetime(2022, 7, 19, 1, 10, 36, 758000, tzinfo=datetime.timezone(datetime.timedelta(seconds=25200), 'MST'))]
 
-There are different ways to populate ``time_zone``. Some examples::
+For the ``time_zone`` keyword argument, different data types are supported.
+The available options are:
 
 - ``datetime.timezone.utc``
 - ``datetime.timezone(datetime.timedelta(hours=7), name="MST")``

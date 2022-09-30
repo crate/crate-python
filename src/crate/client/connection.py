@@ -108,6 +108,20 @@ class Connection(object):
             (optional, defaults to ``None``)
             A time zone specifier used for returning `TIMESTAMP` types as
             timezone-aware native Python `datetime` objects.
+
+            Different data types are supported. Available options are:
+
+            - ``datetime.timezone.utc``
+            - ``datetime.timezone(datetime.timedelta(hours=7), name="MST")``
+            - ``pytz.timezone("Australia/Sydney")``
+            - ``zoneinfo.ZoneInfo("Australia/Sydney")``
+            - ``+0530`` (UTC offset in string format)
+
+            When `time_zone` is `None`, the returned `datetime` objects are
+            "naive", without any `tzinfo`, converted using ``datetime.utcfromtimestamp(...)``.
+
+            When `time_zone` is given, the returned `datetime` objects are "aware",
+            with `tzinfo` set, converted using ``datetime.fromtimestamp(..., tz=...)``.
         """
 
         self._converter = converter

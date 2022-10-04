@@ -24,6 +24,7 @@ jobs:
     env:
       CRATEDB_VERSION: ${{ matrix.cratedb-version }}
       SQLALCHEMY_VERSION: ${{ matrix.sqla-version }}
+      CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
 
     steps:
       - uses: actions/checkout@v3

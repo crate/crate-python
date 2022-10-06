@@ -264,7 +264,16 @@ class CrateDialect(default.DefaultDialect):
 
     @reflection.cache
     def get_pk_constraint(self, engine, table_name, schema=None, **kw):
-        if self.server_version_info >= (2, 3, 0):
+        if self.server_version_info >= (3, 0, 0):
+            query = """SELECT column_name
+                    FROM information_schema.key_column_usage
+                    WHERE table_name = ? AND table_schema = ?"""
+
+            def result_fun(result):
+                rows = result.fetchall()
+                return set(map(lambda el: el[0], rows))
+
+        elif self.server_version_info >= (2, 3, 0):
             query = """SELECT column_name
                     FROM information_schema.key_column_usage
                     WHERE table_name = ? AND table_catalog = ?"""
@@ -272,6 +281,7 @@ class CrateDialect(default.DefaultDialect):
             def result_fun(result):
                 rows = result.fetchall()
                 return set(map(lambda el: el[0], rows))
+
         else:
             query = """SELECT constraint_name
                    FROM information_schema.table_constraints

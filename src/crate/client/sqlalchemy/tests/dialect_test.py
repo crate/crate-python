@@ -67,7 +67,7 @@ class DialectTest(TestCase):
         self.character = Character
         self.session = Session()
 
-    def test_primary_keys(self):
+    def test_primary_keys_2_3_0(self):
         meta = self.character.metadata
         insp = inspect(meta.bind)
         self.engine.dialect.server_version_info = (2, 3, 0)
@@ -81,6 +81,23 @@ class DialectTest(TestCase):
         eq_(insp.get_pk_constraint("characters")['constrained_columns'], {"id", "id2", "id3"})
         self.fake_cursor.fetchall.assert_called_once_with()
         in_("information_schema.key_column_usage", self.executed_statement)
+        in_("table_catalog = ?", self.executed_statement)
+
+    def test_primary_keys_3_0_0(self):
+        meta = self.character.metadata
+        insp = inspect(meta.bind)
+        self.engine.dialect.server_version_info = (3, 0, 0)
+
+        self.fake_cursor.rowcount = 3
+        self.fake_cursor.description = (
+            ('foo', None, None, None, None, None, None),
+        )
+        self.fake_cursor.fetchall = MagicMock(return_value=[["id"], ["id2"], ["id3"]])
+
+        eq_(insp.get_pk_constraint("characters")['constrained_columns'], {"id", "id2", "id3"})
+        self.fake_cursor.fetchall.assert_called_once_with()
+        in_("information_schema.key_column_usage", self.executed_statement)
+        in_("table_schema = ?", self.executed_statement)
 
     def test_get_table_names(self):
         self.fake_cursor.rowcount = 1

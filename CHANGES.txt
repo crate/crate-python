@@ -5,6 +5,8 @@ Changes for crate
 Unreleased
 ==========
 
+- Improved SQLAlchemy's ``CrateDialect.get_pk_constraint`` to be compatible
+  with breaking changes in CrateDB >=5.1.0.
 
 2022/07/04 0.27.1
 =================

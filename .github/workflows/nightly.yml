@@ -36,11 +36,11 @@ jobs:
       - name: Invoke tests
         run: |
 
-          # Bootstrap environment.
-          source bootstrap.sh
-
           # Propagate build matrix information.
           ./devtools/setup_ci.sh
+
+          # Bootstrap environment.
+          source bootstrap.sh
 
           # Invoke validation tasks.
           flake8 src bin

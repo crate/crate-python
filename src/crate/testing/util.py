@@ -21,21 +21,23 @@
 # software solely pursuant to the terms of the relevant commercial agreement.
 
 import os
-import unittest
-import tempfile
-from .test_layer import LayerUtilsTest, LayerTest
-from .util import project_root, crate_path
 
 
-def setUp(test):
-    test.globs['project_root'] = project_root
-    test.globs['crate_path'] = crate_path
-    test.globs['tempfile'] = tempfile
-    test.globs['os'] = os
+def docs_path(*parts):
+    return os.path.abspath(
+        os.path.join(
+            os.path.dirname(os.path.dirname(__file__)), *parts
+        )
+    )
 
 
-def test_suite():
-    suite = unittest.TestSuite()
-    suite.addTest(unittest.makeSuite(LayerUtilsTest))
-    suite.addTest(unittest.makeSuite(LayerTest))
-    return suite
+def project_root(*parts):
+    return os.path.abspath(
+        os.path.join(docs_path("..", ".."), *parts)
+    )
+
+
+def crate_path(*parts):
+    return os.path.abspath(
+        project_root("parts", "crate", *parts)
+    )

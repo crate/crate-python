@@ -37,7 +37,7 @@ import logging
 import stopit
 
 from crate.testing.layer import CrateLayer
-from crate.testing.tests import crate_path, docs_path
+from crate.testing.util import crate_path, docs_path
 from crate.client import connect
 from crate.client.sqlalchemy.dialect import CrateDialect
 from crate.client.test_util import ClientMocked

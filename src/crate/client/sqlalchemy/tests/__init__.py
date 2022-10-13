@@ -9,10 +9,10 @@ from .update_test import SqlAlchemyUpdateTest
 from .match_test import SqlAlchemyMatchTest
 from .bulk_test import SqlAlchemyBulkTest
 from .insert_from_select_test import SqlAlchemyInsertFromSelectTest
-from .create_table_test import CreateTableTest
+from .create_table_test import SqlAlchemyCreateTableTest
 from .array_test import SqlAlchemyArrayTypeTest
-from .dialect_test import DialectTest
-from .function_test import FunctionTest
+from .dialect_test import SqlAlchemyDialectTest
+from .function_test import SqlAlchemyFunctionTest
 
 
 def test_suite():
@@ -23,11 +23,11 @@ def test_suite():
     tests.addTest(makeSuite(SqlAlchemyCompilerTest))
     tests.addTest(makeSuite(SqlAlchemyUpdateTest))
     tests.addTest(makeSuite(SqlAlchemyMatchTest))
-    tests.addTest(makeSuite(CreateTableTest))
+    tests.addTest(makeSuite(SqlAlchemyCreateTableTest))
     tests.addTest(makeSuite(SqlAlchemyBulkTest))
     tests.addTest(makeSuite(SqlAlchemyInsertFromSelectTest))
     tests.addTest(makeSuite(SqlAlchemyInsertFromSelectTest))
-    tests.addTest(makeSuite(DialectTest))
-    tests.addTest(makeSuite(FunctionTest))
+    tests.addTest(makeSuite(SqlAlchemyDialectTest))
+    tests.addTest(makeSuite(SqlAlchemyFunctionTest))
     tests.addTest(makeSuite(SqlAlchemyArrayTypeTest))
     return tests

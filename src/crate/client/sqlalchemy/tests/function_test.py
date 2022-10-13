@@ -26,7 +26,7 @@ from sqlalchemy.sql.sqltypes import TIMESTAMP
 from sqlalchemy.ext.declarative import declarative_base
 
 
-class FunctionTest(TestCase):
+class SqlAlchemyFunctionTest(TestCase):
     def setUp(self):
         Base = declarative_base(bind=sa.create_engine("crate://"))
 

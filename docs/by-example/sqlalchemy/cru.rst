@@ -13,13 +13,42 @@ and updating complex data types with nested Python dictionaries.
    :local:
 
 
-Setup
-=====
+Introduction
+============
+
+Import the relevant symbols:
+
+    >>> import sqlalchemy as sa
+    >>> from datetime import datetime
+    >>> from sqlalchemy.ext.declarative import declarative_base
+    >>> from sqlalchemy.orm import sessionmaker
+    >>> from sqlalchemy.sql import text
+    >>> from crate.client.sqlalchemy.types import ObjectArray
 
 Establish a connection to the database:
 
+    >>> engine = sa.create_engine(f"crate://{crate_host}")
     >>> connection = engine.connect()
 
+Define the ORM schema for the ``Location`` entity:
+
+    >>> Base = declarative_base(bind=engine)
+
+    >>> class Location(Base):
+    ...     __tablename__ = 'locations'
+    ...     name = sa.Column(sa.String, primary_key=True)
+    ...     kind = sa.Column(sa.String)
+    ...     date = sa.Column(sa.Date, default=lambda: datetime.utcnow().date())
+    ...     datetime_tz = sa.Column(sa.DateTime, default=datetime.utcnow)
+    ...     datetime_notz = sa.Column(sa.DateTime, default=datetime.utcnow)
+    ...     nullable_datetime = sa.Column(sa.DateTime)
+    ...     nullable_date = sa.Column(sa.Date)
+    ...     flag = sa.Column(sa.Boolean)
+    ...     details = sa.Column(ObjectArray)
+
+Create a session with SQLAlchemy:
+
+    >>> session = sessionmaker(bind=engine)()
 
 Retrieve
 ========
@@ -247,8 +276,7 @@ Refresh "characters" table:
     >>> _ = connection.execute("REFRESH TABLE characters")
 
     >>> session.refresh(char)
-    >>> import pprint
-    >>> pprint.pprint(char.details)
+    >>> pprint(char.details)
     {'name': {'first': 'Trillian', 'last': 'Dent'}, 'size': 45}
 
 .. Hidden: close connection

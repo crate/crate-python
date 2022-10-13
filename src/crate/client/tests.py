@@ -27,7 +27,6 @@ import socket
 import unittest
 import doctest
 from pprint import pprint
-from datetime import datetime
 from http.server import HTTPServer, BaseHTTPRequestHandler
 import ssl
 import time
@@ -41,8 +40,6 @@ from crate.testing.settings import \
     crate_host, crate_path, crate_port, \
     crate_transport_port, docs_path, localhost
 from crate.client import connect
-from crate.client.sqlalchemy.dialect import CrateDialect
-from crate.client.test_util import ClientMocked
 
 from .test_cursor import CursorTest
 from .test_connection import ConnectionTest
@@ -57,7 +54,6 @@ from .test_http import (
     TestDefaultSchemaHeader,
 )
 from .sqlalchemy.tests import test_suite as sqlalchemy_test_suite
-from .sqlalchemy.types import ObjectArray
 
 log = logging.getLogger('crate.testing.layer')
 ch = logging.StreamHandler()
@@ -69,10 +65,6 @@ def cprint(s):
     if isinstance(s, bytes):
         s = s.decode('utf-8')
     print(s)
-
-
-def setUpMocked(test):
-    test.globs['connection_client_mocked'] = ClientMocked()
 
 
 settings = {
@@ -115,17 +107,10 @@ def ensure_cratedb_layer():
     return crate_layer
 
 
-def refresh(table):
-    with connect(crate_host) as conn:
-        cursor = conn.cursor()
-        cursor.execute("refresh table %s" % table)
-
-
 def setUpWithCrateLayer(test):
     test.globs['crate_host'] = crate_host
     test.globs['pprint'] = pprint
     test.globs['print'] = cprint
-    test.globs["refresh"] = refresh
 
     with connect(crate_host) as conn:
         cursor = conn.cursor()
@@ -154,54 +139,33 @@ def setUpWithCrateLayer(test):
 def setUpCrateLayerAndSqlAlchemy(test):
     setUpWithCrateLayer(test)
     import sqlalchemy as sa
-    from sqlalchemy.ext.declarative import declarative_base
-    from sqlalchemy.orm import sessionmaker
 
-    with connect(crate_host) as conn:
-        cursor = conn.cursor()
-        cursor.execute("""create table characters (
-          id string primary key,
-          name string,
-          quote string,
-          details object,
-          more_details array(object),
-          INDEX name_ft using fulltext(name) with (analyzer = 'english'),
-          INDEX quote_ft using fulltext(quote) with (analyzer = 'english')
-          )""")
-        cursor.execute("CREATE VIEW characters_view AS SELECT * FROM characters")
+    ddl_statements = [
+        """
+        CREATE TABLE characters (
+            id STRING PRIMARY KEY,
+            name STRING,
+            quote STRING,
+            details OBJECT,
+            more_details ARRAY(OBJECT),
+            INDEX name_ft USING fulltext(name) WITH (analyzer = 'english'),
+            INDEX quote_ft USING fulltext(quote) WITH (analyzer = 'english')
+            )""",
+        """
+        CREATE VIEW characters_view
+            AS SELECT * FROM characters
+        """,
+        """
+        CREATE TABLE cities (
+            name STRING PRIMARY KEY,
+            coordinate GEO_POINT,
+            area GEO_SHAPE
+        )"""
+    ]
 
-    with connect(crate_host) as conn:
-        cursor = conn.cursor()
-        cursor.execute("""create table cities (
-          name string primary key,
-          coordinate geo_point,
-          area geo_shape
-    ) """)
-
-    engine = sa.create_engine('crate://{0}'.format(crate_host))
-    Base = declarative_base()
-
-    class Location(Base):
-        __tablename__ = 'locations'
-        name = sa.Column(sa.String, primary_key=True)
-        kind = sa.Column(sa.String)
-        date = sa.Column(sa.Date, default=lambda: datetime.utcnow().date())
-        datetime_tz = sa.Column(sa.DateTime, default=datetime.utcnow)
-        datetime_notz = sa.Column(sa.DateTime, default=datetime.utcnow)
-        nullable_datetime = sa.Column(sa.DateTime)
-        nullable_date = sa.Column(sa.Date)
-        flag = sa.Column(sa.Boolean)
-        details = sa.Column(ObjectArray)
-
-    Session = sessionmaker(engine)
-    session = Session()
-    test.globs['sa'] = sa
-    test.globs['engine'] = engine
-    test.globs['Location'] = Location
-    test.globs['Base'] = Base
-    test.globs['session'] = session
-    test.globs['Session'] = Session
-    test.globs['CrateDialect'] = CrateDialect
+    engine = sa.create_engine(f"crate://{crate_host}")
+    for ddl_statement in ddl_statements:
+        engine.execute(sa.text(ddl_statement))
 
 
 class HttpsTestServerLayer:
@@ -361,7 +325,6 @@ def test_suite():
         'docs/by-example/connection.rst',
         'docs/by-example/cursor.rst',
         module_relative=False,
-        setUp=setUpMocked,
         optionflags=flags,
         encoding='utf-8'
     )

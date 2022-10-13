@@ -13,6 +13,28 @@ as well as the use of complex and geospatial data types.
    :local:
 
 
+Introduction
+============
+
+Import the relevant symbols:
+
+    >>> import sqlalchemy as sa
+    >>> from sqlalchemy.ext.declarative import declarative_base
+    >>> from sqlalchemy.orm import sessionmaker
+    >>> from sqlalchemy.sql import text
+
+Establish a connection to the database:
+
+    >>> engine = sa.create_engine(f"crate://{crate_host}")
+    >>> connection = engine.connect()
+
+    >>> Base = declarative_base(bind=engine)
+
+Create a session with SQLAlchemy:
+
+    >>> session = sessionmaker(bind=engine)()
+
+
 Connection String
 =================
 
@@ -116,9 +138,9 @@ defined in the schema:
 
 After ``INSERT`` statements are sent to the database the newly inserted rows
 aren't immediately available for search because the index is only updated
-periodically:
+periodically. In order to synchronize that, refresh the table:
 
-    >>> refresh("characters")
+    >>> _ = connection.execute(text("REFRESH TABLE characters"))
 
 A regular select query will then fetch the whole documents:
 
@@ -180,7 +202,7 @@ This will generate an UPDATE statement roughly like this:
 
     "UPDATE characters set more_details = ? ...", ([{'foo': 1, 'bar': 10}, {'foo': 2}, {'foo': 3}],)
 
-    >>> refresh("characters")
+    >>> _ = connection.execute(text("REFRESH TABLE characters"))
 
 To do queries against fields of ``ObjectArray``s you have to use the
 ``.any(value, operator=operators.eq)`` method on a subscript, because accessing
@@ -241,10 +263,10 @@ session:
     >>> tokyo = City(coordinate=point, area=area, name='Tokyo')
     >>> session.add(tokyo)
     >>> session.commit()
+    >>> _ = connection.execute(text("REFRESH TABLE cities"))
 
 When retrieved, they are retrieved as the corresponding geojson objects:
 
-    >>> refresh("cities")
     >>> query = session.query(City.name, City.coordinate, City.area)
     >>> query.all()
      [('Tokyo', (139.75999999791384, 35.67999996710569), {"coordinates": [[[139.806, 35.515], [139.919, 35.703], [139.768, 35.817], [139.575, 35.76], [139.584, 35.619], [139.806, 35.515]]], "type": "Polygon"})]
@@ -425,7 +447,7 @@ Let's add a task to the ``Todo`` table:
     >>> task = Todos(content='Write Tests', status='done')
     >>> session.add(task)
     >>> session.commit()
-    >>> refresh("todos")
+    >>> _ = connection.execute(text("REFRESH TABLE todos"))
 
 Using ``insert().from_select()`` to archive the task in ``ArchivedTasks``
 table:
@@ -434,7 +456,7 @@ table:
     >>> ins = insert(ArchivedTasks).from_select(['id','content'], sel)
     >>> result = session.execute(ins)
     >>> session.commit()
-    >>> refresh("archived_tasks")
+    >>> _ = connection.execute(text("REFRESH TABLE archived_tasks"))
 
 This will result in the following query:
 

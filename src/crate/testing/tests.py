@@ -20,18 +20,12 @@
 # with Crate these terms will supersede the license and you may use the
 # software solely pursuant to the terms of the relevant commercial agreement.
 
-import os
 import unittest
-import tempfile
 from .test_layer import LayerUtilsTest, LayerTest
-from .settings import project_root, crate_path
 
 
 def setUp(test):
-    test.globs['project_root'] = project_root
-    test.globs['crate_path'] = crate_path
-    test.globs['tempfile'] = tempfile
-    test.globs['os'] = os
+    pass
 
 
 def test_suite():

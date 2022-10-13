@@ -36,6 +36,12 @@ Ignore specific test directories::
 
     ./bin/test -vvvv --ignore_dir=testing
 
+Invoke all tests without integration tests (~5 seconds runtime)::
+
+    ./bin/test \
+        -t '!LayerTest' -t '!docs/by-example' \
+        -t '!test_client_threaded' -t '!test_no_retry_on_read_timeout' -t '!test_wait_for_http'
+
 You can run the tests against multiple Python interpreters with `tox`_::
 
     tox

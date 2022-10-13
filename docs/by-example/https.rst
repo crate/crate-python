@@ -4,6 +4,18 @@
 HTTPS connection support
 ========================
 
+This documentation section outlines different options to connect to CrateDB
+using SSL/TLS.
+
+.. rubric:: Table of Contents
+
+.. contents::
+   :local:
+
+
+Introduction
+============
+
 The CrateDB client is able to connect via HTTPS.
 
 A check against a specific CA certificate can be made by creating the client
@@ -16,21 +28,17 @@ with the path to the CA certificate file using the keyword argument
     use the keyword argument ``verify_ssl_cert``. If it is set to ``False``,
     server certificate validation will be skipped.
 
-
-.. rubric:: Table of Contents
-
-.. contents::
-   :local:
-
-Examples
-========
-
-All of the following examples will connect to a host using a self-signed
+All the following examples will connect to a host using a self-signed
 certificate.
+
+The CrateDB Python driver package offers a HTTP client API object.
+
+    >>> from crate.client import http
+    >>> HttpClient = http.Client
 
 
 With certificate verification
------------------------------
+=============================
 
 When using a valid CA certificate, the connection will be successful::
 
@@ -56,7 +64,7 @@ Also, when providing an invalid ``ca_cert``, an error is raised::
 
 
 Without certificate verification
---------------------------------
+================================
 
 When turning off certificate verification, calling the server will succeed,
 even when not providing a valid CA certificate::
@@ -74,8 +82,8 @@ Without verification, calling the server will even work when using an invalid
 
 
 
-Client certificate
-------------------
+X.509 client certificate
+========================
 
 The CrateDB driver also supports client certificates.
 

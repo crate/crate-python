@@ -1,6 +1,17 @@
-======
-Cursor
-======
+=================
+The Cursor object
+=================
+
+This documentation section outlines different attributes, methods, and
+behaviors of the ``crate.client.cursor.Cursor`` object.
+
+To improve focus and reduce boilerplate, it uses a ``set_next_response`` method
+only intended for testing.
+
+.. rubric:: Table of Contents
+
+.. contents::
+   :local:
 
 
 Setup
@@ -18,7 +29,8 @@ up the response for subsequent cursor operations.
     >>> connection = connect(client=connection_client_mocked)
     >>> cursor = connection.cursor()
 
-The rowcount and duration attribute is -1 in case no ``execute()`` has been performed on the cursor.
+The rowcount and duration attribute is ``-1``, in case no ``execute()`` has
+been performed on the cursor.
 
 ::
 
@@ -238,8 +250,8 @@ The attribute is -1 in case the cursor has been closed::
     ...     "cols":[ "name", "position" ],
     ... })
 
-executemany
-===========
+executemany()
+=============
 
 ``executemany()`` allows to execute a single sql statement against a sequence
 of parameters::

@@ -10,14 +10,12 @@ About
 This part of the documentation contains examples how to use the CrateDB Python
 client, exercising different options and scenarios.
 
-
-*******
-Details
-*******
-
 .. toctree::
-    :maxdepth: 2
+    :maxdepth: 1
 
     client
     http
+    https
     blob
+    connection
+    cursor

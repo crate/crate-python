@@ -36,6 +36,7 @@ A :ref:`CrateDB dialect <using-sqlalchemy>` for `SQLAlchemy`_ is also included.
    query
    blobs
    sqlalchemy
+   by-example/index
    appendices/index
 
 .. _CrateDB: https://crate.io/products/cratedb/

@@ -1,8 +1,19 @@
-============
-Client Usage
-============
+===============
+Database client
+===============
 
-Connect to a Database
+``crate.client.connect`` is the primary method to connect to CrateDB using
+Python. This section of the documentation outlines different methods to connect
+to the database cluster, as well as how to run basic inquiries to the database,
+and closing the connection again.
+
+.. rubric:: Table of Contents
+
+.. contents::
+   :local:
+
+
+Connect to a database
 =====================
 
 Before we can start we have to import the client::

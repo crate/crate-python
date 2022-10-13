@@ -1,6 +1,21 @@
-=================
-HTTP Crate Client
-=================
+===========
+HTTP client
+===========
+
+.. rubric:: Table of Contents
+
+.. contents::
+   :local:
+
+
+Introduction
+============
+
+The CrateDB Python driver package offers a HTTP client API object.
+
+    >>> from crate.client import http
+    >>> HttpClient = http.Client
+
 
 Server configuration
 ====================
@@ -159,10 +174,8 @@ Uploading a blob to a table with disabled blob support throws an exception::
 Error Handling
 ==============
 
-.. hide::
-
-    Create a function that takes a lot of time to return so we can run into a
-    timeout exception::
+Create a function that takes a lot of time to return so we can run into a
+timeout exception::
 
     >>> http_client = HttpClient(crate_host)
     >>> http_client.sql('''

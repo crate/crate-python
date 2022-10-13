@@ -36,7 +36,7 @@ FakeCursor = MagicMock(name='FakeCursor', spec=Cursor)
 
 
 @patch('crate.client.connection.Cursor', FakeCursor)
-class DialectTest(TestCase):
+class SqlAlchemyDialectTest(TestCase):
 
     def execute_wrapper(self, query, *args, **kwargs):
         self.executed_statement = query

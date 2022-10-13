@@ -35,7 +35,7 @@ FakeCursor.return_value = fake_cursor
 
 
 @patch('crate.client.connection.Cursor', FakeCursor)
-class CreateTableTest(TestCase):
+class SqlAlchemyCreateTableTest(TestCase):
 
     def setUp(self):
         self.engine = sa.create_engine('crate://')

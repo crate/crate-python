@@ -36,7 +36,12 @@ Ignore specific test directories::
 
     ./bin/test -vvvv --ignore_dir=testing
 
-Invoke all tests without integration tests (~5 seconds runtime)::
+The ``LayerTest`` test cases have quite some overhead. Omitting them will save
+a few cycles (~90 seconds runtime)::
+
+    ./bin/test -t '!LayerTest'
+
+Invoke all tests without integration tests (~3 seconds runtime)::
 
     ./bin/test \
         -t '!LayerTest' -t '!docs/by-example' \

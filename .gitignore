@@ -18,3 +18,4 @@ eggs/
 htmlcov/
 out/
 parts/
+tmp/

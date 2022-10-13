@@ -19,6 +19,9 @@ A low level interface which provides a backend-agnostic system of loading lists
 of schema, table, column, and constraint descriptions from a given database is
 available. This is known as the `SQLAlchemy inspector`_.
 
+    >>> import sqlalchemy as sa
+
+    >>> engine = sa.create_engine(f"crate://{crate_host}")
     >>> inspector = sa.inspect(engine)
 
 

@@ -5,8 +5,9 @@ The Cursor object
 This documentation section outlines different attributes, methods, and
 behaviors of the ``crate.client.cursor.Cursor`` object.
 
-To improve focus and reduce boilerplate, it uses a ``set_next_response`` method
-only intended for testing.
+To improve focus and reduce boilerplate, the example code uses both
+``ClientMocked`` and ``set_next_response``. They are required for demonstration
+purposes, so the example does not need a real database connection.
 
 .. rubric:: Table of Contents
 
@@ -14,25 +15,22 @@ only intended for testing.
    :local:
 
 
-Setup
-=====
+Introduction
+============
 
 This section sets up a cursor object, inspects some of its attributes, and sets
 up the response for subsequent cursor operations.
 
-::
-
     >>> from crate.client import connect
     >>> from crate.client.converter import DefaultTypeConverter
     >>> from crate.client.cursor import Cursor
+    >>> from crate.client.test_util import ClientMocked
 
-    >>> connection = connect(client=connection_client_mocked)
+    >>> connection = connect(client=ClientMocked())
     >>> cursor = connection.cursor()
 
 The rowcount and duration attribute is ``-1``, in case no ``execute()`` has
-been performed on the cursor.
-
-::
+been performed on the cursor yet.
 
     >>> cursor.rowcount
     -1
@@ -40,8 +38,8 @@ been performed on the cursor.
     >>> cursor.duration
     -1
 
-Hardcode the next response of the mocked connection client, so we won't need a sql statement
-to execute::
+Define the response of the mocked connection client. It will be returned on
+request without needing to execute an SQL statement.
 
     >>> connection.client.set_next_response({
     ...     "rows":[ [ "North West Ripple", 1 ], [ "Arkintoofle Minor", 3 ], [ "Alpha Centauri", 3 ] ],
@@ -179,8 +177,6 @@ Iterating over a new cursor without results will immediately raise a Programming
 
 description
 ===========
-
-::
 
     >>> cursor.description
     (('name', None, None, None, None, None, None), ('position', None, None, None, None, None, None))
@@ -352,7 +348,7 @@ inspect the ``DataType`` enum, or the documentation about the list of available
 `CrateDB data type identifiers for the HTTP interface`_.
 
 To create a simple converter for converging CrateDB's ``BIT`` type to Python's
-``int`` type::
+``int`` type.
 
     >>> from crate.client.converter import Converter, DataType
 
@@ -360,7 +356,7 @@ To create a simple converter for converging CrateDB's ``BIT`` type to Python's
     >>> cursor = connection.cursor(converter=converter)
 
 Proof that the converter works correctly, ``B\'0110\'`` should be converted to
-``6``. CrateDB's ``BIT`` data type has the numeric identifier ``25``::
+``6``. CrateDB's ``BIT`` data type has the numeric identifier ``25``.
 
     >>> connection.client.set_next_response({
     ...     "col_types": [25],
@@ -385,8 +381,6 @@ desired time zone.
 
 For your reference, in the following examples, epoch 1658167836758 is
 ``Mon, 18 Jul 2022 18:10:36 GMT``.
-
-::
 
     >>> import datetime
     >>> tz_mst = datetime.timezone(datetime.timedelta(hours=7), name="MST")
@@ -414,7 +408,7 @@ The available options are:
 - ``zoneinfo.ZoneInfo("Australia/Sydney")``
 - ``+0530`` (UTC offset in string format)
 
-Let's exercise all of them::
+Let's exercise all of them:
 
     >>> cursor.time_zone = datetime.timezone.utc
     >>> cursor.execute('')

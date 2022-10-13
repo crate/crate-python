@@ -166,7 +166,7 @@ Table definition
 ----------------
 
 Here is an example SQLAlchemy table definition using the `declarative
-system`_::
+system`_:
 
     >>> from sqlalchemy.ext import declarative
     >>> from crate.client.sqlalchemy import types
@@ -431,7 +431,8 @@ default, which is a short time for me and you, but a long time for your code).
 
 You can request a `table refresh`_ to update the index manually::
 
-    >>> refresh("characters")
+    >>> connection = engine.connect()
+    >>> _ = connection.execute(text("REFRESH TABLE characters"))
 
 .. NOTE::
 

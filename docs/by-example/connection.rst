@@ -5,6 +5,10 @@ The Connection object
 This documentation section outlines different attributes, methods, and
 behaviors of the ``crate.client.connection.Connection`` object.
 
+To improve focus and reduce boilerplate, the example code uses both
+``ClientMocked``. It is required for demonstration purposes, so the example
+does not need a real database connection.
+
 .. rubric:: Table of Contents
 
 .. contents::
@@ -13,13 +17,13 @@ behaviors of the ``crate.client.connection.Connection`` object.
 
 connect()
 =========
-::
+
+This section sets up a connection object, and inspects some of its attributes.
 
     >>> from crate.client import connect
+    >>> from crate.client.test_util import ClientMocked
 
-We create a new connection object::
-
-    >>> connection = connect(client=connection_client_mocked)
+    >>> connection = connect(client=ClientMocked())
     >>> connection.lowest_server_version.version
     (2, 0, 0)
 

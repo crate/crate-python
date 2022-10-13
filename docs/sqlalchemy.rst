@@ -1,10 +1,22 @@
+.. _sqlalchemy-support:
 .. _using-sqlalchemy:
 
-============================
-Using the SQLAlchemy dialect
-============================
+==================
+SQLAlchemy support
+==================
 
-`SQLAlchemy`_ is a popular `Object-Relational Mapping`_ (ORM) tool for Python.
+.. rubric:: Table of contents
+
+.. contents::
+    :local:
+    :depth: 2
+
+
+Introduction
+============
+
+`SQLAlchemy`_ is a popular `Object-Relational Mapping`_ (ORM) library for
+Python.
 
 The CrateDB Python client library provides support for SQLAlchemy. A CrateDB
 `dialect`_ is registered at installation time and can be used without further
@@ -13,25 +25,17 @@ configuration.
 The CrateDB Python client library is validated to work with SQLAlchemy versions
 ``1.3`` and ``1.4``.
 
-.. NOTE::
-
-   This page documents the CrateDB SQLAlchemy dialect.
-
-   For help using the CrateDB `Database API`_ client, consult :ref:`the client
-   documentation <connect>`.
-
 .. SEEALSO::
 
-   Supplementary information about the CrateDB SQLAlchemy dialect can be found
-   in the :ref:`data types appendix <data-types-sqlalchemy>`.
+    For general help using SQLAlchemy, consult the `SQLAlchemy tutorial`_ or the
+    `SQLAlchemy library`_.
 
-   For general help using SQLAlchemy, consult the `SQLAlchemy tutorial`_ or the
-   `SQLAlchemy library`_ .
+    Supplementary information about the CrateDB SQLAlchemy dialect can be found
+    in the :ref:`data types appendix <data-types-sqlalchemy>`.
 
-.. rubric:: Table of contents
+    Code examples for using the CrateDB SQLAlchemy dialect can be found at
+    :ref:`sqlalchemy-by-example`.
 
-.. contents::
-   :local:
 
 .. _connecting:
 

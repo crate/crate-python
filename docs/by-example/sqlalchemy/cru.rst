@@ -1,10 +1,30 @@
-==================
-SQLAlchemy Dialect
-==================
+========================================
+SQLAlchemy: Create, retrieve, and update
+========================================
+
+This section of the documentation, related to CrateDB's SQLAlchemy integration,
+focuses on showing specific details when querying, inserting, and updating
+records. It covers filtering and limiting, insert and update default values,
+and updating complex data types with nested Python dictionaries.
+
+.. rubric:: Table of Contents
+
+.. contents::
+   :local:
+
+
+Setup
+=====
+
+Establish a connection to the database:
 
     >>> connection = engine.connect()
 
-Using the connection to execute a select statement::
+
+Retrieve
+========
+
+Using the connection to execute a select statement:
 
     >>> result = connection.execute('select name from locations order by name')
     >>> result.rowcount
@@ -13,25 +33,25 @@ Using the connection to execute a select statement::
     >>> result.first()
     ('Aldebaran',)
 
-Using the ORM to query the locations::
+Using the ORM to query the locations:
 
     >>> locations = session.query(Location).order_by('name')
     >>> [l.name for l in locations if l is not None][:2]
     ['Aldebaran', 'Algol']
 
-With limit and offset::
+With limit and offset:
 
     >>> locations = session.query(Location).order_by('name').offset(1).limit(2)
     >>> [l.name for l in locations if l is not None]
     ['Algol', 'Allosimanius Syneca']
 
-With filter::
+With filter:
 
     >>> location = session.query(Location).filter_by(name='Algol').one()
     >>> location.name
     'Algol'
 
-Order by::
+Order by:
 
     >>> locations = session.query(Location).filter(Location.name != None).order_by(sa.desc(Location.name))
     >>> locations = locations.limit(2)
@@ -39,7 +59,10 @@ Order by::
     ['Outer Eastern Rim', 'North West Ripple']
 
 
-Insert a new location::
+Create
+======
+
+Insert a new location:
 
     >>> location = Location()
     >>> location.name = 'Earth'
@@ -53,19 +76,19 @@ Refresh "locations" table:
 
     >>> _ = connection.execute("REFRESH TABLE locations")
 
-Inserted location is available::
+Inserted location is available:
 
     >>> location = session.query(Location).filter_by(name='Earth').one()
     >>> location.name
     'Earth'
 
-Retrieve the location from the database::
+Retrieve the location from the database:
 
     >>> session.refresh(location)
     >>> location.name
     'Earth'
 
-Date should have been set at the insert due to default value via python method::
+Date should have been set at the insert due to default value via Python method:
 
     >>> from datetime import datetime
     >>> now = datetime.utcnow()
@@ -83,7 +106,7 @@ Date should have been set at the insert due to default value via python method::
     >>> (now - location.datetime_tz).seconds < 4
     True
 
-Verify the return type of date and datetime::
+Verify the return type of date and datetime:
 
     >>> type(location.date)
     <class 'datetime.date'>
@@ -94,8 +117,8 @@ Verify the return type of date and datetime::
     >>> type(location.datetime_notz)
     <class 'datetime.datetime'>
 
-the location also has a date and datetime property which both are nullable and
-aren't set when the row is inserted as there is no default method::
+The location also has a date and datetime property which both are nullable and
+aren't set when the row is inserted as there is no default method:
 
     >>> location.nullable_datetime is None
     True
@@ -103,7 +126,11 @@ aren't set when the row is inserted as there is no default method::
     >>> location.nullable_date is None
     True
 
-The datetime and date can be set using a update statement::
+
+Update
+======
+
+The datetime and date can be set using a update statement:
 
     >>> location.nullable_date = datetime.utcnow().date()
     >>> location.nullable_datetime = datetime.utcnow()
@@ -113,16 +140,16 @@ Refresh "locations" table:
 
     >>> _ = connection.execute("REFRESH TABLE locations")
 
-Boolean values get set natively::
+Boolean values get set natively:
 
     >>> location.flag
     True
 
-Reload the object from the db::
+Reload the object from the db:
 
     >>> session.refresh(location)
 
-And verify that the date and datetime was persisted::
+And verify that the date and datetime was persisted:
 
     >>> location.nullable_datetime is not None
     True
@@ -130,13 +157,13 @@ And verify that the date and datetime was persisted::
     >>> location.nullable_date is not None
     True
 
-Update one Location via raw sql::
+Update a record using SQL:
 
     >>> result = connection.execute("update locations set kind='Heimat' where name='Earth'")
     >>> result.rowcount
     1
 
-Update multiple Locations::
+Update multiple records:
 
     >>> for x in range(10):
     ...     loc = Location()
@@ -145,7 +172,7 @@ Update multiple Locations::
     ...     session.add(loc)
     ...     session.flush()
 
-Refresh "locations" table:
+Refresh table:
 
     >>> _ = connection.execute("REFRESH TABLE locations")
 
@@ -156,7 +183,7 @@ Query database:
     10
 
 Check that number of affected documents of update without ``where-clause`` matches number of all
-documents in the table::
+documents in the table:
 
     >>> result = connection.execute(u"update locations set kind='Überall'")
     >>> result.rowcount == connection.execute("select * from locations limit 100").rowcount
@@ -168,7 +195,7 @@ Refresh "locations" table:
 
     >>> _ = connection.execute("REFRESH TABLE locations")
 
-Test that objects can be used as list too::
+Test that objects can be used as list too:
 
     >>> location = session.query(Location).filter_by(name='Folfanga').one()
     >>> location.details = [{'size': 'huge'}, {'clima': 'cold'}]
@@ -179,7 +206,7 @@ Test that objects can be used as list too::
     >>> location.details
     [{'size': 'huge'}, {'clima': 'cold'}]
 
-Update the clima::
+Update the record:
 
     >>> location.details[1] = {'clima': 'hot'}
 
@@ -189,7 +216,7 @@ Update the clima::
     >>> location.details
     [{'size': 'huge'}, {'clima': 'hot'}]
 
-Reset the clima::
+Reset the record:
 
     >>> location.details = []
     >>> session.commit()
@@ -198,7 +225,7 @@ Reset the clima::
     >>> location.details
     []
 
-test updated nested dict::
+Update nested dictionary:
 
     >>> from crate.client.sqlalchemy.types import Craty
     >>> class Character(Base):

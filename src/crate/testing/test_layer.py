@@ -30,7 +30,7 @@ import urllib3
 
 import crate
 from .layer import CrateLayer, prepend_http, http_url_from_host_port, wait_for_http_url
-from .util import crate_path
+from .settings import crate_path
 
 
 class LayerUtilsTest(TestCase):

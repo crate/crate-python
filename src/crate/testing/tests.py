@@ -24,7 +24,7 @@ import os
 import unittest
 import tempfile
 from .test_layer import LayerUtilsTest, LayerTest
-from .util import project_root, crate_path
+from .settings import project_root, crate_path
 
 
 def setUp(test):

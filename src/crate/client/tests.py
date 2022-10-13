@@ -37,12 +37,13 @@ import logging
 import stopit
 
 from crate.testing.layer import CrateLayer
-from crate.testing.util import crate_path, docs_path
+from crate.testing.settings import \
+    crate_host, crate_path, crate_port, \
+    crate_transport_port, docs_path, localhost
 from crate.client import connect
 from crate.client.sqlalchemy.dialect import CrateDialect
 from crate.client.test_util import ClientMocked
 
-from . import http
 from .test_cursor import CursorTest
 from .test_connection import ConnectionTest
 from .test_http import (
@@ -85,11 +86,6 @@ settings = {
     'auth.host_based.config.99.user': 'me',
     'auth.host_based.config.99.method': 'password',
 }
-crate_port = 44209
-crate_transport_port = 44309
-local = '127.0.0.1'
-crate_host = "{host}:{port}".format(host=local, port=crate_port)
-crate_uri = "http://%s" % crate_host
 crate_layer = None
 
 
@@ -113,7 +109,7 @@ def ensure_cratedb_layer():
         crate_layer = CrateLayer('crate',
                                  crate_home=crate_path(),
                                  port=crate_port,
-                                 host=local,
+                                 host=localhost,
                                  transport_port=crate_transport_port,
                                  settings=settings)
     return crate_layer
@@ -126,7 +122,6 @@ def refresh(table):
 
 
 def setUpWithCrateLayer(test):
-    test.globs['HttpClient'] = http.Client
     test.globs['crate_host'] = crate_host
     test.globs['pprint'] = pprint
     test.globs['print'] = cprint
@@ -298,7 +293,6 @@ class HttpsTestServerLayer:
 
 
 def setUpWithHttps(test):
-    test.globs['HttpClient'] = http.Client
     test.globs['crate_host'] = "https://{0}:{1}".format(
         HttpsTestServerLayer.HOST, HttpsTestServerLayer.PORT
     )
@@ -392,11 +386,10 @@ def test_suite():
     suite.addTest(s)
 
     s = doctest.DocFileSuite(
-        'doctests/http.txt',
-        'doctests/blob.txt',
-        'doctests/client.txt',
-        'doctests/mocking.txt',
-        'doctests/blob.txt',
+        'docs/by-example/http.rst',
+        'docs/by-example/client.rst',
+        'docs/by-example/blob.rst',
+        module_relative=False,
         setUp=setUpWithCrateLayer,
         tearDown=tearDownWithCrateLayer,
         optionflags=flags,

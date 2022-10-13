@@ -1,11 +1,39 @@
 import datetime
 
+from .connection import Connection
 from .http import Client
 from crate.client import connect
 from unittest import TestCase
 
+from ..testing.settings import crate_host
+
 
 class ConnectionTest(TestCase):
+
+    def test_connection_mock(self):
+        """
+        For testing purposes it is often useful to replace the client used for
+        communication with the CrateDB server with a stub or mock.
+
+        This can be done by passing an object of the Client class when calling the
+        ``connect`` method.
+        """
+
+        class MyConnectionClient:
+            active_servers = ["localhost:4200"]
+
+            def __init__(self):
+                pass
+
+            def sql(self, stmt=None, parameters=None):
+                pass
+
+            def server_infos(self, server):
+                return ("localhost:4200", "my server", "0.42.0")
+
+        connection = connect([crate_host], client=MyConnectionClient())
+        self.assertIsInstance(connection, Connection)
+        self.assertEqual(connection.client.server_infos("foo"), ('localhost:4200', 'my server', '0.42.0'))
 
     def test_lowest_server_version(self):
         infos = [(None, None, '0.42.3'),

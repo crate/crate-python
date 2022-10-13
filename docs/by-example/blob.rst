@@ -1,9 +1,13 @@
-==============
-Blob Container
-==============
+==================
+Blob container API
+==================
 
-The connection provides a blob container implementation for easy use of the
-bloba API.
+The connection object provides a convenience API for easy access to `blob
+tables`_.
+
+
+Get blob container handle
+=========================
 
 Create a connection::
 
@@ -15,14 +19,14 @@ Get a blob container::
     >>> container = client.get_blob_container('myfiles')
 
 
-Store Blobs
+Store blobs
 ===========
 
-The container allows to store a blob without explicitely providing the hash
+The container allows to store a blob without explicitly providing the hash
 for the blob. This feature is possible if the blob is provided as a seekable
 stream like object.
 
-Store a StringIO stream::
+Store a ``StringIO`` stream::
 
     >>> from io import BytesIO
     >>> f = BytesIO(b'StringIO data')
@@ -60,7 +64,7 @@ Check for existence
     False
 
 
-Retrieve Blobs
+Retrieve blobs
 ==============
 
 Blobs can be retrieved using its hash::
@@ -73,7 +77,7 @@ Blobs can be retrieved using its hash::
     True
 
 
-Delete Blobs
+Delete blobs
 ============
 
 Blobs can be deleted using its hash::
@@ -88,10 +92,12 @@ Trying to delete a not existing blob::
     >>> container.delete(string_blob)
     False
 
-Close Connection
+Close connection
 ================
 
 Close the connection to clear the connection pool::
 
     >>> client.close()
 
+
+.. _blob tables: https://crate.io/docs/crate/reference/en/latest/general/blobs.html

@@ -342,6 +342,7 @@ def test_suite():
     suite = unittest.TestSuite()
     flags = (doctest.NORMALIZE_WHITESPACE | doctest.ELLIPSIS)
 
+    # Unit tests.
     suite.addTest(unittest.makeSuite(CursorTest))
     suite.addTest(unittest.makeSuite(HttpClientTest))
     suite.addTest(unittest.makeSuite(KeepAliveClientTest))
@@ -355,23 +356,6 @@ def test_suite():
     suite.addTest(sqlalchemy_test_suite())
     suite.addTest(doctest.DocTestSuite('crate.client.connection'))
     suite.addTest(doctest.DocTestSuite('crate.client.http'))
-
-    s = doctest.DocFileSuite(
-        'docs/by-example/http.rst',
-        'docs/by-example/client.rst',
-        'docs/by-example/blob.rst',
-        'docs/by-example/sqlalchemy/getting-started.rst',
-        'docs/by-example/sqlalchemy/cru.rst',
-        'docs/by-example/sqlalchemy/inspection-reflection.rst',
-        'docs/by-example/sqlalchemy/internals.rst',
-        module_relative=False,
-        setUp=setUpCrateLayerAndSqlAlchemy,
-        tearDown=tearDownWithCrateLayer,
-        optionflags=flags,
-        encoding='utf-8'
-    )
-    s.layer = ensure_cratedb_layer()
-    suite.addTest(s)
 
     s = doctest.DocFileSuite(
         'docs/by-example/connection.rst',
@@ -391,6 +375,24 @@ def test_suite():
         encoding='utf-8'
     )
     s.layer = HttpsTestServerLayer()
+    suite.addTest(s)
+
+    # Integration tests.
+    s = doctest.DocFileSuite(
+        'docs/by-example/http.rst',
+        'docs/by-example/client.rst',
+        'docs/by-example/blob.rst',
+        'docs/by-example/sqlalchemy/getting-started.rst',
+        'docs/by-example/sqlalchemy/cru.rst',
+        'docs/by-example/sqlalchemy/inspection-reflection.rst',
+        'docs/by-example/sqlalchemy/internals.rst',
+        module_relative=False,
+        setUp=setUpCrateLayerAndSqlAlchemy,
+        tearDown=tearDownWithCrateLayer,
+        optionflags=flags,
+        encoding='utf-8'
+    )
+    s.layer = ensure_cratedb_layer()
     suite.addTest(s)
 
     return suite

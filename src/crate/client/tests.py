@@ -342,14 +342,6 @@ def test_suite():
     suite = unittest.TestSuite()
     flags = (doctest.NORMALIZE_WHITESPACE | doctest.ELLIPSIS)
 
-    s = doctest.DocFileSuite(
-        'doctests/cursor.txt',
-        'doctests/connection.txt',
-        setUp=setUpMocked,
-        optionflags=flags,
-        encoding='utf-8'
-    )
-    suite.addTest(s)
     suite.addTest(unittest.makeSuite(CursorTest))
     suite.addTest(unittest.makeSuite(HttpClientTest))
     suite.addTest(unittest.makeSuite(KeepAliveClientTest))
@@ -363,15 +355,6 @@ def test_suite():
     suite.addTest(sqlalchemy_test_suite())
     suite.addTest(doctest.DocTestSuite('crate.client.connection'))
     suite.addTest(doctest.DocTestSuite('crate.client.http'))
-
-    s = doctest.DocFileSuite(
-        'doctests/https.txt',
-        setUp=setUpWithHttps,
-        optionflags=flags,
-        encoding='utf-8'
-    )
-    s.layer = HttpsTestServerLayer()
-    suite.addTest(s)
 
     s = doctest.DocFileSuite(
         'sqlalchemy/doctests/itests.txt',
@@ -406,6 +389,26 @@ def test_suite():
         encoding='utf-8'
     )
     s.layer = ensure_cratedb_layer()
+    suite.addTest(s)
+
+    s = doctest.DocFileSuite(
+        'docs/by-example/connection.rst',
+        'docs/by-example/cursor.rst',
+        module_relative=False,
+        setUp=setUpMocked,
+        optionflags=flags,
+        encoding='utf-8'
+    )
+    suite.addTest(s)
+
+    s = doctest.DocFileSuite(
+        'docs/by-example/https.rst',
+        module_relative=False,
+        setUp=setUpWithHttps,
+        optionflags=flags,
+        encoding='utf-8'
+    )
+    s.layer = HttpsTestServerLayer()
     suite.addTest(s)
 
     return suite

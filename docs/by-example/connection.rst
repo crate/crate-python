@@ -1,7 +1,18 @@
-==========
-Connection
-==========
+=====================
+The Connection object
+=====================
 
+This documentation section outlines different attributes, methods, and
+behaviors of the ``crate.client.connection.Connection`` object.
+
+.. rubric:: Table of Contents
+
+.. contents::
+   :local:
+
+
+connect()
+=========
 ::
 
     >>> from crate.client import connect
@@ -11,6 +22,9 @@ We create a new connection object::
     >>> connection = connect(client=connection_client_mocked)
     >>> connection.lowest_server_version.version
     (2, 0, 0)
+
+cursor()
+========
 
 Calling the ``cursor()`` function on the connection will
 return a cursor object::
@@ -22,6 +36,9 @@ cursor object::
 
     >>> cursor.rowcount
     -1
+
+close()
+=======
 
 Now we close the connection::
 
@@ -45,9 +62,3 @@ raise a ``ProgrammingError``::
     Traceback (most recent call last):
     ...
     crate.client.exceptions.ProgrammingError: Connection closed
-
-    >>> connection = connect(client=connection_client_mocked)
-    >>> cursor = connection.cursor()
-    >>> cursor.rowcount
-    -1
-

@@ -37,7 +37,7 @@ Ignore specific test directories::
     ./bin/test -vvvv --ignore_dir=testing
 
 The ``LayerTest`` test cases have quite some overhead. Omitting them will save
-a few cycles (~90 seconds runtime)::
+a few cycles (~70 seconds runtime)::
 
     ./bin/test -t '!LayerTest'
 

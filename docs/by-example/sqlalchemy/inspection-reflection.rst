@@ -18,6 +18,8 @@ within SQLAlchemy Core and the SQLAlchemy ORM.
 The ``CrateDialect`` instance provides metadata about the CrateDB cluster,
 like version and schema information.
 
+As always, let's start with creating an ``Engine`` instance.
+
     >>> import sqlalchemy as sa
     >>> engine = sa.create_engine(f"crate://{crate_host}")
 
@@ -25,9 +27,9 @@ like version and schema information.
 Inspector
 =========
 
-The `SQLAlchemy inspector`_ is a low level interface which provides a backend-
-agnostic system of loading lists of schema, table, column, and constraint
-descriptions from a given database is available.
+The `SQLAlchemy inspector`_ is a low level interface which provides a
+backend-agnostic system of loading lists of schema, table, column, and
+constraint descriptions from a given database.
 
     >>> inspector = sa.inspect(engine)
 

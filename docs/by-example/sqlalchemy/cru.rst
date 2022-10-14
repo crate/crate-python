@@ -279,6 +279,9 @@ Refresh "characters" table:
     >>> pprint(char.details)
     {'name': {'first': 'Trillian', 'last': 'Dent'}, 'size': 45}
 
-.. Hidden: close connection
 
+.. hidden: Disconnect from database
+
+    >>> session.close()
     >>> connection.close()
+    >>> engine.dispose()

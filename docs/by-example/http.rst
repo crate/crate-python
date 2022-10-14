@@ -23,10 +23,12 @@ Server configuration
 A list of servers can be passed while creating an instance of the http client::
 
     >>> http_client = HttpClient([crate_host])
+    >>> http_client.close()
 
 Its also possible to pass a single server as a string::
 
     >>> http_client = HttpClient(crate_host)
+    >>> http_client.close()
 
 If no ``server`` argument (or no argument at all) is passed, the default one
 ``127.0.0.1:4200`` is used::
@@ -34,6 +36,7 @@ If no ``server`` argument (or no argument at all) is passed, the default one
     >>> http_client = HttpClient()
     >>> http_client._active_servers
     ['http://127.0.0.1:4200']
+    >>> http_client.close()
 
 When using a list of servers, the servers are selected by round-robin::
 
@@ -48,6 +51,8 @@ When using a list of servers, the servers are selected by round-robin::
 
     >>> http_client._get_server()
     'http://even_more_invalid_host:9999'
+
+    >>> http_client.close()
 
 Servers with connection errors will be removed from the active server list::
 
@@ -66,6 +71,7 @@ To validate this, set the interval very short and sleep for that interval::
     ['http://invalid_host:9999',
      'http://even_more_invalid_host:9999',
      'http://127.0.0.1:44209']
+    >>> http_client.close()
 
 If no active servers are available and the retry interval is not reached, just use the oldest
 inactive one::
@@ -75,6 +81,7 @@ inactive one::
     >>> http_client._active_servers = []
     >>> http_client._get_server()
     'http://invalid_host:9999'
+    >>> http_client.close()
 
 SQL Statements
 ==============
@@ -117,8 +124,7 @@ Trying to get a non-existing blob throws an exception::
     ...
     crate.client.exceptions.DigestNotFoundException: myfiles/041f06fd774092478d450774f5ba30c5da78acc8
 
-Creating a new blob - this method returns True if the blob was newly
-created, false if it already exists::
+Creating a new blob - this method returns True if the blob was newly created::
 
     >>> from tempfile import TemporaryFile
     >>> f = TemporaryFile()
@@ -127,6 +133,8 @@ created, false if it already exists::
     >>> http_client.blob_put(
     ...     'myfiles', '040f06fd774092478d450774f5ba30c5da78acc8', f)
     True
+
+Uploading the same content again returns ``False``::
 
     >>> _ = f.seek(0)
     >>> http_client.blob_put(
@@ -171,6 +179,10 @@ Uploading a blob to a table with disabled blob support throws an exception::
     ...
     crate.client.exceptions.BlobLocationNotFoundException: locations/040f06fd774092478d450774f5ba30c5da78acc8
 
+    >>> http_client.close()
+    >>> f.close()
+
+
 Error Handling
 ==============
 
@@ -185,6 +197,7 @@ timeout exception::
     ... '
     ... ''')
     {...}
+    >>> http_client.close()
 
 It's possible to define a HTTP timeout in seconds on client instantiation, so
 an exception is raised when the timeout is reached::
@@ -194,6 +207,7 @@ an exception is raised when the timeout is reached::
     Traceback (most recent call last):
     ...
     crate.client.exceptions.ConnectionError: No more Servers available, exception from last server: ...
+    >>> http_client.close()
 
 When connecting to non-CrateDB servers, the HttpClient will raise a ConnectionError like this::
 
@@ -203,6 +217,7 @@ When connecting to non-CrateDB servers, the HttpClient will raise a ConnectionEr
     ...
     crate.client.exceptions.ProgrammingError: Invalid server response of content-type 'text/html; charset=utf-8':
     ...
+    >>> http_client.close()
 
 When using the ``error_trace`` kwarg a full traceback of the server exception
 will be provided::
@@ -217,3 +232,4 @@ will be provided::
     >>> print(trace)
     TRACE: ... mismatched input 'error' expecting {<EOF>, ...
     at io.crate...
+    >>> http_client.close()

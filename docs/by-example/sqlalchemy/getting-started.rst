@@ -380,22 +380,23 @@ First the table definition as class:
 
 As seen below the table doesn't exist yet:
 
-    >>> conn = engine.connect()
-    >>> engine.dialect.has_table(conn, table_name='departments')
+    >>> engine.dialect.has_table(connection, table_name='departments')
     False
 
-In order to create all missing tables the ``create_all`` method can be used:
+In order to create all missing tables, the ``create_all`` method can be used:
 
     >>> Base.metadata.create_all(bind=engine)
 
-    >>> engine.dialect.has_table(conn, table_name='departments')
+With that, the table has been created:
+
+    >>> engine.dialect.has_table(connection, table_name='departments')
     True
 
     >>> stmt = ("select table_name, column_name, ordinal_position, data_type "
     ...         "from information_schema.columns "
     ...         "where table_name = 'departments' "
     ...         "order by column_name")
-    >>> pprint([str(r) for r in conn.execute(stmt)])
+    >>> pprint([str(r) for r in connection.execute(stmt)])
     ["('departments', 'code', 3, 'integer')",
      "('departments', 'id', 1, 'text')",
      "('departments', 'name', 2, 'text')"]
@@ -408,7 +409,7 @@ delete a single table use ``drop(...)`` as shown below:
 
     >>> Base.metadata.tables['departments'].drop(engine)
 
-    >>> engine.dialect.has_table(conn, table_name='departments')
+    >>> engine.dialect.has_table(connection, table_name='departments')
     False
 
 Insert From Select
@@ -466,5 +467,10 @@ This will result in the following query:
     >>> pprint([str(r) for r in session.execute("Select content from archived_tasks")])
     ["('Write Tests',)"]
 
+.. hidden: Disconnect from database
+
+    >>> session.close()
+    >>> connection.close()
+    >>> engine.dispose()
 
 .. _count result rows: http://docs.sqlalchemy.org/en/14/orm/tutorial.html#counting

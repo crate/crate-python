@@ -109,7 +109,7 @@ Check if table exists:
     True
 
 
-.. Hidden: close connection
+.. hidden: Disconnect from database
 
     >>> connection.close()
     >>> engine.dispose()

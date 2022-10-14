@@ -169,8 +169,6 @@ levels of a ``Object`` type field. For example the following query will only
 update the ``gender`` key. The ``species`` key which is on the same level will
 be left untouched.
 
-::
-
     >>> char = session.query(Character).filter_by(name='Arthur Dent').one()
     >>> char.details['gender'] = 'manly man'
     >>> session.commit()
@@ -189,8 +187,8 @@ In addition to the ``Object`` type the CrateDB sqlalchemy dialect also includes
 a type called ``ObjectArray``. This type maps to a Python list of dictionaries.
 
 Note that opposed to the ``Object`` type the ``ObjectArray`` type isn't smart
-and doesn't have an intelligent change tracking. Therefore the generated UPDATE
-statement will affect the whole list:
+and doesn't have an intelligent change tracking. Therefore the generated
+``UPDATE`` statement will affect the whole list:
 
     >>> char.more_details = [{'foo': 1, 'bar': 10}, {'foo': 2}]
     >>> session.commit()
@@ -198,13 +196,15 @@ statement will affect the whole list:
     >>> char.more_details.append({'foo': 3})
     >>> session.commit()
 
-This will generate an UPDATE statement roughly like this:
+This will generate an ``UPDATE`` statement which looks roughly like this::
 
-    "UPDATE characters set more_details = ? ...", ([{'foo': 1, 'bar': 10}, {'foo': 2}, {'foo': 3}],)
+    "UPDATE characters SET more_details = ? ...", ([{'foo': 1, 'bar': 10}, {'foo': 2}, {'foo': 3}],)
+
+.. hidden:
 
     >>> _ = connection.execute(text("REFRESH TABLE characters"))
 
-To do queries against fields of ``ObjectArray``s you have to use the
+To do queries against fields of ``ObjectArray`` types, you have to use the
 ``.any(value, operator=operators.eq)`` method on a subscript, because accessing
 fields of object arrays (e.g. ``Character.more_details['foo']``) returns an
 array of the field type.
@@ -305,8 +305,6 @@ Fulltext Search in CrateDB is performed using the MATCH Predicate. The
 CrateDB SQLAlchemy driver comes with a ``match`` function in the
 ``predicates`` namespace, which can be used to search on one or multiple
 fields.
-
-::
 
     >>> from crate.client.sqlalchemy.predicates import match
     >>> session.query(Character.name) \
@@ -417,10 +415,10 @@ Insert From Select
 
 In SQLAlchemy, the ``insert().from_select()`` function returns a new ``Insert``
 construct which represents an ``INSERT...FROM SELECT`` statement. This
-functionality is now supported by the ``crate`` client library. Here is an
-example that uses ``insert().from_select()``:
+functionality is supported by the CrateDB client library. Here is an example
+that uses ``insert().from_select()``.
 
-First let's define and create the tables:
+First, let's define and create the tables:
 
     >>> from sqlalchemy import select, insert
 
@@ -457,14 +455,16 @@ table:
     >>> ins = insert(ArchivedTasks).from_select(['id','content'], sel)
     >>> result = session.execute(ins)
     >>> session.commit()
+
+This will emit the following ``INSERT`` statement to the database::
+
+    INSERT INTO archived_tasks (id, content)
+        (SELECT todos.id, todos.content FROM todos WHERE todos.status = 'done')
+
+Now, verify that the data is present in the database:
+
     >>> _ = connection.execute(text("REFRESH TABLE archived_tasks"))
-
-This will result in the following query:
-
-    "INSERT INTO archived_tasks (id, content) "
-    ... "(SELECT todos.id, todos.content FROM todos WHERE todos.status = 'done')"
-
-    >>> pprint([str(r) for r in session.execute("Select content from archived_tasks")])
+    >>> pprint([str(r) for r in session.execute("SELECT content FROM archived_tasks")])
     ["('Write Tests',)"]
 
 .. hidden: Disconnect from database

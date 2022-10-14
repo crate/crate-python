@@ -135,6 +135,8 @@ def setUpWithCrateLayer(test):
         cursor.execute("CREATE USER me WITH (password = 'my_secret_pw')")
         cursor.execute("CREATE USER trusted_me")
 
+        cursor.close()
+
 
 def setUpCrateLayerAndSqlAlchemy(test):
     setUpWithCrateLayer(test)
@@ -166,6 +168,7 @@ def setUpCrateLayerAndSqlAlchemy(test):
     engine = sa.create_engine(f"crate://{crate_host}")
     for ddl_statement in ddl_statements:
         engine.execute(sa.text(ddl_statement))
+    engine.dispose()
 
 
 class HttpsTestServerLayer:
@@ -291,6 +294,7 @@ def _try_execute(cursor, stmt):
 def tearDownWithCrateLayer(test):
     # clear testing data
     with connect(crate_host) as conn:
+        cursor = conn.cursor()
         for stmt in ["DROP TABLE locations",
                      "DROP BLOB TABLE myfiles",
                      "DROP TABLE characters",
@@ -299,7 +303,7 @@ def tearDownWithCrateLayer(test):
                      "DROP USER me",
                      "DROP USER trusted_me",
                      ]:
-            _try_execute(conn.cursor(), stmt)
+            _try_execute(cursor, stmt)
 
 
 def test_suite():

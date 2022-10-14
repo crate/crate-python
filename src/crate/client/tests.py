@@ -107,7 +107,7 @@ def ensure_cratedb_layer():
     return crate_layer
 
 
-def setUpWithCrateLayer(test):
+def setUpCrateLayerBaseline(test):
     test.globs['crate_host'] = crate_host
     test.globs['pprint'] = pprint
     test.globs['print'] = cprint
@@ -131,6 +131,7 @@ def setUpWithCrateLayer(test):
         # create blob table
         cursor.execute("create blob table myfiles clustered into 1 shards " +
                        "with (number_of_replicas=0)")
+
         # create users
         cursor.execute("CREATE USER me WITH (password = 'my_secret_pw')")
         cursor.execute("CREATE USER trusted_me")
@@ -138,9 +139,11 @@ def setUpWithCrateLayer(test):
         cursor.close()
 
 
-def setUpCrateLayerAndSqlAlchemy(test):
-    setUpWithCrateLayer(test)
-    import sqlalchemy as sa
+def setUpCrateLayerSqlAlchemy(test):
+    """
+    Setup tables and views needed for SQLAlchemy tests.
+    """
+    setUpCrateLayerBaseline(test)
 
     ddl_statements = [
         """
@@ -164,11 +167,33 @@ def setUpCrateLayerAndSqlAlchemy(test):
             area GEO_SHAPE
         )"""
     ]
+    _execute_statements(ddl_statements, on_error="raise")
 
-    engine = sa.create_engine(f"crate://{crate_host}")
-    for ddl_statement in ddl_statements:
-        engine.execute(sa.text(ddl_statement))
-    engine.dispose()
+
+def tearDownDropEntitiesBaseline(test):
+    """
+    Drop all tables, views, and users created by `setUpWithCrateLayer*`.
+    """
+    ddl_statements = [
+        "DROP TABLE locations",
+        "DROP BLOB TABLE myfiles",
+        "DROP USER me",
+        "DROP USER trusted_me",
+    ]
+    _execute_statements(ddl_statements)
+
+
+def tearDownDropEntitiesSqlAlchemy(test):
+    """
+    Drop all tables, views, and users created by `setUpWithCrateLayer*`.
+    """
+    tearDownDropEntitiesBaseline(test)
+    ddl_statements = [
+        "DROP TABLE characters",
+        "DROP VIEW characters_view",
+        "DROP TABLE cities",
+    ]
+    _execute_statements(ddl_statements)
 
 
 class HttpsTestServerLayer:
@@ -280,7 +305,15 @@ def setUpWithHttps(test):
     )
 
 
-def _try_execute(cursor, stmt):
+def _execute_statements(statements, on_error="ignore"):
+    with connect(crate_host) as conn:
+        cursor = conn.cursor()
+        for stmt in statements:
+            _execute_statement(cursor, stmt, on_error=on_error)
+        cursor.close()
+
+
+def _execute_statement(cursor, stmt, on_error="ignore"):
     try:
         cursor.execute(stmt)
     except Exception:
@@ -288,22 +321,10 @@ def _try_execute(cursor, stmt):
         # Note: When needing to debug the test environment, you may want to
         #       enable this logger statement.
         # log.exception("Executing SQL statement failed")
-        pass
-
-
-def tearDownWithCrateLayer(test):
-    # clear testing data
-    with connect(crate_host) as conn:
-        cursor = conn.cursor()
-        for stmt in ["DROP TABLE locations",
-                     "DROP BLOB TABLE myfiles",
-                     "DROP TABLE characters",
-                     "DROP VIEW characters_view",
-                     "DROP TABLE cities",
-                     "DROP USER me",
-                     "DROP USER trusted_me",
-                     ]:
-            _try_execute(cursor, stmt)
+        if on_error == "ignore":
+            pass
+        elif on_error == "raise":
+            raise
 
 
 def test_suite():
@@ -349,12 +370,22 @@ def test_suite():
         'docs/by-example/http.rst',
         'docs/by-example/client.rst',
         'docs/by-example/blob.rst',
+        module_relative=False,
+        setUp=setUpCrateLayerBaseline,
+        tearDown=tearDownDropEntitiesBaseline,
+        optionflags=flags,
+        encoding='utf-8'
+    )
+    s.layer = ensure_cratedb_layer()
+    suite.addTest(s)
+
+    s = doctest.DocFileSuite(
         'docs/by-example/sqlalchemy/getting-started.rst',
         'docs/by-example/sqlalchemy/cru.rst',
         'docs/by-example/sqlalchemy/inspection-reflection.rst',
         module_relative=False,
-        setUp=setUpCrateLayerAndSqlAlchemy,
-        tearDown=tearDownWithCrateLayer,
+        setUp=setUpCrateLayerSqlAlchemy,
+        tearDown=tearDownDropEntitiesSqlAlchemy,
         optionflags=flags,
         encoding='utf-8'
     )

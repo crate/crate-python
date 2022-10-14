@@ -44,7 +44,6 @@ its corresponding API interfaces, see also :ref:`sqlalchemy-support`.
     sqlalchemy/getting-started
     sqlalchemy/cru
     sqlalchemy/inspection-reflection
-    sqlalchemy/internals
 
 
 .. _blob tables: https://crate.io/docs/crate/reference/en/latest/general/blobs.html

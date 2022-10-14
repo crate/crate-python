@@ -348,7 +348,6 @@ def test_suite():
         'docs/by-example/sqlalchemy/getting-started.rst',
         'docs/by-example/sqlalchemy/cru.rst',
         'docs/by-example/sqlalchemy/inspection-reflection.rst',
-        'docs/by-example/sqlalchemy/internals.rst',
         module_relative=False,
         setUp=setUpCrateLayerAndSqlAlchemy,
         tearDown=tearDownWithCrateLayer,

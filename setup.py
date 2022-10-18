@@ -65,7 +65,8 @@ setup(
     },
     extras_require=dict(
         sqlalchemy=['sqlalchemy>=1.0,<1.5',
-                    'geojson>=2.5.0,<3'],
+                    'geojson>=2.5.0,<3',
+                    'backports.zoneinfo<1; python_version<"3.9"'],
         test=['tox>=3,<4',
               'zope.testing>=4,<5',
               'zope.testrunner>=5,<6',

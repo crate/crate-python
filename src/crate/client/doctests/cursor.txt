@@ -415,11 +415,18 @@ Let's exercise all of them::
     >>> cursor.fetchone()
     ['foo', datetime.datetime(2022, 7, 19, 4, 10, 36, 758000, tzinfo=<DstTzInfo 'Australia/Sydney' AEST+10:00:00 STD>)]
 
-    >>> import zoneinfo
+    >>> try:
+    ...     import zoneinfo
+    ... except ModuleNotFoundError:
+    ...     from backports import zoneinfo
     >>> cursor.time_zone = zoneinfo.ZoneInfo("Australia/Sydney")
     >>> cursor.execute('')
-    >>> cursor.fetchone()
-    ['foo', datetime.datetime(2022, 7, 19, 4, 10, 36, 758000, tzinfo=zoneinfo.ZoneInfo(key='Australia/Sydney'))]
+    >>> record = cursor.fetchone()
+    >>> record
+    ['foo', datetime.datetime(2022, 7, 19, 4, 10, 36, 758000, ...zoneinfo.ZoneInfo(key='Australia/Sydney'))]
+
+    >>> record[1].tzname()
+    'AEST'
 
     >>> cursor.time_zone = "+0530"
     >>> cursor.execute('')

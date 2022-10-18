@@ -20,10 +20,13 @@
 # software solely pursuant to the terms of the relevant commercial agreement.
 
 import datetime
-import zoneinfo
 from ipaddress import IPv4Address
 from unittest import TestCase
 from unittest.mock import MagicMock
+try:
+    import zoneinfo
+except ModuleNotFoundError:
+    from backports import zoneinfo
 
 import pytz
 

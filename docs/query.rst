@@ -291,7 +291,11 @@ Let's exercise all of them.
     >>> ccursor.fetchone()
     ['foo', datetime.datetime(2022, 7, 19, 4, 10, 36, 758000, tzinfo=<DstTzInfo 'Australia/Sydney' AEST+10:00:00 STD>)]
 
-    >>> import zoneinfo
+    >>> try:
+    ...     import zoneinfo
+    ... except ModuleNotFoundError:
+    ...     from backports import zoneinfo
+
     >>> ccursor.time_zone = zoneinfo.ZoneInfo("Australia/Sydney")
     >>> ccursor.execute("SELECT datetime_tz FROM locations ORDER BY name")
     >>> ccursor.fetchone()

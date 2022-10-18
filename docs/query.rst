@@ -260,9 +260,9 @@ For your reference, in the following examples, epoch 1658167836758 is
 
     >>> import datetime
     >>> tz_mst = datetime.timezone(datetime.timedelta(hours=7), name="MST")
-    >>> ccursor = connection.cursor(time_zone=tz_mst)
+    >>> cursor = connection.cursor(time_zone=tz_mst)
 
-    >>> ccursor.execute("SELECT datetime_tz FROM locations ORDER BY name")
+    >>> cursor.execute("SELECT datetime_tz FROM locations ORDER BY name")
 
     >>> cursor.fetchone()
     [datetime.datetime(2022, 7, 19, 1, 10, 36, 758000, tzinfo=datetime.timezone(datetime.timedelta(seconds=25200), 'MST'))]
@@ -280,15 +280,15 @@ Let's exercise all of them.
 
 ::
 
-    >>> ccursor.time_zone = datetime.timezone.utc
-    >>> ccursor.execute("SELECT datetime_tz FROM locations ORDER BY name")
-    >>> ccursor.fetchone()
+    >>> cursor.time_zone = datetime.timezone.utc
+    >>> cursor.execute("SELECT datetime_tz FROM locations ORDER BY name")
+    >>> cursor.fetchone()
     [datetime.datetime(2022, 7, 18, 18, 10, 36, 758000, tzinfo=datetime.timezone.utc)]
 
     >>> import pytz
-    >>> ccursor.time_zone = pytz.timezone("Australia/Sydney")
-    >>> ccursor.execute("SELECT datetime_tz FROM locations ORDER BY name")
-    >>> ccursor.fetchone()
+    >>> cursor.time_zone = pytz.timezone("Australia/Sydney")
+    >>> cursor.execute("SELECT datetime_tz FROM locations ORDER BY name")
+    >>> cursor.fetchone()
     ['foo', datetime.datetime(2022, 7, 19, 4, 10, 36, 758000, tzinfo=<DstTzInfo 'Australia/Sydney' AEST+10:00:00 STD>)]
 
     >>> try:
@@ -296,14 +296,14 @@ Let's exercise all of them.
     ... except ModuleNotFoundError:
     ...     from backports import zoneinfo
 
-    >>> ccursor.time_zone = zoneinfo.ZoneInfo("Australia/Sydney")
-    >>> ccursor.execute("SELECT datetime_tz FROM locations ORDER BY name")
-    >>> ccursor.fetchone()
+    >>> cursor.time_zone = zoneinfo.ZoneInfo("Australia/Sydney")
+    >>> cursor.execute("SELECT datetime_tz FROM locations ORDER BY name")
+    >>> cursor.fetchone()
     [datetime.datetime(2022, 7, 19, 4, 10, 36, 758000, tzinfo=zoneinfo.ZoneInfo(key='Australia/Sydney'))]
 
-    >>> ccursor.time_zone = "+0530"
-    >>> ccursor.execute("SELECT datetime_tz FROM locations ORDER BY name")
-    >>> ccursor.fetchone()
+    >>> cursor.time_zone = "+0530"
+    >>> cursor.execute("SELECT datetime_tz FROM locations ORDER BY name")
+    >>> cursor.fetchone()
     [datetime.datetime(2022, 7, 18, 23, 40, 36, 758000, tzinfo=datetime.timezone(datetime.timedelta(seconds=19800), '+0530'))]
 
 

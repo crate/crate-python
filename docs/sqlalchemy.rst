@@ -629,7 +629,7 @@ column on the ``Character`` class.
 .. _operator: https://docs.python.org/2/library/operator.html
 .. _any: http://docs.sqlalchemy.org/en/latest/core/type_basics.html#sqlalchemy.types.ARRAY.Comparator.any
 .. _tuple: https://docs.python.org/3/library/stdtypes.html#sequence-types-list-tuple-range
-.. _count result rows: http://docs.sqlalchemy.org/en/latest/orm/tutorial.html#counting
+.. _count result rows: http://docs.sqlalchemy.org/en/14/orm/tutorial.html#counting
 .. _MATCH predicate: https://crate.io/docs/crate/reference/en/latest/general/dql/fulltext.html#match-predicate
 .. _arguments reference: https://crate.io/docs/crate/reference/en/latest/general/dql/fulltext.html#arguments
 .. _boost values: https://crate.io/docs/crate/reference/en/latest/general/dql/fulltext.html#arguments

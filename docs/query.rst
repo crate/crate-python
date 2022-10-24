@@ -293,7 +293,7 @@ Let's exercise all of them.
 
     >>> try:
     ...     import zoneinfo
-    ... except ModuleNotFoundError:
+    ... except ImportError:
     ...     from backports import zoneinfo
 
     >>> cursor.time_zone = zoneinfo.ZoneInfo("Australia/Sydney")

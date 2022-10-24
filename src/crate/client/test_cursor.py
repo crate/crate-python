@@ -25,7 +25,7 @@ from unittest import TestCase
 from unittest.mock import MagicMock
 try:
     import zoneinfo
-except ModuleNotFoundError:
+except ImportError:
     from backports import zoneinfo
 
 import pytz

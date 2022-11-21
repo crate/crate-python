@@ -282,8 +282,8 @@ class HttpClientTest(TestCase):
         server = 'http://localhost:4200'
         client = Client(servers=server)
         conn_kw = client.server_pool[server].pool.conn_kw
-        self.assertTrue(
-            (socket.SOL_SOCKET, socket.SO_KEEPALIVE, 1) in conn_kw['socket_options']
+        self.assertIn(
+            (socket.SOL_SOCKET, socket.SO_KEEPALIVE, 1), conn_kw['socket_options']
         )
         client.close()
 
@@ -454,13 +454,13 @@ class RequestsCaBundleTest(TestCase):
 
     def test_remove_certs_for_non_https(self):
         d = _remove_certs_for_non_https('https', {"ca_certs": 1})
-        self.assertTrue('ca_certs' in d)
+        self.assertIn('ca_certs', d)
 
         kwargs = {'ca_certs': 1, 'foobar': 2, 'cert_file': 3}
         d = _remove_certs_for_non_https('http', kwargs)
-        self.assertTrue('ca_certs' not in d)
-        self.assertTrue('cert_file' not in d)
-        self.assertTrue('foobar' in d)
+        self.assertNotIn('ca_certs', d)
+        self.assertNotIn('cert_file', d)
+        self.assertIn('foobar', d)
 
 
 class TimeoutRequestHandler(BaseHTTPRequestHandler):
@@ -572,8 +572,8 @@ class RetryOnTimeoutServerTest(TestingHttpServerTestCase):
         try:
             self.client.sql("select * from fake")
         except ConnectionError as e:
-            self.assertTrue('Read timed out' in e.message,
-                            msg='Error message must contain: Read timed out')
+            self.assertIn('Read timed out', e.message,
+                          msg='Error message must contain: Read timed out')
         self.assertEqual(TestingHTTPServer.SHARED['count'], 1)
 
 

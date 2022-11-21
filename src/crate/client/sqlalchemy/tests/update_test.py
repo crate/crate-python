@@ -79,8 +79,8 @@ class SqlAlchemyUpdateTest(TestCase):
         self.assertEqual(expected_stmt, stmt)
         self.assertEqual(40, args[0])
         dt = datetime.strptime(args[1], '%Y-%m-%dT%H:%M:%S.%fZ')
-        self.assertTrue(isinstance(dt, datetime))
-        self.assertTrue(dt > now)
+        self.assertIsInstance(dt, datetime)
+        self.assertGreater(dt, now)
         self.assertEqual('Arthur', args[2])
 
     @patch('crate.client.connection.Cursor', FakeCursor)
@@ -108,5 +108,5 @@ class SqlAlchemyUpdateTest(TestCase):
         self.assertEqual('Julia', args[0])
         self.assertEqual({'favorite_book': 'Romeo & Juliet'}, args[1])
         dt = datetime.strptime(args[2], '%Y-%m-%dT%H:%M:%S.%fZ')
-        self.assertTrue(isinstance(dt, datetime))
-        self.assertTrue(dt > before_update_time)
+        self.assertIsInstance(dt, datetime)
+        self.assertGreater(dt, before_update_time)

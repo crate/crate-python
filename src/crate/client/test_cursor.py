@@ -107,7 +107,7 @@ class CursorTest(TestCase):
         c.execute("")
         with self.assertRaises(ValueError) as ex:
             c.fetchone()
-        assert ex.exception.args == ("999 is not a valid DataType",)
+        self.assertEqual(ex.exception.args, ("999 is not a valid DataType",))
 
     def test_execute_array_with_converter(self):
         client = ClientMocked()
@@ -150,7 +150,7 @@ class CursorTest(TestCase):
 
         with self.assertRaises(ValueError) as ex:
             cursor.fetchone()
-        assert ex.exception.args == ("Data type 6 is not implemented as collection type",)
+        self.assertEqual(ex.exception.args, ("Data type 6 is not implemented as collection type",))
 
     def test_execute_nested_array_with_converter(self):
         client = ClientMocked()

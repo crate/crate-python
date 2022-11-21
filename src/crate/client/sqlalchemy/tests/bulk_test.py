@@ -65,7 +65,7 @@ class SqlAlchemyBulkTest(TestCase):
             {'rowcount': 1},
         ]
         self.session.bulk_save_objects(chars)
-        (stmt, bulk_args), _kwargs = fake_cursor.executemany.call_args
+        (stmt, bulk_args), _ = fake_cursor.executemany.call_args
 
         expected_stmt = "INSERT INTO characters (name, age) VALUES (?, ?)"
         self.assertEqual(expected_stmt, stmt)

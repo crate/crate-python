@@ -222,13 +222,24 @@ class HttpsTestServerLayer:
 
     class HttpsServer(HTTPServer):
         def get_request(self):
+
+            # Prepare SSL context.
+            context = ssl._create_unverified_context(
+                protocol=ssl.PROTOCOL_TLS_SERVER,
+                cert_reqs=ssl.CERT_OPTIONAL,
+                check_hostname=False,
+                purpose=ssl.Purpose.CLIENT_AUTH,
+                certfile=HttpsTestServerLayer.CERT_FILE,
+                keyfile=HttpsTestServerLayer.CERT_FILE,
+                cafile=HttpsTestServerLayer.CACERT_FILE)
+
+            # Set minimum protocol version, TLSv1 and TLSv1.1 are unsafe.
+            context.minimum_version = ssl.TLSVersion.TLSv1_2
+
+            # Wrap TLS encryption around socket.
             socket, client_address = HTTPServer.get_request(self)
-            socket = ssl.wrap_socket(socket,
-                                     keyfile=HttpsTestServerLayer.CERT_FILE,
-                                     certfile=HttpsTestServerLayer.CERT_FILE,
-                                     cert_reqs=ssl.CERT_OPTIONAL,
-                                     ca_certs=HttpsTestServerLayer.CACERT_FILE,
-                                     server_side=True)
+            socket = context.wrap_socket(socket, server_side=True)
+
             return socket, client_address
 
     class HttpsHandler(BaseHTTPRequestHandler):

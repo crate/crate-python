@@ -53,7 +53,7 @@ class SqlAlchemyConnectionTest(TestCase):
     def test_connection_server_uri_invalid_port(self):
         with self.assertRaises(ValueError) as context:
             sa.create_engine("crate://foo:bar")
-        self.assertTrue("invalid literal for int() with base 10: 'bar'" in str(context.exception))
+        self.assertIn("invalid literal for int() with base 10: 'bar'", str(context.exception))
 
     def test_connection_server_uri_https_with_trusted_user(self):
         engine = sa.create_engine(

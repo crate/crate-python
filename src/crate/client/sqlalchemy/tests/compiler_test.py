@@ -48,14 +48,14 @@ class SqlAlchemyCompilerTest(TestCase):
             self.sqlite_engine, self.update, self.values, {}
         )
 
-        assert hasattr(clauseelement, '_crate_specific') is False
+        self.assertFalse(hasattr(clauseelement, '_crate_specific'))
 
     def test_crate_update_rewritten(self):
         clauseelement, multiparams, params = crate_before_execute(
             self.crate_engine, self.update, self.values, {}
         )
 
-        assert hasattr(clauseelement, '_crate_specific') is True
+        self.assertTrue(hasattr(clauseelement, '_crate_specific'))
 
     def test_bulk_update_on_builtin_type(self):
         """
@@ -68,4 +68,4 @@ class SqlAlchemyCompilerTest(TestCase):
             self.crate_engine, self.update, data, None
         )
 
-        assert hasattr(clauseelement, '_crate_specific') is False
+        self.assertFalse(hasattr(clauseelement, '_crate_specific'))

@@ -129,11 +129,11 @@ class SqlAlchemyDictTypeTest(TestCase):
     def test_assign_null_to_object_array(self):
         session, Character = self.set_up_character_and_cursor()
         char_1 = Character(name='Trillian', data_list=None)
-        self.assertTrue(char_1.data_list is None)
+        self.assertIsNone(char_1.data_list)
         char_2 = Character(name='Trillian', data_list=1)
-        self.assertTrue(char_2.data_list == [1])
+        self.assertEqual(char_2.data_list, [1])
         char_3 = Character(name='Trillian', data_list=[None])
-        self.assertTrue(char_3.data_list == [None])
+        self.assertEqual(char_3.data_list, [None])
 
     @patch('crate.client.connection.Cursor', FakeCursor)
     def test_assign_to_craty_type_after_commit(self):
@@ -144,7 +144,7 @@ class SqlAlchemyDictTypeTest(TestCase):
         session.add(char)
         session.commit()
         char.data = {'x': 1}
-        self.assertTrue(char in session.dirty)
+        self.assertIn(char, session.dirty)
         session.commit()
         fake_cursor.execute.assert_called_with(
             "UPDATE characters SET data = ? WHERE characters.name = ?",
@@ -165,13 +165,13 @@ class SqlAlchemyDictTypeTest(TestCase):
             print(fake_cursor.mock_calls)
             raise
 
-        self.assertTrue(char in session.dirty)
+        self.assertIn(char, session.dirty)
         try:
             session.commit()
         except Exception:
             print(fake_cursor.mock_calls)
             raise
-        self.assertFalse(char in session.dirty)
+        self.assertNotIn(char, session.dirty)
 
     @patch('crate.client.connection.Cursor', FakeCursor)
     def test_partial_dict_update(self):
@@ -248,7 +248,7 @@ class SqlAlchemyDictTypeTest(TestCase):
         session.add(char)
         session.commit()
         del char.data['x']
-        self.assertTrue(char in session.dirty)
+        self.assertIn(char, session.dirty)
         session.commit()
         fake_cursor.execute.assert_called_with(
             ("UPDATE characters SET data['x'] = ? "
@@ -273,7 +273,7 @@ class SqlAlchemyDictTypeTest(TestCase):
         session.commit()
         del char.data['x']
         char.data['x'] = 4
-        self.assertTrue(char in session.dirty)
+        self.assertIn(char, session.dirty)
         session.commit()
         fake_cursor.execute.assert_called_with(
             ("UPDATE characters SET data['x'] = ? "
@@ -297,7 +297,7 @@ class SqlAlchemyDictTypeTest(TestCase):
         session.commit()
         char.data['x'] = 4
         del char.data['x']
-        self.assertTrue(char in session.dirty)
+        self.assertIn(char, session.dirty)
         session.commit()
         fake_cursor.execute.assert_called_with(
             ("UPDATE characters SET data['x'] = ? "
@@ -322,7 +322,7 @@ class SqlAlchemyDictTypeTest(TestCase):
         char.data['x'] = 4
         del char.data['x']
         char.data['x'] = 3
-        self.assertTrue(char in session.dirty)
+        self.assertIn(char, session.dirty)
         session.commit()
         fake_cursor.execute.assert_called_with(
             ("UPDATE characters SET data['x'] = ? "
@@ -362,7 +362,7 @@ class SqlAlchemyDictTypeTest(TestCase):
     def test_object_array_setitem_change_tracking(self):
         session, char = self._setup_object_array_char()
         char.data_list[1] = {'3': 3}
-        self.assertTrue(char in session.dirty)
+        self.assertIn(char, session.dirty)
         session.commit()
         fake_cursor.execute.assert_called_with(
             ("UPDATE characters SET data_list = ? "
@@ -384,7 +384,7 @@ class SqlAlchemyDictTypeTest(TestCase):
     def test_nested_object_change_tracking(self):
         session, char = self._setup_nested_object_char()
         char.data["nested"]["x"] = 3
-        self.assertTrue(char in session.dirty)
+        self.assertIn(char, session.dirty)
         session.commit()
         fake_cursor.execute.assert_called_with(
             ("UPDATE characters SET data['nested'] = ? "
@@ -397,7 +397,7 @@ class SqlAlchemyDictTypeTest(TestCase):
         session, char = self._setup_nested_object_char()
         # change deep nested object
         char.data["nested"]["y"]["z"] = 5
-        self.assertTrue(char in session.dirty)
+        self.assertIn(char, session.dirty)
         session.commit()
         fake_cursor.execute.assert_called_with(
             ("UPDATE characters SET data['nested'] = ? "
@@ -410,7 +410,7 @@ class SqlAlchemyDictTypeTest(TestCase):
         session, char = self._setup_nested_object_char()
         # delete nested object
         del char.data["nested"]["y"]["z"]
-        self.assertTrue(char in session.dirty)
+        self.assertIn(char, session.dirty)
         session.commit()
         fake_cursor.execute.assert_called_with(
             ("UPDATE characters SET data['nested'] = ? "
@@ -422,35 +422,35 @@ class SqlAlchemyDictTypeTest(TestCase):
     def test_object_array_append_change_tracking(self):
         session, char = self._setup_object_array_char()
         char.data_list.append({'3': 3})
-        self.assertTrue(char in session.dirty)
+        self.assertIn(char, session.dirty)
 
     @patch('crate.client.connection.Cursor', FakeCursor)
     def test_object_array_insert_change_tracking(self):
         session, char = self._setup_object_array_char()
         char.data_list.insert(0, {'3': 3})
-        self.assertTrue(char in session.dirty)
+        self.assertIn(char, session.dirty)
 
     @patch('crate.client.connection.Cursor', FakeCursor)
     def test_object_array_slice_change_tracking(self):
         session, char = self._setup_object_array_char()
         char.data_list[:] = [{'3': 3}]
-        self.assertTrue(char in session.dirty)
+        self.assertIn(char, session.dirty)
 
     @patch('crate.client.connection.Cursor', FakeCursor)
     def test_object_array_extend_change_tracking(self):
         session, char = self._setup_object_array_char()
         char.data_list.extend([{'3': 3}])
-        self.assertTrue(char in session.dirty)
+        self.assertIn(char, session.dirty)
 
     @patch('crate.client.connection.Cursor', FakeCursor)
     def test_object_array_pop_change_tracking(self):
         session, char = self._setup_object_array_char()
         char.data_list.pop()
-        self.assertTrue(char in session.dirty)
+        self.assertIn(char, session.dirty)
 
     @patch('crate.client.connection.Cursor', FakeCursor)
     def test_object_array_remove_change_tracking(self):
         session, char = self._setup_object_array_char()
         item = char.data_list[0]
         char.data_list.remove(item)
-        self.assertTrue(char in session.dirty)
+        self.assertIn(char, session.dirty)

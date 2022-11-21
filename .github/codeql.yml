@@ -1,5 +1,23 @@
 query-filters:
+
+  # Suppress some LGTM warnings.
+
+  - exclude:
+      id: py/empty-except
+
+  # A module is imported with the "import" and "import from" statements.
+  # https://lgtm.com/rules/1818040193/
   - exclude:
       id: py/import-and-import-from
+
+  - exclude:
+      id: py/mixed-returns
+
+  # Disable rule to compensate parameter naming in `CrateCompiler._get_crud_params`.
+  # Using an alternative name for the first parameter of an instance method makes code more difficult to read.
+  # https://lgtm.com/rules/910082/
   - exclude:
       id: py/not-named-self
+
+  - exclude:
+      id: py/unused-local-variable

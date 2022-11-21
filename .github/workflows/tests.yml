@@ -58,4 +58,4 @@ jobs:
       - name: Upload coverage results to Codecov
         uses: codecov/codecov-action@v3
         with:
-          fail_ci_if_error: true
+          fail_ci_if_error: false

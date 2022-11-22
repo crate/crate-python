@@ -34,8 +34,8 @@ class SqlAlchemyCompilerTest(TestCase):
     def setUp(self):
         self.crate_engine = sa.create_engine('crate://')
         self.sqlite_engine = sa.create_engine('sqlite://')
-        metadata = sa.MetaData()
-        self.mytable = sa.Table('mytable', metadata,
+        self.metadata = sa.MetaData()
+        self.mytable = sa.Table('mytable', self.metadata,
                                 sa.Column('name', sa.String),
                                 sa.Column('data', Craty))
 
@@ -69,3 +69,30 @@ class SqlAlchemyCompilerTest(TestCase):
         )
 
         self.assertFalse(hasattr(clauseelement, '_crate_specific'))
+
+    def test_select_with_offset(self):
+        """
+        Verify the `CrateCompiler.limit_clause` method, with offset.
+        """
+        self.metadata.bind = self.crate_engine
+        selectable = self.mytable.select().offset(5)
+        statement = str(selectable.compile())
+        self.assertEqual(statement, "SELECT mytable.name, mytable.data \nFROM mytable\n LIMIT ALL OFFSET ?")
+
+    def test_select_with_limit(self):
+        """
+        Verify the `CrateCompiler.limit_clause` method, with limit.
+        """
+        self.metadata.bind = self.crate_engine
+        selectable = self.mytable.select().limit(42)
+        statement = str(selectable.compile())
+        self.assertEqual(statement, "SELECT mytable.name, mytable.data \nFROM mytable \n LIMIT ?")
+
+    def test_select_with_offset_and_limit(self):
+        """
+        Verify the `CrateCompiler.limit_clause` method, with offset and limit.
+        """
+        self.metadata.bind = self.crate_engine
+        selectable = self.mytable.select().offset(5).limit(42)
+        statement = str(selectable.compile())
+        self.assertEqual(statement, "SELECT mytable.name, mytable.data \nFROM mytable \n LIMIT ? OFFSET ?")

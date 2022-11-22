@@ -7,6 +7,10 @@ Unreleased
 - Added a generic data type converter to the ``Cursor`` object, for converting
   fetched data from CrateDB data types to Python data types.
 
+- Fixed generating appropriate syntax for OFFSET/LIMIT clauses. It was possible
+  that SQL statement clauses like ``LIMIT -1`` could have been generated. Both
+  PostgreSQL and CrateDB only accept ``LIMIT ALL`` instead.
+
 
 2022/10/10 0.27.2
 =================

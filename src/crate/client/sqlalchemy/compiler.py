@@ -23,6 +23,7 @@ import string
 from collections import defaultdict
 
 import sqlalchemy as sa  # lgtm[py/import-and-import-from]
+from sqlalchemy.dialects.postgresql.base import PGCompiler
 from sqlalchemy.sql import compiler, crud, selectable  # lgtm[py/import-and-import-from]
 from .types import MutableDict
 from .sa_version import SA_VERSION, SA_1_4
@@ -288,6 +289,12 @@ class CrateCompiler(compiler.SQLCompiler):
                 update_stmt, self.returning)
 
         return text
+
+    def limit_clause(self, select, **kw):
+        """
+        Generate OFFSET / LIMIT clause, PostgreSQL-compatible.
+        """
+        return PGCompiler.limit_clause(self, select, **kw)
 
     def _get_crud_params(compiler, stmt, **kw):
         """ extract values from crud parameters

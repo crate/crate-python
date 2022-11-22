@@ -11,6 +11,6 @@ base = os.path.dirname(base)
 sys.argv[0] = os.path.abspath(sys.argv[0])
 
 if __name__ == '__main__':
-    sys.exit(zope.testrunner.run((['--auto-color', '--verbose']) + [
+    zope.testrunner.run((['--auto-color', '--verbose']) + [
         '--test-path', join(base, 'src'),
-        ]))
+        ])

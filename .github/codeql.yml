@@ -1,23 +1,35 @@
+# Suppress some CodeQL warnings.
 query-filters:
 
-  # Suppress some LGTM warnings.
-
+  # A few occurrences of try/except clauses without naming a specific exception type.
+  # TODO: May be improved.
+  # https://codeql.github.com/codeql-query-help/python/py-empty-except/
   - exclude:
       id: py/empty-except
 
   # A module is imported with the "import" and "import from" statements.
-  # https://lgtm.com/rules/1818040193/
+  # CodeQL says "Importing a module twice using the import xxx and from xxx import yyy is confusing.".
+  # While it has a point, it is still more than acceptable.
+  # https://codeql.github.com/codeql-query-help/python/py-import-and-import-from/
   - exclude:
       id: py/import-and-import-from
 
+  # Quite a few functions don't explicitly return values, but
+  # instead implicitly return `None`, when falling through.
+  # TODO: May be improved.
+  # https://codeql.github.com/codeql-query-help/python/py-mixed-returns/
   - exclude:
       id: py/mixed-returns
 
-  # Disable rule to compensate parameter naming in `CrateCompiler._get_crud_params`.
-  # Using an alternative name for the first parameter of an instance method makes code more difficult to read.
-  # https://lgtm.com/rules/910082/
+  # The parameter naming in `CrateCompiler._get_crud_params` is so that it triggers this admonition.
+  # However, by using an alternative name for the first parameter of an instance method, it would
+  # make the code harder to read.
+  # https://codeql.github.com/codeql-query-help/python/py-not-named-self/
   - exclude:
       id: py/not-named-self
 
+  # A few occurrences of unused local variables.
+  # TODO: May be improved.
+  # https://codeql.github.com/codeql-query-help/python/py-unused-local-variable/
   - exclude:
       id: py/unused-local-variable

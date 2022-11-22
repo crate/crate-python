@@ -41,8 +41,12 @@ jobs:
           config-file: ./.github/codeql.yml
           queries: +security-and-quality
 
-      - name: Autobuild
-        uses: github/codeql-action/autobuild@v2
+      #- name: Autobuild
+      #  uses: github/codeql-action/autobuild@v2
+
+      - name: Install project
+        run: |
+          pip install --editable=.[sqlalchemy,test,doc]
 
       - name: Perform CodeQL Analysis
         uses: github/codeql-action/analyze@v2

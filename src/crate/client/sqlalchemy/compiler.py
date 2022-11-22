@@ -22,9 +22,9 @@
 import string
 from collections import defaultdict
 
-import sqlalchemy as sa  # lgtm[py/import-and-import-from]
+import sqlalchemy as sa
 from sqlalchemy.dialects.postgresql.base import PGCompiler
-from sqlalchemy.sql import compiler, crud, selectable  # lgtm[py/import-and-import-from]
+from sqlalchemy.sql import compiler, crud, selectable
 from .types import MutableDict
 from .sa_version import SA_VERSION, SA_1_4
 

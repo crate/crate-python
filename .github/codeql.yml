@@ -27,9 +27,3 @@ query-filters:
   # https://codeql.github.com/codeql-query-help/python/py-not-named-self/
   - exclude:
       id: py/not-named-self
-
-  # A few occurrences of unused local variables.
-  # TODO: May be improved.
-  # https://codeql.github.com/codeql-query-help/python/py-unused-local-variable/
-  - exclude:
-      id: py/unused-local-variable

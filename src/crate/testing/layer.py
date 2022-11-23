@@ -358,7 +358,6 @@ class CrateLayer(object):
                 time.sleep(self.wait_interval)
 
         self.monitor.consumers.remove(line_buf)
-        line_buf = None
 
     def _wait_for_start(self):
         """Wait for instance to be started"""

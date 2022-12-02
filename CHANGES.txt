@@ -11,6 +11,7 @@ Unreleased
   that SQL statement clauses like ``LIMIT -1`` could have been generated. Both
   PostgreSQL and CrateDB only accept ``LIMIT ALL`` instead.
 
+- Added support for computed columns in the SQLAlchemy ORM
 
 2022/10/10 0.27.2
 =================

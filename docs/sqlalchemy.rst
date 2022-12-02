@@ -179,9 +179,10 @@ system`_::
     ...
     ...     id = sa.Column(sa.String, primary_key=True, default=gen_key)
     ...     name = sa.Column(sa.String)
+    ...     name_normalized = sa.Column(sa.String, sa.Computed("lower(name)"))
     ...     quote = sa.Column(sa.String)
     ...     details = sa.Column(types.Object)
-    ...     more_details = sa.Column(ObjectArray)
+    ...     more_details = sa.Column(types.ObjectArray)
     ...     name_ft = sa.Column(sa.String)
     ...     quote_ft = sa.Column(sa.String)
     ...
@@ -197,6 +198,8 @@ In this example, we:
 - Use the ``gen_key`` function to provide a default value for the ``id`` column
   (which is also the primary key)
 - Use standard SQLAlchemy types for the ``id``, ``name``, and ``quote`` columns
+- Define a computed column ``name_normalized`` (based on ``name``) that
+  translates into a generated column
 - Use the `Object`_ extension type for the ``details`` column
 - Use the `ObjectArray`_ extension type for the ``more_details`` column
 - Set up the ``name_ft`` and ``quote_ft`` fulltext indexes, but exclude them from

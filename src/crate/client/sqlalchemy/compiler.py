@@ -108,7 +108,22 @@ class CrateDDLCompiler(compiler.DDLCompiler):
         colspec = self.preparer.format_column(column) + " " + \
             self.dialect.type_compiler.process(column.type)
         # TODO: once supported add default / NOT NULL here
+
+        if column.computed is not None:
+            colspec += " " + self.process(column.computed)
+
         return colspec
+
+    def visit_computed_column(self, generated):
+        if generated.persisted is False:
+            raise sa.exc.CompileError(
+                "Virtual computed columns are not supported, set "
+                "'persisted' to None or True"
+            )
+
+        return "GENERATED ALWAYS AS (%s)" % self.sql_compiler.process(
+            generated.sqltext, include_table=False, literal_binds=True
+        )
 
     def post_create_table(self, table):
         special_options = ''

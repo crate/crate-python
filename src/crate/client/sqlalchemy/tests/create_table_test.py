@@ -97,6 +97,28 @@ class CreateTableTest(TestCase):
              ') CLUSTERED BY (p)\n\n'),
             ())
 
+    def test_with_computed_column(self):
+        class DummyTable(self.Base):
+            __tablename__ = 't'
+            ts = sa.Column(sa.BigInteger, primary_key=True)
+            p = sa.Column(sa.BigInteger, sa.Computed("date_trunc('day', ts)"))
+        self.Base.metadata.create_all()
+        fake_cursor.execute.assert_called_with(
+            ('\nCREATE TABLE t (\n\t'
+             'ts LONG, \n\t'
+             'p LONG GENERATED ALWAYS AS (date_trunc(\'day\', ts)), \n\t'
+             'PRIMARY KEY (ts)\n'
+             ')\n\n'),
+            ())
+
+    def test_with_virtual_computed_column(self):
+        class DummyTable(self.Base):
+            __tablename__ = 't'
+            ts = sa.Column(sa.BigInteger, primary_key=True)
+            p = sa.Column(sa.BigInteger, sa.Computed("date_trunc('day', ts)", persisted=False))
+        with self.assertRaises(sa.exc.CompileError):
+            self.Base.metadata.create_all()
+
     def test_with_partitioned_by(self):
         class DummyTable(self.Base):
             __tablename__ = 't'

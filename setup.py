@@ -73,7 +73,7 @@ setup(
               'createcoverage>=1,<2',
               'stopit>=1.1.2,<2',
               'flake8>=4,<5'],
-        doc=['sphinx>=3,<4',
+        doc=['sphinx>=3.5,<6',
              'crate-docs-theme'],
     ),
     python_requires='>=3.4',

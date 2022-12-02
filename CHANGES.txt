@@ -4,6 +4,11 @@ Changes for crate
 
 Unreleased
 ==========
+
+
+2022/12/02 0.28.0
+=================
+
 - Added a generic data type converter to the ``Cursor`` object, for converting
   fetched data from CrateDB data types to Python data types.
 

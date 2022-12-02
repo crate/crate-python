@@ -63,7 +63,7 @@ function before_setup() {
 function setup_package() {
 
     # Install package in editable mode.
-    pip install --editable=.[sqlalchemy,test,doc]
+    pip install --editable='.[sqlalchemy,test,doc]'
 
 }
 

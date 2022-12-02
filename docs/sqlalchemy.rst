@@ -176,6 +176,9 @@ system`_::
     >>> class Character(Base):
     ...
     ...     __tablename__ = 'characters'
+    ...     __table_args__ = {
+    ...         'crate_number_of_shards': 3
+    ...     }
     ...
     ...     id = sa.Column(sa.String, primary_key=True, default=gen_key)
     ...     name = sa.Column(sa.String)
@@ -213,6 +216,27 @@ In this example, we:
 
     The SQLAlchemy documentation has more information about `working with
     tables`_.
+
+
+Additional ``__table_args__``
+.............................
+
+
+The example also shows the optional usage of ``__table_args__`` to configure
+table-wide attributes. The following attributes can optionally be configured:
+
+- ``crate_number_of_shards``: The number of primary shards the table will be
+  split into
+- ``crate_clustered_by``: The routing column to use for sharding
+- ``crate_number_of_replicas``: The number of replicas to allocate for each
+  primary shard
+- ``crate_partitioned_by``: One or more columns to use as a partition key
+
+.. SEEALSO::
+
+   The `CREATE TABLE`_ documentation contains more information on each of the
+   attributes.
+
 
 ``_id`` as primary key
 ......................
@@ -628,6 +652,7 @@ column on the ``Character`` class.
 .. _list: https://docs.python.org/3/library/stdtypes.html#lists
 .. _dictionaries: https://docs.python.org/3/library/stdtypes.html#dict
 .. _UPDATE: https://crate.io/docs/crate/reference/en/latest/general/dml.html#updating-data
+.. _CREATE TABLE: https://crate.io/docs/crate/reference/en/latest/sql/statements/create-table.html
 .. _eq: https://docs.python.org/2/library/operator.html#operator.eq
 .. _operator: https://docs.python.org/2/library/operator.html
 .. _any: http://docs.sqlalchemy.org/en/latest/core/type_basics.html#sqlalchemy.types.ARRAY.Comparator.any

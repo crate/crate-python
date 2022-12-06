@@ -24,11 +24,6 @@ import os
 import re
 
 
-requirements = [
-    'urllib3>=1.9',
-]
-
-
 def read(path):
     with open(os.path.join(os.path.dirname(__file__), path)) as f:
         return f.read()
@@ -63,6 +58,7 @@ setup(
             'crate = crate.client.sqlalchemy:CrateDialect'
         ]
     },
+    install_requires=['urllib3>=1.9,<2'],
     extras_require=dict(
         sqlalchemy=['sqlalchemy>=1.0,<1.5',
                     'geojson>=2.5.0,<3'],
@@ -77,7 +73,6 @@ setup(
              'crate-docs-theme'],
     ),
     python_requires='>=3.4',
-    install_requires=requirements,
     package_data={'': ['*.txt']},
     classifiers=[
         'Development Status :: 5 - Production/Stable',

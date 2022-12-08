@@ -24,10 +24,6 @@ import unittest
 from .test_layer import LayerUtilsTest, LayerTest
 
 
-def setUp(test):
-    pass
-
-
 def test_suite():
     suite = unittest.TestSuite()
     suite.addTest(unittest.makeSuite(LayerUtilsTest))

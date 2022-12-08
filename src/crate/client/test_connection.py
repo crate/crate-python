@@ -25,9 +25,6 @@ class ConnectionTest(TestCase):
             def __init__(self):
                 pass
 
-            def sql(self, stmt=None, parameters=None):
-                pass
-
             def server_infos(self, server):
                 return ("localhost:4200", "my server", "0.42.0")
 

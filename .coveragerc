@@ -7,4 +7,5 @@ omit =
     parts/*
     eggs/*
 exclude_lines =
+    # pragma: no cover
     raise NotImplemented

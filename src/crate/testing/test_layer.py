@@ -278,7 +278,7 @@ class LayerTest(TestCase):
         num_nodes = num_cluster_nodes(cluster_layer1)
         import time
         retries = 0
-        while num_nodes < 2:
+        while num_nodes < 2:  # pragma: no cover
             time.sleep(1)
             num_nodes = num_cluster_nodes(cluster_layer1)
             retries += 1

@@ -41,11 +41,19 @@ a few cycles (~70 seconds runtime)::
 
     ./bin/test -t '!LayerTest'
 
-Invoke all tests without integration tests (~3 seconds runtime)::
+Invoke all tests without integration tests (~15 seconds runtime)::
 
-    ./bin/test \
-        -t '!LayerTest' -t '!docs/by-example' \
-        -t '!test_client_threaded' -t '!test_no_retry_on_read_timeout' -t '!test_wait_for_http'
+    ./bin/test --layer '!crate.testing.layer.crate' --test '!LayerTest'
+
+Yet ~130 test cases, but only ~5 seconds runtime::
+
+    ./bin/test --layer '!crate.testing.layer.crate' --test '!LayerTest' \
+        -t '!test_client_threaded' -t '!test_no_retry_on_read_timeout' \
+        -t '!test_wait_for_http' -t '!test_table_clustered_by'
+
+To inspect the whole list of test cases, run::
+
+    ./bin/test --list-tests
 
 You can run the tests against multiple Python interpreters with `tox`_::
 

@@ -4,7 +4,9 @@ SQLAlchemy: Create, retrieve, and update
 
 This section of the documentation, related to CrateDB's SQLAlchemy integration,
 focuses on showing specific details when querying, inserting, and updating
-records. It covers filtering and limiting, insert and update default values,
+records.
+
+It exercises filtering and limiting, inserting and updating with default values,
 and updating complex data types with nested Python dictionaries.
 
 .. rubric:: Table of Contents
@@ -159,7 +161,7 @@ aren't set when the row is inserted as there is no default method:
 Update
 ======
 
-The datetime and date can be set using a update statement:
+The datetime and date can be set using an update statement:
 
     >>> location.nullable_date = datetime.utcnow().date()
     >>> location.nullable_datetime = datetime.utcnow()
@@ -174,7 +176,7 @@ Boolean values get set natively:
     >>> location.flag
     True
 
-Reload the object from the db:
+Reload the object from the database:
 
     >>> session.refresh(location)
 
@@ -224,7 +226,7 @@ Refresh "locations" table:
 
     >>> _ = connection.execute("REFRESH TABLE locations")
 
-Test that objects can be used as list too:
+Verify that objects can be used within lists, too:
 
     >>> location = session.query(Location).filter_by(name='Folfanga').one()
     >>> location.details = [{'size': 'huge'}, {'clima': 'cold'}]

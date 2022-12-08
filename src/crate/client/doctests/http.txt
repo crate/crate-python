@@ -24,7 +24,7 @@ When using a list of servers, the servers are selected by round-robin::
 
     >>> invalid_host = "invalid_host:9999"
     >>> even_more_invalid_host = "even_more_invalid_host:9999"
-    >>> http_client = HttpClient([crate_host, invalid_host, even_more_invalid_host])
+    >>> http_client = HttpClient([crate_host, invalid_host, even_more_invalid_host], timeout=0.3)
     >>> http_client._get_server()
     'http://127.0.0.1:44209'
 
@@ -36,17 +36,18 @@ When using a list of servers, the servers are selected by round-robin::
 
 Servers with connection errors will be removed from the active server list::
 
-    >>> http_client = HttpClient([invalid_host, even_more_invalid_host, crate_host])
+    >>> http_client = HttpClient([invalid_host, even_more_invalid_host, crate_host], timeout=0.3)
     >>> result = http_client.sql('select name from locations')
     >>> http_client._active_servers
     ['http://127.0.0.1:44209']
 
 Inactive servers will be re-added after a given time interval.
-To validate this, set the interval very short and sleep for that interval::
+To validate this, set the interval and timeout very short and sleep after the first request::
 
     >>> http_client.retry_interval = 1
-    >>> import time; time.sleep(1)
     >>> result = http_client.sql('select name from locations')
+    >>> import time; time.sleep(1)
+    >>> server = http_client._get_server()
     >>> http_client._active_servers
     ['http://invalid_host:9999',
      'http://even_more_invalid_host:9999',
@@ -55,7 +56,7 @@ To validate this, set the interval very short and sleep for that interval::
 If no active servers are available and the retry interval is not reached, just use the oldest
 inactive one::
 
-    >>> http_client = HttpClient([invalid_host, even_more_invalid_host, crate_host])
+    >>> http_client = HttpClient([invalid_host, even_more_invalid_host, crate_host], timeout=0.3)
     >>> result = http_client.sql('select name from locations')
     >>> http_client._active_servers = []
     >>> http_client._get_server()

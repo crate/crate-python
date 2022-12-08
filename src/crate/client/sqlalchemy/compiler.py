@@ -107,10 +107,17 @@ class CrateDDLCompiler(compiler.DDLCompiler):
     def get_column_specification(self, column, **kwargs):
         colspec = self.preparer.format_column(column) + " " + \
             self.dialect.type_compiler.process(column.type)
-        # TODO: once supported add default / NOT NULL here
+        # TODO: once supported add default here
 
         if column.computed is not None:
             colspec += " " + self.process(column.computed)
+
+        if column.nullable is False:
+            colspec += " NOT NULL"
+        elif column.nullable and column.primary_key:
+            raise sa.exc.CompileError(
+                "Primary key columns cannot be nullable"
+            )
 
         return colspec
 

@@ -59,7 +59,7 @@ class CreateTableTest(TestCase):
 
         self.Base.metadata.create_all()
         fake_cursor.execute.assert_called_with(
-            ('\nCREATE TABLE users (\n\tstring_col STRING, '
+            ('\nCREATE TABLE users (\n\tstring_col STRING NOT NULL, '
              '\n\tunicode_col STRING, \n\ttext_col STRING, \n\tint_col INT, '
              '\n\tlong_col1 LONG, \n\tlong_col2 LONG, '
              '\n\tbool_col BOOLEAN, '
@@ -76,7 +76,7 @@ class CreateTableTest(TestCase):
             obj_col = sa.Column(Object)
         self.Base.metadata.create_all()
         fake_cursor.execute.assert_called_with(
-            ('\nCREATE TABLE dummy (\n\tpk STRING, \n\tobj_col OBJECT, '
+            ('\nCREATE TABLE dummy (\n\tpk STRING NOT NULL, \n\tobj_col OBJECT, '
              '\n\tPRIMARY KEY (pk)\n)\n\n'),
             ())
 
@@ -91,7 +91,7 @@ class CreateTableTest(TestCase):
         self.Base.metadata.create_all()
         fake_cursor.execute.assert_called_with(
             ('\nCREATE TABLE t (\n\t'
-             'pk STRING, \n\t'
+             'pk STRING NOT NULL, \n\t'
              'p STRING, \n\t'
              'PRIMARY KEY (pk)\n'
              ') CLUSTERED BY (p)\n\n'),
@@ -105,7 +105,7 @@ class CreateTableTest(TestCase):
         self.Base.metadata.create_all()
         fake_cursor.execute.assert_called_with(
             ('\nCREATE TABLE t (\n\t'
-             'ts LONG, \n\t'
+             'ts LONG NOT NULL, \n\t'
              'p LONG GENERATED ALWAYS AS (date_trunc(\'day\', ts)), \n\t'
              'PRIMARY KEY (ts)\n'
              ')\n\n'),
@@ -131,7 +131,7 @@ class CreateTableTest(TestCase):
         self.Base.metadata.create_all()
         fake_cursor.execute.assert_called_with(
             ('\nCREATE TABLE t (\n\t'
-             'pk STRING, \n\t'
+             'pk STRING NOT NULL, \n\t'
              'p STRING, \n\t'
              'PRIMARY KEY (pk)\n'
              ') PARTITIONED BY (p)\n\n'),
@@ -149,7 +149,7 @@ class CreateTableTest(TestCase):
         self.Base.metadata.create_all()
         fake_cursor.execute.assert_called_with(
             ('\nCREATE TABLE t (\n\t'
-             'pk STRING, \n\t'
+             'pk STRING NOT NULL, \n\t'
              'PRIMARY KEY (pk)\n'
              ') CLUSTERED INTO 3 SHARDS WITH (NUMBER_OF_REPLICAS = 2)\n\n'),
             ())
@@ -166,8 +166,8 @@ class CreateTableTest(TestCase):
         self.Base.metadata.create_all()
         fake_cursor.execute.assert_called_with(
             ('\nCREATE TABLE t (\n\t'
-             'pk STRING, \n\t'
-             'p STRING, \n\t'
+             'pk STRING NOT NULL, \n\t'
+             'p STRING NOT NULL, \n\t'
              'PRIMARY KEY (pk, p)\n'
              ') CLUSTERED BY (p) INTO 3 SHARDS\n\n'),
             ())
@@ -181,6 +181,28 @@ class CreateTableTest(TestCase):
         self.Base.metadata.create_all()
         fake_cursor.execute.assert_called_with(
             ('\nCREATE TABLE t (\n\t'
-             'pk STRING, \n\t'
+             'pk STRING NOT NULL, \n\t'
              'tags ARRAY(OBJECT), \n\t'
              'PRIMARY KEY (pk)\n)\n\n'), ())
+
+    def test_table_with_nullable(self):
+        class DummyTable(self.Base):
+            __tablename__ = 't'
+            pk = sa.Column(sa.String, primary_key=True)
+            a = sa.Column(sa.Integer, nullable=True)
+            b = sa.Column(sa.Integer, nullable=False)
+
+        self.Base.metadata.create_all()
+        fake_cursor.execute.assert_called_with(
+            ('\nCREATE TABLE t (\n\t'
+             'pk STRING NOT NULL, \n\t'
+             'a INT, \n\t'
+             'b INT NOT NULL, \n\t'
+             'PRIMARY KEY (pk)\n)\n\n'), ())
+
+    def test_with_pk_nullable(self):
+        class DummyTable(self.Base):
+            __tablename__ = 't'
+            pk = sa.Column(sa.String, primary_key=True, nullable=True)
+        with self.assertRaises(sa.exc.CompileError):
+            self.Base.metadata.create_all()

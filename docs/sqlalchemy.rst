@@ -181,9 +181,9 @@ system`_::
     ...     }
     ...
     ...     id = sa.Column(sa.String, primary_key=True, default=gen_key)
-    ...     name = sa.Column(sa.String)
+    ...     name = sa.Column(sa.String, crate_index=False)
     ...     name_normalized = sa.Column(sa.String, sa.Computed("lower(name)"))
-    ...     quote = sa.Column(sa.String)
+    ...     quote = sa.Column(sa.String, nullable=False)
     ...     details = sa.Column(types.Object)
     ...     more_details = sa.Column(types.ObjectArray)
     ...     name_ft = sa.Column(sa.String)
@@ -201,6 +201,8 @@ In this example, we:
 - Use the ``gen_key`` function to provide a default value for the ``id`` column
   (which is also the primary key)
 - Use standard SQLAlchemy types for the ``id``, ``name``, and ``quote`` columns
+- Use ``nullable=False`` to define a ``NOT NULL`` constraint
+- Disable indexing of the ``name`` column using ``crate_index=False``
 - Define a computed column ``name_normalized`` (based on ``name``) that
   translates into a generated column
 - Use the `Object`_ extension type for the ``details`` column
@@ -250,7 +252,7 @@ A table schema like this
 .. code-block:: sql
 
    CREATE TABLE "doc"."logs" (
-     "ts" TIMESTAMP WITH TIME ZONE,
+     "ts" TIMESTAMP WITH TIME ZONE NOT NULL,
      "level" TEXT,
      "message" TEXT
    )

@@ -5,9 +5,9 @@ The Connection object
 This documentation section outlines different attributes, methods, and
 behaviors of the ``crate.client.connection.Connection`` object.
 
-To improve focus and reduce boilerplate, the example code uses both
-``ClientMocked``. It is required for demonstration purposes, so the example
-does not need a real database connection.
+To improve focus and reduce boilerplate, the example code uses an instance of
+``ClientMocked`` instead of a real ``Client`` instance. It is used for
+demonstration purposes, so the example doesn't need a real database connection.
 
 .. rubric:: Table of Contents
 

@@ -23,11 +23,11 @@ the plain HTTP API interface, and a convenience interface for working with
     :maxdepth: 1
 
     client
+    connection
+    cursor
     http
     https
     blob
-    connection
-    cursor
 
 
 .. _sqlalchemy-by-example:

@@ -22,7 +22,7 @@
 import sqlalchemy as sa
 from sqlalchemy.ext.declarative import declarative_base
 
-from crate.client.sqlalchemy.types import Object, ObjectArray
+from crate.client.sqlalchemy.types import Object, ObjectArray, Geopoint
 from crate.client.cursor import Cursor
 
 from unittest import TestCase
@@ -41,7 +41,7 @@ class CreateTableTest(TestCase):
         self.engine = sa.create_engine('crate://')
         self.Base = declarative_base(bind=self.engine)
 
-    def test_create_table_with_basic_types(self):
+    def test_table_basic_types(self):
         class User(self.Base):
             __tablename__ = 'users'
             string_col = sa.Column(sa.String, primary_key=True)
@@ -69,7 +69,7 @@ class CreateTableTest(TestCase):
              '\n\tPRIMARY KEY (string_col)\n)\n\n'),
             ())
 
-    def test_with_obj_column(self):
+    def test_column_obj(self):
         class DummyTable(self.Base):
             __tablename__ = 'dummy'
             pk = sa.Column(sa.String, primary_key=True)
@@ -80,7 +80,7 @@ class CreateTableTest(TestCase):
              '\n\tPRIMARY KEY (pk)\n)\n\n'),
             ())
 
-    def test_with_clustered_by(self):
+    def test_table_clustered_by(self):
         class DummyTable(self.Base):
             __tablename__ = 't'
             __table_args__ = {
@@ -97,7 +97,7 @@ class CreateTableTest(TestCase):
              ') CLUSTERED BY (p)\n\n'),
             ())
 
-    def test_with_computed_column(self):
+    def test_column_computed(self):
         class DummyTable(self.Base):
             __tablename__ = 't'
             ts = sa.Column(sa.BigInteger, primary_key=True)
@@ -111,7 +111,7 @@ class CreateTableTest(TestCase):
              ')\n\n'),
             ())
 
-    def test_with_virtual_computed_column(self):
+    def test_column_computed_virtual(self):
         class DummyTable(self.Base):
             __tablename__ = 't'
             ts = sa.Column(sa.BigInteger, primary_key=True)
@@ -119,7 +119,7 @@ class CreateTableTest(TestCase):
         with self.assertRaises(sa.exc.CompileError):
             self.Base.metadata.create_all()
 
-    def test_with_partitioned_by(self):
+    def test_table_partitioned_by(self):
         class DummyTable(self.Base):
             __tablename__ = 't'
             __table_args__ = {
@@ -137,7 +137,7 @@ class CreateTableTest(TestCase):
              ') PARTITIONED BY (p)\n\n'),
             ())
 
-    def test_with_number_of_shards_and_replicas(self):
+    def test_table_number_of_shards_and_replicas(self):
         class DummyTable(self.Base):
             __tablename__ = 't'
             __table_args__ = {
@@ -154,7 +154,7 @@ class CreateTableTest(TestCase):
              ') CLUSTERED INTO 3 SHARDS WITH (NUMBER_OF_REPLICAS = 2)\n\n'),
             ())
 
-    def test_with_clustered_by_and_number_of_shards(self):
+    def test_table_clustered_by_and_number_of_shards(self):
         class DummyTable(self.Base):
             __tablename__ = 't'
             __table_args__ = {
@@ -172,7 +172,7 @@ class CreateTableTest(TestCase):
              ') CLUSTERED BY (p) INTO 3 SHARDS\n\n'),
             ())
 
-    def test_table_with_object_array(self):
+    def test_column_object_array(self):
         class DummyTable(self.Base):
             __tablename__ = 't'
             pk = sa.Column(sa.String, primary_key=True)
@@ -185,7 +185,7 @@ class CreateTableTest(TestCase):
              'tags ARRAY(OBJECT), \n\t'
              'PRIMARY KEY (pk)\n)\n\n'), ())
 
-    def test_table_with_nullable(self):
+    def test_column_nullable(self):
         class DummyTable(self.Base):
             __tablename__ = 't'
             pk = sa.Column(sa.String, primary_key=True)
@@ -200,9 +200,32 @@ class CreateTableTest(TestCase):
              'b INT NOT NULL, \n\t'
              'PRIMARY KEY (pk)\n)\n\n'), ())
 
-    def test_with_pk_nullable(self):
+    def test_column_pk_nullable(self):
         class DummyTable(self.Base):
             __tablename__ = 't'
             pk = sa.Column(sa.String, primary_key=True, nullable=True)
+        with self.assertRaises(sa.exc.CompileError):
+            self.Base.metadata.create_all()
+
+    def test_column_crate_index(self):
+        class DummyTable(self.Base):
+            __tablename__ = 't'
+            pk = sa.Column(sa.String, primary_key=True)
+            a = sa.Column(sa.Integer, crate_index=False)
+            b = sa.Column(sa.Integer, crate_index=True)
+
+        self.Base.metadata.create_all()
+        fake_cursor.execute.assert_called_with(
+            ('\nCREATE TABLE t (\n\t'
+             'pk STRING NOT NULL, \n\t'
+             'a INT INDEX OFF, \n\t'
+             'b INT, \n\t'
+             'PRIMARY KEY (pk)\n)\n\n'), ())
+
+    def test_column_geopoint_without_index(self):
+        class DummyTable(self.Base):
+            __tablename__ = 't'
+            pk = sa.Column(sa.String, primary_key=True)
+            a = sa.Column(Geopoint, crate_index=False)
         with self.assertRaises(sa.exc.CompileError):
             self.Base.metadata.create_all()

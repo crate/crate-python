@@ -25,7 +25,7 @@ from collections import defaultdict
 import sqlalchemy as sa
 from sqlalchemy.dialects.postgresql.base import PGCompiler
 from sqlalchemy.sql import compiler, crud, selectable
-from .types import MutableDict
+from .types import MutableDict, _Craty, Geopoint, Geoshape
 from .sa_version import SA_VERSION, SA_1_4
 
 
@@ -118,6 +118,15 @@ class CrateDDLCompiler(compiler.DDLCompiler):
             raise sa.exc.CompileError(
                 "Primary key columns cannot be nullable"
             )
+
+        if column.dialect_options['crate'].get('index') is False:
+            if isinstance(column.type, (Geopoint, Geoshape, _Craty)):
+                raise sa.exc.CompileError(
+                    "Disabling indexing is not supported for column "
+                    "types OBJECT, GEO_POINT, and GEO_SHAPE"
+                )
+
+            colspec += " INDEX OFF"
 
         return colspec
 

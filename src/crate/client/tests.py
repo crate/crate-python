@@ -316,7 +316,7 @@ def _execute_statements(statements, on_error="ignore"):
 def _execute_statement(cursor, stmt, on_error="ignore"):
     try:
         cursor.execute(stmt)
-    except Exception:
+    except Exception:  # pragma: no cover
         # FIXME: Why does this croak on statements like ``DROP TABLE cities``?
         # Note: When needing to debug the test environment, you may want to
         #       enable this logger statement.

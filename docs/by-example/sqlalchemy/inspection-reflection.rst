@@ -100,12 +100,12 @@ the database server version and default schema name can be inquired.
     >>> dialect.server_version_info >= (1, 0, 0)
     True
 
-Check if schema exists:
+Check if a schema exists:
 
     >>> dialect.has_schema(connection, 'doc')
     True
 
-Check if table exists:
+Check if a table exists:
 
     >>> dialect.has_table(connection, 'locations')
     True

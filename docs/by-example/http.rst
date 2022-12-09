@@ -11,7 +11,7 @@ HTTP client
 Introduction
 ============
 
-The CrateDB Python driver package offers a HTTP client API object.
+The CrateDB Python driver package offers an HTTP client API object.
 
     >>> from crate.client import http
     >>> HttpClient = http.Client
@@ -124,7 +124,7 @@ Trying to get a non-existing blob throws an exception::
     ...
     crate.client.exceptions.DigestNotFoundException: myfiles/041f06fd774092478d450774f5ba30c5da78acc8
 
-Creating a new blob - this method returns True if the blob was newly created::
+Creating a new blob - this method returns ``True`` if the blob was newly created::
 
     >>> from tempfile import TemporaryFile
     >>> f = TemporaryFile()

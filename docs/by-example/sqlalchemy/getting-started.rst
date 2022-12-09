@@ -229,7 +229,7 @@ Geospatial Types
 ================
 
 Geospatial types, such as ``geo_point`` and ``geo_area`` can also be used as
-part of a sqlalchemy schema:
+part of an SQLAlchemy schema:
 
     >>> from crate.client.sqlalchemy.types import Geopoint, Geoshape
 

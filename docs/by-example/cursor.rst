@@ -29,7 +29,7 @@ up the response for subsequent cursor operations.
     >>> connection = connect(client=ClientMocked())
     >>> cursor = connection.cursor()
 
-The rowcount and duration attribute is ``-1``, in case no ``execute()`` has
+The ``rowcount`` and ``duration`` attributes are ``-1``, in case no ``execute()`` has
 been performed on the cursor yet.
 
     >>> cursor.rowcount

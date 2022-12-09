@@ -137,7 +137,7 @@ Date should have been set at the insert due to default value via Python method:
     >>> (now - location.datetime_tz).seconds < 4
     True
 
-Verify the return type of date and datetime:
+Verify the return type of ``date`` and ``datetime``:
 
     >>> type(location.date)
     <class 'datetime.date'>
@@ -148,7 +148,7 @@ Verify the return type of date and datetime:
     >>> type(location.datetime_notz)
     <class 'datetime.datetime'>
 
-The location also has a date and datetime property which both are nullable and
+The location also has a ``date`` and ``datetime`` property which both are nullable and
 aren't set when the row is inserted as there is no default method:
 
     >>> location.nullable_datetime is None
@@ -226,7 +226,7 @@ Refresh "locations" table:
 
     >>> _ = connection.execute("REFRESH TABLE locations")
 
-Verify that objects can be used within lists, too:
+Objects can be used within lists, too:
 
     >>> location = session.query(Location).filter_by(name='Folfanga').one()
     >>> location.details = [{'size': 'huge'}, {'clima': 'cold'}]

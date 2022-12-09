@@ -1,10 +1,10 @@
-========================================
-SQLAlchemy: Create, retrieve, and update
-========================================
+================================================
+SQLAlchemy: Create, retrieve, update, and delete
+================================================
 
 This section of the documentation, related to CrateDB's SQLAlchemy integration,
-focuses on showing specific details when querying, inserting, and updating
-records.
+focuses on showing specific details when querying, inserting, updating, and
+deleting records.
 
 It exercises filtering and limiting, inserting and updating with default values,
 and updating complex data types with nested Python dictionaries.
@@ -22,9 +22,9 @@ Import the relevant symbols:
 
     >>> import sqlalchemy as sa
     >>> from datetime import datetime
+    >>> from sqlalchemy import delete, func, text
     >>> from sqlalchemy.ext.declarative import declarative_base
     >>> from sqlalchemy.orm import sessionmaker
-    >>> from sqlalchemy.sql import text
     >>> from crate.client.sqlalchemy.types import ObjectArray
 
 Establish a connection to the database:
@@ -196,7 +196,7 @@ Update multiple records:
     ...     loc.name = 'Ort %d' % x
     ...     loc.kind = 'Update'
     ...     session.add(loc)
-    ...     session.flush()
+    >>> session.flush()
 
 Refresh table:
 
@@ -275,6 +275,25 @@ Refresh "characters" table:
     >>> session.refresh(char)
     >>> pprint(char.details)
     {'name': {'first': 'Trillian', 'last': 'Dent'}, 'size': 45}
+
+
+Delete
+======
+
+Deleting a record with SQLAlchemy works like this.
+
+    >>> session.query(Location).count()
+    24
+
+    >>> location = session.query(Location).first()
+    >>> session.delete(location)
+    >>> session.commit()
+    >>> session.flush()
+
+    >>> _ = connection.execute("REFRESH TABLE locations")
+
+    >>> session.query(Location).count()
+    23
 
 
 .. hidden: Disconnect from database

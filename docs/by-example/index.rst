@@ -42,7 +42,7 @@ its corresponding API interfaces, see also :ref:`sqlalchemy-support`.
     :maxdepth: 1
 
     sqlalchemy/getting-started
-    sqlalchemy/cru
+    sqlalchemy/crud
     sqlalchemy/inspection-reflection
 
 

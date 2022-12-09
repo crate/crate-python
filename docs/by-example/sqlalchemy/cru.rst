@@ -84,7 +84,7 @@ With filter:
 
 Order by:
 
-    >>> locations = session.query(Location).filter(Location.name != None).order_by(sa.desc(Location.name))
+    >>> locations = session.query(Location).filter(Location.name is not None).order_by(sa.desc(Location.name))
     >>> locations = locations.limit(2)
     >>> [l.name for l in locations]
     ['Outer Eastern Rim', 'North West Ripple']
@@ -119,25 +119,8 @@ Retrieve the location from the database:
     >>> location.name
     'Earth'
 
-Date should have been set at the insert due to default value via Python method:
-
-    >>> from datetime import datetime
-    >>> now = datetime.utcnow()
-    >>> dt = location.date
-
-    >>> dt.year == now.year
-    True
-
-    >>> dt.month == now.month
-    True
-
-    >>> dt.day == now.day
-    True
-
-    >>> (now - location.datetime_tz).seconds < 4
-    True
-
-Verify the return type of ``date`` and ``datetime``:
+Three ``date``/``datetime`` columns are defined with default values, so
+creating a new record will automatically set them:
 
     >>> type(location.date)
     <class 'datetime.date'>
@@ -148,13 +131,25 @@ Verify the return type of ``date`` and ``datetime``:
     >>> type(location.datetime_notz)
     <class 'datetime.datetime'>
 
-The location also has a ``date`` and ``datetime`` property which both are nullable and
-aren't set when the row is inserted as there is no default method:
+The location instance also has other ``date`` and ``datetime`` attributes which
+are nullable. Because there is no default value defined in the ORM schema for
+them, they are not set when the record is inserted:
 
     >>> location.nullable_datetime is None
     True
 
     >>> location.nullable_date is None
+    True
+
+.. hidden:
+
+    >>> from datetime import datetime, timedelta
+    >>> now = datetime.utcnow()
+
+    >>> (now - location.datetime_tz).seconds < 4
+    True
+
+    >>> (now.date() - location.date) == timedelta(0)
     True
 
 

@@ -37,14 +37,14 @@ FakeCursor.return_value = fake_cursor
 
 
 class SqlAlchemyDictTypeTest(TestCase):
-
     def setUp(self):
         self.engine = sa.create_engine('crate://')
-        # FIXME: Deprecated with SA20.
-        metadata = sa.MetaData(bind=self.engine)
-        self.mytable = sa.Table('mytable', metadata,
+        metadata = sa.MetaData()
+        self.mytable = sa.Table('mytable',
+                                metadata,
                                 sa.Column('name', sa.String),
-                                sa.Column('data', Craty))
+                                sa.Column('data', Craty),
+                                autoload_with=self.engine)
 
     def assertSQL(self, expected_str, actual_expr):
         self.assertEqual(expected_str, str(actual_expr).replace('\n', ''))
@@ -52,7 +52,7 @@ class SqlAlchemyDictTypeTest(TestCase):
     def test_select_with_dict_column(self):
         mytable = self.mytable
         self.assertSQL(
-            "SELECT mytable.data['x'] AS anon_1 FROM mytable",
+            "SELECT mytable.data[:data_1] AS anon_1 FROM mytable",
             select(mytable.c.data['x'])
         )
 
@@ -61,7 +61,7 @@ class SqlAlchemyDictTypeTest(TestCase):
         s = select(mytable.c.data).\
             where(mytable.c.data['x'] == 1)
         self.assertSQL(
-            "SELECT mytable.data FROM mytable WHERE mytable.data['x'] = ?",
+            "SELECT mytable.data FROM mytable WHERE mytable.data[:data_1] = :param_1",
             s
         )
 
@@ -71,7 +71,7 @@ class SqlAlchemyDictTypeTest(TestCase):
         s = s.where(mytable.c.data['x']['y'] == 1)
         self.assertSQL(
             "SELECT mytable.name FROM mytable " +
-            "WHERE mytable.data['x']['y'] = ?",
+            "WHERE mytable.data[:data_1][:param_1] = :param_2",
             s
         )
 
@@ -80,7 +80,7 @@ class SqlAlchemyDictTypeTest(TestCase):
         s = select(mytable.c.data).\
             where(mytable.c.data['x'] > 1)
         self.assertSQL(
-            "SELECT mytable.data FROM mytable WHERE mytable.data['x'] > ?",
+            "SELECT mytable.data FROM mytable WHERE mytable.data[:data_1] > :param_1",
             s
         )
 
@@ -90,7 +90,7 @@ class SqlAlchemyDictTypeTest(TestCase):
         s = s.where(mytable.c.data['x'] == mytable.c.name)
         self.assertSQL(
             "SELECT mytable.name FROM mytable " +
-            "WHERE mytable.data['x'] = mytable.name",
+            "WHERE mytable.data[:data_1] = mytable.name",
             s
         )
 
@@ -98,11 +98,10 @@ class SqlAlchemyDictTypeTest(TestCase):
         mytable = self.mytable
         stmt = mytable.update().\
             where(mytable.c.name == 'Arthur Dent').\
-            values({
-                "data['x']": "Trillian"
-            })
+            values({mytable.c.data['x']: "Trillian"})
+
         self.assertSQL(
-            "UPDATE mytable SET data['x'] = ? WHERE mytable.name = ?",
+            "UPDATE mytable SET data[:data_1]=:param_1 WHERE mytable.name = :name_1",
             stmt
         )
 

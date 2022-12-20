@@ -2,23 +2,23 @@
 SQLAlchemy: Database schema inspection and reflection
 =====================================================
 
-This section of the documentation, related to CrateDB's SQLAlchemy integration,
-focuses on database schema inspection and reflection features. That is, given
-that you connect to an existing database, how to introspect its metadata
-information to retrieve table- and view-names, and table column metadata.
+This section shows you how to inspect the schema of a database using CrateDB's
+SQLAlchemy integration.
 
 
 Introduction
 ============
 
-The `runtime inspection API`_ provides the ``inspect()`` function, which
-delivers runtime information about a wide variety of SQLAlchemy objects, both
-within SQLAlchemy Core and the SQLAlchemy ORM.
 
-The ``CrateDialect`` instance provides metadata about the CrateDB cluster,
-like version and schema information.
+The CrateDB SQLAlchemy integration provides different ways to inspect the database.
 
-As always, let's start with creating an ``Engine`` instance.
+1) The `runtime inspection API`_ allows you to get an ``Inspector`` instance that can be used to fetch schema names, table names and other information.
+
+2) Reflection capabilities allow you to create ``Table`` instances from existing tables to inspect their columns and constraints.
+
+3) A ``CrateDialect`` allows you to get connection information and it contains low level function to check the existence of schemas and tables.
+
+All approaches require an ``Engine`` instance, which you can create like this:
 
     >>> import sqlalchemy as sa
     >>> engine = sa.create_engine(f"crate://{crate_host}")
@@ -29,7 +29,8 @@ Inspector
 
 The `SQLAlchemy inspector`_ is a low level interface which provides a
 backend-agnostic system of loading lists of schema, table, column, and
-constraint descriptions from a given database.
+constraint descriptions from a given database. You create an inspector like
+this:
 
     >>> inspector = sa.inspect(engine)
 
@@ -60,9 +61,9 @@ Get default schema name:
 Schema-supported reflection
 ===========================
 
-A ``Table`` object can be instructed to load information about itself from the
-corresponding database schema object already existing within the database. This
-process is called *reflection*, see `reflecting database objects`_.
+A ``Table`` object can load its own schema information from the corresponding
+table in the database. This process is called *reflection*, see `reflecting
+database objects`_.
 
 In the most simple case you need only specify the table name, a ``MetaData``
 object, and the ``autoload_with`` argument.

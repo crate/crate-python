@@ -5,9 +5,8 @@ The Cursor object
 This documentation section outlines different attributes, methods, and
 behaviors of the ``crate.client.cursor.Cursor`` object.
 
-To improve focus and reduce boilerplate, the example code uses both
-``ClientMocked`` and ``set_next_response``. They are required for demonstration
-purposes, so the example does not need a real database connection.
+The example code uses ``ClientMocked`` and ``set_next_response`` for
+demonstration purposes, so they don't need a real database connection.
 
 .. rubric:: Table of Contents
 

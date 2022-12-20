@@ -50,11 +50,14 @@ jobs:
           # Report about the test matrix slot.
           echo "Invoking tests with CrateDB ${CRATEDB_VERSION} and SQLAlchemy ${SQLALCHEMY_VERSION}"
 
-          # Invoke validation tasks.
+          # Run linter.
           flake8 src bin
-          coverage run bin/test -vv1
+          
+          # Run tests.
+          export SQLALCHEMY_WARN_20=1
+          coverage run bin/test -vvv
 
-          # Set the stage for the Codecov step.
+          # Set the stage for uploading the coverage report.
           coverage xml
 
       # https://github.com/codecov/codecov-action

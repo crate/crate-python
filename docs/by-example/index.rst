@@ -43,6 +43,8 @@ its corresponding API interfaces, see also :ref:`sqlalchemy-support`.
 
     sqlalchemy/getting-started
     sqlalchemy/crud
+    sqlalchemy/working-with-types
+    sqlalchemy/advanced-querying
     sqlalchemy/inspection-reflection
 
 

@@ -1,11 +1,20 @@
+.. _sqlalchemy-getting-started:
+
 ===========================
 SQLAlchemy: Getting started
 ===========================
 
-This section of the documentation outlines how to use CrateDB's SQLAlchemy
-integration. It demonstrates both basic database operations (insert, select,
-delete), creating and dropping tables, running queries with aggregations,
-as well as the use of complex and geospatial data types.
+This section of the documentation shows how to connect to CrateDB using its
+SQLAlchemy dialect, and how to run basic DDL statements based on an SQLAlchemy
+ORM schema definition.
+
+Subsequent sections of the documentation will cover:
+
+- :ref:`sqlalchemy-crud`
+- :ref:`sqlalchemy-working-with-types`
+- :ref:`sqlalchemy-advanced-querying`
+- :ref:`sqlalchemy-inspection-reflection`
+
 
 .. rubric:: Table of Contents
 
@@ -21,27 +30,27 @@ Import the relevant symbols:
     >>> import sqlalchemy as sa
     >>> from sqlalchemy.ext.declarative import declarative_base
     >>> from sqlalchemy.orm import sessionmaker
-    >>> from sqlalchemy.sql import text
 
-Establish a connection to the database:
+Establish a connection to the database, see also :ref:`sa:engines_toplevel`
+and :ref:`connect`:
 
     >>> engine = sa.create_engine(f"crate://{crate_host}")
     >>> connection = engine.connect()
 
-    >>> Base = declarative_base(bind=engine)
-
-Create a session with SQLAlchemy:
+Create an SQLAlchemy :doc:`Session <sa:orm/session_basics>`:
 
     >>> session = sessionmaker(bind=engine)()
+    >>> Base = declarative_base()
 
 
-Connection String
+Connection string
 =================
 
-In SQLAlchemy a connection is established using the ``create_engine`` function.
-This function takes a connection string that varies from database to database.
+In SQLAlchemy, a connection is established using the ``create_engine`` function.
+This function takes a connection string, actually an `URL`_, that varies from
+database to database.
 
-In order to connect to a CrateDB cluster the following connection strings are
+In order to connect to a CrateDB cluster, the following connection strings are
 valid:
 
     >>> sa.create_engine('crate://')
@@ -53,12 +62,11 @@ to a different server the following syntax can be used:
     >>> sa.create_engine('crate://otherserver:4200')
     Engine(crate://otherserver:4200)
 
-Since CrateDB is a clustered database that usually consists of multiple server
-it is recommended to connect to all of them. This enables the DB-API layer to
+Since CrateDB is a clustered database running on multiple servers, it is
+recommended to connect to all of them. This enables the DB-API layer to
 use round-robin to distribute the load and skip a server if it becomes
-unavailable.
-
-The ``connect_args`` parameter has to be used to do so:
+unavailable. In order to make the driver aware of multiple servers, use
+the ``connect_args`` parameter like so:
 
     >>> sa.create_engine('crate://', connect_args={
     ...     'servers': ['host1:4200', 'host2:4200']
@@ -86,297 +94,37 @@ In order to disable SSL verification, use ``verify_ssl_cert = False``, like:
     ...     })
 
 
-Complex Types
-=============
+Basic DDL operations
+====================
 
-In a document oriented database it is a common pattern to store complex objects
-within a single field. For such cases the ``crate`` package provides the
-``Object`` type. The ``Object`` type can be seen as some kind of dictionary or
-map like type.
+.. note::
 
-Below is a schema definition using `SQLAlchemy's declarative approach
-<http://docs.sqlalchemy.org/en/latest/orm/extensions/declarative/>`_:
+    CrateDB currently does not know about different "databases". Instead,
+    tables can be created in different *schemas*. Schemas are created
+    implicitly on table creation and cannot be created explicitly. If a schema
+    does not exist yet, it will be created.
 
-    >>> from crate.client.sqlalchemy.types import Object, ObjectArray
-    >>> from uuid import uuid4
+    The default CrateDB schema is ``doc``, and if you do not specify a schema,
+    this is what will be used.
 
-    >>> def gen_key():
-    ...     return str(uuid4())
+    See also :ref:`schema-selection` and :ref:`crate-reference:ddl-create-table-schemas`.
 
-    >>> class Character(Base):
-    ...     __tablename__ = 'characters'
-    ...     id = sa.Column(sa.String, primary_key=True, default=gen_key)
-    ...     name = sa.Column(sa.String)
-    ...     quote = sa.Column(sa.String)
-    ...     details = sa.Column(Object)
-    ...     more_details = sa.Column(ObjectArray)
-    ...     name_ft = sa.Column(sa.String)
-    ...     quote_ft = sa.Column(sa.String)
-    ...     __mapper_args__ = {
-    ...         'exclude_properties': ['name_ft', 'quote_ft']
-    ...     }
 
-Using the `Session
-<http://docs.sqlalchemy.org/en/latest/orm/session.html>`_ two characters are
-added that have additional attributes inside the ``details`` column that weren't
-defined in the schema:
-
-    >>> arthur = Character(name='Arthur Dent')
-    >>> arthur.details = {}
-    >>> arthur.details['gender'] = 'male'
-    >>> arthur.details['species'] = 'human'
-    >>> session.add(arthur)
-
-    >>> trillian = Character(name='Tricia McMillan')
-    >>> trillian.details = {}
-    >>> trillian.quote = "We're on a space ship Arthur. In space."
-    >>> trillian.details['gender'] = 'female'
-    >>> trillian.details['species'] = 'human'
-    >>> trillian.details['female_only_attribute'] = 1
-    >>> session.add(trillian)
-    >>> session.commit()
-
-After ``INSERT`` statements are sent to the database the newly inserted rows
-aren't immediately available for search because the index is only updated
-periodically. In order to synchronize that, refresh the table:
-
-    >>> _ = connection.execute(text("REFRESH TABLE characters"))
-
-A regular select query will then fetch the whole documents:
-
-    >>> query = session.query(Character).order_by(Character.name)
-    >>> [(c.name, c.details['gender']) for c in query]
-    [('Arthur Dent', 'male'), ('Tricia McMillan', 'female')]
-
-It is also possible to just select a part of the document, even inside the
-``Object`` type:
-
-    >>> sorted(session.query(Character.details['gender']).all())
-    [('female',), ('male',)]
-
-In addition, filtering on the attributes inside the ``details`` column is also
-possible:
-
-    >>> query = session.query(Character.name)
-    >>> query.filter(Character.details['gender'] == 'male').all()
-    [('Arthur Dent',)]
-
-Updating Complex Types
-----------------------
-
-The SQLAlchemy CrateDB dialect supports change tracking deep down the nested
-levels of a ``Object`` type field. For example the following query will only
-update the ``gender`` key. The ``species`` key which is on the same level will
-be left untouched.
-
-    >>> char = session.query(Character).filter_by(name='Arthur Dent').one()
-    >>> char.details['gender'] = 'manly man'
-    >>> session.commit()
-    >>> session.refresh(char)
-
-    >>> char.details['gender']
-    'manly man'
-
-    >>> char.details['species']
-    'human'
-
-Object Array
-------------
-
-In addition to the ``Object`` type the CrateDB sqlalchemy dialect also includes
-a type called ``ObjectArray``. This type maps to a Python list of dictionaries.
-
-Note that opposed to the ``Object`` type the ``ObjectArray`` type isn't smart
-and doesn't have an intelligent change tracking. Therefore the generated
-``UPDATE`` statement will affect the whole list:
-
-    >>> char.more_details = [{'foo': 1, 'bar': 10}, {'foo': 2}]
-    >>> session.commit()
-
-    >>> char.more_details.append({'foo': 3})
-    >>> session.commit()
-
-This will generate an ``UPDATE`` statement which looks roughly like this::
-
-    "UPDATE characters SET more_details = ? ...", ([{'foo': 1, 'bar': 10}, {'foo': 2}, {'foo': 3}],)
-
-.. hidden:
-
-    >>> _ = connection.execute(text("REFRESH TABLE characters"))
-
-To do queries against fields of ``ObjectArray`` types, you have to use the
-``.any(value, operator=operators.eq)`` method on a subscript, because accessing
-fields of object arrays (e.g. ``Character.more_details['foo']``) returns an
-array of the field type.
-
-Only one of the objects inside the array has to match in order for the result
-to be returned:
-
-    >>> from sqlalchemy.sql import operators
-    >>> query = session.query(Character.name)
-    >>> query.filter(Character.more_details['foo'].any(1, operator=operators.eq)).all()
-    [('Arthur Dent',)]
-
-Querying a field of an object array will result in an array of
-all values of that field of all objects in that object array:
-
-    >>> query = session.query(Character.more_details['foo']).order_by(Character.name)
-    >>> query.all()
-    [([1, 2, 3],), (None,)]
-
-
-Geospatial Types
-================
-
-Geospatial types, such as ``geo_point`` and ``geo_area`` can also be used as
-part of an SQLAlchemy schema:
-
-    >>> from crate.client.sqlalchemy.types import Geopoint, Geoshape
-
-    >>> class City(Base):
-    ...    __tablename__ = 'cities'
-    ...    name = sa.Column(sa.String, primary_key=True)
-    ...    coordinate = sa.Column(Geopoint)
-    ...    area = sa.Column(Geoshape)
-
-One way of inserting these types is using the Geojson library, to create
-points or shapes:
-
-    >>> from geojson import Point, Polygon
-    >>> area = Polygon(
-    ...     [
-    ...         [
-    ...             (139.806, 35.515),
-    ...             (139.919, 35.703),
-    ...             (139.768, 35.817),
-    ...             (139.575, 35.760),
-    ...             (139.584, 35.619),
-    ...             (139.806, 35.515),
-    ...         ]
-    ...     ]
-    ... )
-    >>> point = Point(coordinates=(139.76, 35.68))
-
-These two objects can then be added to an sqlalchemy model and added to the
-session:
-
-    >>> tokyo = City(coordinate=point, area=area, name='Tokyo')
-    >>> session.add(tokyo)
-    >>> session.commit()
-    >>> _ = connection.execute(text("REFRESH TABLE cities"))
-
-When retrieved, they are retrieved as the corresponding geojson objects:
-
-    >>> query = session.query(City.name, City.coordinate, City.area)
-    >>> query.all()
-     [('Tokyo', (139.75999999791384, 35.67999996710569), {"coordinates": [[[139.806, 35.515], [139.919, 35.703], [139.768, 35.817], [139.575, 35.76], [139.584, 35.619], [139.806, 35.515]]], "type": "Polygon"})]
-
-Count and Group By
-==================
-
-SQLAlchemy supports different approaches to issue a query with a count
-aggregate function. Take a look at the `count result rows`_ documentation
-for a full overview.
-
-CrateDB currently doesn't support all variants as it can't handle the
-sub-queries yet.
-
-This means that queries with count have to be written in one of the following
-ways:
-
-    >>> session.query(sa.func.count(Character.id)).scalar()
-    2
-
-    >>> session.query(sa.func.count('*')).select_from(Character).scalar()
-    2
-
-Using the ``group_by`` clause is similar:
-
-    >>> session.query(sa.func.count(Character.id), Character.name) \
-    ...     .group_by(Character.name) \
-    ...     .order_by(sa.desc(sa.func.count(Character.id))) \
-    ...     .order_by(Character.name).all()
-    [(1, 'Arthur Dent'), (1, 'Tricia McMillan')]
-
-Fulltext Search with MATCH Predicate
-====================================
-
-Fulltext Search in CrateDB is performed using the MATCH Predicate. The
-CrateDB SQLAlchemy driver comes with a ``match`` function in the
-``predicates`` namespace, which can be used to search on one or multiple
-fields.
-
-    >>> from crate.client.sqlalchemy.predicates import match
-    >>> session.query(Character.name) \
-    ...     .filter(match(Character.name_ft, 'Arthur')) \
-    ...     .all()
-    [('Arthur Dent',)]
-
-
-To get the relevance of a matching row, an internal system column
-``_score`` can be selected. It's a numeric value which is relative to
-the other rows. The higher the score value, the more relevant the row.
-In most cases ``_score`` is not part of the SQLAlchemy Table definition,
-so it must be passed as a string:
-
-    >>> session.query(Character.name, sa.literal_column('_score')) \
-    ...     .filter(match(Character.quote_ft, 'space')) \
-    ...     .all()
-    [('Tricia McMillan', ...)]
-
-To search on multiple columns you have to pass a dictionary with columns
-and ``boost`` attached. ``boost`` is a factor that increases the
-relevance of a column in respect to the other columns:
-
-    >>> session.query(Character.name) \
-    ...           .filter(match({Character.name_ft: 1.5, Character.quote_ft: 0.1},
-    ...                         'Arthur')) \
-    ...     .order_by(sa.desc(sa.literal_column('_score'))) \
-    ...     .all()
-    [('Arthur Dent',), ('Tricia McMillan',)]
-
-The match type determines how the query_term is applied and the ``_score`` is
-created, thus it influences which documents are considered more relevant.
-The default match_type is best_fields:
-
-    >>> session.query(Character.name) \
-    ...     .filter(
-    ...         match(Character.name_ft, 'Arth',
-    ...                 match_type='phrase',
-    ...                 options={'fuzziness': 3})
-    ...     ) \
-    ...     .all()
-    [('Arthur Dent',)]
-
-It's not possible to specify options without the match_type argument:
-
-    >>> session.query(Character.name) \
-    ...     .filter(
-    ...         match(Character.name_ft, 'Arth',
-    ...                 options={'fuzziness': 3})
-    ...     ) \
-    ...     .all()
-    Traceback (most recent call last):
-    ValueError: missing match_type. It's not allowed to specify options without match_type
-
-Create and Delete Tables
-========================
-
-Create Tables
+Create tables
 -------------
 
-First the table definition as class:
+First the table definition as class, using SQLAlchemy's :ref:`sa:orm_declarative_mapping`:
 
     >>> class Department(Base):
     ...     __tablename__ = 'departments'
     ...     __table_args__ = {
     ...         'crate_number_of_replicas': '0'
     ...     }
-    ...     id = sa.Column(sa.String, primary_key=True, default=gen_key)
+    ...     id = sa.Column(sa.String, primary_key=True)
     ...     name = sa.Column(sa.String)
     ...     code = sa.Column(sa.Integer)
 
-As seen below the table doesn't exist yet:
+As seen below, the table doesn't exist yet:
 
     >>> engine.dialect.has_table(connection, table_name='departments')
     False
@@ -390,82 +138,30 @@ With that, the table has been created:
     >>> engine.dialect.has_table(connection, table_name='departments')
     True
 
+Let's also verify that by inquiring the ``information_schema.columns`` table:
+
     >>> stmt = ("select table_name, column_name, ordinal_position, data_type "
     ...         "from information_schema.columns "
     ...         "where table_name = 'departments' "
     ...         "order by column_name")
-    >>> pprint([str(r) for r in connection.execute(stmt)])
+    >>> pprint([str(r) for r in connection.execute(sa.text(stmt))])
     ["('departments', 'code', 3, 'integer')",
      "('departments', 'id', 1, 'text')",
      "('departments', 'name', 2, 'text')"]
 
-Drop Tables
+
+Drop tables
 -----------
 
-In order to delete all tables simply use ``Base.metadata.drop_all()``, or to
-delete a single table use ``drop(...)`` as shown below:
+In order to delete all tables reference within the ORM schema, invoke
+``Base.metadata.drop_all()``. To delete a single table, use
+``drop(...)``, as shown below:
 
     >>> Base.metadata.tables['departments'].drop(engine)
 
     >>> engine.dialect.has_table(connection, table_name='departments')
     False
 
-Insert From Select
-==================
-
-In SQLAlchemy, the ``insert().from_select()`` function returns a new ``Insert``
-construct which represents an ``INSERT...FROM SELECT`` statement. This
-functionality is supported by the CrateDB client library. Here is an example
-that uses ``insert().from_select()``.
-
-First, let's define and create the tables:
-
-    >>> from sqlalchemy import select, insert
-
-    >>> class Todos(Base):
-    ...     __tablename__ = 'todos'
-    ...     __table_args__ = {
-    ...         'crate_number_of_replicas': '0'
-    ...     }
-    ...     id = sa.Column(sa.String, primary_key=True, default=gen_key)
-    ...     content = sa.Column(sa.String)
-    ...     status = sa.Column(sa.String)
-
-    >>> class ArchivedTasks(Base):
-    ...     __tablename__ = 'archived_tasks'
-    ...     __table_args__ = {
-    ...         'crate_number_of_replicas': '0'
-    ...     }
-    ...     id = sa.Column(sa.String, primary_key=True)
-    ...     content = sa.Column(sa.String)
-
-    >>> Base.metadata.create_all(bind=engine)
-
-Let's add a task to the ``Todo`` table:
-
-    >>> task = Todos(content='Write Tests', status='done')
-    >>> session.add(task)
-    >>> session.commit()
-    >>> _ = connection.execute(text("REFRESH TABLE todos"))
-
-Using ``insert().from_select()`` to archive the task in ``ArchivedTasks``
-table:
-
-    >>> sel = select([Todos.id, Todos.content]).where(Todos.status=="done")
-    >>> ins = insert(ArchivedTasks).from_select(['id','content'], sel)
-    >>> result = session.execute(ins)
-    >>> session.commit()
-
-This will emit the following ``INSERT`` statement to the database::
-
-    INSERT INTO archived_tasks (id, content)
-        (SELECT todos.id, todos.content FROM todos WHERE todos.status = 'done')
-
-Now, verify that the data is present in the database:
-
-    >>> _ = connection.execute(text("REFRESH TABLE archived_tasks"))
-    >>> pprint([str(r) for r in session.execute("SELECT content FROM archived_tasks")])
-    ["('Write Tests',)"]
 
 .. hidden: Disconnect from database
 
@@ -473,4 +169,5 @@ Now, verify that the data is present in the database:
     >>> connection.close()
     >>> engine.dispose()
 
-.. _count result rows: http://docs.sqlalchemy.org/en/14/orm/tutorial.html#counting
+
+.. _URL: https://en.wikipedia.org/wiki/Uniform_Resource_Locator

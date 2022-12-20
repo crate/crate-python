@@ -1,3 +1,5 @@
+.. _sqlalchemy-inspection-reflection:
+
 =====================================================
 SQLAlchemy: Database schema inspection and reflection
 =====================================================

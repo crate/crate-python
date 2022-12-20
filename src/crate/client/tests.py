@@ -382,6 +382,8 @@ def test_suite():
     s = doctest.DocFileSuite(
         'docs/by-example/sqlalchemy/getting-started.rst',
         'docs/by-example/sqlalchemy/crud.rst',
+        'docs/by-example/sqlalchemy/working-with-types.rst',
+        'docs/by-example/sqlalchemy/advanced-querying.rst',
         'docs/by-example/sqlalchemy/inspection-reflection.rst',
         module_relative=False,
         setUp=setUpCrateLayerSqlAlchemy,

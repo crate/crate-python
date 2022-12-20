@@ -28,8 +28,7 @@ import sqlalchemy as sa
 from crate.client.cursor import Cursor
 from crate.client.sqlalchemy.types import Object
 from sqlalchemy import inspect
-from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import declarative_base, Session
 from sqlalchemy.testing import eq_, in_
 
 FakeCursor = MagicMock(name='FakeCursor', spec=Cursor)
@@ -48,13 +47,14 @@ class SqlAlchemyDialectTest(TestCase):
         FakeCursor.return_value = self.fake_cursor
 
         self.engine = sa.create_engine('crate://')
+
         self.executed_statement = None
 
         self.connection = self.engine.connect()
 
         self.fake_cursor.execute = self.execute_wrapper
 
-        self.base = declarative_base(bind=self.engine)
+        self.base = declarative_base()
 
         class Character(self.base):
             __tablename__ = 'characters'
@@ -64,12 +64,10 @@ class SqlAlchemyDialectTest(TestCase):
             obj = sa.Column(Object)
             ts = sa.Column(sa.DateTime, onupdate=datetime.utcnow)
 
-        self.character = Character
-        self.session = Session()
+        self.session = Session(bind=self.engine)
 
     def test_primary_keys_2_3_0(self):
-        meta = self.character.metadata
-        insp = inspect(meta.bind)
+        insp = inspect(self.session.bind)
         self.engine.dialect.server_version_info = (2, 3, 0)
 
         self.fake_cursor.rowcount = 3
@@ -84,8 +82,7 @@ class SqlAlchemyDialectTest(TestCase):
         in_("table_catalog = ?", self.executed_statement)
 
     def test_primary_keys_3_0_0(self):
-        meta = self.character.metadata
-        insp = inspect(meta.bind)
+        insp = inspect(self.session.bind)
         self.engine.dialect.server_version_info = (3, 0, 0)
 
         self.fake_cursor.rowcount = 3
@@ -106,7 +103,7 @@ class SqlAlchemyDialectTest(TestCase):
         )
         self.fake_cursor.fetchall = MagicMock(return_value=[["t1"], ["t2"]])
 
-        insp = inspect(self.character.metadata.bind)
+        insp = inspect(self.session.bind)
         self.engine.dialect.server_version_info = (2, 0, 0)
         eq_(insp.get_table_names(schema="doc"),
             ['t1', 't2'])
@@ -119,7 +116,7 @@ class SqlAlchemyDialectTest(TestCase):
         )
         self.fake_cursor.fetchall = MagicMock(return_value=[["v1"], ["v2"]])
 
-        insp = inspect(self.character.metadata.bind)
+        insp = inspect(self.session.bind)
         self.engine.dialect.server_version_info = (2, 0, 0)
         eq_(insp.get_view_names(schema="doc"),
             ['v1', 'v2'])

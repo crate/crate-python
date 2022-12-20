@@ -22,13 +22,13 @@
 from unittest import TestCase
 
 import sqlalchemy as sa
+from sqlalchemy.orm import declarative_base
 from sqlalchemy.sql.sqltypes import TIMESTAMP
-from sqlalchemy.ext.declarative import declarative_base
 
 
 class SqlAlchemyFunctionTest(TestCase):
     def setUp(self):
-        Base = declarative_base(bind=sa.create_engine("crate://"))
+        Base = declarative_base()
 
         class Character(Base):
             __tablename__ = "characters"

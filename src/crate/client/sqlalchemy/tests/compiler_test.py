@@ -24,7 +24,7 @@ from unittest import TestCase
 from crate.client.sqlalchemy.compiler import crate_before_execute
 
 import sqlalchemy as sa
-from sqlalchemy.sql import update, text
+from sqlalchemy.sql import text, Update
 
 from crate.client.sqlalchemy.sa_version import SA_VERSION, SA_1_4
 from crate.client.sqlalchemy.types import Craty
@@ -40,7 +40,7 @@ class SqlAlchemyCompilerTest(TestCase):
                                 sa.Column('name', sa.String),
                                 sa.Column('data', Craty))
 
-        self.update = update(self.mytable, text('where name=:name'))
+        self.update = Update(self.mytable).where(text('name=:name'))
         self.values = [{'name': 'crate'}]
         self.values = (self.values, )
 
@@ -75,9 +75,8 @@ class SqlAlchemyCompilerTest(TestCase):
         """
         Verify the `CrateCompiler.limit_clause` method, with offset.
         """
-        self.metadata.bind = self.crate_engine
         selectable = self.mytable.select().offset(5)
-        statement = str(selectable.compile())
+        statement = str(selectable.compile(bind=self.crate_engine))
         if SA_VERSION >= SA_1_4:
             self.assertEqual(statement, "SELECT mytable.name, mytable.data \nFROM mytable\n LIMIT ALL OFFSET ?")
         else:
@@ -87,16 +86,14 @@ class SqlAlchemyCompilerTest(TestCase):
         """
         Verify the `CrateCompiler.limit_clause` method, with limit.
         """
-        self.metadata.bind = self.crate_engine
         selectable = self.mytable.select().limit(42)
-        statement = str(selectable.compile())
+        statement = str(selectable.compile(bind=self.crate_engine))
         self.assertEqual(statement, "SELECT mytable.name, mytable.data \nFROM mytable \n LIMIT ?")
 
     def test_select_with_offset_and_limit(self):
         """
         Verify the `CrateCompiler.limit_clause` method, with offset and limit.
         """
-        self.metadata.bind = self.crate_engine
         selectable = self.mytable.select().offset(5).limit(42)
-        statement = str(selectable.compile())
+        statement = str(selectable.compile(bind=self.crate_engine))
         self.assertEqual(statement, "SELECT mytable.name, mytable.data \nFROM mytable \n LIMIT ? OFFSET ?")

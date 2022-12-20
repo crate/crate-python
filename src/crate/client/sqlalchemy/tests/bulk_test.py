@@ -23,8 +23,7 @@ from unittest import TestCase
 from unittest.mock import patch, MagicMock
 
 import sqlalchemy as sa
-from sqlalchemy.orm import Session
-from sqlalchemy.ext.declarative import declarative_base
+from sqlalchemy.orm import declarative_base, Session
 
 from crate.client.cursor import Cursor
 
@@ -38,7 +37,7 @@ class SqlAlchemyBulkTest(TestCase):
 
     def setUp(self):
         self.engine = sa.create_engine('crate://')
-        Base = declarative_base(bind=self.engine)
+        Base = declarative_base()
 
         class Character(Base):
             __tablename__ = 'characters'
@@ -47,7 +46,7 @@ class SqlAlchemyBulkTest(TestCase):
             age = sa.Column(sa.Integer)
 
         self.character = Character
-        self.session = Session()
+        self.session = Session(bind=self.engine)
 
     @patch('crate.client.connection.Cursor', FakeCursor)
     def test_bulk_save(self):

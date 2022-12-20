@@ -26,8 +26,7 @@ Import the relevant symbols:
     >>> from datetime import datetime
     >>> from geojson import Point, Polygon
     >>> from sqlalchemy import delete, func, text
-    >>> from sqlalchemy.ext.declarative import declarative_base
-    >>> from sqlalchemy.orm import sessionmaker
+    >>> from sqlalchemy.orm import declarative_base, sessionmaker
     >>> from sqlalchemy.sql import operators
     >>> from uuid import uuid4
     >>> from crate.client.sqlalchemy.types import Object, ObjectArray
@@ -156,7 +155,7 @@ Update nested dictionary
 
 Refresh and query "characters" table:
 
-    >>> _ = connection.execute("REFRESH TABLE characters")
+    >>> _ = connection.execute(text("REFRESH TABLE characters"))
     >>> session.refresh(char_nested)
 
     >>> char_nested = session.query(Character).filter_by(id='1234id').one()

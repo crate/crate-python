@@ -72,7 +72,6 @@ Create a SQLAlchemy table object:
     >>> meta = sa.MetaData()
     >>> table = sa.Table(
     ...     "characters", meta,
-    ...     autoload=True,
     ...     autoload_with=engine)
 
 Reflect column data types from the table metadata:

@@ -24,8 +24,7 @@ from unittest import TestCase
 from unittest.mock import patch, MagicMock
 
 import sqlalchemy as sa
-from sqlalchemy.orm import Session
-from sqlalchemy.ext.declarative import declarative_base
+from sqlalchemy.orm import declarative_base, Session
 from sqlalchemy import select, insert
 
 from crate.client.cursor import Cursor
@@ -44,7 +43,7 @@ class SqlAlchemyInsertFromSelectTest(TestCase):
 
     def setUp(self):
         self.engine = sa.create_engine('crate://')
-        Base = declarative_base(bind=self.engine)
+        Base = declarative_base()
 
         class Character(Base):
             __tablename__ = 'characters'
@@ -64,7 +63,7 @@ class SqlAlchemyInsertFromSelectTest(TestCase):
 
         self.character = Character
         self.character_archived = CharacterArchive
-        self.session = Session()
+        self.session = Session(bind=self.engine)
 
     @patch('crate.client.connection.Cursor', FakeCursor)
     def test_insert_from_select_triggered(self):
@@ -72,11 +71,12 @@ class SqlAlchemyInsertFromSelectTest(TestCase):
         self.session.add(char)
         self.session.commit()
 
-        sel = select([self.character.name, self.character.age]).where(self.character.status == "Archived")
+        sel = select(self.character.name, self.character.age).where(self.character.status == "Archived")
         ins = insert(self.character_archived).from_select(['name', 'age'], sel)
         self.session.execute(ins)
         self.session.commit()
+        # TODO: Verify if this is correct.
         self.assertSQL(
-            "INSERT INTO characters_archive (name, age) SELECT characters.name, characters.age FROM characters WHERE characters.status = ?",
+            "INSERT INTO characters_archive (name, age) SELECT characters.name, characters.age FROM characters WHERE characters.status = :status_1",
             ins
         )

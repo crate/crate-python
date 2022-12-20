@@ -19,8 +19,7 @@ Introduction
 Import the relevant symbols:
 
     >>> import sqlalchemy as sa
-    >>> from sqlalchemy.ext.declarative import declarative_base
-    >>> from sqlalchemy.orm import sessionmaker
+    >>> from sqlalchemy.orm import declarative_base, sessionmaker
     >>> from sqlalchemy.sql import text
 
 Establish a connection to the database:
@@ -28,7 +27,7 @@ Establish a connection to the database:
     >>> engine = sa.create_engine(f"crate://{crate_host}")
     >>> connection = engine.connect()
 
-    >>> Base = declarative_base(bind=engine)
+    >>> Base = declarative_base()
 
 Create a session with SQLAlchemy:
 
@@ -394,7 +393,7 @@ With that, the table has been created:
     ...         "from information_schema.columns "
     ...         "where table_name = 'departments' "
     ...         "order by column_name")
-    >>> pprint([str(r) for r in connection.execute(stmt)])
+    >>> pprint([str(r) for r in connection.execute(text(stmt))])
     ["('departments', 'code', 3, 'integer')",
      "('departments', 'id', 1, 'text')",
      "('departments', 'name', 2, 'text')"]
@@ -451,7 +450,7 @@ Let's add a task to the ``Todo`` table:
 Using ``insert().from_select()`` to archive the task in ``ArchivedTasks``
 table:
 
-    >>> sel = select([Todos.id, Todos.content]).where(Todos.status=="done")
+    >>> sel = select(Todos.id, Todos.content).where(Todos.status == "done")
     >>> ins = insert(ArchivedTasks).from_select(['id','content'], sel)
     >>> result = session.execute(ins)
     >>> session.commit()
@@ -464,7 +463,7 @@ This will emit the following ``INSERT`` statement to the database::
 Now, verify that the data is present in the database:
 
     >>> _ = connection.execute(text("REFRESH TABLE archived_tasks"))
-    >>> pprint([str(r) for r in session.execute("SELECT content FROM archived_tasks")])
+    >>> pprint([str(r) for r in session.execute(text("SELECT content FROM archived_tasks"))])
     ["('Write Tests',)"]
 
 .. hidden: Disconnect from database

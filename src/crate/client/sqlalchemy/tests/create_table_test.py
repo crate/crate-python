@@ -20,7 +20,7 @@
 # software solely pursuant to the terms of the relevant commercial agreement.
 
 import sqlalchemy as sa
-from sqlalchemy.ext.declarative import declarative_base
+from sqlalchemy.orm import declarative_base
 
 from crate.client.sqlalchemy.types import Object, ObjectArray, Geopoint
 from crate.client.cursor import Cursor
@@ -39,7 +39,7 @@ class SqlAlchemyCreateTableTest(TestCase):
 
     def setUp(self):
         self.engine = sa.create_engine('crate://')
-        self.Base = declarative_base(bind=self.engine)
+        self.Base = declarative_base()
 
     def test_table_basic_types(self):
         class User(self.Base):
@@ -57,7 +57,7 @@ class SqlAlchemyCreateTableTest(TestCase):
             float_col = sa.Column(sa.Float)
             double_col = sa.Column(sa.DECIMAL)
 
-        self.Base.metadata.create_all()
+        self.Base.metadata.create_all(bind=self.engine)
         fake_cursor.execute.assert_called_with(
             ('\nCREATE TABLE users (\n\tstring_col STRING NOT NULL, '
              '\n\tunicode_col STRING, \n\ttext_col STRING, \n\tint_col INT, '
@@ -74,7 +74,7 @@ class SqlAlchemyCreateTableTest(TestCase):
             __tablename__ = 'dummy'
             pk = sa.Column(sa.String, primary_key=True)
             obj_col = sa.Column(Object)
-        self.Base.metadata.create_all()
+        self.Base.metadata.create_all(bind=self.engine)
         fake_cursor.execute.assert_called_with(
             ('\nCREATE TABLE dummy (\n\tpk STRING NOT NULL, \n\tobj_col OBJECT, '
              '\n\tPRIMARY KEY (pk)\n)\n\n'),
@@ -88,7 +88,7 @@ class SqlAlchemyCreateTableTest(TestCase):
             }
             pk = sa.Column(sa.String, primary_key=True)
             p = sa.Column(sa.String)
-        self.Base.metadata.create_all()
+        self.Base.metadata.create_all(bind=self.engine)
         fake_cursor.execute.assert_called_with(
             ('\nCREATE TABLE t (\n\t'
              'pk STRING NOT NULL, \n\t'
@@ -102,7 +102,7 @@ class SqlAlchemyCreateTableTest(TestCase):
             __tablename__ = 't'
             ts = sa.Column(sa.BigInteger, primary_key=True)
             p = sa.Column(sa.BigInteger, sa.Computed("date_trunc('day', ts)"))
-        self.Base.metadata.create_all()
+        self.Base.metadata.create_all(bind=self.engine)
         fake_cursor.execute.assert_called_with(
             ('\nCREATE TABLE t (\n\t'
              'ts LONG NOT NULL, \n\t'
@@ -117,7 +117,7 @@ class SqlAlchemyCreateTableTest(TestCase):
             ts = sa.Column(sa.BigInteger, primary_key=True)
             p = sa.Column(sa.BigInteger, sa.Computed("date_trunc('day', ts)", persisted=False))
         with self.assertRaises(sa.exc.CompileError):
-            self.Base.metadata.create_all()
+            self.Base.metadata.create_all(bind=self.engine)
 
     def test_table_partitioned_by(self):
         class DummyTable(self.Base):
@@ -128,7 +128,7 @@ class SqlAlchemyCreateTableTest(TestCase):
             }
             pk = sa.Column(sa.String, primary_key=True)
             p = sa.Column(sa.String)
-        self.Base.metadata.create_all()
+        self.Base.metadata.create_all(bind=self.engine)
         fake_cursor.execute.assert_called_with(
             ('\nCREATE TABLE t (\n\t'
              'pk STRING NOT NULL, \n\t'
@@ -146,7 +146,7 @@ class SqlAlchemyCreateTableTest(TestCase):
             }
             pk = sa.Column(sa.String, primary_key=True)
 
-        self.Base.metadata.create_all()
+        self.Base.metadata.create_all(bind=self.engine)
         fake_cursor.execute.assert_called_with(
             ('\nCREATE TABLE t (\n\t'
              'pk STRING NOT NULL, \n\t'
@@ -163,7 +163,7 @@ class SqlAlchemyCreateTableTest(TestCase):
             }
             pk = sa.Column(sa.String, primary_key=True)
             p = sa.Column(sa.String, primary_key=True)
-        self.Base.metadata.create_all()
+        self.Base.metadata.create_all(bind=self.engine)
         fake_cursor.execute.assert_called_with(
             ('\nCREATE TABLE t (\n\t'
              'pk STRING NOT NULL, \n\t'
@@ -178,7 +178,7 @@ class SqlAlchemyCreateTableTest(TestCase):
             pk = sa.Column(sa.String, primary_key=True)
             tags = sa.Column(ObjectArray)
 
-        self.Base.metadata.create_all()
+        self.Base.metadata.create_all(bind=self.engine)
         fake_cursor.execute.assert_called_with(
             ('\nCREATE TABLE t (\n\t'
              'pk STRING NOT NULL, \n\t'
@@ -192,7 +192,7 @@ class SqlAlchemyCreateTableTest(TestCase):
             a = sa.Column(sa.Integer, nullable=True)
             b = sa.Column(sa.Integer, nullable=False)
 
-        self.Base.metadata.create_all()
+        self.Base.metadata.create_all(bind=self.engine)
         fake_cursor.execute.assert_called_with(
             ('\nCREATE TABLE t (\n\t'
              'pk STRING NOT NULL, \n\t'
@@ -205,7 +205,7 @@ class SqlAlchemyCreateTableTest(TestCase):
             __tablename__ = 't'
             pk = sa.Column(sa.String, primary_key=True, nullable=True)
         with self.assertRaises(sa.exc.CompileError):
-            self.Base.metadata.create_all()
+            self.Base.metadata.create_all(bind=self.engine)
 
     def test_column_crate_index(self):
         class DummyTable(self.Base):
@@ -214,7 +214,7 @@ class SqlAlchemyCreateTableTest(TestCase):
             a = sa.Column(sa.Integer, crate_index=False)
             b = sa.Column(sa.Integer, crate_index=True)
 
-        self.Base.metadata.create_all()
+        self.Base.metadata.create_all(bind=self.engine)
         fake_cursor.execute.assert_called_with(
             ('\nCREATE TABLE t (\n\t'
              'pk STRING NOT NULL, \n\t'
@@ -228,4 +228,4 @@ class SqlAlchemyCreateTableTest(TestCase):
             pk = sa.Column(sa.String, primary_key=True)
             a = sa.Column(Geopoint, crate_index=False)
         with self.assertRaises(sa.exc.CompileError):
-            self.Base.metadata.create_all()
+            self.Base.metadata.create_all(bind=self.engine)

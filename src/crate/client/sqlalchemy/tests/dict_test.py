@@ -25,8 +25,7 @@ from unittest.mock import patch, MagicMock
 
 import sqlalchemy as sa
 from sqlalchemy.sql import select
-from sqlalchemy.orm import Session
-from sqlalchemy.ext.declarative import declarative_base
+from sqlalchemy.orm import declarative_base, Session
 
 from crate.client.sqlalchemy.types import Craty, ObjectArray
 from crate.client.cursor import Cursor
@@ -41,7 +40,8 @@ class SqlAlchemyDictTypeTest(TestCase):
 
     def setUp(self):
         self.engine = sa.create_engine('crate://')
-        metadata = sa.MetaData()
+        # FIXME: Deprecated with SA20.
+        metadata = sa.MetaData(bind=self.engine)
         self.mytable = sa.Table('mytable', metadata,
                                 sa.Column('name', sa.String),
                                 sa.Column('data', Craty))
@@ -53,12 +53,12 @@ class SqlAlchemyDictTypeTest(TestCase):
         mytable = self.mytable
         self.assertSQL(
             "SELECT mytable.data['x'] AS anon_1 FROM mytable",
-            select([mytable.c.data['x']], bind=self.engine)
+            select(mytable.c.data['x'])
         )
 
     def test_select_with_dict_column_where_clause(self):
         mytable = self.mytable
-        s = select([mytable.c.data], bind=self.engine).\
+        s = select(mytable.c.data).\
             where(mytable.c.data['x'] == 1)
         self.assertSQL(
             "SELECT mytable.data FROM mytable WHERE mytable.data['x'] = ?",
@@ -67,7 +67,7 @@ class SqlAlchemyDictTypeTest(TestCase):
 
     def test_select_with_dict_column_nested_where(self):
         mytable = self.mytable
-        s = select([mytable.c.name], bind=self.engine)
+        s = select(mytable.c.name)
         s = s.where(mytable.c.data['x']['y'] == 1)
         self.assertSQL(
             "SELECT mytable.name FROM mytable " +
@@ -77,7 +77,7 @@ class SqlAlchemyDictTypeTest(TestCase):
 
     def test_select_with_dict_column_where_clause_gt(self):
         mytable = self.mytable
-        s = select([mytable.c.data], bind=self.engine).\
+        s = select(mytable.c.data).\
             where(mytable.c.data['x'] > 1)
         self.assertSQL(
             "SELECT mytable.data FROM mytable WHERE mytable.data['x'] > ?",
@@ -86,7 +86,7 @@ class SqlAlchemyDictTypeTest(TestCase):
 
     def test_select_with_dict_column_where_clause_other_col(self):
         mytable = self.mytable
-        s = select([mytable.c.name], bind=self.engine)
+        s = select(mytable.c.name)
         s = s.where(mytable.c.data['x'] == mytable.c.name)
         self.assertSQL(
             "SELECT mytable.name FROM mytable " +
@@ -96,7 +96,7 @@ class SqlAlchemyDictTypeTest(TestCase):
 
     def test_update_with_dict_column(self):
         mytable = self.mytable
-        stmt = mytable.update(bind=self.engine).\
+        stmt = mytable.update().\
             where(mytable.c.name == 'Arthur Dent').\
             values({
                 "data['x']": "Trillian"
@@ -114,7 +114,7 @@ class SqlAlchemyDictTypeTest(TestCase):
             ('characters_data', None, None, None, None, None, None)
         )
         fake_cursor.rowcount = 1
-        Base = declarative_base(bind=self.engine)
+        Base = declarative_base()
 
         class Character(Base):
             __tablename__ = 'characters'
@@ -123,7 +123,7 @@ class SqlAlchemyDictTypeTest(TestCase):
             data = sa.Column(Craty)
             data_list = sa.Column(ObjectArray)
 
-        session = Session()
+        session = Session(bind=self.engine)
         return session, Character
 
     def test_assign_null_to_object_array(self):
@@ -266,7 +266,7 @@ class SqlAlchemyDictTypeTest(TestCase):
             return_value=[('Trillian', {'x': 1})]
         )
 
-        session = Session()
+        session = Session(bind=self.engine)
         char = Character(name='Trillian')
         char.data = {'x': 1}
         session.add(char)
@@ -339,14 +339,14 @@ class SqlAlchemyDictTypeTest(TestCase):
 
         )
         fake_cursor.rowcount = 1
-        Base = declarative_base(bind=self.engine)
+        Base = declarative_base()
 
         class Character(Base):
             __tablename__ = 'characters'
             name = sa.Column(sa.String, primary_key=True)
             data_list = sa.Column(ObjectArray)
 
-        session = Session()
+        session = Session(bind=self.engine)
         return session, Character
 
     def _setup_object_array_char(self):

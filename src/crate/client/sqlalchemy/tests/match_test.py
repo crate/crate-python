@@ -24,8 +24,7 @@ from unittest import TestCase
 from unittest.mock import MagicMock
 
 import sqlalchemy as sa
-from sqlalchemy.orm import Session
-from sqlalchemy.ext.declarative import declarative_base
+from sqlalchemy.orm import declarative_base, Session
 
 from crate.client.sqlalchemy.types import Craty
 from crate.client.sqlalchemy.predicates import match
@@ -52,14 +51,14 @@ class SqlAlchemyMatchTest(TestCase):
         self.assertEqual(expected_str, str(actual_expr).replace('\n', ''))
 
     def set_up_character_and_session(self):
-        Base = declarative_base(bind=self.engine)
+        Base = declarative_base()
 
         class Character(Base):
             __tablename__ = 'characters'
             name = sa.Column(sa.String, primary_key=True)
             info = sa.Column(Craty)
 
-        session = Session()
+        session = Session(bind=self.engine)
         return session, Character
 
     def test_simple_match(self):

@@ -21,8 +21,7 @@ Introduction
 Import the relevant symbols:
 
     >>> import sqlalchemy as sa
-    >>> from sqlalchemy.ext.declarative import declarative_base
-    >>> from sqlalchemy.orm import sessionmaker
+    >>> from sqlalchemy.orm import declarative_base, sessionmaker
     >>> from uuid import uuid4
 
 Establish a connection to the database, see also :ref:`sa:engines_toplevel`
@@ -237,8 +236,8 @@ Let's add a task to the ``Todo`` table:
 Now, let's use ``insert().from_select()`` to archive the task into the
 ``ArchivedTasks`` table:
 
-    >>> sel = select([Todos.id, Todos.content]).where(Todos.status == "done")
-    >>> ins = insert(ArchivedTasks).from_select(['id','content'], sel)
+    >>> sel = select(Todos.id, Todos.content).where(Todos.status == "done")
+    >>> ins = insert(ArchivedTasks).from_select(['id', 'content'], sel)
     >>> result = session.execute(ins)
     >>> session.commit()
 
@@ -250,7 +249,7 @@ This will emit the following ``INSERT`` statement to the database::
 Now, verify that the data is present in the database:
 
     >>> _ = connection.execute(sa.text("REFRESH TABLE archived_tasks"))
-    >>> pprint([str(r) for r in session.execute("SELECT content FROM archived_tasks")])
+    >>> pprint([str(r) for r in session.execute(sa.text("SELECT content FROM archived_tasks"))])
     ["('Write Tests',)"]
 
 

@@ -156,6 +156,3 @@ __ https://crate.io/docs/crate/reference/en/latest/general/ddl/data-types.html#o
 __ https://crate.io/docs/crate/reference/en/latest/general/ddl/data-types.html#array
 __ https://crate.io/docs/crate/reference/en/latest/general/ddl/data-types.html#geo-point
 __ https://crate.io/docs/crate/reference/en/latest/general/ddl/data-types.html#geo-shape
-
-.. _json: https://docs.python.org/3/library/json.html
-.. _HTTP endpoint: https://crate.io/docs/crate/reference/en/latest/interfaces/http.html

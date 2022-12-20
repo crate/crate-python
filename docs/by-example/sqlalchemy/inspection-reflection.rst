@@ -11,28 +11,35 @@ SQLAlchemy integration.
 Introduction
 ============
 
+The CrateDB SQLAlchemy integration provides different ways to inspect the
+database.
 
-The CrateDB SQLAlchemy integration provides different ways to inspect the database.
+1) The :ref:`runtime inspection API <sa:inspection_toplevel>` allows you to get
+   an ``Inspector`` instance that can be used to fetch schema names, table names
+   and other information.
 
-1) The `runtime inspection API`_ allows you to get an ``Inspector`` instance that can be used to fetch schema names, table names and other information.
+2) Reflection capabilities allow you to create ``Table`` instances from
+   existing tables to inspect their columns and constraints.
 
-2) Reflection capabilities allow you to create ``Table`` instances from existing tables to inspect their columns and constraints.
-
-3) A ``CrateDialect`` allows you to get connection information and it contains low level function to check the existence of schemas and tables.
+3) A ``CrateDialect`` allows you to get connection information and it contains
+   low level function to check the existence of schemas and tables.
 
 All approaches require an ``Engine`` instance, which you can create like this:
 
     >>> import sqlalchemy as sa
     >>> engine = sa.create_engine(f"crate://{crate_host}")
 
+This effectively establishes a connection to the database, see also
+:ref:`sa:engines_toplevel` and :ref:`connect`.
+
 
 Inspector
 =========
 
-The `SQLAlchemy inspector`_ is a low level interface which provides a
-backend-agnostic system of loading lists of schema, table, column, and
-constraint descriptions from a given database. You create an inspector like
-this:
+The :ref:`SQLAlchemy inspector <sa:metadata_reflection_inspector>` is a low
+level interface which provides a backend-agnostic system of loading lists of
+schema, table, column, and constraint descriptions from a given database.
+You can create an inspector like this:
 
     >>> inspector = sa.inspect(engine)
 
@@ -64,8 +71,8 @@ Schema-supported reflection
 ===========================
 
 A ``Table`` object can load its own schema information from the corresponding
-table in the database. This process is called *reflection*, see `reflecting
-database objects`_.
+table in the database. This process is called *reflection*, see
+:ref:`sa:metadata_reflection`.
 
 In the most simple case you need only specify the table name, a ``MetaData``
 object, and the ``autoload_with`` argument.
@@ -118,8 +125,3 @@ Check if a table exists:
 
     >>> connection.close()
     >>> engine.dispose()
-
-
-.. _reflecting database objects: https://docs.sqlalchemy.org/en/14/core/reflection.html#reflecting-database-objects
-.. _runtime inspection API: https://docs.sqlalchemy.org/en/14/core/inspection.html
-.. _SQLAlchemy inspector: https://docs.sqlalchemy.org/en/14/core/reflection.html#fine-grained-reflection-with-inspector

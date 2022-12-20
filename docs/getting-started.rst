@@ -23,16 +23,18 @@ It may also work on earlier versions of Python.
 Install
 =======
 
+.. highlight:: sh
+
 The CrateDB Python client is `available`_ as a `PyPI`_ package.
 
 To install the most recent driver version, including the SQLAlchemy dialect
-extension, run:
+extension, run::
 
-.. code-block:: sh
-
-   sh$ pip install "crate[sqlalchemy]" --upgrade
+    pip install "crate[sqlalchemy]" --upgrade
 
 After that is done, you can import the library, like so:
+
+.. code-block:: python
 
     >>> from crate import client
 
@@ -43,11 +45,11 @@ Python provides a REPL_, also known as an interactive language shell. It's a
 handy way to experiment with code and try out new libraries. We recommend
 `iPython`_, which you can install, like so::
 
-    sh$ pip install iPython
+    pip install iPython
 
 Once installed, you can start it up, like this::
 
-    sh$ ipython
+    ipython
 
 From there, try importing the CrateDB Python client library and seeing how far
 you get with the built-in ``help()`` function (that can be called on any

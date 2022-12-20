@@ -5,13 +5,13 @@ SQLAlchemy: Create, retrieve, update, and delete
 ================================================
 
 This section of the documentation shows how to query, insert, update and delete
-data using CrateDB's SQLAlchemy integration, it includes common scenarios like:
-
+records using CrateDB's SQLAlchemy integration, it includes common scenarios
+like:
 
 - Filtering records
 - Limiting result sets
 - Inserts and updates with default values
-- Updating complex data types with nested dictionaries
+
 
 .. rubric:: Table of Contents
 
@@ -31,12 +31,14 @@ Import the relevant symbols:
     >>> from sqlalchemy.orm import sessionmaker
     >>> from crate.client.sqlalchemy.types import ObjectArray
 
-Establish a connection to the database:
+Establish a connection to the database, see also :ref:`sa:engines_toplevel`
+and :ref:`connect`:
 
     >>> engine = sa.create_engine(f"crate://{crate_host}")
     >>> connection = engine.connect()
 
-Define the ORM schema for the ``Location`` entity:
+Define the ORM schema for the ``Location`` entity using SQLAlchemy's
+:ref:`sa:orm_declarative_mapping`:
 
     >>> Base = declarative_base(bind=engine)
 
@@ -52,46 +54,9 @@ Define the ORM schema for the ``Location`` entity:
     ...     flag = sa.Column(sa.Boolean)
     ...     details = sa.Column(ObjectArray)
 
-Create a session with SQLAlchemy:
+Create an SQLAlchemy :doc:`Session <sa:orm/session_basics>`:
 
     >>> session = sessionmaker(bind=engine)()
-
-Retrieve
-========
-
-Using the connection to execute a select statement:
-
-    >>> result = connection.execute('select name from locations order by name')
-    >>> result.rowcount
-    13
-
-    >>> result.first()
-    ('Aldebaran',)
-
-Using the ORM to query the locations:
-
-    >>> locations = session.query(Location).order_by('name')
-    >>> [l.name for l in locations if l is not None][:2]
-    ['Aldebaran', 'Algol']
-
-With limit and offset:
-
-    >>> locations = session.query(Location).order_by('name').offset(1).limit(2)
-    >>> [l.name for l in locations if l is not None]
-    ['Algol', 'Allosimanius Syneca']
-
-With filter:
-
-    >>> location = session.query(Location).filter_by(name='Algol').one()
-    >>> location.name
-    'Algol'
-
-Order by:
-
-    >>> locations = session.query(Location).filter(Location.name is not None).order_by(sa.desc(Location.name))
-    >>> locations = locations.limit(2)
-    >>> [l.name for l in locations]
-    ['Outer Eastern Rim', 'North West Ripple']
 
 
 Create
@@ -157,8 +122,50 @@ them, they are not set when the record is inserted:
     True
 
 
+Retrieve
+========
+
+Using the connection to execute a select statement:
+
+    >>> result = connection.execute('select name from locations order by name')
+    >>> result.rowcount
+    14
+
+    >>> result.first()
+    ('Aldebaran',)
+
+Using the ORM to query the locations:
+
+    >>> locations = session.query(Location).order_by('name')
+    >>> [l.name for l in locations if l is not None][:2]
+    ['Aldebaran', 'Algol']
+
+With limit and offset:
+
+    >>> locations = session.query(Location).order_by('name').offset(1).limit(2)
+    >>> [l.name for l in locations if l is not None]
+    ['Algol', 'Allosimanius Syneca']
+
+With filter:
+
+    >>> location = session.query(Location).filter_by(name='Algol').one()
+    >>> location.name
+    'Algol'
+
+Order by:
+
+    >>> locations = session.query(Location).filter(Location.name is not None).order_by(sa.desc(Location.name))
+    >>> locations = locations.limit(2)
+    >>> [l.name for l in locations]
+    ['Outer Eastern Rim', 'North West Ripple']
+
+
 Update
 ======
+
+Back to our original object ``Location(Earth)``.
+
+    >>> location = session.query(Location).filter_by(name='Earth').one()
 
 The datetime and date can be set using an update statement:
 
@@ -206,14 +213,15 @@ Refresh table:
 
     >>> _ = connection.execute("REFRESH TABLE locations")
 
-Query database:
+Update multiple records using SQL:
 
     >>> result = connection.execute("update locations set flag=true where kind='Update'")
     >>> result.rowcount
     10
 
-Check that number of affected documents of update without ``where-clause`` matches number of all
-documents in the table:
+Update all records using SQL, and check that the number of documents affected
+of an update without ``where-clause`` matches the number of all documents in
+the table:
 
     >>> result = connection.execute(u"update locations set kind='Überall'")
     >>> result.rowcount == connection.execute("select * from locations limit 100").rowcount

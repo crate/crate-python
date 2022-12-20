@@ -31,12 +31,12 @@ cursor()
 ========
 
 Calling the ``cursor()`` function on the connection will
-return a cursor object::
+return a cursor object:
 
     >>> cursor = connection.cursor()
 
 Now we are able to perform any operation provided by the
-cursor object::
+cursor object:
 
     >>> cursor.rowcount
     -1
@@ -44,13 +44,13 @@ cursor object::
 close()
 =======
 
-Now we close the connection::
+Now we close the connection:
 
     >>> connection.close()
 
 The connection will be unusable from this point. Any
 operation attempted with the closed connection will
-raise a ``ProgrammingError``::
+raise a ``ProgrammingError``:
 
     >>> cursor = connection.cursor()
     Traceback (most recent call last):

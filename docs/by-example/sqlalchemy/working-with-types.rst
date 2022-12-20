@@ -211,7 +211,7 @@ Geospatial types
 
 CrateDB's geospatial types, such as :ref:`crate-reference:type-geo_point`
 and :ref:`crate-reference:type-geo_shape`, can also be used within an
-SQLAlchemy declarative schema.
+SQLAlchemy declarative schema:
 
     >>> class City(Base):
     ...    __tablename__ = 'cities'

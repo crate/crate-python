@@ -16,8 +16,8 @@ DBAPI, HTTP, and BLOB interfaces
 
 The examples in this section are all about CrateDB's `Python DBAPI`_ interface,
 the plain HTTP API interface, and a convenience interface for working with
-`blob tables`_. It details attributes, methods, and behaviors of the
-``Connection`` and ``Cursor`` objects.
+:ref:`blob tables <crate-reference:blob_support>`. It details attributes,
+methods, and behaviors of the ``Connection`` and ``Cursor`` objects.
 
 .. toctree::
     :maxdepth: 1
@@ -32,8 +32,8 @@ the plain HTTP API interface, and a convenience interface for working with
 
 .. _sqlalchemy-by-example:
 
-SQLAlchemy interface
-====================
+SQLAlchemy by example
+=====================
 
 The examples in this section are all about CrateDB's `SQLAlchemy`_ dialect, and
 its corresponding API interfaces, see also :ref:`sqlalchemy-support`.
@@ -48,6 +48,5 @@ its corresponding API interfaces, see also :ref:`sqlalchemy-support`.
     sqlalchemy/inspection-reflection
 
 
-.. _blob tables: https://crate.io/docs/crate/reference/en/latest/general/blobs.html
 .. _Python DBAPI: https://peps.python.org/pep-0249/
 .. _SQLAlchemy: https://www.sqlalchemy.org/

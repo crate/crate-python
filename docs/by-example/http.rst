@@ -20,25 +20,25 @@ The CrateDB Python driver package offers an HTTP client API object.
 Server configuration
 ====================
 
-A list of servers can be passed while creating an instance of the http client::
+A list of servers can be passed while creating an instance of the http client:
 
     >>> http_client = HttpClient([crate_host])
     >>> http_client.close()
 
-Its also possible to pass a single server as a string::
+Its also possible to pass a single server as a string:
 
     >>> http_client = HttpClient(crate_host)
     >>> http_client.close()
 
 If no ``server`` argument (or no argument at all) is passed, the default one
-``127.0.0.1:4200`` is used::
+``127.0.0.1:4200`` is used:
 
     >>> http_client = HttpClient()
     >>> http_client._active_servers
     ['http://127.0.0.1:4200']
     >>> http_client.close()
 
-When using a list of servers, the servers are selected by round-robin::
+When using a list of servers, the servers are selected by round-robin:
 
     >>> invalid_host = "invalid_host:9999"
     >>> even_more_invalid_host = "even_more_invalid_host:9999"
@@ -54,7 +54,7 @@ When using a list of servers, the servers are selected by round-robin::
 
     >>> http_client.close()
 
-Servers with connection errors will be removed from the active server list::
+Servers with connection errors will be removed from the active server list:
 
     >>> http_client = HttpClient([invalid_host, even_more_invalid_host, crate_host])
     >>> result = http_client.sql('select name from locations')
@@ -62,7 +62,7 @@ Servers with connection errors will be removed from the active server list::
     ['http://127.0.0.1:44209']
 
 Inactive servers will be re-added after a given time interval.
-To validate this, set the interval very short and sleep for that interval::
+To validate this, set the interval very short and sleep for that interval:
 
     >>> http_client.retry_interval = 1
     >>> import time; time.sleep(1)
@@ -74,7 +74,7 @@ To validate this, set the interval very short and sleep for that interval::
     >>> http_client.close()
 
 If no active servers are available and the retry interval is not reached, just use the oldest
-inactive one::
+inactive one:
 
     >>> http_client = HttpClient([invalid_host, even_more_invalid_host, crate_host])
     >>> result = http_client.sql('select name from locations')
@@ -86,7 +86,7 @@ inactive one::
 SQL Statements
 ==============
 
-Issue a select statement against our with test data pre-filled crate instance::
+Issue a select statement against our with test data pre-filled crate instance:
 
     >>> http_client = HttpClient(crate_host)
     >>> result = http_client.sql('select name from locations order by name')
@@ -112,19 +112,19 @@ Issue a select statement against our with test data pre-filled crate instance::
 Blobs
 =====
 
-Check if a blob exists::
+Check if a blob exists:
 
     >>> http_client.blob_exists('myfiles', '040f06fd774092478d450774f5ba30c5da78acc8')
     False
 
-Trying to get a non-existing blob throws an exception::
+Trying to get a non-existing blob throws an exception:
 
     >>> http_client.blob_get('myfiles', '041f06fd774092478d450774f5ba30c5da78acc8')
     Traceback (most recent call last):
     ...
     crate.client.exceptions.DigestNotFoundException: myfiles/041f06fd774092478d450774f5ba30c5da78acc8
 
-Creating a new blob - this method returns ``True`` if the blob was newly created::
+Creating a new blob - this method returns ``True`` if the blob was newly created:
 
     >>> from tempfile import TemporaryFile
     >>> f = TemporaryFile()
@@ -134,25 +134,25 @@ Creating a new blob - this method returns ``True`` if the blob was newly created
     ...     'myfiles', '040f06fd774092478d450774f5ba30c5da78acc8', f)
     True
 
-Uploading the same content again returns ``False``::
+Uploading the same content again returns ``False``:
 
     >>> _ = f.seek(0)
     >>> http_client.blob_put(
     ...     'myfiles', '040f06fd774092478d450774f5ba30c5da78acc8', f)
     False
 
-Now the blob exist::
+Now the blob exist:
 
     >>> http_client.blob_exists('myfiles', '040f06fd774092478d450774f5ba30c5da78acc8')
     True
 
-Blobs are returned as generators, generating a chunk on each call::
+Blobs are returned as generators, generating a chunk on each call:
 
     >>> g = http_client.blob_get('myfiles', '040f06fd774092478d450774f5ba30c5da78acc8')
     >>> print(next(g))
     content
 
-The chunk_size can be set explicitly on get::
+The chunk_size can be set explicitly on get:
 
     >>> g = http_client.blob_get(
     ...     'myfiles', '040f06fd774092478d450774f5ba30c5da78acc8', 5)
@@ -162,7 +162,7 @@ The chunk_size can be set explicitly on get::
     >>> print(next(g))
     nt
 
-Deleting a blob - this method returns true if the blob existed::
+Deleting a blob - this method returns true if the blob existed:
 
     >>> http_client.blob_del('myfiles', '040f06fd774092478d450774f5ba30c5da78acc8')
     True
@@ -170,7 +170,7 @@ Deleting a blob - this method returns true if the blob existed::
     >>> http_client.blob_del('myfiles', '040f06fd774092478d450774f5ba30c5da78acc8')
     False
 
-Uploading a blob to a table with disabled blob support throws an exception::
+Uploading a blob to a table with disabled blob support throws an exception:
 
     >>> _ = f.seek(0)
     >>> http_client.blob_put(
@@ -187,7 +187,7 @@ Error Handling
 ==============
 
 Create a function that takes a lot of time to return so we can run into a
-timeout exception::
+timeout exception:
 
     >>> http_client = HttpClient(crate_host)
     >>> http_client.sql('''
@@ -200,7 +200,7 @@ timeout exception::
     >>> http_client.close()
 
 It's possible to define a HTTP timeout in seconds on client instantiation, so
-an exception is raised when the timeout is reached::
+an exception is raised when the timeout is reached:
 
     >>> http_client = HttpClient(crate_host, timeout=0.01)
     >>> http_client.sql('select fib(32)')
@@ -209,7 +209,7 @@ an exception is raised when the timeout is reached::
     crate.client.exceptions.ConnectionError: No more Servers available, exception from last server: ...
     >>> http_client.close()
 
-When connecting to non-CrateDB servers, the HttpClient will raise a ConnectionError like this::
+When connecting to non-CrateDB servers, the HttpClient will raise a ConnectionError like this:
 
     >>> http_client = HttpClient(["https://example.org/"])
     >>> http_client.server_infos(http_client._get_server())
@@ -220,7 +220,7 @@ When connecting to non-CrateDB servers, the HttpClient will raise a ConnectionEr
     >>> http_client.close()
 
 When using the ``error_trace`` kwarg a full traceback of the server exception
-will be provided::
+will be provided:
 
     >>> from crate.client.exceptions import ProgrammingError
     >>> http_client = HttpClient([crate_host], error_trace=True)

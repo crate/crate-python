@@ -8,7 +8,7 @@ About
 *****
 
 This part of the documentation contains examples how to use the CrateDB Python
-client, exercising different options and scenarios.
+client.
 
 
 DBAPI, HTTP, and BLOB interfaces
@@ -16,7 +16,7 @@ DBAPI, HTTP, and BLOB interfaces
 
 The examples in this section are all about CrateDB's `Python DBAPI`_ interface,
 the plain HTTP API interface, and a convenience interface for working with
-`blob tables`_. It also details attributes, methods, and behaviors of the
+`blob tables`_. It details attributes, methods, and behaviors of the
 ``Connection`` and ``Cursor`` objects.
 
 .. toctree::

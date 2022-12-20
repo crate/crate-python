@@ -2,12 +2,14 @@
 SQLAlchemy: Create, retrieve, update, and delete
 ================================================
 
-This section of the documentation, related to CrateDB's SQLAlchemy integration,
-focuses on showing specific details when querying, inserting, updating, and
-deleting records.
+This section of the documentation shows how to query, insert, update and delete
+data using CrateDB's SQLAlchemy integration, it includes common scenarios like:
 
-It exercises filtering and limiting, inserting and updating with default values,
-and updating complex data types with nested Python dictionaries.
+
+- Filtering records
+- Limiting result sets
+- Inserts and updates with default values
+- Updating complex data types with nested dictionaries
 
 .. rubric:: Table of Contents
 

@@ -26,8 +26,7 @@ from unittest.mock import patch, MagicMock
 
 import sqlalchemy as sa
 from sqlalchemy.exc import DBAPIError
-from sqlalchemy.orm import Session
-from sqlalchemy.ext.declarative import declarative_base
+from sqlalchemy.orm import declarative_base, Session
 
 from crate.client.cursor import Cursor
 
@@ -54,7 +53,7 @@ class SqlAlchemyDateAndDateTimeTest(TestCase):
 
     def setUp(self):
         self.engine = sa.create_engine('crate://')
-        Base = declarative_base(bind=self.engine)
+        Base = declarative_base()
 
         class Character(Base):
             __tablename__ = 'characters'
@@ -66,7 +65,7 @@ class SqlAlchemyDateAndDateTimeTest(TestCase):
             ('characters_name', None, None, None, None, None, None),
             ('characters_date', None, None, None, None, None, None)
         )
-        self.session = Session()
+        self.session = Session(bind=self.engine)
         self.Character = Character
 
     def test_date_can_handle_datetime(self):

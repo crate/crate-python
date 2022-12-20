@@ -228,7 +228,7 @@ class CrateDialect(default.DefaultDialect):
 
     @reflection.cache
     def get_schema_names(self, connection, **kw):
-        cursor = connection.execute(
+        cursor = connection.exec_driver_sql(
             "select schema_name "
             "from information_schema.schemata "
             "order by schema_name asc"
@@ -237,21 +237,21 @@ class CrateDialect(default.DefaultDialect):
 
     @reflection.cache
     def get_table_names(self, connection, schema=None, **kw):
-        cursor = connection.execute(
+        cursor = connection.exec_driver_sql(
             "SELECT table_name FROM information_schema.tables "
             "WHERE {0} = ? "
             "AND table_type = 'BASE TABLE' "
             "ORDER BY table_name ASC, {0} ASC".format(self.schema_column),
-            [schema or self.default_schema_name]
+            (schema or self.default_schema_name, )
         )
         return [row[0] for row in cursor.fetchall()]
 
     @reflection.cache
     def get_view_names(self, connection, schema=None, **kw):
-        cursor = connection.execute(
+        cursor = connection.exec_driver_sql(
             "SELECT table_name FROM information_schema.views "
             "ORDER BY table_name ASC, {0} ASC".format(self.schema_column),
-            [schema or self.default_schema_name]
+            (schema or self.default_schema_name, )
         )
         return [row[0] for row in cursor.fetchall()]
 
@@ -262,11 +262,11 @@ class CrateDialect(default.DefaultDialect):
                 "WHERE table_name = ? AND {0} = ? " \
                 "AND column_name !~ ?" \
                 .format(self.schema_column)
-        cursor = connection.execute(
+        cursor = connection.exec_driver_sql(
             query,
-            [table_name,
+            (table_name,
              schema or self.default_schema_name,
-             r"(.*)\[\'(.*)\'\]"]  # regex to filter subscript
+             r"(.*)\[\'(.*)\'\]")  # regex to filter subscript
         )
         return [self._create_column_info(row) for row in cursor.fetchall()]
 
@@ -301,9 +301,9 @@ class CrateDialect(default.DefaultDialect):
                 rows = result.fetchone()
                 return set(rows[0] if rows else [])
 
-        pk_result = engine.execute(
+        pk_result = engine.exec_driver_sql(
             query,
-            [table_name, schema or self.default_schema_name]
+            (table_name, schema or self.default_schema_name)
         )
         pks = result_fun(pk_result)
         return {'constrained_columns': pks,

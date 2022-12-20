@@ -43,8 +43,7 @@ class SqlAlchemyDictTypeTest(TestCase):
         self.mytable = sa.Table('mytable',
                                 metadata,
                                 sa.Column('name', sa.String),
-                                sa.Column('data', Craty),
-                                autoload_with=self.engine)
+                                sa.Column('data', Craty))
 
     def assertSQL(self, expected_str, actual_expr):
         self.assertEqual(expected_str, str(actual_expr).replace('\n', ''))

@@ -321,12 +321,12 @@ class CrateLayer(object):
             sys.stderr.write('\nCrate instance ready.\n')
 
     def stop(self):
+        self.conn_pool.clear()
         if self.process:
             self.process.terminate()
             self.process.communicate(timeout=10)
             self.process.stdout.close()
             self.process = None
-        self.conn_pool.clear()
         self.monitor.stop()
         self._clean()
 

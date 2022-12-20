@@ -27,8 +27,7 @@ Import the relevant symbols:
     >>> import sqlalchemy as sa
     >>> from datetime import datetime
     >>> from sqlalchemy import delete, func, text
-    >>> from sqlalchemy.ext.declarative import declarative_base
-    >>> from sqlalchemy.orm import sessionmaker
+    >>> from sqlalchemy.orm import declarative_base, sessionmaker
     >>> from crate.client.sqlalchemy.types import ObjectArray
 
 Establish a connection to the database:
@@ -38,7 +37,7 @@ Establish a connection to the database:
 
 Define the ORM schema for the ``Location`` entity:
 
-    >>> Base = declarative_base(bind=engine)
+    >>> Base = declarative_base()
 
     >>> class Location(Base):
     ...     __tablename__ = 'locations'
@@ -61,7 +60,7 @@ Retrieve
 
 Using the connection to execute a select statement:
 
-    >>> result = connection.execute('select name from locations order by name')
+    >>> result = connection.execute(text('select name from locations order by name'))
     >>> result.rowcount
     13
 
@@ -109,7 +108,7 @@ Insert a new location:
 
 Refresh "locations" table:
 
-    >>> _ = connection.execute("REFRESH TABLE locations")
+    >>> _ = connection.execute(text("REFRESH TABLE locations"))
 
 Inserted location is available:
 
@@ -168,7 +167,7 @@ The datetime and date can be set using an update statement:
 
 Refresh "locations" table:
 
-    >>> _ = connection.execute("REFRESH TABLE locations")
+    >>> _ = connection.execute(text("REFRESH TABLE locations"))
 
 Boolean values get set natively:
 
@@ -189,8 +188,9 @@ And verify that the date and datetime was persisted:
 
 Update a record using SQL:
 
-    >>> result = connection.execute("update locations set kind='Heimat' where name='Earth'")
-    >>> result.rowcount
+    >>> with engine.begin() as conn:
+    ...     result = conn.execute(text("update locations set kind='Heimat' where name='Earth'"))
+    ...     result.rowcount
     1
 
 Update multiple records:
@@ -204,26 +204,28 @@ Update multiple records:
 
 Refresh table:
 
-    >>> _ = connection.execute("REFRESH TABLE locations")
+    >>> _ = connection.execute(text("REFRESH TABLE locations"))
 
 Query database:
 
-    >>> result = connection.execute("update locations set flag=true where kind='Update'")
-    >>> result.rowcount
+    >>> with engine.begin() as conn:
+    ...     result = conn.execute(text("update locations set flag=true where kind='Update'"))
+    ...     result.rowcount
     10
 
-Check that number of affected documents of update without ``where-clause`` matches number of all
-documents in the table:
+Check that the number of documents affected of an update without ``where-clause``
+matches the number of all documents in the table:
 
-    >>> result = connection.execute(u"update locations set kind='Überall'")
-    >>> result.rowcount == connection.execute("select * from locations limit 100").rowcount
+    >>> with engine.begin() as conn:
+    ...     result = conn.execute(text(u"update locations set kind='Überall'"))
+    ...     result.rowcount == conn.execute(text("select * from locations limit 100")).rowcount
     True
 
     >>> session.commit()
 
 Refresh "locations" table:
 
-    >>> _ = connection.execute("REFRESH TABLE locations")
+    >>> _ = connection.execute(text("REFRESH TABLE locations"))
 
 Objects can be used within lists, too:
 
@@ -274,7 +276,7 @@ Deleting a record with SQLAlchemy works like this.
     >>> session.commit()
     >>> session.flush()
 
-    >>> _ = connection.execute("REFRESH TABLE locations")
+    >>> _ = connection.execute(text("REFRESH TABLE locations"))
 
     >>> session.query(Location).count()
     23

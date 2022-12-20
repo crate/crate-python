@@ -24,7 +24,7 @@ from unittest import TestCase
 from crate.client.sqlalchemy.compiler import crate_before_execute
 
 import sqlalchemy as sa
-from sqlalchemy.sql import update, text
+from sqlalchemy.sql import text, Update
 
 from crate.client.sqlalchemy.types import Craty
 
@@ -39,7 +39,7 @@ class SqlAlchemyCompilerTest(TestCase):
                                 sa.Column('name', sa.String),
                                 sa.Column('data', Craty))
 
-        self.update = update(self.mytable, text('where name=:name'))
+        self.update = Update(self.mytable).where(text('name=:name'))
         self.values = [{'name': 'crate'}]
         self.values = (self.values, )
 

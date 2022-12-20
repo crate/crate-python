@@ -28,8 +28,7 @@ Introduction
 Import the relevant symbols:
 
     >>> import sqlalchemy as sa
-    >>> from sqlalchemy.ext.declarative import declarative_base
-    >>> from sqlalchemy.orm import sessionmaker
+    >>> from sqlalchemy.orm import declarative_base, sessionmaker
 
 Establish a connection to the database, see also :ref:`sa:engines_toplevel`
 and :ref:`connect`:

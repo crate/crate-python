@@ -25,8 +25,7 @@ from unittest.mock import patch, MagicMock
 
 import sqlalchemy as sa
 from sqlalchemy.sql import operators
-from sqlalchemy.orm import Session
-from sqlalchemy.ext.declarative import declarative_base
+from sqlalchemy.orm import declarative_base, Session
 
 from crate.client.cursor import Cursor
 
@@ -40,7 +39,7 @@ class SqlAlchemyArrayTypeTest(TestCase):
 
     def setUp(self):
         self.engine = sa.create_engine('crate://')
-        Base = declarative_base(bind=self.engine)
+        Base = declarative_base()
         self.metadata = sa.MetaData()
 
         class User(Base):
@@ -51,7 +50,7 @@ class SqlAlchemyArrayTypeTest(TestCase):
             scores = sa.Column(sa.ARRAY(sa.Integer))
 
         self.User = User
-        self.session = Session()
+        self.session = Session(bind=self.engine)
 
     def assertSQL(self, expected_str, actual_expr):
         self.assertEqual(expected_str, str(actual_expr).replace('\n', ''))

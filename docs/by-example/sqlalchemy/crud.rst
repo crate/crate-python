@@ -1,3 +1,5 @@
+.. _sqlalchemy-crud:
+
 ================================================
 SQLAlchemy: Create, retrieve, update, and delete
 ================================================
@@ -253,30 +255,10 @@ Reset the record:
     >>> location.details
     []
 
-Update nested dictionary:
+.. seealso::
 
-    >>> from crate.client.sqlalchemy.types import Craty
-    >>> class Character(Base):
-    ...     __tablename__ = 'characters'
-    ...     id = sa.Column(sa.String, primary_key=True)
-    ...     details = sa.Column(Craty)
-    >>> char = Character(id='1234id')
-    >>> char.details = {"name": {"first": "Arthur", "last": "Dent"}}
-    >>> session.add(char)
-    >>> session.commit()
-
-    >>> char = session.query(Character).filter_by(id='1234id').one()
-    >>> char.details['name']['first'] = 'Trillian'
-    >>> char.details['size'] = 45
-    >>> session.commit()
-
-Refresh "characters" table:
-
-    >>> _ = connection.execute("REFRESH TABLE characters")
-
-    >>> session.refresh(char)
-    >>> pprint(char.details)
-    {'name': {'first': 'Trillian', 'last': 'Dent'}, 'size': 45}
+    The documentation section :ref:`sqlalchemy-working-with-types` has more
+    details about this topic.
 
 
 Delete

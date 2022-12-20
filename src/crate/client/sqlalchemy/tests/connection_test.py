@@ -35,6 +35,8 @@ class SqlAlchemyConnectionTest(TestCase):
         conn = engine.raw_connection()
         self.assertEqual("<Connection <Client ['http://127.0.0.1:4200']>>",
                          repr(conn.connection))
+        conn.close()
+        engine.dispose()
 
     def test_connection_server_uri_http(self):
         engine = sa.create_engine(
@@ -42,6 +44,8 @@ class SqlAlchemyConnectionTest(TestCase):
         conn = engine.raw_connection()
         self.assertEqual("<Connection <Client ['http://otherhost:19201']>>",
                          repr(conn.connection))
+        conn.close()
+        engine.dispose()
 
     def test_connection_server_uri_https(self):
         engine = sa.create_engine(
@@ -49,6 +53,8 @@ class SqlAlchemyConnectionTest(TestCase):
         conn = engine.raw_connection()
         self.assertEqual("<Connection <Client ['https://otherhost:19201']>>",
                          repr(conn.connection))
+        conn.close()
+        engine.dispose()
 
     def test_connection_server_uri_invalid_port(self):
         with self.assertRaises(ValueError) as context:
@@ -63,6 +69,8 @@ class SqlAlchemyConnectionTest(TestCase):
                          repr(conn.connection))
         self.assertEqual(conn.connection.client.username, "foo")
         self.assertEqual(conn.connection.client.password, None)
+        conn.close()
+        engine.dispose()
 
     def test_connection_server_uri_https_with_credentials(self):
         engine = sa.create_engine(
@@ -72,6 +80,8 @@ class SqlAlchemyConnectionTest(TestCase):
                          repr(conn.connection))
         self.assertEqual(conn.connection.client.username, "foo")
         self.assertEqual(conn.connection.client.password, "bar")
+        conn.close()
+        engine.dispose()
 
     def test_connection_multiple_server_http(self):
         engine = sa.create_engine(
@@ -84,6 +94,8 @@ class SqlAlchemyConnectionTest(TestCase):
             "<Connection <Client ['http://localhost:4201', " +
             "'http://localhost:4202']>>",
             repr(conn.connection))
+        conn.close()
+        engine.dispose()
 
     def test_connection_multiple_server_https(self):
         engine = sa.create_engine(
@@ -97,3 +109,5 @@ class SqlAlchemyConnectionTest(TestCase):
             "<Connection <Client ['https://localhost:4201', " +
             "'https://localhost:4202']>>",
             repr(conn.connection))
+        conn.close()
+        engine.dispose()

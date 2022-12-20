@@ -6,42 +6,41 @@ Connect to CrateDB
 
 .. NOTE::
 
-   This page documents the CrateDB `Database API`_ client.
+    This page documents the CrateDB client, implementing the
+    `Python Database API Specification v2.0`_ (PEP 249).
 
-   For help using the `SQLAlchemy`_ dialect, consult
-   :ref:`the SQLAlchemy dialect documentation <using-sqlalchemy>`.
+    For help using the `SQLAlchemy`_ dialect, consult the
+    :ref:`SQLAlchemy dialect documentation <using-sqlalchemy>`.
 
 .. SEEALSO::
 
-   Supplementary information about the CrateDB Database API client can be found
-   in the :ref:`data types appendix <data-types-db-api>`.
-
-   For general help using the Database API, consult `PEP 0249`_.
+    Supplementary information about the CrateDB Database API client can be found
+    in the :ref:`data types appendix <data-types-db-api>`.
 
 .. rubric:: Table of contents
 
 .. contents::
-   :local:
+    :local:
 
 .. _single-node:
 
 Connect to a single node
 ========================
 
-To connect to a single CrateDB node, use the ``connect()`` function, like so::
+To connect to a single CrateDB node, use the ``connect()`` function, like so:
 
     >>> connection = client.connect("<NODE_URL>", username="<USERNAME>")
 
-Here, replace ``<NODE_URL>`` with a URL pointing to the `HTTP endpoint`_ of a
-CrateDB node. Replace ``<USERNAME>`` with the username you are authenticating
-as.
+Here, replace ``<NODE_URL>`` with a URL pointing to the
+:ref:`crate-reference:interface-http` of a CrateDB node. Replace ``<USERNAME>``
+with the username you are authenticating as.
 
 .. NOTE::
 
-   This example authenticates as ``crate``, the default database user in
-   CrateDB versions 2.1.x and later. This might not work for you.
+    This example authenticates as ``crate``, which is the default
+    :ref:`database user <crate-reference:administration_user_management>`.
 
-   Consult the `Authentication`_ section for more information.
+    Consult the `Authentication`_ section for more information.
 
 Example node URLs:
 
@@ -55,12 +54,12 @@ for HTTP requests on port 4200, the node URL would be
 
 .. TIP::
 
-   If a ``<NODE_URL>`` argument is not provided, the library will attempt
-   to connect to CrateDB on the local host with the default HTTP port number,
-   i.e. ``http://localhost:4200/``.
+    If a ``<NODE_URL>`` argument is not provided, the library will attempt
+    to connect to CrateDB on the local host with the default HTTP port number,
+    i.e. ``http://localhost:4200/``.
 
-   If you're just getting started with CrateDB, the first time you connect,
-   you can probably omit this argument.
+    If you're just getting started with CrateDB, the first time you connect,
+    you can probably omit this argument.
 
 .. _multiple-nodes:
 
@@ -68,7 +67,7 @@ Connect to multiple nodes
 =========================
 
 To connect to one of multiple nodes, pass a list of database URLs to the
-connect() function, like so::
+connect() function, like so:
 
     >>> connection = client.connect(["<NODE_1_URL>", "<NODE_2_URL>"], ...)
 
@@ -101,22 +100,23 @@ URL:
 
 .. SEEALSO::
 
-    The CrateDB reference has a section on `setting up SSL`_. This will be
-    a useful background reading for the following two subsections.
+    The CrateDB reference has a section on :ref:`setting up SSL
+    <crate-reference:admin_ssl>`. This will be a useful background reading for
+    the following two subsections.
 
 Server verification
 ...................
 
 Server certificates are verified by default. In order to connect to a
 SSL-enabled host using self-signed certificates, you will need to provide the
-CA certificate file used to sign the server SSL certificate::
+CA certificate file used to sign the server SSL certificate:
 
     >>> connection = client.connect(..., ca_cert="<CA_CERT_FILE>")
 
 Here, replace ``<CA_CERT_FILE>`` with the path to the CA certificate file.
 
 You can disable server SSL certificate verification by using the
-``verify_ssl_cert`` keyword argument and setting it to ``False``::
+``verify_ssl_cert`` keyword argument and setting it to ``False``:
 
     >>> connection = client.connect(..., verify_ssl_cert=False)
 
@@ -126,7 +126,7 @@ Client verification
 
 The client also supports client verification via client certificates.
 
-Here's how you might do that::
+Here's how you might do that:
 
     >>> connection = client.connect(..., cert_file="<CERT_FILE>", key_file="<KEY_FILE>")
 
@@ -143,7 +143,7 @@ Timeout
 -------
 
 Connection timeouts (in seconds) can be configured with the optional
-``timeout`` argument::
+``timeout`` argument:
 
     >>> connection = client.connect(..., timeout=5)
 
@@ -151,14 +151,14 @@ Here, replace ``...`` with the rest of your arguments.
 
 .. NOTE::
 
-   If no timeout is specified, the client will use the default Python `socket
-   timeout`_.
+    If no timeout is specified, the client will use the default Python
+    :func:`socket timeout <py:socket.getdefaulttimeout>`.
 
 Tracebacks
 ----------
 
-`Tracebacks`_ in the event of a connection error will be printed if you set
-the optional ``error_trace`` argument to ``True``, like so::
+In the event of a connection error, a :mod:`py:traceback` will be printed, if
+you set the optional ``error_trace`` argument to ``True``, like so:
 
     >>> connection = client.connect(..., error_trace=True)
 
@@ -166,7 +166,7 @@ Backoff Factor
 --------------
 
 When attempting to make a request, the connection can be configured so that
-retries are made in increasing time intervals. This can be configured like so::
+retries are made in increasing time intervals. This can be configured like so:
 
     >>> connection = client.connect(..., backoff_factor=0.1)
 
@@ -177,10 +177,11 @@ default its value is 0.
 Socket Options
 --------------
 
-Creating connections uses `urllib3 default socket options`_ but additionally
-enables TCP keepalive by setting ``socket.SO_KEEPALIVE`` to ``1``.
+Creating connections uses :class:`urllib3 default socket options
+<urllib3:urllib3.connection.HTTPConnection>` but additionally enables TCP
+keepalive by setting ``socket.SO_KEEPALIVE`` to ``1``.
 
-Keepalive can be disabled using the ``socket_keepalive`` argument, like so::
+Keepalive can be disabled using the ``socket_keepalive`` argument, like so:
 
     >>> connection = client.connect(..., socket_keepalive=False)
 
@@ -217,11 +218,11 @@ Authentication
    If you are using CrateDB 2.1.x or later, you must supply a username. If you
    are using earlier versions of CrateDB, this argument is not supported.
 
-You can authenticate with CrateDB like so::
+You can authenticate with CrateDB like so:
 
     >>> connection = client.connect(..., username="<USERNAME>", password="<PASSWORD>")
 
-At your disposal, you can also embed the credentials into the URI, like so::
+At your disposal, you can also embed the credentials into the URI, like so:
 
     >>> connection = client.connect("https://<USERNAME>:<PASSWORD>@cratedb.example.org:4200")
 
@@ -230,16 +231,17 @@ and password.
 
 .. TIP::
 
-   If you have not configured a custom `database user`_, you probably want to
-   authenticate as the CrateDB superuser, which is ``crate``. The superuser
-   does not have a password, so you can omit the ``password`` argument.
+    If you have not configured a custom :ref:`database user
+    <crate-reference:administration_user_management>`, you probably want to
+    authenticate as the CrateDB superuser, which is ``crate``. The superuser
+    does not have a password, so you can omit the ``password`` argument.
 
 .. _schema-selection:
 
 Schema selection
 ================
 
-You can select a schema using the optional ``schema`` argument, like so::
+You can select a schema using the optional ``schema`` argument, like so:
 
     >>> connection = client.connect(..., schema="<SCHEMA>")
 
@@ -260,19 +262,14 @@ Once you're connected, you can :ref:`query CrateDB <query>`.
 
 .. SEEALSO::
 
-   Check out the `sample application`_ (and the corresponding `documentation`_)
-   for a practical demonstration of this driver in use.
+    Check out the `sample application`_ (and the corresponding `sample
+    application documentation`_) for a practical demonstration of this driver
+    in use.
+
 
 .. _client-side random load balancing: https://en.wikipedia.org/wiki/Load_balancing_(computing)#Client-side_random_load_balancing
-.. _Database API: http://www.python.org/dev/peps/pep-0249/
-.. _database user: https://crate.io/docs/crate/reference/en/latest/admin/user-management.html
-.. _documentation: https://github.com/crate/crate-sample-apps/blob/master/python/documentation.md
-.. _HTTP endpoint: https://crate.io/docs/crate/reference/en/latest/interfaces/http.html
-.. _PEP 0249: http://www.python.org/dev/peps/pep-0249/
+.. _Python Database API Specification v2.0: https://www.python.org/dev/peps/pep-0249/
 .. _round-robin DNS: https://en.wikipedia.org/wiki/Round-robin_DNS
 .. _sample application: https://github.com/crate/crate-sample-apps/tree/master/python
-.. _setting up SSL: https://crate.io/docs/crate/reference/en/latest/admin/ssl.html
-.. _socket timeout: https://docs.python.org/2/library/socket.html#socket.getdefaulttimeout
-.. _SQLAlchemy: http://www.sqlalchemy.org/
-.. _tracebacks: https://docs.python.org/3/library/traceback.html
-.. _urllib3 default socket options: https://urllib3.readthedocs.io/en/latest/reference/urllib3.connection.html#urllib3.connection.HTTPConnection
+.. _sample application documentation: https://github.com/crate/crate-sample-apps/blob/master/python/documentation.md
+.. _SQLAlchemy: https://www.sqlalchemy.org/

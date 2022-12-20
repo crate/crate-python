@@ -18,17 +18,17 @@ Introduction
 `SQLAlchemy`_ is a popular `Object-Relational Mapping`_ (ORM) library for
 Python.
 
-The CrateDB Python client library provides support for SQLAlchemy. A CrateDB
-`dialect`_ is registered at installation time and can be used without further
-configuration.
+The CrateDB Python client library provides support for SQLAlchemy. An
+:ref:`SQLAlchemy dialect <sa:dialect_toplevel>` for CrateDB is registered at
+installation time and can be used without further configuration.
 
-The CrateDB Python client library is validated to work with SQLAlchemy versions
+The CrateDB SQLAlchemy dialect is validated to work with SQLAlchemy versions
 ``1.3`` and ``1.4``.
 
 .. SEEALSO::
 
-    For general help using SQLAlchemy, consult the `SQLAlchemy tutorial`_ or the
-    `SQLAlchemy library`_.
+    For general help using SQLAlchemy, consult the :ref:`SQLAlchemy tutorial
+    <sa:ormtutorial_toplevel>` or the `SQLAlchemy library`_.
 
     Supplementary information about the CrateDB SQLAlchemy dialect can be found
     in the :ref:`data types appendix <data-types-sqlalchemy>`.
@@ -47,8 +47,8 @@ Connecting
 Database URLs
 -------------
 
-An SQLAlchemy database is represented by special type of *Uniform Resource
-Locator* (URL) called a `database URL`_.
+In an SQLAlchemy context, database addresses are represented by *Uniform Resource
+Locators* (URL_) called :ref:`sa:database_urls`.
 
 The simplest database URL for CrateDB looks like this::
 
@@ -62,7 +62,7 @@ A host string looks like this::
     [<USERNAME>:<PASSWORD>@]<HOST_ADDR>:<PORT>
 
 Here, ``<HOST_ADDR>`` is the hostname or IP address of the CrateDB node and
-``<PORT>`` is a valid `psql.port`_ number.
+``<PORT>`` is a valid :ref:`crate-reference:psql.port` number.
 
 When authentication is needed, the credentials can be optionally supplied using
 ``<USERNAME>:<PASSWORD>@``. For connecting to an SSL-secured HTTP endpoint, you
@@ -86,15 +86,14 @@ Getting a connection
 Create an engine
 ................
 
-
 You can connect to CrateDB using the ``create_engine`` method. This method
-takes a `database URL`_.
+takes a :ref:`database URL <sa:database_urls>`.
 
 Import the ``sa`` module, like so:
 
     >>> import sqlalchemy as sa
 
-To connect to ``localhost:4200``, you can do this::
+To connect to ``localhost:4200``, you can do this:
 
     >>> engine = sa.create_engine('crate://')
 
@@ -105,7 +104,7 @@ To connect to ``crate-1.vm.example.com:4200``, you would do this:
 If your CrateDB cluster has multiple nodes, however, we recommend that you
 configure all of them. You can do that by specifying the ``crate://`` database
 URL and passing in a list of :ref:`host strings <database-urls>` passed using
-the ``connect_args`` argument, like so::
+the ``connect_args`` argument, like so:
 
     >>> engine = sa.create_engine('crate://', connect_args={
     ...     'servers': ['198.51.100.1:4200', '198.51.100.2:4200']
@@ -114,10 +113,12 @@ the ``connect_args`` argument, like so::
 When you do this, the Database API layer will use its :ref:`round-robin
 <multiple-nodes>` implementation.
 
-The client validates `SSL server certificates`_ by default. For further
-adjusting this behaviour, SSL verification options can be passed in by using
-the ``connect_args`` dictionary. For example, use ``ca_cert`` for providing
-a path to the CA certificate used for signing the server certificate::
+The client validates :ref:`SSL server certificates <crate-reference:admin_ssl>`
+by default. For further adjusting this behaviour, SSL verification options can
+be passed in by using the ``connect_args`` dictionary.
+
+For example, use ``ca_cert`` for providing a path to the CA certificate used
+for signing the server certificate:
 
     >>> engine = sa.create_engine(
     ...     'crate://',
@@ -127,7 +128,7 @@ a path to the CA certificate used for signing the server certificate::
     ...     }
     ... )
 
-In order to disable SSL verification, use ``verify_ssl_cert = False``, like::
+In order to disable SSL verification, use ``verify_ssl_cert = False``, like:
 
     >>> engine = sa.create_engine(
     ...     'crate://',
@@ -142,7 +143,7 @@ Get a session
 .............
 
 Once you have an CrateDB ``engine`` set up, you can create and use an SQLAlchemy
-``Session`` object to execute queries::
+``Session`` object to execute queries:
 
     >>> from sqlalchemy.orm import sessionmaker
 
@@ -151,9 +152,7 @@ Once you have an CrateDB ``engine`` set up, you can create and use an SQLAlchemy
 
 .. SEEALSO::
 
-    The SQLAlchemy has more documentation on `sessions`_.
-
-.. _sessions: http://docs.sqlalchemy.org/en/latest/orm/session_basics.html
+    SQLAlchemy has more documentation about this topic on :doc:`sa:orm/session_basics`.
 
 .. _tables:
 
@@ -165,8 +164,8 @@ Tables
 Table definition
 ----------------
 
-Here is an example SQLAlchemy table definition using the `declarative
-system`_:
+Here is an example SQLAlchemy table definition using the :ref:`declarative
+system <sa:orm_declarative_mapping>`:
 
     >>> from sqlalchemy.ext import declarative
     >>> from crate.client.sqlalchemy import types
@@ -199,7 +198,7 @@ system`_:
 
 In this example, we:
 
-- Define a ``gen_key`` function that produces `UUIDs`_
+- Define a ``gen_key`` function that produces :py:mod:`UUIDs <py:uuid>`
 - Set up a ``Base`` class for the table
 - Create the ``Characters`` class for the ``characters`` table
 - Use the ``gen_key`` function to provide a default value for the ``id`` column
@@ -220,8 +219,8 @@ In this example, we:
 
 .. SEEALSO::
 
-    The SQLAlchemy documentation has more information about `working with
-    tables`_.
+    The SQLAlchemy documentation has more information about
+    :ref:`sa:metadata_describing`.
 
 
 Additional ``__table_args__``
@@ -240,8 +239,8 @@ table-wide attributes. The following attributes can optionally be configured:
 
 .. SEEALSO::
 
-   The `CREATE TABLE`_ documentation contains more information on each of the
-   attributes.
+    The :ref:`CREATE TABLE <crate-reference:sql-create-table>` documentation
+    contains more information on each of the attributes.
 
 
 ``_id`` as primary key
@@ -261,7 +260,7 @@ A table schema like this
      "message" TEXT
    )
 
-would translate into the following declarative model::
+would translate into the following declarative model:
 
     >>> from sqlalchemy.schema import FetchedValue
 
@@ -305,8 +304,8 @@ Objects are a common, and useful, data type when using CrateDB, so the CrateDB
 SQLAlchemy dialect provides a custom ``Object`` type extension for working with
 these values.
 
-Here's how you might use the SQLAlchemy `Session`_ object to insert two
-characters::
+Here's how you use the :doc:`SQLAlchemy Session <sa:orm/session_basics>` to
+insert two records:
 
     >>> # use the crate engine from earlier examples
     >>> Session = sessionmaker(bind=crate)
@@ -330,15 +329,18 @@ characters::
 .. NOTE::
 
     The information we supply via the ``details`` column isn't defined in the
-    :ref:`original SQLAlchemy table definition <table-definition>`. These
-    details can be `specified`_ when you create the column in CrateDB, or you
-    can configure the column to support `dynamic values`_.
+    :ref:`original SQLAlchemy table definition <table-definition>` schema.
+    These details can be specified as *object column policy* when you create
+    the column in CrateDB, you can either use the :ref:`STRICT column policy
+    <crate-reference:type-object-columns-strict>`, or the :ref:`DYNAMIC column
+    policy <crate-reference:type-object-columns-dynamic>`.
 
 .. NOTE::
 
     Behind the scenes, if you update an ``Object`` property and ``commit`` that
-    change, the `UPDATE`_ statement sent to CrateDB will only include the data
-    necessary to update the changed subcolumns.
+    change, the :ref:`UPDATE <crate-reference:dml-updating-data>` statement sent
+    to CrateDB will only include the data necessary to update the changed
+    sub-columns.
 
 .. _objectarray:
 
@@ -346,19 +348,20 @@ characters::
 ...............
 
 In addition to the `Object`_ type, the CrateDB SQLAlchemy dialect also provides
-a ``ObjectArray`` type, which is structured as a `list`_ of `dictionaries`_.
+a ``ObjectArray`` type, which is structured as a :class:`py:list` of
+:class:`dictionaries <py:dict>`.
 
-Here's how you might set the value of an ``ObjectArray`` column::
+Here's how you might set the value of an ``ObjectArray`` column:
 
     >>> arthur.more_details = [{'foo': 1, 'bar': 10}, {'foo': 2}]
     >>> session.commit()
 
-If you append an object, like this::
+If you append an object, like this:
 
     >>> arthur.more_details.append({'foo': 3})
     >>> session.commit()
 
-The resulting object will look like this::
+The resulting object will look like this:
 
     >>> arthur.more_details
     [{'foo': 1, 'bar': 10}, {'foo': 2}, {'foo': 3}]
@@ -366,8 +369,8 @@ The resulting object will look like this::
 .. CAUTION::
 
     Behind the scenes, if you update an ``ObjectArray`` and ``commit`` that
-    change, the `UPDATE`_ statement sent to CrateDB will include all of the
-    ``ObjectArray`` data.
+    change, the :ref:`UPDATE <crate-reference:dml-updating-data>` statement
+    sent to CrateDB will include all of the ``ObjectArray`` data.
 
 .. _geopoint:
 .. _geoshape:
@@ -380,7 +383,7 @@ The CrateDB SQLAlchemy dialect provides two geospatial types:
 - ``Geopoint``, which represents a longitude and latitude coordinate
 - ``Geoshape``, which is used to store geometric `GeoJSON geometry objects`_
 
-To use these types, you can create columns, like so::
+To use these types, you can create columns, like so:
 
     >>> class City(Base):
     ...
@@ -390,16 +393,16 @@ To use these types, you can create columns, like so::
     ...    area = sa.Column(types.Geoshape)
 
 A geopoint can be created in multiple ways. Firstly, you can define it as a
-tuple of ``(longitude, latitude)``::
+:py:class:`py:tuple` of ``(longitude, latitude)``:
 
     >>> point = (139.76, 35.68)
 
-Secondly, you can define it as a geojson ``Point`` object::
+Secondly, you can define it as a geojson ``Point`` object:
 
     >>> from geojson import Point
     >>> point = Point(coordinates=(139.76, 35.68))
 
-To create a geoshape, you can use a geojson shape object, such as a ``Polygon``::
+To create a geoshape, you can use a geojson shape object, such as a ``Polygon``:
 
     >>> from geojson import Point, Polygon
     >>> area = Polygon(
@@ -415,7 +418,7 @@ To create a geoshape, you can use a geojson shape object, such as a ``Polygon``:
     ...     ]
     ... )
 
-You can then set the values of the ``Geopoint`` and ``Geoshape`` columns::
+You can then set the values of the ``Geopoint`` and ``Geoshape`` columns:
 
     >>> tokyo = City(name="Tokyo", coordinate=point, area=area)
     >>> session.add(tokyo)
@@ -429,7 +432,8 @@ CrateDB. However, the newly inserted rows aren't immediately available for
 querying because the table index is only updated periodically (one second, by
 default, which is a short time for me and you, but a long time for your code).
 
-You can request a `table refresh`_ to update the index manually::
+You can request a :ref:`table refresh <crate-reference:refresh_data>` to update
+the index manually:
 
     >>> connection = engine.connect()
     >>> _ = connection.execute(text("REFRESH TABLE characters"))
@@ -439,14 +443,14 @@ You can request a `table refresh`_ to update the index manually::
     Newly inserted rows can still be queried immediately if a lookup by primary
     key is done.
 
-Here's what a regular select might look like::
+Here's what a regular select might look like:
 
     >>> query = session.query(Character).order_by(Character.name)
     >>> [(c.name, c.details['gender']) for c in query]
     [('Arthur Dent', 'male'), ('Tricia McMillan', 'female')]
 
 You can also select a portion of each record, and this even works inside
-`Object`_ columns::
+`Object`_ columns:
 
     >>> sorted(session.query(Character.details['gender']).all())
     [('female',), ('male',)]
@@ -457,7 +461,7 @@ You can also filter on attributes inside the `Object`_ column:
     >>> query.filter(Character.details['gender'] == 'male').all()
     [('Arthur Dent',)]
 
-To filter on an `ObjectArray`_, you have to do something like this::
+To filter on an `ObjectArray`_, you have to do something like this:
 
     >>> from sqlalchemy.sql import operators
 
@@ -465,8 +469,9 @@ To filter on an `ObjectArray`_, you have to do something like this::
     >>> query.filter(Character.more_details['foo'].any(1, operator=operators.eq)).all()
     [(u'Arthur Dent',)]
 
-Here, we're using the `any`_ method along with the `eq`_ Python `operator`_  to
-match the value ``1`` against the ``foo`` key of any dictionary in the
+Here, we're using SQLAlchemy's :py:meth:`any <sa:sqlalchemy.types.ARRAY.Comparator.any>`
+method along with Python's :py:func:`py:operator.eq` function, in order to
+match the value ``1`` against the key ``foo`` of any dictionary in the
 ``more_details`` list.
 
 Only one of the keys has to match for the row to be returned.
@@ -478,7 +483,7 @@ key, like so:
     [1, 2, 3]
 
 Querying a key of an ``ObjectArray`` column will return all values for that key
-for all matching rows::
+for all matching rows:
 
     >>> query = session.query(Character.more_details['foo']).order_by(Character.name)
     >>> query.all()
@@ -525,12 +530,12 @@ Fulltext search
 Matching
 ........
 
-Fulltext Search in CrateDB is done with the `MATCH predicate`_.
+Fulltext Search in CrateDB is done with the :ref:`crate-reference:predicates_match`.
 
 The CrateDB SQLAlchemy dialect provides a ``match`` function in the
 ``predicates`` module, which can be used to search one or multiple fields.
 
-Here's an example use of the ``match`` function::
+Here's an example use of the ``match`` function:
 
     >>> from crate.client.sqlalchemy.predicates import match
 
@@ -545,8 +550,8 @@ rows where the ``name_ft`` index matches the string ``Arthur``.
 .. NOTE::
 
     To use fulltext searches on a column, an explicit fulltext index with an
-    analyzer must be created on the column. Consult the `fulltext indices
-    reference`_ for more information.
+    analyzer must be created on the column. Consult the documentation about
+    :ref:`crate-reference:fulltext-indices` for more information.
 
 The ``match`` function takes the following options::
 
@@ -571,8 +576,8 @@ The ``match`` function takes the following options::
 
   .. SEEALSO::
 
-      The ``MATCH`` predicate `arguments reference`_ has more in-depth
-      information.
+      The `arguments reference`_ of the :ref:`crate-reference:predicates_match`
+      has more in-depth information.
 
 :``term``:
 
@@ -582,9 +587,11 @@ The ``match`` function takes the following options::
 
 :``match_type``: *(optional)*
 
-  The `match type`_.
+  The :ref:`crate-reference:predicates_match_types`.
 
-  Determine how the ``term`` is applied and the `score`_ calculated.
+  Determine how the ``term`` is applied and the :ref:`_score
+  <crate-reference:sql_administration_system_column_score>` gets calculated.
+  See also `score usage`_.
 
   Here's an example::
 
@@ -614,7 +621,9 @@ The ``match`` function takes the following options::
 Relevance
 .........
 
-To get the relevance of a matching row, the row `score`_ can be used.
+To get the relevance of a matching row, the row :ref:`_score
+<crate-reference:sql_administration_system_column_score>` can be used.
+See also `score usage`_.
 
 The score is relative to other result rows produced by your query. The higher
 the score, the more relevant the result row.
@@ -628,7 +637,7 @@ The score is made available via the ``_score`` column, which is a virtual
 column, meaning that it doesn't exist on the source table, and in most cases,
 should not be included in your :ref:`table definition <table-definition>`.
 
-You can select ``_score`` as part of a query, like this::
+You can select ``_score`` as part of a query, like this:
 
     >>> session.query(Character.name, '_score') \
     ...     .filter(match(Character.quote_ft, 'space')) \
@@ -642,36 +651,14 @@ the virtual column name as a string (``_score``) instead of using a defined
 column on the ``Character`` class.
 
 
-.. _SQLAlchemy: http://www.sqlalchemy.org/
-.. _Object-Relational Mapping: https://en.wikipedia.org/wiki/Object-relational_mapping
-.. _dialect: http://docs.sqlalchemy.org/en/latest/dialects/
-.. _SQLAlchemy tutorial: http://docs.sqlalchemy.org/en/latest/orm/tutorial.html
-.. _database URL: http://docs.sqlalchemy.org/en/latest/core/engines.html#database-urls
-.. _psql.port: https://crate.io/docs/crate/reference/en/latest/config/node.html#ports
-.. _SSL server certificates: https://crate.io/docs/crate/reference/en/latest/admin/ssl.html
-.. _SQLAlchemy library: http://www.sqlalchemy.org/library.html
-.. _Database API: http://www.python.org/dev/peps/pep-0249/
-.. _declarative system: http://docs.sqlalchemy.org/en/latest/orm/extensions/declarative/
-.. _Session: http://docs.sqlalchemy.org/en/latest/orm/session.html
-.. _specified: https://crate.io/docs/crate/reference/en/latest/general/ddl/data-types.html#strict
-.. _dynamic values: https://crate.io/docs/crate/reference/en/latest/general/ddl/data-types.html#dynamic
-.. _table refresh: https://crate.io/docs/crate/reference/en/latest/general/dql/refresh.html
-.. _list: https://docs.python.org/3/library/stdtypes.html#lists
-.. _dictionaries: https://docs.python.org/3/library/stdtypes.html#dict
-.. _UPDATE: https://crate.io/docs/crate/reference/en/latest/general/dml.html#updating-data
-.. _CREATE TABLE: https://crate.io/docs/crate/reference/en/latest/sql/statements/create-table.html
-.. _eq: https://docs.python.org/2/library/operator.html#operator.eq
-.. _operator: https://docs.python.org/2/library/operator.html
-.. _any: http://docs.sqlalchemy.org/en/latest/core/type_basics.html#sqlalchemy.types.ARRAY.Comparator.any
-.. _tuple: https://docs.python.org/3/library/stdtypes.html#sequence-types-list-tuple-range
-.. _count result rows: http://docs.sqlalchemy.org/en/14/orm/tutorial.html#counting
-.. _MATCH predicate: https://crate.io/docs/crate/reference/en/latest/general/dql/fulltext.html#match-predicate
 .. _arguments reference: https://crate.io/docs/crate/reference/en/latest/general/dql/fulltext.html#arguments
 .. _boost values: https://crate.io/docs/crate/reference/en/latest/general/dql/fulltext.html#arguments
-.. _match type: https://crate.io/docs/crate/reference/en/latest/general/dql/fulltext.html#predicates-match-types
-.. _match options: https://crate.io/docs/stable/sql/fulltext.html#options
-.. _fulltext indices reference: https://crate.io/docs/crate/reference/en/latest/general/ddl/fulltext-indices.html
-.. _score: https://crate.io/docs/crate/reference/en/latest/general/dql/fulltext.html#usage
-.. _working with tables: http://docs.sqlalchemy.org/en/latest/core/metadata.html
-.. _UUIDs: https://docs.python.org/3/library/uuid.html
-.. _geojson geometry objects: https://tools.ietf.org/html/rfc7946#section-3.1
+.. _count result rows: https://docs.sqlalchemy.org/en/14/orm/tutorial.html#counting
+.. _Database API: https://www.python.org/dev/peps/pep-0249/
+.. _geojson geometry objects: https://www.rfc-editor.org/rfc/rfc7946#section-3.1
+.. _match options: https://crate.io/docs/crate/reference/en/latest/general/dql/fulltext.html#options
+.. _Object-Relational Mapping: https://en.wikipedia.org/wiki/Object-relational_mapping
+.. _score usage: https://crate.io/docs/crate/reference/en/latest/general/dql/fulltext.html#usage
+.. _SQLAlchemy: https://www.sqlalchemy.org/
+.. _SQLAlchemy library: https://www.sqlalchemy.org/library.html
+.. _URL: https://en.wikipedia.org/wiki/Uniform_Resource_Locator

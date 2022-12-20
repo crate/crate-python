@@ -50,30 +50,30 @@ request without needing to execute an SQL statement.
 fetchone()
 ==========
 
-Calling ``fetchone()`` on the cursor object the first time after an execute returns the first row::
+Calling ``fetchone()`` on the cursor object the first time after an execute returns the first row:
 
     >>> cursor.execute('')
 
     >>> cursor.fetchone()
     ['North West Ripple', 1]
 
-Each call to ``fetchone()`` increments the cursor and returns the next row::
+Each call to ``fetchone()`` increments the cursor and returns the next row:
 
     >>> cursor.fetchone()
     ['Arkintoofle Minor', 3]
 
-One more iteration::
+One more iteration:
 
     >>> cursor.next()
     ['Alpha Centauri', 3]
 
 The iteration is stopped after the last row is returned.
-A further call to ``fetchone()`` returns an empty result::
+A further call to ``fetchone()`` returns an empty result:
 
     >>> cursor.fetchone()
 
 Using ``fetchone()`` on a cursor before issuing a database statement results
-in an error::
+in an error:
 
     >>> new_cursor = connection.cursor()
     >>> new_cursor.fetchone()
@@ -85,21 +85,21 @@ in an error::
 fetchmany()
 ===========
 
-``fetchmany()`` takes an argument which specifies the number of rows we want to fetch::
+``fetchmany()`` takes an argument which specifies the number of rows we want to fetch:
 
     >>> cursor.execute('')
 
     >>> cursor.fetchmany(2)
     [['North West Ripple', 1], ['Arkintoofle Minor', 3]]
 
-If the specified number of rows not being available, fewer rows may returned::
+If the specified number of rows not being available, fewer rows may returned:
 
     >>> cursor.fetchmany(2)
     [['Alpha Centauri', 3]]
 
     >>> cursor.execute('')
 
-If no number of rows are specified it defaults to the current ``cursor.arraysize``::
+If no number of rows are specified it defaults to the current ``cursor.arraysize``:
 
     >>> cursor.arraysize
     1
@@ -112,7 +112,7 @@ If no number of rows are specified it defaults to the current ``cursor.arraysize
     >>> cursor.fetchmany()
     [['North West Ripple', 1], ['Arkintoofle Minor', 3]]
 
-If zero number of rows are specified, all rows left are returned::
+If zero number of rows are specified, all rows left are returned:
 
     >>> cursor.fetchmany(0)
     [['Alpha Centauri', 3]]
@@ -120,18 +120,18 @@ If zero number of rows are specified, all rows left are returned::
 fetchall()
 ==========
 
-``fetchall()`` fetches all (remaining) rows of a query result::
+``fetchall()`` fetches all (remaining) rows of a query result:
 
     >>> cursor.execute('')
 
     >>> cursor.fetchall()
     [['North West Ripple', 1], ['Arkintoofle Minor', 3], ['Alpha Centauri', 3]]
 
-Since all data was fetched 'None' is returned by ``fetchone()``::
+Since all data was fetched 'None' is returned by ``fetchone()``:
 
     >>> cursor.fetchone()
 
-And each other call returns an empty sequence::
+And each other call returns an empty sequence:
 
     >>> cursor.fetchmany(2)
     []
@@ -145,14 +145,14 @@ And each other call returns an empty sequence::
 iteration
 =========
 
-The cursor supports the iterator interface and can be iterated upon::
+The cursor supports the iterator interface and can be iterated upon:
 
     >>> cursor.execute('')
     >>> [row for row in cursor]
     [['North West Ripple', 1], ['Arkintoofle Minor', 3], ['Alpha Centauri', 3]]
 
 When no other call to execute has been done, it will raise StopIteration on
-subsequent iterations::
+subsequent iterations:
 
     >>> next(cursor)
     Traceback (most recent call last):
@@ -166,7 +166,7 @@ subsequent iterations::
     ['Arkintoofle Minor', 3]
     ['Alpha Centauri', 3]
 
-Iterating over a new cursor without results will immediately raise a ProgrammingError::
+Iterating over a new cursor without results will immediately raise a ProgrammingError:
 
     >>> new_cursor = connection.cursor()
     >>> next(new_cursor)
@@ -183,19 +183,19 @@ description
 rowcount
 ========
 
-The ``rowcount`` property specifies the number of rows that the last ``execute()`` produced::
+The ``rowcount`` property specifies the number of rows that the last ``execute()`` produced:
 
     >>> cursor.execute('')
     >>> cursor.rowcount
     3
 
-The attribute is -1 in case the cursor has been closed::
+The attribute is ``-1``, in case the cursor has been closed:
 
     >>> cursor.close()
     >>> cursor.rowcount
     -1
 
-If the last response does not contain the rowcount attribute, ``-1`` is returned::
+If the last response does not contain the rowcount attribute, ``-1`` is returned:
 
     >>> cursor = connection.cursor()
     >>> connection.client.set_next_response({
@@ -219,14 +219,14 @@ duration
 ========
 
 The ``duration`` property specifies the server-side duration in milliseconds of the last query
-issued by ``execute()``::
+issued by ``execute()``:
 
     >>> cursor = connection.cursor()
     >>> cursor.execute('')
     >>> cursor.duration
     123
 
-The attribute is -1 in case the cursor has been closed::
+The attribute is ``-1``, in case the cursor has been closed:
 
     >>> cursor.close()
     >>> cursor.duration
@@ -249,7 +249,7 @@ executemany()
 =============
 
 ``executemany()`` allows to execute a single sql statement against a sequence
-of parameters::
+of parameters:
 
     >>> cursor = connection.cursor()
 
@@ -262,12 +262,12 @@ of parameters::
     123
 
 ``executemany()`` is not intended to be used with statements returning result
-sets. The result will always be empty::
+sets. The result will always be empty:
 
     >>> cursor.fetchall()
     []
 
-For completeness' sake the cursor description is updated nonetheless::
+For completeness' sake the cursor description is updated nonetheless:
 
     >>> [ desc[0] for desc in cursor.description ]
     ['name', 'position']
@@ -284,7 +284,7 @@ close()
 =======
 
 After closing a cursor the connection will be unusable. If any operation is attempted with the
-closed connection an ``ProgrammingError`` exception will be raised::
+closed connection an ``ProgrammingError`` exception will be raised:
 
     >>> cursor = connection.cursor()
     >>> cursor.execute('')
@@ -320,8 +320,6 @@ The cursor object can optionally convert database types to native Python data
 types. Currently, this is implemented for the CrateDB data types ``IP`` and
 ``TIMESTAMP`` on behalf of the ``DefaultTypeConverter``.
 
-::
-
     >>> cursor = connection.cursor(converter=DefaultTypeConverter())
 
     >>> connection.client.set_next_response({
@@ -344,7 +342,8 @@ Custom data type conversion
 By providing a custom converter instance, you can define your own data type
 conversions. For investigating the list of available data types, please either
 inspect the ``DataType`` enum, or the documentation about the list of available
-`CrateDB data type identifiers for the HTTP interface`_.
+:ref:`CrateDB data type identifiers for the HTTP interface
+<crate-reference:http-column-types>`.
 
 To create a simple converter for converging CrateDB's ``BIT`` type to Python's
 ``int`` type.
@@ -442,6 +441,3 @@ Let's exercise all of them:
 .. Hidden: close connection
 
     >>> connection.close()
-
-
-.. _CrateDB data type identifiers for the HTTP interface: https://crate.io/docs/crate/reference/en/latest/interfaces/http.html#column-types

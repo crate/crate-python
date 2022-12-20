@@ -58,7 +58,7 @@ to conduct fulltext search queries, we need to create a table with a
 
 We have to create this table using SQL because it is currently not possible to
 create ``INDEX`` fields using SQLAlchemy's :ref:`sa:orm_declarative_mapping`.
-But we can define the table to use all other operations:
+However, we can define the table to use all other operations:
 
     >>> def gen_key():
     ...     return str(uuid4())
@@ -242,7 +242,7 @@ Now, let's use ``insert().from_select()`` to archive the task into the
     >>> result = session.execute(ins)
     >>> session.commit()
 
-This will emit the following ``INSERT`` statement to the database::
+This will emit the following ``INSERT`` statement to the database:
 
     INSERT INTO archived_tasks (id, content)
         (SELECT todos.id, todos.content FROM todos WHERE todos.status = 'done')

@@ -2,19 +2,19 @@
 Blob container API
 ==================
 
-The connection object provides a convenience API for easy access to `blob
-tables`_.
+The connection object provides a convenience API for easy access to
+:ref:`blob tables <crate-reference:blob_support>`.
 
 
 Get blob container handle
 =========================
 
-Create a connection::
+Create a connection:
 
     >>> from crate.client import connect
     >>> client = connect([crate_host])
 
-Get a blob container::
+Get a blob container:
 
     >>> container = client.get_blob_container('myfiles')
 
@@ -26,7 +26,7 @@ The container allows to store a blob without explicitly providing the hash
 for the blob. This feature is possible if the blob is provided as a seekable
 stream like object.
 
-Store a ``StringIO`` stream::
+Store a ``StringIO`` stream:
 
     >>> from io import BytesIO
     >>> f = BytesIO(b'StringIO data')
@@ -34,7 +34,7 @@ Store a ``StringIO`` stream::
     >>> stringio_bob
     '0cd4511d696823779692484029f234471cd21f28'
 
-Store from a file::
+Store from a file:
 
     >>> from tempfile import TemporaryFile
     >>> f = TemporaryFile()
@@ -46,7 +46,7 @@ Store from a file::
     >>> f.close()
 
 If the blob data is not provided as a seekable stream the hash must be
-provided explicitly::
+provided explicitly:
 
     >>> import hashlib
     >>> string_data = b'String data'
@@ -67,7 +67,7 @@ Check for existence
 Retrieve blobs
 ==============
 
-Blobs can be retrieved using its hash::
+Blobs can be retrieved using its hash:
 
     >>> blob_stream = container.get(string_blob)
     >>> blob_stream
@@ -80,14 +80,14 @@ Blobs can be retrieved using its hash::
 Delete blobs
 ============
 
-Blobs can be deleted using its hash::
+Blobs can be deleted using its hash:
 
     >>> container.delete(string_blob)
     True
     >>> container.exists(string_blob)
     False
 
-Trying to delete a not existing blob::
+Trying to delete a not existing blob:
 
     >>> container.delete(string_blob)
     False
@@ -95,9 +95,6 @@ Trying to delete a not existing blob::
 Close connection
 ================
 
-Close the connection to clear the connection pool::
+Close the connection to clear the connection pool:
 
     >>> client.close()
-
-
-.. _blob tables: https://crate.io/docs/crate/reference/en/latest/general/blobs.html

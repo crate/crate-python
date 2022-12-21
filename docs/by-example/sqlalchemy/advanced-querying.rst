@@ -43,7 +43,7 @@ Introduction to fulltext indexes
 :ref:`crate-reference:fulltext-indices` take the contents of one or more fields
 and split it up into tokens that are used for fulltext-search. The
 transformation from a text to separate tokens is done by an analyzer. In order
-to create fulltext search queries we need to create a table with a
+to conduct fulltext search queries, we need to create a table with a
 :ref:`fulltext index with an analyzer <crate-reference:sql_ddl_index_fulltext>`.
 
 .. code-block:: sql
@@ -74,8 +74,7 @@ But we can define the table to use all other operations:
     ...         'exclude_properties': ['name_ft', 'quote_ft']
     ...     }
 
-
-We define ``name_ft`` and ``quote_ft`` as regular columns but add them under
+We define ``name_ft`` and ``quote_ft`` as regular columns, but add them under
 ``__mapper_args__.exclude_properties`` to ensure they're excluded from insert
 or update operations.
 
@@ -96,9 +95,9 @@ Let's add two records we use for testing.
     >>> session.commit()
 
 After ``INSERT`` statements are submitted to the database, the newly inserted
-records aren't immediately available for retrieval because the index is only
+records aren't immediately available for retrieval, because the index is only
 updated periodically (default: each second). In order to synchronize that,
-refresh the table:
+explicitly refresh the table:
 
     >>> _ = connection.execute(sa.text("REFRESH TABLE characters"))
 
@@ -150,7 +149,7 @@ column. It is a numeric value which is relative to the other rows.
 The higher the score value, the more relevant the row.
 
 In most cases, ``_score`` is not part of the SQLAlchemy table definition,
-so it must be passed as a string:
+so it must be passed as a verbatim string, using ``literal_column``:
 
     >>> session.query(Character.name, sa.literal_column('_score')) \
     ...     .filter(match(Character.quote_ft, 'space')) \
@@ -168,13 +167,13 @@ of a column in respect to the other columns:
     ...     .all()
     [('Arthur Dent',), ('Tricia McMillan',)]
 
-The ``match_type`` argument determines how a single ``query_term`` is applied
+The ``match_type`` argument determines how a single ``query_term`` is applied,
 and how the resulting ``_score`` is computed. Thus, it influences which
 documents are considered more relevant. The default selection is ``best_fields``.
 For more information, see :ref:`crate-reference:predicates_match_types`.
 
-Results are ordered by ``_score`` by default, but can be overridden by adding
-an ``order_by()`` clause.
+If you want to sort the results by ``_score``, you can use the ``order_by()``
+function.
 
     >>> session.query(Character.name) \
     ...     .filter(
@@ -262,4 +261,4 @@ Now, verify that the data is present in the database:
     >>> engine.dispose()
 
 
-.. _count result rows: http://docs.sqlalchemy.org/en/14/orm/tutorial.html#counting
+.. _count result rows: https://docs.sqlalchemy.org/en/14/orm/tutorial.html#counting

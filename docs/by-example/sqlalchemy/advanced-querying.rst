@@ -4,9 +4,9 @@
 SQLAlchemy: Advanced querying
 =============================
 
-This section of the documentation demonstrates running queries with
-aggregations, and queries using a fulltext index with analyzer, both
-using the CrateDB SQLAlchemy dialect.
+This section of the documentation demonstrates running queries using a fulltext
+index with analyzer, queries using counting and aggregations, and support for
+the ``INSERT...FROM SELECT`` construct, all using the CrateDB SQLAlchemy dialect.
 
 
 .. rubric:: Table of Contents
@@ -102,34 +102,6 @@ explicitly refresh the table:
     >>> _ = connection.execute(sa.text("REFRESH TABLE characters"))
 
 
-Aggregates: Counting and grouping
-=================================
-
-SQLAlchemy supports different approaches to issue a query with a count
-aggregate function. Take a look at the `count result rows`_ documentation
-for a full overview.
-
-CrateDB currently does not support all variants as it can not handle the
-sub-queries yet.
-
-This means that queries using ``count()`` have to be written in one of the
-following ways:
-
-    >>> session.query(sa.func.count(Character.id)).scalar()
-    2
-
-    >>> session.query(sa.func.count('*')).select_from(Character).scalar()
-    2
-
-Using the ``group_by`` clause is similar:
-
-    >>> session.query(sa.func.count(Character.id), Character.name) \
-    ...     .group_by(Character.name) \
-    ...     .order_by(sa.desc(sa.func.count(Character.id))) \
-    ...     .order_by(Character.name).all()
-    [(1, 'Arthur Dent'), (1, 'Tricia McMillan')]
-
-
 Fulltext search with MATCH predicate
 ====================================
 
@@ -194,6 +166,34 @@ It is not possible to specify options without the ``match_type`` argument:
     ...     .all()
     Traceback (most recent call last):
     ValueError: missing match_type. It's not allowed to specify options without match_type
+
+
+Aggregates: Counting and grouping
+=================================
+
+SQLAlchemy supports different approaches to issue a query with a count
+aggregate function. Take a look at the `count result rows`_ documentation
+for a full overview.
+
+CrateDB currently does not support all variants as it can not handle the
+sub-queries yet.
+
+This means that queries using ``count()`` have to be written in one of the
+following ways:
+
+    >>> session.query(sa.func.count(Character.id)).scalar()
+    2
+
+    >>> session.query(sa.func.count('*')).select_from(Character).scalar()
+    2
+
+Using the ``group_by`` clause is similar:
+
+    >>> session.query(sa.func.count(Character.id), Character.name) \
+    ...     .group_by(Character.name) \
+    ...     .order_by(sa.desc(sa.func.count(Character.id))) \
+    ...     .order_by(Character.name).all()
+    [(1, 'Arthur Dent'), (1, 'Tricia McMillan')]
 
 
 ``INSERT...FROM SELECT``

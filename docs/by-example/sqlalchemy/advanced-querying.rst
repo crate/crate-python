@@ -41,16 +41,24 @@ Introduction to fulltext indexes
 ================================
 
 :ref:`crate-reference:fulltext-indices` take the contents of one or more fields
-and split it up into tokens that are used for fulltext-search. The transformation
-from a text to separate tokens is done by an analyzer. In order to create
-fulltext search queries a :ref:`fulltext index with an analyzer
-<crate-reference:sql_ddl_index_fulltext>` must be defined for the related columns.
+and split it up into tokens that are used for fulltext-search. The
+transformation from a text to separate tokens is done by an analyzer. In order
+to create fulltext search queries we need to create a table with a
+:ref:`fulltext index with an analyzer <crate-reference:sql_ddl_index_fulltext>`.
 
-In order to support fulltext query operations, the CrateDB SQLAlchemy dialect
-provides the :ref:`crate-reference:predicates_match` through its ``match`` function.
+.. code-block:: sql
 
-For exercising those features, let's define a schema using SQLAlchemy's
-:ref:`sa:orm_declarative_mapping`:
+    CREATE TABLE characters (
+        id STRING PRIMARY KEY,
+        name STRING,
+        quote STRING,
+        INDEX name_ft USING fulltext(name) WITH (analyzer = 'english'),
+        INDEX quote_ft USING fulltext(quote) WITH (analyzer = 'english')
+    )
+
+We have to create this table using SQL because it is currently not possible to
+create ``INDEX`` fields using SQLAlchemy's :ref:`sa:orm_declarative_mapping`.
+But we can define the table to use all other operations:
 
     >>> def gen_key():
     ...     return str(uuid4())
@@ -66,24 +74,14 @@ For exercising those features, let's define a schema using SQLAlchemy's
     ...         'exclude_properties': ['name_ft', 'quote_ft']
     ...     }
 
-Please note that the schema defined above is provisioned to the database using
-the following SQL DDL statement.
 
-.. code-block:: sql
+We define ``name_ft`` and ``quote_ft`` as regular columns but add them under
+``__mapper_args__.exclude_properties`` to ensure they're excluded from insert
+or update operations.
 
-    CREATE TABLE characters (
-        id STRING PRIMARY KEY,
-        name STRING,
-        quote STRING,
-        INDEX name_ft USING fulltext(name) WITH (analyzer = 'english'),
-        INDEX quote_ft USING fulltext(quote) WITH (analyzer = 'english')
-    )
-
-.. note::
-
-    Currently, it is not supported to define a *named index column definition*
-    using a :ref:`crate-reference:sql_ddl_index_fulltext` on behalf of the
-    SQLAlchemy declarative schema.
+In order to support fulltext query operations, the CrateDB SQLAlchemy dialect
+provides the :ref:`crate-reference:predicates_match` through its ``match``
+function.
 
 Let's add two records we use for testing.
 
@@ -136,7 +134,7 @@ Using the ``group_by`` clause is similar:
 Fulltext search with MATCH predicate
 ====================================
 
-Fulltext search in CrateDB is performed using the :ref:`crate-reference:predicates_match`.
+Fulltext search in CrateDB is performed using :ref:`crate-reference:predicates_match`.
 The CrateDB SQLAlchemy dialect comes with a ``match`` function, which can be used to
 search on one or multiple fields.
 
@@ -147,8 +145,8 @@ search on one or multiple fields.
     ...     .all()
     [('Arthur Dent',)]
 
-To get the relevance of a matching row, an internal system column ``_score``
-can be selected. It is a numeric value which is relative to the other rows.
+To get the relevance of a matching row, you can select the ``_score`` system
+column. It is a numeric value which is relative to the other rows.
 The higher the score value, the more relevant the row.
 
 In most cases, ``_score`` is not part of the SQLAlchemy table definition,
@@ -159,9 +157,9 @@ so it must be passed as a string:
     ...     .all()
     [('Tricia McMillan', ...)]
 
-To search on multiple columns, pass a dictionary with columns and ``boost``
-attached. ``boost`` is a factor that increases the relevance of a column in
-respect to the other columns:
+To search multiple columns, use a dictionary where the keys are the columns and
+the values are a ``boost``. A ``boost`` is a factor that increases the relevance
+of a column in respect to the other columns:
 
     >>> session.query(Character.name) \
     ...           .filter(match({Character.name_ft: 1.5, Character.quote_ft: 0.1},

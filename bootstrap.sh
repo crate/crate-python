@@ -70,7 +70,7 @@ function setup_package() {
       if [ "${SQLALCHEMY_VERSION}" = "latest" ]; then
         pip install "sqlalchemy" --upgrade
       else
-        pip install "sqlalchemy==${SQLALCHEMY_VERSION}"
+        pip install "sqlalchemy==${SQLALCHEMY_VERSION}" --pre
       fi
     fi
 

@@ -40,13 +40,13 @@ class SqlAlchemyDictTypeTest(TestCase):
 
     def setUp(self):
         self.engine = sa.create_engine('crate://')
-        # FIXME: Deprecated with SA20.
-        metadata = sa.MetaData(bind=self.engine)
+        metadata = sa.MetaData()
         self.mytable = sa.Table('mytable', metadata,
                                 sa.Column('name', sa.String),
                                 sa.Column('data', Craty))
 
-    def assertSQL(self, expected_str, actual_expr):
+    def assertSQL(self, expected_str, selectable):
+        actual_expr = selectable.compile(bind=self.engine)
         self.assertEqual(expected_str, str(actual_expr).replace('\n', ''))
 
     def test_select_with_dict_column(self):

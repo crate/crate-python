@@ -75,8 +75,7 @@ class SqlAlchemyInsertFromSelectTest(TestCase):
         ins = insert(self.character_archived).from_select(['name', 'age'], sel)
         self.session.execute(ins)
         self.session.commit()
-        # TODO: Verify if this is correct.
         self.assertSQL(
-            "INSERT INTO characters_archive (name, age) SELECT characters.name, characters.age FROM characters WHERE characters.status = :status_1",
-            ins
+            "INSERT INTO characters_archive (name, age) SELECT characters.name, characters.age FROM characters WHERE characters.status = ?",
+            ins.compile(bind=self.engine)
         )

@@ -26,6 +26,7 @@ from crate.client.sqlalchemy.compiler import crate_before_execute
 import sqlalchemy as sa
 from sqlalchemy.sql import update, text
 
+from crate.client.sqlalchemy.sa_version import SA_VERSION, SA_1_4
 from crate.client.sqlalchemy.types import Craty
 
 
@@ -77,7 +78,10 @@ class SqlAlchemyCompilerTest(TestCase):
         self.metadata.bind = self.crate_engine
         selectable = self.mytable.select().offset(5)
         statement = str(selectable.compile())
-        self.assertEqual(statement, "SELECT mytable.name, mytable.data \nFROM mytable\n LIMIT ALL OFFSET ?")
+        if SA_VERSION >= SA_1_4:
+            self.assertEqual(statement, "SELECT mytable.name, mytable.data \nFROM mytable\n LIMIT ALL OFFSET ?")
+        else:
+            self.assertEqual(statement, "SELECT mytable.name, mytable.data \nFROM mytable \n LIMIT ALL OFFSET ?")
 
     def test_select_with_limit(self):
         """

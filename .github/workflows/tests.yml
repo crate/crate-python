@@ -33,7 +33,7 @@ jobs:
             python-version: '3.9'
           - os: 'macos-latest'
             python-version: '3.10'
-      fail-fast: true
+      fail-fast: false
     env:
       CRATEDB_VERSION: ${{ matrix.cratedb-version }}
       SQLALCHEMY_VERSION: ${{ matrix.sqla-version }}

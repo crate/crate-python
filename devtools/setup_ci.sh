@@ -10,20 +10,6 @@ function main() {
     echo "Environment variable 'CRATEDB_VERSION' needed"
     exit 1
   }
-  [ -z ${SQLALCHEMY_VERSION} ] && {
-    echo "Environment variable 'SQLALCHEMY_VERSION' needed"
-    exit 1
-  }
-
-  # Let's go.
-  echo "Invoking tests with CrateDB ${CRATEDB_VERSION} and SQLAlchemy ${SQLALCHEMY_VERSION}"
-
-  # Install designated SQLAlchemy version.
-  if [ ${SQLALCHEMY_VERSION} = "latest" ]; then
-    pip install "sqlalchemy" --upgrade
-  else
-    pip install "sqlalchemy==${SQLALCHEMY_VERSION}"
-  fi
 
   # Replace CrateDB version.
   if [ ${CRATEDB_VERSION} = "nightly" ]; then

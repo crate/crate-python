@@ -65,6 +65,15 @@ function setup_package() {
     # Install package in editable mode.
     pip install --editable='.[sqlalchemy,test,doc]'
 
+    # Install designated SQLAlchemy version.
+    if [ -n "${SQLALCHEMY_VERSION}" ]; then
+      if [ "${SQLALCHEMY_VERSION}" = "latest" ]; then
+        pip install "sqlalchemy" --upgrade
+      else
+        pip install "sqlalchemy==${SQLALCHEMY_VERSION}"
+      fi
+    fi
+
 }
 
 function run_buildout() {

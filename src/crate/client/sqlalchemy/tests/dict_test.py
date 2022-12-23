@@ -25,7 +25,11 @@ from unittest.mock import patch, MagicMock
 
 import sqlalchemy as sa
 from sqlalchemy.sql import select
-from sqlalchemy.orm import declarative_base, Session
+from sqlalchemy.orm import Session
+try:
+    from sqlalchemy.orm import declarative_base
+except ImportError:
+    from sqlalchemy.ext.declarative import declarative_base
 
 from crate.client.sqlalchemy.types import Craty, ObjectArray
 from crate.client.cursor import Cursor

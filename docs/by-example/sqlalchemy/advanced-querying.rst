@@ -21,7 +21,11 @@ Introduction
 Import the relevant symbols:
 
     >>> import sqlalchemy as sa
-    >>> from sqlalchemy.orm import declarative_base, sessionmaker
+    >>> from sqlalchemy.orm import sessionmaker
+    >>> try:
+    ...     from sqlalchemy.orm import declarative_base
+    ... except ImportError:
+    ...     from sqlalchemy.ext.declarative import declarative_base
     >>> from uuid import uuid4
 
 Establish a connection to the database, see also :ref:`sa:engines_toplevel`

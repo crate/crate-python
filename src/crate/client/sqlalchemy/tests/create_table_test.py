@@ -20,7 +20,10 @@
 # software solely pursuant to the terms of the relevant commercial agreement.
 
 import sqlalchemy as sa
-from sqlalchemy.orm import declarative_base
+try:
+    from sqlalchemy.orm import declarative_base
+except ImportError:
+    from sqlalchemy.ext.declarative import declarative_base
 
 from crate.client.sqlalchemy.types import Object, ObjectArray, Geopoint
 from crate.client.cursor import Cursor

@@ -19,7 +19,13 @@
 # with Crate these terms will supersede the license and you may use the
 # software solely pursuant to the terms of the relevant commercial agreement.
 
+from .compat.api13 import monkeypatch_add_exec_driver_sql
 from .dialect import CrateDialect
+from .sa_version import SA_1_4, SA_VERSION
+
+# SQLAlchemy 1.3 does not have the `exec_driver_sql` method.
+if SA_VERSION < SA_1_4:
+    monkeypatch_add_exec_driver_sql()
 
 __all__ = [
     CrateDialect,

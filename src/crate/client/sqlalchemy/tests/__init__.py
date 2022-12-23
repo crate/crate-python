@@ -1,5 +1,13 @@
 # -*- coding: utf-8 -*-
 
+from ..compat.api13 import monkeypatch_amend_select_sa14
+from ..sa_version import SA_1_4, SA_VERSION
+
+# `sql.select()` of SQLAlchemy 1.3 uses old calling semantics,
+# but the test cases already need the modern ones.
+if SA_VERSION < SA_1_4:
+    monkeypatch_amend_select_sa14()
+
 from unittest import TestSuite, makeSuite
 from .connection_test import SqlAlchemyConnectionTest
 from .dict_test import SqlAlchemyDictTypeTest

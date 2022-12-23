@@ -26,8 +26,12 @@ Import the relevant symbols:
     >>> from datetime import datetime
     >>> from geojson import Point, Polygon
     >>> from sqlalchemy import delete, func, text
-    >>> from sqlalchemy.orm import declarative_base, sessionmaker
+    >>> from sqlalchemy.orm import sessionmaker
     >>> from sqlalchemy.sql import operators
+    >>> try:
+    ...     from sqlalchemy.orm import declarative_base
+    ... except ImportError:
+    ...     from sqlalchemy.ext.declarative import declarative_base
     >>> from uuid import uuid4
     >>> from crate.client.sqlalchemy.types import Object, ObjectArray
     >>> from crate.client.sqlalchemy.types import Geopoint, Geoshape

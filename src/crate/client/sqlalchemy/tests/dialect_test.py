@@ -28,7 +28,11 @@ import sqlalchemy as sa
 from crate.client.cursor import Cursor
 from crate.client.sqlalchemy.types import Object
 from sqlalchemy import inspect
-from sqlalchemy.orm import declarative_base, Session
+from sqlalchemy.orm import Session
+try:
+    from sqlalchemy.orm import declarative_base
+except ImportError:
+    from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.testing import eq_, in_
 
 FakeCursor = MagicMock(name='FakeCursor', spec=Cursor)

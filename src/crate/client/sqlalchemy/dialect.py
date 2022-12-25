@@ -32,7 +32,7 @@ from .compiler import (
     CrateDDLCompiler
 )
 from crate.client.exceptions import TimezoneUnawareException
-from .sa_version import SA_VERSION, SA_1_4
+from .sa_version import SA_VERSION, SA_1_4, SA_2_0
 from .types import Object, ObjectArray
 
 TYPES_MAP = {
@@ -155,7 +155,10 @@ colspecs = {
 }
 
 
-if SA_VERSION >= SA_1_4:
+if SA_VERSION >= SA_2_0:
+    from .compat.core20 import CrateCompilerSA20
+    statement_compiler = CrateCompilerSA20
+elif SA_VERSION >= SA_1_4:
     from .compat.core14 import CrateCompilerSA14
     statement_compiler = CrateCompilerSA14
 else:

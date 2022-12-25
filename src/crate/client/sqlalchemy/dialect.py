@@ -28,11 +28,11 @@ from sqlalchemy.sql import functions
 from sqlalchemy.util import asbool, to_list
 
 from .compiler import (
-    CrateCompiler,
     CrateTypeCompiler,
     CrateDDLCompiler
 )
 from crate.client.exceptions import TimezoneUnawareException
+from .sa_version import SA_VERSION, SA_1_4
 from .types import Object, ObjectArray
 
 TYPES_MAP = {
@@ -155,10 +155,18 @@ colspecs = {
 }
 
 
+if SA_VERSION >= SA_1_4:
+    from .compat.core14 import CrateCompilerSA14
+    statement_compiler = CrateCompilerSA14
+else:
+    from .compat.core10 import CrateCompilerSA10
+    statement_compiler = CrateCompilerSA10
+
+
 class CrateDialect(default.DefaultDialect):
     name = 'crate'
     driver = 'crate-python'
-    statement_compiler = CrateCompiler
+    statement_compiler = statement_compiler
     ddl_compiler = CrateDDLCompiler
     type_compiler = CrateTypeCompiler
     supports_native_boolean = True

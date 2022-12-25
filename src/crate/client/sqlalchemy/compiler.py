@@ -224,11 +224,10 @@ class CrateCompiler(compiler.SQLCompiler):
         )
 
     def returning_clause(self, stmt, returning_cols):
-        columns = [
-            self._label_select_column(None, c, True, False, {})
-            for c in sa.sql.expression._select_iterables(returning_cols)
-        ]
-        return "RETURNING " + ", ".join(columns)
+        """
+        Generate RETURNING clause, PostgreSQL-compatible.
+        """
+        return PGCompiler.returning_clause(self, stmt, returning_cols)
 
     def visit_update(self, update_stmt, **kw):
         """

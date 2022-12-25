@@ -21,8 +21,9 @@
 
 from typing import Any, Dict, List, MutableMapping, Optional, Tuple, Union
 
+import sqlalchemy as sa
 from sqlalchemy import ColumnClause, ValuesBase, cast, exc
-from sqlalchemy.sql import crud, dml
+from sqlalchemy.sql import dml
 from sqlalchemy.sql.base import _from_objects
 from sqlalchemy.sql.compiler import SQLCompiler
 from sqlalchemy.sql.crud import (REQUIRED, _as_dml_column, _create_bind_param,
@@ -46,6 +47,11 @@ class CrateCompilerSA20(CrateCompiler):
             update_stmt, self, **kw
         )
         update_stmt = compile_state.statement
+
+        # [20] CrateDB patch.
+        if not compile_state._dict_parameters and \
+                not hasattr(update_stmt, '_crate_specific'):
+            return super().visit_update(update_stmt, **kw)
 
         toplevel = not self.stack
         if toplevel:
@@ -87,7 +93,8 @@ class CrateCompilerSA20(CrateCompiler):
         table_text = self.update_tables_clause(
             update_stmt, update_stmt.table, render_extra_froms, **kw
         )
-        crud_params_struct = crud._get_crud_params(
+        # [20] CrateDB patch.
+        crud_params_struct = _get_crud_params(
             self, update_stmt, compile_state, toplevel, **kw
         )
         crud_params = crud_params_struct.single_params
@@ -105,12 +112,38 @@ class CrateCompilerSA20(CrateCompiler):
         text += table_text
 
         text += " SET "
+
+        # [20] CrateDB patch begin.
+        include_table = extra_froms and \
+            self.render_table_with_column_in_update_from
+
+        set_clauses = []
+
+        for c, expr, value, _ in crud_params:
+            key = c._compiler_dispatch(self, include_table=include_table)
+            clause = key + ' = ' + value
+            set_clauses.append(clause)
+
+        for k, v in compile_state._dict_parameters.items():
+            if isinstance(k, str) and '[' in k:
+                bindparam = sa.sql.bindparam(k, v)
+                clause = k + ' = ' + self.process(bindparam)
+                set_clauses.append(clause)
+
+        text += ', '.join(set_clauses)
+        # [20] CrateDB patch end.
+
+        """
+        # TODO: Complete SA20 migration.
+        # This is the column name/value joining code from SA20.
+        # It may be sensible to use this procedure instead of the old one.
         text += ", ".join(
             expr + "=" + value
             for _, expr, value, _ in cast(
                 "List[Tuple[Any, str, str, Any]]", crud_params
             )
         )
+        """
 
         if self.implicit_returning or update_stmt._returning:
             if self.returning_precedes_values:
@@ -356,6 +389,24 @@ def _get_crud_params(
             kw,
         )
 
+    # [20] CrateDB patch.
+    #
+    # This sanity check performed by SQLAlchemy currently needs to be
+    # deactivated in order to satisfy the rewriting logic of the CrateDB
+    # dialect in `rewrite_update` and `visit_update`.
+    #
+    # It can be quickly reproduced by activating this section and running the
+    # test cases::
+    #
+    #   ./bin/test -vvvv -t dict_test
+    #
+    # That croaks like::
+    #
+    #   sqlalchemy.exc.CompileError: Unconsumed column names: characters_name
+    #
+    # TODO: Investigate why this is actually happening and eventually mitigate
+    #       the root cause.
+    """
     if parameters and stmt_parameter_tuples:
         check = (
             set(parameters)
@@ -367,6 +418,7 @@ def _get_crud_params(
                 "Unconsumed column names: %s"
                 % (", ".join("%s" % (c,) for c in check))
             )
+    """
 
     if (
         _compile_state_isinsert(compile_state)

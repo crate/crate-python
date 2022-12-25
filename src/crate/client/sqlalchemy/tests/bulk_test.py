@@ -78,4 +78,4 @@ class SqlAlchemyBulkTest(TestCase):
             ('Banshee', 26),
             ('Callisto', 37)
         )
-        self.assertEqual(expected_bulk_args, bulk_args)
+        self.assertSequenceEqual(expected_bulk_args, bulk_args)

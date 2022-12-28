@@ -348,7 +348,7 @@ insert two records:
 ...............
 
 In addition to the `Object`_ type, the CrateDB SQLAlchemy dialect also provides
-a ``ObjectArray`` type, which is structured as a :class:`py:list` of
+an ``ObjectArray`` type, which is structured as a :class:`py:list` of
 :class:`dictionaries <py:dict>`.
 
 Here's how you might set the value of an ``ObjectArray`` column:

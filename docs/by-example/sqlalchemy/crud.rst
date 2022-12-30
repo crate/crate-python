@@ -130,7 +130,7 @@ Retrieve
 
 Using the connection to execute a select statement:
 
-    >>> result = connection.execute('select name from locations order by name')
+    >>> result = connection.execute(text('select name from locations order by name'))
     >>> result.rowcount
     14
 

@@ -221,12 +221,6 @@ class CrateCompiler(compiler.SQLCompiler):
             self.process(element.right, **kw)
         )
 
-    def returning_clause(self, stmt, returning_cols):
-        """
-        Generate RETURNING clause, PostgreSQL-compatible.
-        """
-        return PGCompiler.returning_clause(self, stmt, returning_cols)
-
     def limit_clause(self, select, **kw):
         """
         Generate OFFSET / LIMIT clause, PostgreSQL-compatible.

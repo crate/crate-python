@@ -20,6 +20,7 @@
 # software solely pursuant to the terms of the relevant commercial agreement.
 
 import sqlalchemy as sa
+from sqlalchemy.dialects.postgresql.base import PGCompiler
 from sqlalchemy.sql.crud import (REQUIRED, _create_bind_param,
                                  _extend_values_for_multiparams,
                                  _get_multitable_params,
@@ -31,6 +32,12 @@ from crate.client.sqlalchemy.compiler import CrateCompiler
 
 
 class CrateCompilerSA10(CrateCompiler):
+
+    def returning_clause(self, stmt, returning_cols):
+        """
+        Generate RETURNING clause, PostgreSQL-compatible.
+        """
+        return PGCompiler.returning_clause(self, stmt, returning_cols)
 
     def visit_update(self, update_stmt, **kw):
         """

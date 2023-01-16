@@ -270,6 +270,6 @@ Once you're connected, you can :ref:`query CrateDB <query>`.
 .. _client-side random load balancing: https://en.wikipedia.org/wiki/Load_balancing_(computing)#Client-side_random_load_balancing
 .. _Python Database API Specification v2.0: https://www.python.org/dev/peps/pep-0249/
 .. _round-robin DNS: https://en.wikipedia.org/wiki/Round-robin_DNS
-.. _sample application: https://github.com/crate/crate-sample-apps/tree/master/python
-.. _sample application documentation: https://github.com/crate/crate-sample-apps/blob/master/python/documentation.md
+.. _sample application: https://github.com/crate/crate-sample-apps/tree/main/python-flask
+.. _sample application documentation: https://github.com/crate/crate-sample-apps/blob/main/python-flask/documentation.md
 .. _SQLAlchemy: https://www.sqlalchemy.org/

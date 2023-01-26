@@ -5,6 +5,8 @@ Changes for crate
 Unreleased
 ==========
 
+- Add deprecation warning about dropping support for SQLAlchemy 1.3 soon, it is
+  effectively EOL.
 
 
 2022/12/08 0.29.0

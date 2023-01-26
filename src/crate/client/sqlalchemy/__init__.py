@@ -23,9 +23,27 @@ from .compat.api13 import monkeypatch_add_exec_driver_sql
 from .dialect import CrateDialect
 from .sa_version import SA_1_4, SA_VERSION
 
-# SQLAlchemy 1.3 does not have the `exec_driver_sql` method.
+
 if SA_VERSION < SA_1_4:
+    import textwrap
+    import warnings
+
+    # SQLAlchemy 1.3 is effectively EOL.
+    SA13_DEPRECATION_WARNING = textwrap.dedent("""
+    WARNING: SQLAlchemy 1.3 is effectively EOL.
+
+    SQLAlchemy 1.3 is EOL since 2023-01-27.
+    Future versions of the CrateDB SQLAlchemy dialect will drop support for SQLAlchemy 1.3.
+    It is recommended that you transition to using SQLAlchemy 1.4 or 2.0:
+
+    - https://docs.sqlalchemy.org/en/14/changelog/migration_14.html
+    - https://docs.sqlalchemy.org/en/20/changelog/migration_20.html
+    """.lstrip("\n"))
+    warnings.warn(message=SA13_DEPRECATION_WARNING, category=DeprecationWarning)
+
+    # SQLAlchemy 1.3 does not have the `exec_driver_sql` method, so add it.
     monkeypatch_add_exec_driver_sql()
+
 
 __all__ = [
     CrateDialect,

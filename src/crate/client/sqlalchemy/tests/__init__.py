@@ -21,6 +21,7 @@ from .create_table_test import SqlAlchemyCreateTableTest
 from .array_test import SqlAlchemyArrayTypeTest
 from .dialect_test import SqlAlchemyDialectTest
 from .function_test import SqlAlchemyFunctionTest
+from .warnings_test import SqlAlchemyWarningsTest
 
 
 def test_suite():
@@ -38,4 +39,5 @@ def test_suite():
     tests.addTest(makeSuite(SqlAlchemyDialectTest))
     tests.addTest(makeSuite(SqlAlchemyFunctionTest))
     tests.addTest(makeSuite(SqlAlchemyArrayTypeTest))
+    tests.addTest(makeSuite(SqlAlchemyWarningsTest))
     return tests

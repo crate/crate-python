@@ -70,6 +70,15 @@ To run against a single interpreter, you can also invoke::
 are listening on the default CrateDB transport port to avoid side effects with
 the test layer.
 
+
+Renew certificates
+==================
+
+For conducting TLS connectivity tests, there are a few X.509 certificates at
+`src/crate/client/pki/*.pem`_. In order to renew them, follow the instructions
+within the README file in this folder.
+
+
 Preparing a release
 ===================
 
@@ -133,6 +142,7 @@ nothing special you need to do to get the live docs to update.
 .. _Read the Docs: http://readthedocs.org
 .. _ReStructuredText: http://docutils.sourceforge.net/rst.html
 .. _Sphinx: http://sphinx-doc.org/
+.. _src/crate/client/pki/*.pem: https://github.com/crate/crate-python/tree/master/src/crate/client/pki
 .. _tox: http://testrun.org/tox/latest/
 .. _twine: https://pypi.python.org/pypi/twine
 .. _useful command-line options for zope-testrunner: https://pypi.org/project/zope.testrunner/#some-useful-command-line-options-to-get-you-started

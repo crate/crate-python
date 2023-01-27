@@ -133,18 +133,6 @@ class CrateCompilerSA20(CrateCompiler):
         text += ', '.join(set_clauses)
         # [20] CrateDB patch end.
 
-        """
-        # TODO: Complete SA20 migration.
-        # This is the column name/value joining code from SA20.
-        # It may be sensible to use this procedure instead of the old one.
-        text += ", ".join(
-            expr + "=" + value
-            for _, expr, value, _ in cast(
-                "List[Tuple[Any, str, str, Any]]", crud_params
-            )
-        )
-        """
-
         if self.implicit_returning or update_stmt._returning:
             if self.returning_precedes_values:
                 text += " " + self.returning_clause(

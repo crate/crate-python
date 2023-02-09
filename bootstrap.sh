@@ -18,8 +18,8 @@
 
 # Default variables.
 BUILDOUT_VERSION=${BUILDOUT_VERSION:-2.13.8}
-CRATEDB_VERSION=${CRATEDB_VERSION:-5.2.0}
-SQLALCHEMY_VERSION=${SQLALCHEMY_VERSION:-1.4.46}
+CRATEDB_VERSION=${CRATEDB_VERSION:-5.2.2}
+SQLALCHEMY_VERSION=${SQLALCHEMY_VERSION:-==2.0.2}
 
 
 function print_header() {
@@ -79,7 +79,7 @@ function setup_package() {
       if [ "${SQLALCHEMY_VERSION}" = "latest" ]; then
         pip install ${PIP_OPTIONS} --upgrade "sqlalchemy"
       else
-        pip install ${PIP_OPTIONS} --upgrade "sqlalchemy==${SQLALCHEMY_VERSION}"
+        pip install ${PIP_OPTIONS} --upgrade "sqlalchemy${SQLALCHEMY_VERSION}"
       fi
     fi
 

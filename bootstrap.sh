@@ -62,15 +62,24 @@ function before_setup() {
 
 function setup_package() {
 
+    # Upgrade `pip` to support `--pre` option.
+    pip install --upgrade pip
+
+    # Conditionally add `--pre` option, to allow installing prerelease packages.
+    PIP_OPTIONS="${PIP_OPTIONS:-}"
+    if [ "${PIP_ALLOW_PRERELEASE}" == "true" ]; then
+      PIP_OPTIONS+=" --pre"
+    fi
+
     # Install package in editable mode.
-    pip install --editable='.[sqlalchemy,test,doc]'
+    pip install ${PIP_OPTIONS} --editable='.[sqlalchemy,test]'
 
     # Install designated SQLAlchemy version.
     if [ -n "${SQLALCHEMY_VERSION}" ]; then
       if [ "${SQLALCHEMY_VERSION}" = "latest" ]; then
-        pip install "sqlalchemy" --upgrade
+        pip install ${PIP_OPTIONS} --upgrade "sqlalchemy"
       else
-        pip install "sqlalchemy==${SQLALCHEMY_VERSION}"
+        pip install ${PIP_OPTIONS} --upgrade "sqlalchemy==${SQLALCHEMY_VERSION}"
       fi
     fi
 

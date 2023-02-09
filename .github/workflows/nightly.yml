@@ -15,14 +15,26 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        os: ['ubuntu-20.04', 'ubuntu-22.04']  # 'macos-11', 'macos-12'
+        os: ['ubuntu-latest']
         python-version: ['3.7', '3.8', '3.9', '3.10', '3.11']
         cratedb-version: ['nightly']
         sqla-version: ['latest']
+        pip-allow-prerelease: ['false']
+
+        # Another CI test matrix slot to test against prerelease versions of Python packages.
+        include:
+          - os: 'ubuntu-latest'
+            python-version: '3.11'
+            cratedb-version: 'nightly'
+            sqla-version: 'latest'
+            pip-allow-prerelease: 'true'
+
       fail-fast: false
+
     env:
       CRATEDB_VERSION: ${{ matrix.cratedb-version }}
       SQLALCHEMY_VERSION: ${{ matrix.sqla-version }}
+      PIP_ALLOW_PRERELEASE: ${{ matrix.pip-allow-prerelease }}
 
     steps:
       - uses: actions/checkout@v3

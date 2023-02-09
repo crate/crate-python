@@ -6,7 +6,6 @@ function main() {
 
   # Sanity checks.
   [ -z ${CRATEDB_VERSION} ] && {
-    echo "--cratedb-version must be given"
     echo "Environment variable 'CRATEDB_VERSION' needed"
     exit 1
   }

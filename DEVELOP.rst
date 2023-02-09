@@ -24,7 +24,7 @@ see, for example, `useful command-line options for zope-testrunner`_.
 
 Run all tests::
 
-    ./bin/test
+    ./bin/test -vvvv
 
 Run specific tests::
 

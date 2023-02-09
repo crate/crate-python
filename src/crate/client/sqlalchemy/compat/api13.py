@@ -131,3 +131,26 @@ def monkeypatch_amend_select_sa14():
     sqlalchemy.select = select_sa14
     sqlalchemy.sql.select = select_sa14
     sqlalchemy.sql.expression.select = select_sa14
+
+
+@property
+def connectionfairy_driver_connection_sa14(self):
+    """The connection object as returned by the driver after a connect.
+
+    .. versionadded:: 1.4.24
+
+    .. seealso::
+
+        :attr:`._ConnectionFairy.dbapi_connection`
+
+        :attr:`._ConnectionRecord.driver_connection`
+
+        :ref:`faq_dbapi_connection`
+
+    """
+    return self.connection
+
+
+def monkeypatch_add_connectionfairy_driver_connection():
+    import sqlalchemy.pool.base
+    sqlalchemy.pool.base._ConnectionFairy.driver_connection = connectionfairy_driver_connection_sa14

@@ -219,9 +219,13 @@ class CrateDialect(default.DefaultDialect):
         return tuple(connection.connection.lowest_server_version.version)
 
     @classmethod
-    def dbapi(cls):
+    def import_dbapi(cls):
         from crate import client
         return client
+
+    @classmethod
+    def dbapi(cls):
+        return cls.import_dbapi()
 
     def has_schema(self, connection, schema):
         return schema in self.get_schema_names(connection)

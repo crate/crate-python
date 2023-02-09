@@ -34,7 +34,7 @@ class SqlAlchemyConnectionTest(TestCase):
         engine = sa.create_engine('crate://')
         conn = engine.raw_connection()
         self.assertEqual("<Connection <Client ['http://127.0.0.1:4200']>>",
-                         repr(conn.connection))
+                         repr(conn.driver_connection))
         conn.close()
         engine.dispose()
 
@@ -43,7 +43,7 @@ class SqlAlchemyConnectionTest(TestCase):
             "crate://otherhost:19201")
         conn = engine.raw_connection()
         self.assertEqual("<Connection <Client ['http://otherhost:19201']>>",
-                         repr(conn.connection))
+                         repr(conn.driver_connection))
         conn.close()
         engine.dispose()
 
@@ -52,7 +52,7 @@ class SqlAlchemyConnectionTest(TestCase):
             "crate://otherhost:19201/?ssl=true")
         conn = engine.raw_connection()
         self.assertEqual("<Connection <Client ['https://otherhost:19201']>>",
-                         repr(conn.connection))
+                         repr(conn.driver_connection))
         conn.close()
         engine.dispose()
 
@@ -66,9 +66,9 @@ class SqlAlchemyConnectionTest(TestCase):
             "crate://foo@otherhost:19201/?ssl=true")
         conn = engine.raw_connection()
         self.assertEqual("<Connection <Client ['https://otherhost:19201']>>",
-                         repr(conn.connection))
-        self.assertEqual(conn.connection.client.username, "foo")
-        self.assertEqual(conn.connection.client.password, None)
+                         repr(conn.driver_connection))
+        self.assertEqual(conn.driver_connection.client.username, "foo")
+        self.assertEqual(conn.driver_connection.client.password, None)
         conn.close()
         engine.dispose()
 
@@ -77,9 +77,9 @@ class SqlAlchemyConnectionTest(TestCase):
             "crate://foo:bar@otherhost:19201/?ssl=true")
         conn = engine.raw_connection()
         self.assertEqual("<Connection <Client ['https://otherhost:19201']>>",
-                         repr(conn.connection))
-        self.assertEqual(conn.connection.client.username, "foo")
-        self.assertEqual(conn.connection.client.password, "bar")
+                         repr(conn.driver_connection))
+        self.assertEqual(conn.driver_connection.client.username, "foo")
+        self.assertEqual(conn.driver_connection.client.password, "bar")
         conn.close()
         engine.dispose()
 
@@ -93,7 +93,7 @@ class SqlAlchemyConnectionTest(TestCase):
         self.assertEqual(
             "<Connection <Client ['http://localhost:4201', " +
             "'http://localhost:4202']>>",
-            repr(conn.connection))
+            repr(conn.driver_connection))
         conn.close()
         engine.dispose()
 
@@ -108,6 +108,6 @@ class SqlAlchemyConnectionTest(TestCase):
         self.assertEqual(
             "<Connection <Client ['https://localhost:4201', " +
             "'https://localhost:4202']>>",
-            repr(conn.connection))
+            repr(conn.driver_connection))
         conn.close()
         engine.dispose()

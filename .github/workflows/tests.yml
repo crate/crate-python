@@ -23,6 +23,8 @@ jobs:
         python-version: ['3.7', '3.8', '3.9', '3.10', '3.11']
         cratedb-version: ['5.2.0']
         sqla-version: ['1.3.24', '1.4.46', '2.0.0']
+        pip-allow-prerelease: ['false']
+
         # To save resources, only use the most recent Python version on macOS.
         exclude:
           - os: 'macos-latest'
@@ -33,10 +35,21 @@ jobs:
             python-version: '3.9'
           - os: 'macos-latest'
             python-version: '3.10'
+
+        # Another CI test matrix slot to test against prerelease versions of Python packages.
+        include:
+          - os: 'ubuntu-latest'
+            python-version: '3.11'
+            cratedb-version: '5.2.0'
+            sqla-version: 'latest'
+            pip-allow-prerelease: 'true'
+
       fail-fast: false
+
     env:
       CRATEDB_VERSION: ${{ matrix.cratedb-version }}
       SQLALCHEMY_VERSION: ${{ matrix.sqla-version }}
+      PIP_ALLOW_PRERELEASE: ${{ matrix.pip-allow-prerelease }}
       CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
 
     steps:
@@ -46,7 +59,7 @@ jobs:
         with:
           python-version: ${{ matrix.python-version }}
           cache: 'pip'
-          cache-dependency-path: 'setup.py'
+          cache-dependency-path: setup.py
 
       - name: Invoke tests
         run: |

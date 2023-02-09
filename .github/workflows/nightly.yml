@@ -54,6 +54,12 @@ jobs:
           # Bootstrap environment.
           source bootstrap.sh
 
-          # Invoke validation tasks.
+          # Report about the test matrix slot.
+          echo "Invoking tests with CrateDB ${CRATEDB_VERSION} and SQLAlchemy ${SQLALCHEMY_VERSION}"
+
+          # Run linter.
           flake8 src bin
-          coverage run bin/test -vv1
+          
+          # Run tests.
+          export SQLALCHEMY_WARN_20=1
+          bin/test -vvv

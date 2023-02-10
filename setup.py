@@ -69,7 +69,7 @@ setup(
               'zc.customdoctests>=1.0.1,<2',
               'createcoverage>=1,<2',
               'stopit>=1.1.2,<2',
-              'flake8>=4,<5',
+              'flake8>=4,<7',
               'pytz'],
         doc=['sphinx>=3.5,<6',
              'crate-docs-theme>=0.26.5'],

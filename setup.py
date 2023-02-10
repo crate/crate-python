@@ -71,7 +71,7 @@ setup(
               'stopit>=1.1.2,<2',
               'flake8>=4,<5',
               'pytz'],
-        doc=['sphinx>=3.5,<6',
+        doc=['sphinx>=3.5,<7',
              'crate-docs-theme>=0.26.5'],
     ),
     python_requires='>=3.4',

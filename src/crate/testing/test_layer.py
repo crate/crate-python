@@ -22,7 +22,7 @@ import json
 import os
 import tempfile
 import urllib
-from distutils.version import LooseVersion
+from crate.client._pep440 import Version
 from unittest import TestCase, mock
 from io import BytesIO
 
@@ -75,7 +75,7 @@ class LayerUtilsTest(TestCase):
             versions = json.loads(response.read().decode())
             version = versions["crate_testing"]
 
-        self.assertGreaterEqual(LooseVersion(version), LooseVersion("4.5.0"))
+        self.assertGreaterEqual(Version(version), Version("4.5.0"))
 
         uri = "https://cdn.crate.io/downloads/releases/crate-{}.tar.gz".format(version)
         layer = CrateLayer.from_uri(uri, name="crate-by-uri", http_port=42203)

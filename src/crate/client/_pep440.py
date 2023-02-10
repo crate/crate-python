@@ -395,6 +395,13 @@ class Version(_BaseVersion):
     def is_postrelease(self):
         return bool(self._version.post)
 
+    @property
+    def version(self) -> tuple:
+        """
+        PATCH: Return version tuple for backward-compatibility.
+        """
+        return self._version.release
+
 
 def _parse_letter_version(letter, number):
     if letter:

@@ -70,7 +70,10 @@ setup(
               'createcoverage>=1,<2',
               'stopit>=1.1.2,<2',
               'flake8>=4,<5',
-              'pytz'],
+              'pytz',
+              # `test_http.py` needs `setuptools.ssl_support`
+              'setuptools<57',
+              ],
         doc=['sphinx>=3.5,<6',
              'crate-docs-theme>=0.26.5'],
     ),

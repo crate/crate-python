@@ -23,7 +23,7 @@ from .cursor import Cursor
 from .exceptions import ProgrammingError, ConnectionError
 from .http import Client
 from .blob import BlobContainer
-from distutils.version import StrictVersion
+from ._pep440 import Version
 
 
 class Connection(object):
@@ -192,12 +192,12 @@ class Connection(object):
         for server in self.client.active_servers:
             try:
                 _, _, version = self.client.server_infos(server)
-                version = StrictVersion(version)
+                version = Version(version)
             except (ValueError, ConnectionError):
                 continue
             if not lowest or version < lowest:
                 lowest = version
-        return lowest or StrictVersion('0.0.0')
+        return lowest or Version('0.0.0')
 
     def __repr__(self):
         return '<Connection {0}>'.format(repr(self.client))

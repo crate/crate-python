@@ -4,8 +4,9 @@ omit =
     */.buildout/eggs/*
     bin/test
     buildout-cache/eggs/*
-    parts/*
     eggs/*
+    parts/*
+    src/crate/client/_pep440.py
 exclude_lines =
     # pragma: no cover
     raise NotImplemented

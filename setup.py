@@ -63,7 +63,7 @@ setup(
         sqlalchemy=['sqlalchemy>=1.0,<2.1',
                     'geojson>=2.5.0,<4',
                     'backports.zoneinfo<1; python_version<"3.9"'],
-        test=['tox>=3,<4',
+        test=['tox>=3,<5',
               'zope.testing>=4,<5',
               'zope.testrunner>=5,<6',
               'zc.customdoctests>=1.0.1,<2',

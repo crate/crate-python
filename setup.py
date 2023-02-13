@@ -72,7 +72,7 @@ setup(
               'flake8>=4,<7',
               'pytz',
               # `test_http.py` needs `setuptools.ssl_support`
-              'setuptools<57',
+              'setuptools<68',
               ],
         doc=['sphinx>=3.5,<7',
              'crate-docs-theme>=0.26.5'],

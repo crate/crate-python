@@ -7,6 +7,15 @@ Unreleased
 
 - Properly handle Python-native UUID types in SQL parameters
 - SQLAlchemy: Fix handling URL parameters ``timeout`` and ``pool_size``
+- Permit installation with urllib3 v2, see also `urllib3 v2.0 roadmap`_
+  and `urllib3 v2.0 migration guide`_. You can optionally retain support
+  for TLS 1.0 and TLS 1.1, but a few other outdated use-cases of X.509
+  certificate details are immanent, like no longer accepting the long
+  deprecated ``commonName`` attribute. Instead, going forward, only the
+  ``subjectAltName`` attribute will be used.
+
+.. _urllib3 v2.0 migration guide: https://urllib3.readthedocs.io/en/latest/v2-migration-guide.html
+.. _urllib3 v2.0 roadmap: https://urllib3.readthedocs.io/en/stable/v2-roadmap.html
 
 
 2023/07/17 0.33.0

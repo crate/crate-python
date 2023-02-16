@@ -139,6 +139,16 @@ Here, replace ``<CERT_FILE>`` with the path to the client certificate file, and
     verification. In such circumstances, you can combine the two methods above
     to do both at once.
 
+Relaxing minimum SSL version
+............................
+
+urrlib3 v2 dropped support for TLS 1.0 and TLS 1.1 by default, see `Modern security by default -
+HTTPS requires TLS 1.2+`_. If you need to re-enable it, use the ``ssl_relax_minimum_version`` flag,
+which will configure ``kwargs["ssl_minimum_version"] = ssl.TLSVersion.MINIMUM_SUPPORTED``.
+
+    >>> connection = client.connect(..., ssl_relax_minimum_version=True)
+
+
 Timeout
 -------
 
@@ -268,6 +278,7 @@ Once you're connected, you can :ref:`query CrateDB <query>`.
 
 
 .. _client-side random load balancing: https://en.wikipedia.org/wiki/Load_balancing_(computing)#Client-side_random_load_balancing
+.. _Modern security by default - HTTPS requires TLS 1.2+: https://urllib3.readthedocs.io/en/latest/v2-migration-guide.html#https-requires-tls-1-2
 .. _Python Database API Specification v2.0: https://www.python.org/dev/peps/pep-0249/
 .. _round-robin DNS: https://en.wikipedia.org/wiki/Round-robin_DNS
 .. _sample application: https://github.com/crate/crate-sample-apps/tree/main/python-flask

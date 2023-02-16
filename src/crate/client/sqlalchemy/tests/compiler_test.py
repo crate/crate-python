@@ -43,7 +43,7 @@ from crate.client.test_util import ParametrizedTestCase
 from crate.testing.settings import crate_host
 
 
-class SqlAlchemyCompilerTest(ParametrizedTestCase):
+class SqlAlchemyCompilerTest(ParametrizedTestCase, ExtraAssertions):
 
     def setUp(self):
         self.crate_engine = sa.create_engine('crate://')
@@ -256,6 +256,34 @@ class SqlAlchemyCompilerTest(ParametrizedTestCase):
             mock.call(mock.ANY, 'INSERT INTO mytable (name) VALUES (?), (?)', ('foo_2', 'foo_3'), None),
             mock.call(mock.ANY, 'INSERT INTO mytable (name) VALUES (?)', ('foo_4', ), None),
         ])
+
+    def test_for_update(self):
+        """
+        Verify the `CrateCompiler.for_update_clause` method to
+        omit the clause, since CrateDB does not support it.
+        """
+
+        with warnings.catch_warnings(record=True) as w:
+
+            # By default, warnings from a loop will only be emitted once.
+            # This scenario tests exactly this behaviour, to verify logs
+            # don't get flooded.
+            warnings.simplefilter("once")
+
+            selectable = self.mytable.select().with_for_update()
+            _ = str(selectable.compile(bind=self.crate_engine))
+
+            selectable = self.mytable.select().with_for_update()
+            statement = str(selectable.compile(bind=self.crate_engine))
+
+        # Verify SQL statement.
+        self.assertEqual(statement, "SELECT mytable.name, mytable.data \nFROM mytable")
+
+        # Verify if corresponding warning is emitted, once.
+        self.assertEqual(len(w), 1)
+        self.assertIsSubclass(w[-1].category, UserWarning)
+        self.assertIn("CrateDB does not support the 'INSERT ... FOR UPDATE' clause, "
+                      "it will be omitted when generating SQL statements.", str(w[-1].message))
 
 
 FakeCursor = MagicMock(name='FakeCursor', spec=Cursor)

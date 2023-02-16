@@ -309,3 +309,10 @@ class CrateCompiler(compiler.SQLCompiler):
         Generate OFFSET / LIMIT clause, PostgreSQL-compatible.
         """
         return PGCompiler.limit_clause(self, select, **kw)
+
+    def for_update_clause(self, select, **kw):
+        # CrateDB does not support the `INSERT ... FOR UPDATE` clause.
+        # See https://github.com/crate/crate-python/issues/577.
+        warnings.warn("CrateDB does not support the 'INSERT ... FOR UPDATE' clause, "
+                      "it will be omitted when generating SQL statements.")
+        return ''

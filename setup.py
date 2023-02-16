@@ -58,7 +58,7 @@ setup(
             'crate = crate.client.sqlalchemy:CrateDialect'
         ]
     },
-    install_requires=['urllib3>=1.9,<2'],
+    install_requires=['urllib3<2.1'],
     extras_require=dict(
         sqlalchemy=['sqlalchemy>=1.0,<2.1',
                     'geojson>=2.5.0,<4',

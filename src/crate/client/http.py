@@ -37,6 +37,7 @@ from datetime import datetime, date, timezone
 from decimal import Decimal
 from uuid import UUID
 
+import urllib3
 from urllib3 import connection_from_url
 from urllib3.connection import HTTPConnection
 from urllib3.exceptions import (
@@ -48,6 +49,8 @@ from urllib3.exceptions import (
     SSLError,
 )
 from urllib3.util.retry import Retry
+
+from crate.client._pep440 import Version
 from crate.client.exceptions import (
     ConnectionError,
     BlobLocationNotFoundException,
@@ -274,6 +277,19 @@ def _remove_certs_for_non_https(server, kwargs):
     return kwargs
 
 
+def _update_pool_kwargs_for_ssl_minimum_version(server, kwargs):
+    """
+    On urllib3 v2, re-add support for TLS 1.0 and TLS 1.1.
+
+    https://urllib3.readthedocs.io/en/latest/v2-migration-guide.html#https-requires-tls-1-2
+    """
+    if Version(urllib3.__version__) >= Version("2"):
+        from urllib3.util import parse_url
+        scheme, _, host, port, *_ = parse_url(server)
+        if scheme == "https":
+            kwargs["ssl_minimum_version"] = ssl.TLSVersion.MINIMUM_SUPPORTED
+
+
 def _create_sql_payload(stmt, args, bulk_args):
     if not isinstance(stmt, str):
         raise ValueError('stmt is not a string')
@@ -304,7 +320,7 @@ def _get_socket_opts(keepalive=True,
     # always use TCP keepalive
     opts = [(socket.SOL_SOCKET, socket.SO_KEEPALIVE, 1)]
 
-    # hasattr check because some of the options depend on system capabilities
+    # hasattr check because some options depend on system capabilities
     # see https://docs.python.org/3/library/socket.html#socket.SOMAXCONN
     if hasattr(socket, 'TCP_KEEPIDLE') and tcp_keepidle is not None:
         opts.append((socket.IPPROTO_TCP, socket.TCP_KEEPIDLE, tcp_keepidle))
@@ -340,6 +356,7 @@ class Client(object):
                  error_trace=False,
                  cert_file=None,
                  key_file=None,
+                 ssl_relax_minimum_version=False,
                  username=None,
                  password=None,
                  schema=None,
@@ -380,6 +397,7 @@ class Client(object):
             'socket_tcp_keepintvl': socket_tcp_keepintvl,
             'socket_tcp_keepcnt': socket_tcp_keepcnt,
         })
+        self.ssl_relax_minimum_version = ssl_relax_minimum_version
         self.backoff_factor = backoff_factor
         self.server_pool = {}
         self._update_server_pool(servers, **pool_kw)
@@ -400,6 +418,10 @@ class Client(object):
 
     def _create_server(self, server, **pool_kw):
         kwargs = _remove_certs_for_non_https(server, pool_kw)
+        # After updating to urllib3 v2, optionally retain support for TLS 1.0 and TLS 1.1,
+        # in order to support connectivity to older versions of CrateDB.
+        if self.ssl_relax_minimum_version:
+            _update_pool_kwargs_for_ssl_minimum_version(server, kwargs)
         self.server_pool[server] = Server(server, **kwargs)
 
     def _update_server_pool(self, servers, **pool_kw):

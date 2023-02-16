@@ -110,3 +110,18 @@ The connection will also fail when providing an invalid CA certificate:
     Traceback (most recent call last):
     ...
     crate.client.exceptions.ConnectionError: Server not available, exception: HTTPSConnectionPool...
+
+
+Relaxing minimum SSL version
+============================
+
+urrlib3 v2 dropped support for TLS 1.0 and TLS 1.1 by default, see `Modern security by default -
+HTTPS requires TLS 1.2+`_. If you need to re-enable it, use the ``ssl_relax_minimum_version`` flag,
+which will configure ``kwargs["ssl_minimum_version"] = ssl.TLSVersion.MINIMUM_SUPPORTED``.
+
+    >>> client = HttpClient([crate_host], ssl_relax_minimum_version=True, verify_ssl_cert=False)
+    >>> client.server_infos(crate_host)
+    ('https://localhost:65534', 'test', '0.0.0')
+
+
+.. _Modern security by default - HTTPS requires TLS 1.2+: https://urllib3.readthedocs.io/en/latest/v2-migration-guide.html#https-requires-tls-1-2

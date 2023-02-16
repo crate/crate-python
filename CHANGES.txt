@@ -17,6 +17,7 @@ Unreleased
   constraints
 - DBAPI: Properly raise ``IntegrityError`` exceptions instead of
   ``ProgrammingError``, when CrateDB raises a ``DuplicateKeyException``.
+- SQLAlchemy: Ignore SQL's ``FOR UPDATE`` clause. Thanks, @surister.
 
 .. _urllib3 v2.0 migration guide: https://urllib3.readthedocs.io/en/latest/v2-migration-guide.html
 .. _urllib3 v2.0 roadmap: https://urllib3.readthedocs.io/en/stable/v2-roadmap.html

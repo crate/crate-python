@@ -5,6 +5,7 @@ Changes for crate
 Unreleased
 ==========
 
+- Fixed SQLAlchemy 2.0 incompatibility with ``CrateDialect.{has_schema,has_table}``
 
 2023/02/16 0.30.0
 =================

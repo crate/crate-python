@@ -227,11 +227,11 @@ class CrateDialect(default.DefaultDialect):
     def dbapi(cls):
         return cls.import_dbapi()
 
-    def has_schema(self, connection, schema):
-        return schema in self.get_schema_names(connection)
+    def has_schema(self, connection, schema, **kw):
+        return schema in self.get_schema_names(connection, **kw)
 
-    def has_table(self, connection, table_name, schema=None):
-        return table_name in self.get_table_names(connection, schema=schema)
+    def has_table(self, connection, table_name, schema=None, **kw):
+        return table_name in self.get_table_names(connection, schema=schema, **kw)
 
     @reflection.cache
     def get_schema_names(self, connection, **kw):

@@ -20,12 +20,14 @@
 # software solely pursuant to the terms of the relevant commercial agreement.
 
 from datetime import datetime
-from unittest import TestCase
+from unittest import TestCase, skipIf
 from unittest.mock import MagicMock, patch
 
 import sqlalchemy as sa
 
 from crate.client.cursor import Cursor
+from crate.client.sqlalchemy import SA_VERSION
+from crate.client.sqlalchemy.sa_version import SA_1_4, SA_2_0
 from crate.client.sqlalchemy.types import Object
 from sqlalchemy import inspect
 from sqlalchemy.orm import Session
@@ -33,7 +35,7 @@ try:
     from sqlalchemy.orm import declarative_base
 except ImportError:
     from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy.testing import eq_, in_
+from sqlalchemy.testing import eq_, in_, is_true
 
 FakeCursor = MagicMock(name='FakeCursor', spec=Cursor)
 
@@ -69,6 +71,13 @@ class SqlAlchemyDialectTest(TestCase):
             ts = sa.Column(sa.DateTime, onupdate=datetime.utcnow)
 
         self.session = Session(bind=self.engine)
+
+    def init_mock(self, return_value=None):
+        self.fake_cursor.rowcount = 1
+        self.fake_cursor.description = (
+            ('foo', None, None, None, None, None, None),
+        )
+        self.fake_cursor.fetchall = MagicMock(return_value=return_value)
 
     def test_primary_keys_2_3_0(self):
         insp = inspect(self.session.bind)
@@ -126,3 +135,22 @@ class SqlAlchemyDialectTest(TestCase):
             ['v1', 'v2'])
         eq_(self.executed_statement, "SELECT table_name FROM information_schema.views "
                                      "ORDER BY table_name ASC, table_schema ASC")
+
+    @skipIf(SA_VERSION < SA_1_4, "Inspector.has_table only available on SQLAlchemy>=1.4")
+    def test_has_table(self):
+        self.init_mock(return_value=[["foo"], ["bar"]])
+        insp = inspect(self.session.bind)
+        is_true(insp.has_table("bar"))
+        eq_(self.executed_statement,
+            "SELECT table_name FROM information_schema.tables "
+            "WHERE table_schema = ? AND table_type = 'BASE TABLE' "
+            "ORDER BY table_name ASC, table_schema ASC")
+
+    @skipIf(SA_VERSION < SA_2_0, "Inspector.has_schema only available on SQLAlchemy>=2.0")
+    def test_has_schema(self):
+        self.init_mock(
+            return_value=[["blob"], ["doc"], ["information_schema"], ["pg_catalog"], ["sys"]])
+        insp = inspect(self.session.bind)
+        is_true(insp.has_schema("doc"))
+        eq_(self.executed_statement,
+            "select schema_name from information_schema.schemata order by schema_name asc")

@@ -55,7 +55,11 @@ setup(
     namespace_packages=['crate'],
     entry_points={
         'sqlalchemy.dialects': [
-            'crate = crate.client.sqlalchemy:CrateDialect'
+            'crate = crate.client.sqlalchemy:CrateDialect',
+            'crate.urllib3 = crate.client.sqlalchemy.dialect_more:dialect_urllib3',
+            'crate.psycopg = crate.client.sqlalchemy.dialect_more:dialect_psycopg',
+            'crate.psycopg_async = crate.client.sqlalchemy.dialect_more:dialect_psycopg_async',
+            'crate.asyncpg = crate.client.sqlalchemy.dialect_more:dialect_asyncpg',
         ]
     },
     install_requires=['urllib3>=1.9,<2'],
@@ -63,6 +67,7 @@ setup(
         sqlalchemy=['sqlalchemy>=1.0,<2.1',
                     'geojson>=2.5.0,<4',
                     'backports.zoneinfo<1; python_version<"3.9"'],
+        postgresql=['sqlalchemy-postgresql-relaxed'],
         test=['tox>=3,<5',
               'zope.testing>=4,<6',
               'zope.testrunner>=5,<6',

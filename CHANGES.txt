@@ -5,6 +5,10 @@ Changes for crate
 Unreleased
 ==========
 
+- SQLAlchemy: Add compatibility adapter for SQLAlchemy's ``psycopg`` and ``asyncpg``
+  dialects, introducing the ``crate+psycopg://``, ``crate+asyncpg://``, and
+  ``crate+urllib3://`` dialect identifiers. The asynchronous variant of ``psycopg``
+  is also supported.
 
 2023/03/02 0.30.1
 =================

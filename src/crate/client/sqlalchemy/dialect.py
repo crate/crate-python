@@ -21,6 +21,7 @@
 
 import logging
 from datetime import datetime, date
+from types import ModuleType
 
 from sqlalchemy import types as sqltypes
 from sqlalchemy.engine import default, reflection
@@ -191,6 +192,12 @@ class CrateDialect(default.DefaultDialect):
         self.default_schema_name = \
             self._get_default_schema_name(connection)
 
+    def set_isolation_level(self, dbapi_connection, level):
+        """
+        For CrateDB, this is implemented as a noop.
+        """
+        pass
+
     def do_rollback(self, connection):
         # if any exception is raised by the dbapi, sqlalchemy by default
         # attempts to do a rollback crate doesn't support rollbacks.
@@ -209,7 +216,21 @@ class CrateDialect(default.DefaultDialect):
             use_ssl = asbool(kwargs.pop("ssl", False))
             if use_ssl:
                 servers = ["https://" + server for server in servers]
-            return self.dbapi.connect(servers=servers, **kwargs)
+
+            is_module = isinstance(self.dbapi, ModuleType)
+            if is_module:
+                driver_name = self.dbapi.__name__
+            else:
+                driver_name = self.dbapi.__class__.__name__
+            if driver_name == "crate.client":
+                if "database" in kwargs:
+                    del kwargs["database"]
+                return self.dbapi.connect(servers=servers, **kwargs)
+            elif driver_name in ["psycopg", "PsycopgAdaptDBAPI", "AsyncAdapt_asyncpg_dbapi"]:
+                return self.dbapi.connect(host=host, port=port, **kwargs)
+            else:
+                raise ValueError(f"Unknown driver variant: {driver_name}")
+
         return self.dbapi.connect(**kwargs)
 
     def _get_default_schema_name(self, connection):
@@ -244,11 +265,11 @@ class CrateDialect(default.DefaultDialect):
 
     @reflection.cache
     def get_table_names(self, connection, schema=None, **kw):
-        cursor = connection.exec_driver_sql(
+        cursor = connection.exec_driver_sql(self._format_query(
             "SELECT table_name FROM information_schema.tables "
             "WHERE {0} = ? "
             "AND table_type = 'BASE TABLE' "
-            "ORDER BY table_name ASC, {0} ASC".format(self.schema_column),
+            "ORDER BY table_name ASC, {0} ASC").format(self.schema_column),
             (schema or self.default_schema_name, )
         )
         return [row[0] for row in cursor.fetchall()]
@@ -270,7 +291,7 @@ class CrateDialect(default.DefaultDialect):
                 "AND column_name !~ ?" \
                 .format(self.schema_column)
         cursor = connection.exec_driver_sql(
-            query,
+            self._format_query(query),
             (table_name,
              schema or self.default_schema_name,
              r"(.*)\[\'(.*)\'\]")  # regex to filter subscript
@@ -309,7 +330,7 @@ class CrateDialect(default.DefaultDialect):
                 return set(rows[0] if rows else [])
 
         pk_result = engine.exec_driver_sql(
-            query,
+            self._format_query(query),
             (table_name, schema or self.default_schema_name)
         )
         pks = result_fun(pk_result)
@@ -342,6 +363,15 @@ class CrateDialect(default.DefaultDialect):
 
     def _resolve_type(self, type_):
         return TYPES_MAP.get(type_, sqltypes.UserDefinedType)
+
+    def _format_query(self, query):
+        """
+        When using the PostgreSQL protocol with drivers `psycopg` or `asyncpg`,
+        the paramstyle is not `qmark`, but `pyformat`.
+        """
+        if self.paramstyle == "pyformat":
+            query = query.replace("= ?", "= %s").replace("!~ ?", "!~ %s")
+        return query
 
 
 class DateTrunc(functions.GenericFunction):

@@ -69,6 +69,58 @@ Insert a new location:
 
     >>> location = Location()
     >>> location.name = 'Earth'
+    >>> location.driver = 'Planet'
+    >>> location.flag = True
+
+    >>> session.add(location)
+    >>> session.flush()
+
+Refresh "locations" table:
+
+    >>> _ = connection.execute(text("REFRESH TABLE locations"))
+
+Inserted location is available:
+
+    >>> location = session.query(Location).filter_by(name='Earth').one()
+    >>> location.name
+    'Earth'
+
+Retrieve the location from the database:
+
+    >>> session.refresh(location)
+    >>> location.name
+    'Earth'
+
+Three
+
+    >>> location = Location()
+    >>> location.name = 'Earth'
+    >>> location.driver = 'Planet'
+    >>> location.flag = True
+
+    >>> session.add(location)
+    >>> session.flush()
+
+Refresh "locations" table:
+
+    >>> _ = connection.execute(text("REFRESH TABLE locations"))
+
+Inserted location is available:
+
+    >>> location = session.query(Location).filter_by(name='Earth').one()
+    >>> location.name
+    'Earth'
+
+Retrieve the location from the database:
+
+    >>> session.refresh(location)
+    >>> location.name
+    'Earth'
+
+Three
+
+    >>> location = Location()
+    >>> location.name = 'Earth'
     >>> location.kind = 'Planet'
     >>> location.flag = True
 
@@ -167,6 +219,124 @@ Update
 ======
 
 Back to our original object ``Location(Earth)``.
+
+    >>> location = session.query(Location).filter_by(name='Earth').one()
+
+The datetime and date can be set using an update statement:
+
+    >>> location.nullable_date = datetime.utcnow().date()
+    >>> location.nullable_datetime = datetime.utcnow()
+    >>> session.flush()
+
+Refresh "locations" table:
+
+    >>> _ = connection.execute(text("REFRESH TABLE locations"))
+
+Boolean values get set natively:
+
+    >>> location.flag
+    True
+
+Reload the object from the database:
+
+    >>> session.refresh(location)
+
+And verify that the date and datetime was persisted:
+
+    >>> location.nullable_datetime is not None
+    True
+
+    >>> location.nullable_date is not None
+    True
+
+Update a record using SQL:
+
+    >>> with engine.begin() as conn:
+    ...     result = conn.execute(text("update locations set kind='Heimat' where name='Earth'"))
+    ...     result.rowcount
+    1
+
+Update multiple records:
+
+    >>> for x in range(10):
+    ...     loc = Location()
+    ...     loc.name = 'Ort %d' % x
+    ...     loc.driver = 'Update'
+    ...     session.add(loc)
+    >>> session.flush()
+
+Refresh table:
+
+    >>> _ = connection.execute(text("REFRESH TABLE locations"))
+
+Update multiple records using SQL:
+
+    >>> with engine.begin() as conn:
+    ...     result = conn.execute(text("update locations set flag=true where kind='Update'"))
+    ...     result.rowcount
+    10
+
+Update all records using SQL, and check that the number of documents affected
+of an update without
+
+    >>> location = session.query(Location).filter_by(name='Earth').one()
+
+The datetime and date can be set using an update statement:
+
+    >>> location.nullable_date = datetime.utcnow().date()
+    >>> location.nullable_datetime = datetime.utcnow()
+    >>> session.flush()
+
+Refresh "locations" table:
+
+    >>> _ = connection.execute(text("REFRESH TABLE locations"))
+
+Boolean values get set natively:
+
+    >>> location.flag
+    True
+
+Reload the object from the database:
+
+    >>> session.refresh(location)
+
+And verify that the date and datetime was persisted:
+
+    >>> location.nullable_datetime is not None
+    True
+
+    >>> location.nullable_date is not None
+    True
+
+Update a record using SQL:
+
+    >>> with engine.begin() as conn:
+    ...     result = conn.execute(text("update locations set kind='Heimat' where name='Earth'"))
+    ...     result.rowcount
+    1
+
+Update multiple records:
+
+    >>> for x in range(10):
+    ...     loc = Location()
+    ...     loc.name = 'Ort %d' % x
+    ...     loc.driver = 'Update'
+    ...     session.add(loc)
+    >>> session.flush()
+
+Refresh table:
+
+    >>> _ = connection.execute(text("REFRESH TABLE locations"))
+
+Update multiple records using SQL:
+
+    >>> with engine.begin() as conn:
+    ...     result = conn.execute(text("update locations set flag=true where kind='Update'"))
+    ...     result.rowcount
+    10
+
+Update all records using SQL, and check that the number of documents affected
+of an update without
 
     >>> location = session.query(Location).filter_by(name='Earth').one()
 

@@ -5,6 +5,8 @@ Changes for crate
 Unreleased
 ==========
 
+- SQLAlchemy: Add support for ``gen_random_text_uuid()``
+
 
 2023/03/02 0.30.1
 =================

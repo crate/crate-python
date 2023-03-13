@@ -1,3 +1,5 @@
+.. _by-example:
+
 ##########
 By example
 ##########
@@ -11,10 +13,10 @@ This part of the documentation contains examples how to use the CrateDB Python
 client.
 
 
-DBAPI, HTTP, and BLOB interfaces
-================================
+DB API, HTTP, and BLOB interfaces
+=================================
 
-The examples in this section are all about CrateDB's `Python DBAPI`_ interface,
+The examples in this section are all about CrateDB's `Python DB API`_ interface,
 the plain HTTP API interface, and a convenience interface for working with
 :ref:`blob tables <crate-reference:blob_support>`. It details attributes,
 methods, and behaviors of the ``Connection`` and ``Cursor`` objects.
@@ -48,5 +50,5 @@ its corresponding API interfaces, see also :ref:`sqlalchemy-support`.
     sqlalchemy/inspection-reflection
 
 
-.. _Python DBAPI: https://peps.python.org/pep-0249/
+.. _Python DB API: https://peps.python.org/pep-0249/
 .. _SQLAlchemy: https://www.sqlalchemy.org/

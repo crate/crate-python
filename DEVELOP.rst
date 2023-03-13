@@ -1,12 +1,14 @@
-===============
-Developer guide
-===============
+==============================
+CrateDB Python developer guide
+==============================
 
 Setup
 =====
 
 To start things off, bootstrap the sandbox environment::
 
+    git clone https://github.com/crate/crate-python
+    cd crate-python
     source bootstrap.sh
 
 This command should automatically install all prerequisites for the development

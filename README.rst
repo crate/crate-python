@@ -45,20 +45,14 @@ A Python client library for CrateDB_.
 
 This library:
 
-- Implements the Python `DB API 2.0`_ specification
-- Includes support for SQLAlchemy_ (>= 1.3.0)
-
-Prerequisites
-=============
-
-Recent versions of this library are validated on Python 3 (>= 3.7).
-It may also work on earlier versions of Python.
+- Implements the Python `DB API 2.0`_ specification.
+- Includes support for SQLAlchemy_ in form of an `SQLAlchemy dialect`_.
 
 
 Installation
 ============
 
-The CrateDB Python client is available as a pip_ package.
+The CrateDB Python client is available as package `crate`_ on `PyPI`_.
 
 To install the most recent driver version, including the SQLAlchemy dialect
 extension, run::
@@ -66,29 +60,34 @@ extension, run::
     $ pip install "crate[sqlalchemy]" --upgrade
 
 
+Documentation and help
+======================
+
+- `CrateDB Python Client documentation`_
+- `CrateDB reference documentation`_
+- `Developer documentation`_
+- `Contributing`_
+- Other `support channels`_
+
+
 Contributing
 ============
 
-This project is primarily maintained by Crate.io_, but we welcome community
-contributions!
+The CrateDB Python client library is an open source project, and is `managed on
+GitHub`_. We appreciate contributions of any kind.
 
-See the `developer docs`_ and the `contribution docs`_ for more information.
 
-Help
-====
-
-Looking for more help?
-
-- Read the `project docs`_
-- Check out our `support channels`_
-
-.. _contribution docs: CONTRIBUTING.rst
+.. _Contributing: CONTRIBUTING.rst
+.. _crate: https://pypi.org/project/crate/
 .. _Crate.io: https://crate.io/
 .. _CrateDB: https://github.com/crate/crate
-.. _DB API 2.0: http://www.python.org/dev/peps/pep-0249/
-.. _developer docs: DEVELOP.rst
-.. _pip: https://pypi.python.org/pypi/pip
+.. _CrateDB Python Client documentation: https://crate.io/docs/python/
+.. _CrateDB reference documentation: https://crate.io/docs/reference/
+.. _DB API 2.0: https://peps.python.org/pep-0249/
+.. _Developer documentation: DEVELOP.rst
+.. _managed on GitHub: https://github.com/crate/crate-python
+.. _PyPI: https://pypi.org/
 .. _SQLAlchemy: https://www.sqlalchemy.org
+.. _SQLAlchemy dialect: https://docs.sqlalchemy.org/dialects/
 .. _StackOverflow: https://stackoverflow.com/tags/cratedb
 .. _support channels: https://crate.io/support/
-.. _project docs: https://crate.io/docs/python/

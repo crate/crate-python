@@ -189,7 +189,7 @@ The full index for all documentation pages can be inspected at :ref:`index-all`.
 License
 =======
 The project is licensed under the terms of the Apache 2.0 license, like
-`CrateDB itself <CrateDB source>`_, see `LICENSE`_.
+`CrateDB itself <CrateDB source_>`_, see `LICENSE`_.
 
 
 .. _Apache Superset: https://github.com/apache/superset

@@ -173,6 +173,8 @@ class CrateDialect(default.DefaultDialect):
     statement_compiler = statement_compiler
     ddl_compiler = CrateDDLCompiler
     type_compiler = CrateTypeCompiler
+    use_insertmanyvalues = True
+    use_insertmanyvalues_wo_returning = True
     supports_multivalues_insert = True
     supports_native_boolean = True
     supports_statement_cache = True

@@ -19,14 +19,14 @@
 # with Crate these terms will supersede the license and you may use the
 # software solely pursuant to the terms of the relevant commercial agreement.
 
-from unittest import TestCase
+from unittest import mock, TestCase, skipIf
 
 from crate.client.sqlalchemy.compiler import crate_before_execute
 
 import sqlalchemy as sa
 from sqlalchemy.sql import text, Update
 
-from crate.client.sqlalchemy.sa_version import SA_VERSION, SA_1_4
+from crate.client.sqlalchemy.sa_version import SA_VERSION, SA_1_4, SA_2_0
 from crate.client.sqlalchemy.types import Craty
 
 
@@ -127,3 +127,57 @@ class SqlAlchemyCompilerTest(TestCase):
         insertable = self.mytable.insert().values(records)
         statement = str(insertable.compile(bind=self.crate_engine))
         self.assertEqual(statement, "INSERT INTO mytable (name) VALUES (?), (?), (?)")
+
+    @skipIf(SA_VERSION < SA_2_0, "SQLAlchemy 1.x does not support the 'insertmanyvalues' dialect feature")
+    def test_insert_manyvalues(self):
+        """
+        Verify the `use_insertmanyvalues` and `use_insertmanyvalues_wo_returning` dialect features.
+
+        > For DML statements such as "INSERT", "UPDATE" and "DELETE", we can
+        > send multiple parameter sets to the `Connection.execute()` method by
+        > passing a list of dictionaries instead of a single dictionary, which
+        > indicates that the single SQL statement should be invoked multiple
+        > times, once for each parameter set. This style of execution is known
+        > as "executemany".
+
+        > A key characteristic of "insertmanyvalues" is that the size of the INSERT
+        > statement is limited on a fixed max number of "values" clauses as well as
+        > a dialect-specific fixed total number of bound parameters that may be
+        > represented in one INSERT statement at a time.
+        > When the number of parameter dictionaries given exceeds a fixed limit [...],
+        > multiple INSERT statements will be invoked within the scope of a single
+        > `Connection.execute()` call, each of which accommodate for a portion of the
+        > parameter dictionaries, referred towards as a "batch".
+
+        - https://docs.sqlalchemy.org/tutorial/dbapi_transactions.html#tutorial-multiple-parameters
+        - https://docs.sqlalchemy.org/glossary.html#term-executemany
+        - https://docs.sqlalchemy.org/core/connections.html#engine-insertmanyvalues
+        - https://docs.sqlalchemy.org/core/connections.html#controlling-the-batch-size
+        """
+
+        # Don't truncate unittest's diff output on `assertListEqual`.
+        self.maxDiff = None
+
+        # Five records with a batch size of two should produce three `INSERT` statements.
+        record_count = 5
+        batch_size = 2
+
+        # Prepare input data and verify insert statement.
+        records = [{"name": f"foo_{i}"} for i in range(record_count)]
+        insertable = self.mytable.insert()
+        statement = str(insertable.compile(bind=self.crate_engine))
+        self.assertEqual(statement, "INSERT INTO mytable (name, data) VALUES (?, ?)")
+
+        with mock.patch("crate.client.http.Client.sql", autospec=True, return_value={"cols": []}) as client_mock:
+
+            with self.crate_engine.begin() as conn:
+                # Adjust page size on a per-connection level.
+                conn.execution_options(insertmanyvalues_page_size=batch_size)
+                conn.execute(insertable, parameters=records)
+
+        # Verify that input data has been batched correctly.
+        self.assertListEqual(client_mock.mock_calls, [
+            mock.call(mock.ANY, 'INSERT INTO mytable (name) VALUES (?), (?)', ('foo_0', 'foo_1'), None),
+            mock.call(mock.ANY, 'INSERT INTO mytable (name) VALUES (?), (?)', ('foo_2', 'foo_3'), None),
+            mock.call(mock.ANY, 'INSERT INTO mytable (name) VALUES (?)', ('foo_4', ), None),
+        ])

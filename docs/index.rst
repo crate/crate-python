@@ -19,7 +19,7 @@ The Python client library for `CrateDB`_ implements the Python Database API
 Specification v2.0 (`PEP 249`_), and also includes the :ref:`CrateDB dialect
 <using-sqlalchemy>` for `SQLAlchemy`_.
 
-The Python driver can be used to connect to both `CrateDB OSS`_ and `CrateDB
+The Python driver can be used to connect to both `CrateDB`_ and `CrateDB
 Cloud`_, and is verified to work on Linux, macOS, and Windows. It is used by
 the `Crash CLI`_, as well as other libraries and applications connecting to
 CrateDB from the Python ecosystem. It is verified to work with CPython, but
@@ -78,7 +78,10 @@ Connect to `CrateDB Cloud`_.
 
     >>> # Connect using DB API.
     >>> from crate import client
-    >>> client.connect("https://admin:iM_n1%0xRzShsapU4U(lDGOj@example.aks1.westeurope.azure.cratedb.net:4200")
+    >>> connection = client.connect(
+    ...     servers="https://example.aks1.westeurope.azure.cratedb.net:4200",
+    ...     username="admin",
+    ...     password="<PASSWORD>")
 
 
 SQLAlchemy
@@ -97,7 +100,7 @@ Install package from PyPI with DB API and SQLAlchemy support.
 
 .. code-block:: shell
 
-    $ pip install crate[sqlalchemy] pandas
+    $ pip install 'crate[sqlalchemy]' pandas
 
 Connect to CrateDB instance running on ``localhost``.
 
@@ -116,7 +119,8 @@ Connect to `CrateDB Cloud`_.
 
     >>> # Connect using SQLAlchemy Core.
     >>> import sqlalchemy as sa
-    >>> engine = sa.create_engine("crate://admin:iM_n1%0xRzShsapU4U(lDGOj@example.aks1.westeurope.azure.cratedb.net:4200?ssl=true", echo=True)
+    >>> dburi = "crate://admin:<PASSWORD>@example.aks1.westeurope.azure.cratedb.net:4200?ssl=true"
+    >>> engine = sa.create_engine(dburi, echo=True)
 
 Load results into `pandas`_ DataFrame.
 
@@ -184,15 +188,15 @@ The full index for all documentation pages can be inspected at :ref:`index-all`.
 
 License
 =======
-The project is licensed under the terms of the Apache 2.0 license, like CrateDB
-itself, see `LICENSE`_.
+The project is licensed under the terms of the Apache 2.0 license, like
+`CrateDB itself <CrateDB source>`_, see `LICENSE`_.
 
 
 .. _Apache Superset: https://github.com/apache/superset
 .. _Crash CLI: https://crate.io/docs/crate/crash/
-.. _CrateDB: https://crate.io/products/cratedb/
+.. _CrateDB: https://crate.io/products/cratedb
 .. _CrateDB Cloud: https://console.cratedb.cloud/
-.. _CrateDB OSS: https://github.com/crate/crate
+.. _CrateDB source: https://github.com/crate/crate
 .. _Create an issue: https://github.com/crate/crate-python/issues
 .. _development sandbox: https://github.com/crate/crate-python/blob/master/DEVELOP.rst
 .. _FIWARE QuantumLeap data historian: https://github.com/orchestracities/ngsi-timeseries-api

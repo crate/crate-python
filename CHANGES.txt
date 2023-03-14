@@ -9,6 +9,10 @@ Unreleased
   ``supports_multivalues_insert`` on the CrateDB dialect, it is used by pandas'
   ``method="multi"`` option
 
+- SQLAlchemy: Enable the ``insertmanyvalues`` feature, which lets you control
+  the batch size of ``INSERT`` operations using the ``insertmanyvalues_page_size``
+  engine-, connection-, and statement-options.
+
 
 2023/03/02 0.30.1
 =================

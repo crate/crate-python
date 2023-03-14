@@ -97,3 +97,33 @@ class SqlAlchemyCompilerTest(TestCase):
         selectable = self.mytable.select().offset(5).limit(42)
         statement = str(selectable.compile(bind=self.crate_engine))
         self.assertEqual(statement, "SELECT mytable.name, mytable.data \nFROM mytable \n LIMIT ? OFFSET ?")
+
+    def test_insert_multivalues(self):
+        """
+        Verify that "in-place multirow inserts" aka. "multivalues inserts" aka.
+        the `supports_multivalues_insert` dialect feature works.
+
+        When this feature is not enabled, using it will raise an error:
+
+            CompileError: The 'crate' dialect with current database version
+            settings does not support in-place multirow inserts
+
+        > The Insert construct also supports being passed a list of dictionaries
+        > or full-table-tuples, which on the server will render the less common
+        > SQL syntax of "multiple values" - this syntax is supported on backends
+        > such as SQLite, PostgreSQL, MySQL, but not necessarily others.
+
+        > It is essential to note that passing multiple values is NOT the same
+        > as using traditional `executemany()` form. The above syntax is a special
+        > syntax not typically used. To emit an INSERT statement against
+        > multiple rows, the normal method is to pass a multiple values list to
+        > the `Connection.execute()` method, which is supported by all database
+        > backends and is generally more efficient for a very large number of
+        > parameters.
+
+        - https://docs.sqlalchemy.org/core/dml.html#sqlalchemy.sql.expression.Insert.values.params.*args
+        """
+        records = [{"name": f"foo_{i}"} for i in range(3)]
+        insertable = self.mytable.insert().values(records)
+        statement = str(insertable.compile(bind=self.crate_engine))
+        self.assertEqual(statement, "INSERT INTO mytable (name) VALUES (?), (?), (?)")

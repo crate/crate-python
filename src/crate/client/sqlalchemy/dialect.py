@@ -169,9 +169,11 @@ else:
 class CrateDialect(default.DefaultDialect):
     name = 'crate'
     driver = 'crate-python'
+    default_paramstyle = 'qmark'
     statement_compiler = statement_compiler
     ddl_compiler = CrateDDLCompiler
     type_compiler = CrateTypeCompiler
+    supports_multivalues_insert = True
     supports_native_boolean = True
     supports_statement_cache = True
     colspecs = colspecs

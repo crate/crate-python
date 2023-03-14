@@ -164,7 +164,8 @@ Connecting to `CrateDB Cloud`_ works like this. Please note the ``?ssl=true``
 query parameter at the end of the database URI.
 
     >>> import sqlalchemy as sa
-    >>> engine = sa.create_engine("crate://admin:iM_n1%0xRzShsapU4U(lDGOj@example.aks1.westeurope.azure.cratedb.net:4200?ssl=true", echo=True)
+    >>> dburi = "crate://admin:<PASSWORD>@example.aks1.westeurope.azure.cratedb.net:4200?ssl=true"
+    >>> engine = sa.create_engine(dburi, echo=True)
 
 
 .. _tables:

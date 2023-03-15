@@ -5,13 +5,19 @@ Changes for crate
 Unreleased
 ==========
 
-- SQLAlchemy: Support ``INSERT...VALUES`` with multiple value sets by enabling
+- SQLAlchemy Core: Support ``INSERT...VALUES`` with multiple value sets by enabling
   ``supports_multivalues_insert`` on the CrateDB dialect, it is used by pandas'
   ``method="multi"`` option
 
-- SQLAlchemy: Enable the ``insertmanyvalues`` feature, which lets you control
+- SQLAlchemy Core: Enable the ``insertmanyvalues`` feature, which lets you control
   the batch size of ``INSERT`` operations using the ``insertmanyvalues_page_size``
   engine-, connection-, and statement-options.
+
+- SQLAlchemy ORM: Remove support for the legacy ``session.bulk_save_objects`` API
+  on SQLAlchemy 2.0, in favor of the new ``insertmanyvalues`` feature. Performance
+  optimizations from ``bulk_save()`` have been made inherently part of ``add_all()``.
+  Note: The legacy mode will still work on SQLAlchemy 1.x, while SQLAlchemy 2.x users
+  MUST switch to the new method now.
 
 
 2023/03/02 0.30.1

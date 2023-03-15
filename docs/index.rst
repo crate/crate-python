@@ -65,12 +65,16 @@ Connect to CrateDB instance running on ``localhost``.
 .. code-block:: python
 
     >>> # Connect using DB API.
+    >>> from pprint import pp
     >>> from crate import client
+    >>>
+    >>> query = "SELECT country, mountain, coordinates, height FROM sys.summits ORDER BY country;"
+    >>>
     >>> with client.connect("localhost:4200", username="crate") as connection:
-    >>>     cursor = connection.cursor()
-    >>>     cursor.execute("SELECT * FROM sys.summits;")
-    >>>     print(cursor.fetchall())
-    >>>     cursor.close()
+    ...     cursor = connection.cursor()
+    ...     cursor.execute(query)
+    ...     pp(cursor.fetchall())
+    ...     cursor.close()
 
 Connect to `CrateDB Cloud`_.
 
@@ -107,11 +111,16 @@ Connect to CrateDB instance running on ``localhost``.
 .. code-block:: python
 
     >>> # Connect using SQLAlchemy Core.
+    >>> from pprint import pp
     >>> import sqlalchemy as sa
-    >>> engine = sa.create_engine("crate://localhost:4200", echo=True)
+    >>>
+    >>> dburi = "crate://localhost:4200"
+    >>> query = "SELECT country, mountain, coordinates, height FROM sys.summits ORDER BY country;"
+    >>>
+    >>> engine = sa.create_engine(dburi, echo=True)
     >>> with engine.connect() as connection:
-    >>>     with connection.execute(sa.text("SELECT * FROM sys.summits;")) as cursor:
-    >>>         print(cursor.fetchall())
+    ...     with connection.execute(sa.text(query)) as result:
+    ...         pp(result.mappings().fetchall())
 
 Connect to `CrateDB Cloud`_.
 
@@ -129,11 +138,15 @@ Load results into `pandas`_ DataFrame.
     >>> # Connect using SQLAlchemy Core and pandas.
     >>> import pandas as pd
     >>> import sqlalchemy as sa
-    >>> engine = sa.create_engine("crate://localhost:4200", echo=True)
+    >>>
+    >>> dburi = "crate://localhost:4200"
+    >>> query = "SELECT * FROM sys.summits ORDER BY country;"
+    >>>
+    >>> engine = sa.create_engine(dburi, echo=True)
     >>> with engine.connect() as connection:
-    >>>     df = pd.read_sql(sql=sa.text("SELECT * FROM sys.summits;"), con=connection)
-    >>>     df.info()
-    >>>     print(df)
+    ...     df = pd.read_sql(sql=sa.text(query), con=connection)
+    ...     df.info()
+    ...     print(df)
 
 
 Data types

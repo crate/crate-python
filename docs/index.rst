@@ -111,8 +111,11 @@ Connect to CrateDB instance running on ``localhost``.
 .. code-block:: python
 
     # Connect using SQLAlchemy Core.
+    import pkg_resources
     import sqlalchemy as sa
     from pprint import pp
+
+    pkg_resources.require("sqlalchemy>=2.0")
     
     dburi = "crate://localhost:4200"
     query = "SELECT country, mountain, coordinates, height FROM sys.summits ORDER BY country;"

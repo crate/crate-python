@@ -5,6 +5,10 @@ Changes for crate
 Unreleased
 ==========
 
+
+2023/03/30 0.31.0
+=================
+
 - SQLAlchemy Core: Support ``INSERT...VALUES`` with multiple value sets by enabling
   ``supports_multivalues_insert`` on the CrateDB dialect, it is used by pandas'
   ``method="multi"`` option

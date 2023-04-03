@@ -65,7 +65,7 @@ setup(
                     'backports.zoneinfo<1; python_version<"3.9"'],
         test=['tox>=3,<5',
               'zope.testing>=4,<6',
-              'zope.testrunner>=5,<6',
+              'zope.testrunner>=5,<7',
               'zc.customdoctests>=1.0.1,<2',
               'createcoverage>=1,<2',
               'stopit>=1.1.2,<2',

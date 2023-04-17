@@ -180,6 +180,8 @@ class CrateDialect(default.DefaultDialect):
     supports_statement_cache = True
     colspecs = colspecs
     implicit_returning = True
+    insert_returning = True
+    update_returning = True
 
     def __init__(self, *args, **kwargs):
         super(CrateDialect, self).__init__(*args, **kwargs)

@@ -257,6 +257,73 @@ Now, verify that the data is present in the database:
     ["('Write Tests',)"]
 
 
+``INSERT...RETURNING``
+======================
+
+The ``RETURNING`` clause can be used to retrieve the result rows of an ``INSERT``
+operation. It may be specified using the ``Insert.returning()`` method.
+
+The first step is to define the table:
+
+    >>> from sqlalchemy import insert
+
+    >>> class User(Base):
+    ...     __tablename__ = 'user'
+    ...     __table_args__ = {
+    ...         'crate_number_of_replicas': '0'
+    ...     }
+    ...     id = sa.Column(sa.String, primary_key=True, default=gen_key)
+    ...     username = sa.Column(sa.String)
+    ...     email = sa.Column(sa.String)
+
+    >>> Base.metadata.create_all(bind=engine)
+
+Now, let's use the returning clause on our insert to retrieve the values inserted:
+
+    >>> ins = insert(User).values(username='Crate', email='crate@crate.io').returning(User.username, User.email)
+    >>> result = session.execute(ins)
+    >>> session.commit()
+    >>> print([str(r) for r in result])
+    ["('Crate', 'crate@crate.io')"]
+
+The following ``INSERT...RETURNING`` statement was issued to the database:
+
+    INSERT INTO user (id, username, email)
+    VALUES (:id, :username, :email)
+    RETURNING user.id, user.username, user.email
+
+``UPDATE...RETURNING``
+
+The ``RETURNING`` clause can also be used with an ``UPDATE`` operation to return
+specified rows to be returned on execution. It can be specified using the
+``Update.returning()`` method.
+
+
+We can reuse the user table previously created in the ``INSERT...RETURNING`` section.
+
+Insert a user and get the user id:
+
+    >>> from sqlalchemy import insert, update
+
+    >>> ins = insert(User).values(username='Arthur Dent', email='arthur_dent@crate.io').returning(User.id, User.username, User.email)
+    >>> result = session.execute(ins)
+    >>> session.commit()
+    >>> uid = [r[0] for r in result][0]
+
+Now let's update the user:
+
+    >>> updt = update(User).where(User.id == uid).values(username='Tricia McMillan', email='tricia_mcmillan@crate.io').returning(User.username, User.email)
+    >>> res = session.execute(updt)
+    >>> session.commit()
+    >>> print([str(r) for r in res])
+    ["('Tricia McMillan', 'tricia_mcmillan@crate.io')"]
+
+The following ``UPDATE...RETURNING`` statement was issued to the database:
+
+    UPDATE user SET username=:username, email=:email
+    WHERE user.id = :id_1
+    RETURNING user.username, user.email
+
 .. hidden: Disconnect from database
 
     >>> session.close()
@@ -265,3 +332,5 @@ Now, verify that the data is present in the database:
 
 
 .. _count result rows: https://docs.sqlalchemy.org/en/14/orm/tutorial.html#counting
+
+UPDATE stuff SET content=:content WHERE stuff.id = :id_1 RETURNING stuff.content, stuff.status

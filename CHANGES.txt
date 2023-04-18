@@ -5,6 +5,9 @@ Changes for crate
 Unreleased
 ==========
 
+- SQLAlchemy Core: Re-enable support for ``INSERT/UPDATE...RETURNING`` in
+  SQLAlchemy 2.0 by adding the new ``insert_returning`` and ``update_returning`` flags
+  in the CrateDB dialect.
 
 2023/03/30 0.31.0
 =================

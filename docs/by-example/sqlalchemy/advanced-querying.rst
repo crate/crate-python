@@ -280,13 +280,13 @@ The first step is to define the table:
 
 Now, let's use the returning clause on our insert to retrieve the values inserted:
 
-    >>> ins = insert(User).values(username='Crate', email='crate@crate.io').returning(User.username, User.email)
-    >>> result = session.execute(ins)
+    >>> stmt = insert(User).values(username='Crate', email='crate@crate.io').returning(User.username, User.email)
+    >>> result = session.execute(stmt)
     >>> session.commit()
     >>> print([str(r) for r in result])
     ["('Crate', 'crate@crate.io')"]
 
-The following ``INSERT...RETURNING`` statement was issued to the database:
+The following ``INSERT...RETURNING`` statement was issued to the database::
 
     INSERT INTO user (id, username, email)
     VALUES (:id, :username, :email)
@@ -305,20 +305,20 @@ Insert a user and get the user id:
 
     >>> from sqlalchemy import insert, update
 
-    >>> ins = insert(User).values(username='Arthur Dent', email='arthur_dent@crate.io').returning(User.id, User.username, User.email)
-    >>> result = session.execute(ins)
+    >>> stmt = insert(User).values(username='Arthur Dent', email='arthur_dent@crate.io').returning(User.id, User.username, User.email)
+    >>> result = session.execute(stmt)
     >>> session.commit()
     >>> uid = [r[0] for r in result][0]
 
 Now let's update the user:
 
-    >>> updt = update(User).where(User.id == uid).values(username='Tricia McMillan', email='tricia_mcmillan@crate.io').returning(User.username, User.email)
-    >>> res = session.execute(updt)
+    >>> stmt = update(User).where(User.id == uid).values(username='Tricia McMillan', email='tricia_mcmillan@crate.io').returning(User.username, User.email)
+    >>> res = session.execute(stmt)
     >>> session.commit()
     >>> print([str(r) for r in res])
     ["('Tricia McMillan', 'tricia_mcmillan@crate.io')"]
 
-The following ``UPDATE...RETURNING`` statement was issued to the database:
+The following ``UPDATE...RETURNING`` statement was issued to the database::
 
     UPDATE user SET username=:username, email=:email
     WHERE user.id = :id_1
@@ -332,5 +332,3 @@ The following ``UPDATE...RETURNING`` statement was issued to the database:
 
 
 .. _count result rows: https://docs.sqlalchemy.org/en/14/orm/tutorial.html#counting
-
-UPDATE stuff SET content=:content WHERE stuff.id = :id_1 RETURNING stuff.content, stuff.status

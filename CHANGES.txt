@@ -20,6 +20,8 @@ Unreleased
 - SQLAlchemy: Added ``insert_bulk`` fast-path ``INSERT`` method for pandas, in
   order to support efficient batch inserts using CrateDB's "bulk operations" endpoint.
 
+- SQLAlchemy: Add documentation and software tests for usage with Dask
+
 
 2023/04/18 0.31.1
 =================

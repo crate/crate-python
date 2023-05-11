@@ -24,6 +24,7 @@ from __future__ import absolute_import
 import json
 import os
 import socket
+import sys
 import unittest
 import doctest
 from pprint import pprint
@@ -40,6 +41,7 @@ from crate.testing.settings import \
     crate_host, crate_path, crate_port, \
     crate_transport_port, docs_path, localhost
 from crate.client import connect
+from .sqlalchemy import SA_VERSION, SA_1_4
 
 from .test_cursor import CursorTest
 from .test_connection import ConnectionTest
@@ -382,13 +384,23 @@ def test_suite():
     s.layer = ensure_cratedb_layer()
     suite.addTest(s)
 
-    s = doctest.DocFileSuite(
+    sqlalchemy_integration_tests = [
         'docs/by-example/sqlalchemy/getting-started.rst',
         'docs/by-example/sqlalchemy/crud.rst',
         'docs/by-example/sqlalchemy/working-with-types.rst',
         'docs/by-example/sqlalchemy/advanced-querying.rst',
         'docs/by-example/sqlalchemy/inspection-reflection.rst',
-        'docs/by-example/sqlalchemy/dataframe.rst',
+    ]
+
+    # Don't run DataFrame integration tests on SQLAlchemy 1.3 and Python 3.7.
+    skip_dataframe = SA_VERSION < SA_1_4 or sys.version_info < (3, 8)
+    if not skip_dataframe:
+        sqlalchemy_integration_tests += [
+            'docs/by-example/sqlalchemy/dataframe.rst',
+        ]
+
+    s = doctest.DocFileSuite(
+        *sqlalchemy_integration_tests,
         module_relative=False,
         setUp=setUpCrateLayerSqlAlchemy,
         tearDown=tearDownDropEntitiesSqlAlchemy,

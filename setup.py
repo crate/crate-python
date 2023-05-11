@@ -70,6 +70,7 @@ setup(
               'createcoverage>=1,<2',
               'stopit>=1.1.2,<2',
               'flake8>=4,<7',
+              'pandas>=2,<3',
               'pytz',
               # `test_http.py` needs `setuptools.ssl_support`
               'setuptools<57',

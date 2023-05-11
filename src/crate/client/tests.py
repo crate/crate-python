@@ -388,6 +388,7 @@ def test_suite():
         'docs/by-example/sqlalchemy/working-with-types.rst',
         'docs/by-example/sqlalchemy/advanced-querying.rst',
         'docs/by-example/sqlalchemy/inspection-reflection.rst',
+        'docs/by-example/sqlalchemy/dataframe.rst',
         module_relative=False,
         setUp=setUpCrateLayerSqlAlchemy,
         tearDown=tearDownDropEntitiesSqlAlchemy,

@@ -19,13 +19,14 @@
 # with Crate these terms will supersede the license and you may use the
 # software solely pursuant to the terms of the relevant commercial agreement.
 import math
+import sys
 from unittest import TestCase, skipIf
 from unittest.mock import patch, MagicMock
 
 import sqlalchemy as sa
 from sqlalchemy.orm import Session
 
-from crate.client.sqlalchemy.sa_version import SA_VERSION, SA_2_0
+from crate.client.sqlalchemy.sa_version import SA_VERSION, SA_2_0, SA_1_4
 
 try:
     from sqlalchemy.orm import declarative_base
@@ -168,12 +169,13 @@ class SqlAlchemyBulkTest(TestCase):
         )
         self.assertSequenceEqual(expected_bulk_args, bulk_args)
 
+    @skipIf(sys.version_info < (3, 8), "SQLAlchemy/pandas is not supported on Python <3.8")
+    @skipIf(SA_VERSION < SA_1_4, "SQLAlchemy 1.3 is not supported by pandas")
     @patch('crate.client.connection.Cursor', mock_cursor=FakeCursor)
     def test_bulk_save_pandas(self, mock_cursor):
         """
         Verify bulk INSERT with pandas.
         """
-        import sqlalchemy as sa
         from pandas._testing import makeTimeDataFrame
         from crate.client.sqlalchemy.support import insert_bulk
 

@@ -18,6 +18,7 @@ intersphinx_mapping.update({
 
 
 linkcheck_anchors = True
+linkcheck_ignore = [r"https://github.com/crate/cratedb-examples/blob/main/by-language/python-sqlalchemy/.*"]
 
 
 rst_prolog = """

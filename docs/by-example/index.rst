@@ -48,6 +48,7 @@ its corresponding API interfaces, see also :ref:`sqlalchemy-support`.
     sqlalchemy/working-with-types
     sqlalchemy/advanced-querying
     sqlalchemy/inspection-reflection
+    sqlalchemy/dataframe
 
 
 .. _Python DB API: https://peps.python.org/pep-0249/

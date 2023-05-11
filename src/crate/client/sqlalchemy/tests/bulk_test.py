@@ -18,7 +18,7 @@
 # However, if you have executed another commercial license agreement
 # with Crate these terms will supersede the license and you may use the
 # software solely pursuant to the terms of the relevant commercial agreement.
-
+import math
 from unittest import TestCase, skipIf
 from unittest.mock import patch, MagicMock
 
@@ -36,8 +36,7 @@ from crate.client.cursor import Cursor
 
 
 fake_cursor = MagicMock(name='fake_cursor')
-FakeCursor = MagicMock(name='FakeCursor', spec=Cursor)
-FakeCursor.return_value = fake_cursor
+FakeCursor = MagicMock(name='FakeCursor', spec=Cursor, return_value=fake_cursor)
 
 
 class SqlAlchemyBulkTest(TestCase):
@@ -168,3 +167,41 @@ class SqlAlchemyBulkTest(TestCase):
             'Callisto', 37,
         )
         self.assertSequenceEqual(expected_bulk_args, bulk_args)
+
+    @patch('crate.client.connection.Cursor', mock_cursor=FakeCursor)
+    def test_bulk_save_pandas(self, mock_cursor):
+        """
+        Verify bulk INSERT with pandas.
+        """
+        import sqlalchemy as sa
+        from pandas._testing import makeTimeDataFrame
+        from crate.client.sqlalchemy.support import insert_bulk
+
+        # 42 records / 8 chunksize = 5.25, which means 6 batches will be emitted.
+        INSERT_RECORDS = 42
+        CHUNK_SIZE = 8
+        OPCOUNT = math.ceil(INSERT_RECORDS / CHUNK_SIZE)
+
+        # Create a DataFrame to feed into the database.
+        df = makeTimeDataFrame(nper=INSERT_RECORDS, freq="S")
+
+        dburi = "crate://localhost:4200"
+        engine = sa.create_engine(dburi, echo=True)
+        retval = df.to_sql(
+            name="test-testdrive",
+            con=engine,
+            if_exists="replace",
+            index=False,
+            chunksize=CHUNK_SIZE,
+            method=insert_bulk,
+        )
+        self.assertIsNone(retval)
+
+        # Initializing the query has an overhead of two calls to the cursor object, probably one
+        # initial connection from the DB-API driver, to inquire the database version, and another
+        # one, for SQLAlchemy. SQLAlchemy will use it to inquire the table schema using `information_schema`,
+        # and to eventually issue the `CREATE TABLE ...` statement.
+        effective_op_count = mock_cursor.call_count - 2
+
+        # Verify number of batches.
+        self.assertEqual(effective_op_count, OPCOUNT)

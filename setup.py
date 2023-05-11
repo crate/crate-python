@@ -68,6 +68,7 @@ setup(
               'zope.testrunner>=5,<7',
               'zc.customdoctests>=1.0.1,<2',
               'createcoverage>=1,<2',
+              'dask',
               'stopit>=1.1.2,<2',
               'flake8>=4,<7',
               'pandas',

@@ -207,3 +207,50 @@ class SqlAlchemyBulkTest(TestCase):
 
         # Verify number of batches.
         self.assertEqual(effective_op_count, OPCOUNT)
+
+    @skipIf(sys.version_info < (3, 8), "SQLAlchemy/Dask is not supported on Python <3.8")
+    @skipIf(SA_VERSION < SA_1_4, "SQLAlchemy 1.3 is not supported by pandas")
+    @patch('crate.client.connection.Cursor', mock_cursor=FakeCursor)
+    def test_bulk_save_dask(self, mock_cursor):
+        """
+        Verify bulk INSERT with Dask.
+        """
+        import dask.dataframe as dd
+        from pandas._testing import makeTimeDataFrame
+        from crate.client.sqlalchemy.support import insert_bulk
+
+        # 42 records / 4 partitions means each partition has a size of 10.5 elements.
+        # Because the chunk size 8 is slightly smaller than 10, the partition will not
+        # fit into it, so two batches will be emitted to the database for each data
+        # partition. 4 partitions * 2 batches = 8 insert operations will be emitted.
+        # Those settings are a perfect example of non-optimal settings, and have been
+        # made so on purpose, in order to demonstrate that using optimal settings
+        # is crucial.
+        INSERT_RECORDS = 42
+        NPARTITIONS = 4
+        CHUNK_SIZE = 8
+        OPCOUNT = math.ceil(INSERT_RECORDS / NPARTITIONS / CHUNK_SIZE) * NPARTITIONS
+
+        # Create a DataFrame to feed into the database.
+        df = makeTimeDataFrame(nper=INSERT_RECORDS, freq="S")
+        ddf = dd.from_pandas(df, npartitions=NPARTITIONS)
+
+        dburi = "crate://localhost:4200"
+        retval = ddf.to_sql(
+            name="test-testdrive",
+            uri=dburi,
+            if_exists="replace",
+            index=False,
+            chunksize=CHUNK_SIZE,
+            method=insert_bulk,
+            parallel=True,
+        )
+        self.assertIsNone(retval)
+
+        # Each of the insert operation incurs another call to the cursor object. This is probably
+        # the initial connection from the DB-API driver, to inquire the database version.
+        # This compensation formula has been determined empirically / by educated guessing.
+        effective_op_count = (mock_cursor.call_count - 2 * NPARTITIONS) - 2
+
+        # Verify number of batches.
+        self.assertEqual(effective_op_count, OPCOUNT)

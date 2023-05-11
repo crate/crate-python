@@ -76,9 +76,8 @@ workload across multiple batches, using a defined chunk size.
 
     You will observe that the optimal chunk size highly depends on the shape of
     your data, specifically the width of each record, i.e. the number of columns
-    and their individual sizes. You will need to determine a good chunk size by
-    running corresponding experiments on your own behalf. For that purpose, you
-    can use the `insert_pandas.py`_ program as a blueprint.
+    and their individual sizes, which will in the end determine the total size of
+    each batch/chunk.
 
     A few details should be taken into consideration when determining the optimal
     chunk size for a specific dataset. We are outlining the two major ones.
@@ -106,8 +105,11 @@ workload across multiple batches, using a defined chunk size.
 
     It is a good idea to start your explorations with a chunk size of 5_000, and
     then see if performance improves when you increase or decrease that figure.
-    Chunk sizes of 20000 may also be applicable, but make sure to take the limits
-    of your HTTP infrastructure into consideration.
+    People are reporting that 10_000-20_000 is their optimal setting, but if you
+    process, for example, just three "small" columns, you may also experiment with
+    `leveling up to 200_000`_, because `the chunksize should not be too small`_.
+    If it is too small, the I/O cost will be too high to overcome the benefit of
+    batching.
 
     In order to learn more about what wide- vs. long-form (tidy, stacked, narrow)
     data means in the context of `DataFrame computing`_, let us refer you to `a
@@ -125,7 +127,8 @@ workload across multiple batches, using a defined chunk size.
 .. _chunking: https://en.wikipedia.org/wiki/Chunking_(computing)
 .. _CrateDB bulk operations: https://crate.io/docs/crate/reference/en/latest/interfaces/http.html#bulk-operations
 .. _DataFrame computing: https://realpython.com/pandas-dataframe/
-.. _insert_pandas.py: https://github.com/crate/crate-python/blob/master/examples/insert_pandas.py
+.. _insert_pandas.py: https://github.com/crate/cratedb-examples/blob/main/by-language/python-sqlalchemy/insert_pandas.py
+.. _leveling up to 200_000: https://acepor.github.io/2017/08/03/using-chunksize/
 .. _NumPy: https://en.wikipedia.org/wiki/NumPy
 .. _pandas: https://en.wikipedia.org/wiki/Pandas_(software)
 .. _pandas DataFrame: https://pandas.pydata.org/pandas-docs/stable/reference/frame.html
@@ -133,6 +136,7 @@ workload across multiple batches, using a defined chunk size.
 .. _relational databases: https://en.wikipedia.org/wiki/Relational_database
 .. _SQL: https://en.wikipedia.org/wiki/SQL
 .. _SQLAlchemy: https://aosabook.org/en/v2/sqlalchemy.html
+.. _the chunksize should not be too small: https://acepor.github.io/2017/08/03/using-chunksize/
 .. _wide-narrow-general: https://en.wikipedia.org/wiki/Wide_and_narrow_data
 .. _wide-narrow-data-computing: https://dtkaplan.github.io/DataComputingEbook/chap-wide-vs-narrow.html#chap:wide-vs-narrow
 .. _wide-narrow-pandas-tutorial: https://anvil.works/blog/tidy-data

@@ -169,6 +169,7 @@ Examples
 - The :ref:`by-example` section enumerates concise examples demonstrating the
   different API interfaces of the CrateDB Python client library. Those are
   DB API, HTTP, and BLOB interfaces, and the SQLAlchemy dialect.
+- Executable code examples are maintained within the `cratedb-examples repository`_.
 - The `sample application`_ and the corresponding `sample application
   documentation`_ demonstrate the use of the driver on behalf of an example
   "guestbook" application.
@@ -223,6 +224,7 @@ The project is licensed under the terms of the Apache 2.0 license, like
 .. _CrateDB source: https://github.com/crate/crate
 .. _Create an issue: https://github.com/crate/crate-python/issues
 .. _development sandbox: https://github.com/crate/crate-python/blob/master/DEVELOP.rst
+.. _cratedb-examples repository: https://github.com/crate/cratedb-examples/tree/main/by-language
 .. _FIWARE QuantumLeap data historian: https://github.com/orchestracities/ngsi-timeseries-api
 .. _GeoJSON: https://geojson.org/
 .. _GeoJSON geometry objects: https://tools.ietf.org/html/rfc7946#section-3.1

@@ -128,6 +128,9 @@ class CrateDDLCompiler(compiler.DDLCompiler):
 
             colspec += " INDEX OFF"
 
+        if column.dialect_options['crate'].get('columnstore') is False:
+            colspec += " STORAGE WITH (columnstore = false)"
+
         return colspec
 
     def visit_computed_column(self, generated):

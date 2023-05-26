@@ -108,7 +108,10 @@ class CrateDDLCompiler(compiler.DDLCompiler):
     def get_column_specification(self, column, **kwargs):
         colspec = self.preparer.format_column(column) + " " + \
             self.dialect.type_compiler.process(column.type)
-        # TODO: once supported add default here
+
+        default = self.get_column_default_string(column)
+        if default is not None:
+            colspec += " DEFAULT " + default
 
         if column.computed is not None:
             colspec += " " + self.process(column.computed)

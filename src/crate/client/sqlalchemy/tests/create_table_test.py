@@ -259,3 +259,55 @@ class SqlAlchemyCreateTableTest(TestCase):
 
         with self.assertRaises(sa.exc.CompileError):
             self.Base.metadata.create_all(bind=self.engine)
+
+    def test_column_server_default_text_func(self):
+        class DummyTable(self.Base):
+            __tablename__ = 't'
+            pk = sa.Column(sa.String, primary_key=True)
+            a = sa.Column(sa.DateTime, server_default=sa.text("now()"))
+
+        self.Base.metadata.create_all(bind=self.engine)
+        fake_cursor.execute.assert_called_with(
+            ('\nCREATE TABLE t (\n\t'
+             'pk STRING NOT NULL, \n\t'
+             'a TIMESTAMP DEFAULT now(), \n\t'
+             'PRIMARY KEY (pk)\n)\n\n'), ())
+
+    def test_column_server_default_string(self):
+        class DummyTable(self.Base):
+            __tablename__ = 't'
+            pk = sa.Column(sa.String, primary_key=True)
+            a = sa.Column(sa.String, server_default="Zaphod")
+
+        self.Base.metadata.create_all(bind=self.engine)
+        fake_cursor.execute.assert_called_with(
+            ('\nCREATE TABLE t (\n\t'
+             'pk STRING NOT NULL, \n\t'
+             'a STRING DEFAULT \'Zaphod\', \n\t'
+             'PRIMARY KEY (pk)\n)\n\n'), ())
+
+    def test_column_server_default_func(self):
+        class DummyTable(self.Base):
+            __tablename__ = 't'
+            pk = sa.Column(sa.String, primary_key=True)
+            a = sa.Column(sa.DateTime, server_default=sa.func.now())
+
+        self.Base.metadata.create_all(bind=self.engine)
+        fake_cursor.execute.assert_called_with(
+            ('\nCREATE TABLE t (\n\t'
+             'pk STRING NOT NULL, \n\t'
+             'a TIMESTAMP DEFAULT now(), \n\t'
+             'PRIMARY KEY (pk)\n)\n\n'), ())
+
+    def test_column_server_default_text_constant(self):
+        class DummyTable(self.Base):
+            __tablename__ = 't'
+            pk = sa.Column(sa.String, primary_key=True)
+            answer = sa.Column(sa.Integer, server_default=sa.text("42"))
+
+        self.Base.metadata.create_all(bind=self.engine)
+        fake_cursor.execute.assert_called_with(
+            ('\nCREATE TABLE t (\n\t'
+             'pk STRING NOT NULL, \n\t'
+             'answer INT DEFAULT 42, \n\t'
+             'PRIMARY KEY (pk)\n)\n\n'), ())

@@ -16,6 +16,7 @@ Unreleased
   SQLAlchemy 2.0 by adding the new ``insert_returning`` and ``update_returning`` flags
   in the CrateDB dialect.
 
+- SQLAlchemy DDL: Allow setting ``server_default`` on columns to enable server-generated defaults.
 
 2023/03/30 0.31.0
 =================

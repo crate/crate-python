@@ -20,7 +20,6 @@
 # software solely pursuant to the terms of the relevant commercial agreement.
 
 import sqlalchemy as sa
-
 try:
     from sqlalchemy.orm import declarative_base
 except ImportError:
@@ -31,6 +30,7 @@ from crate.client.cursor import Cursor
 
 from unittest import TestCase
 from unittest.mock import patch, MagicMock
+
 
 fake_cursor = MagicMock(name='fake_cursor')
 FakeCursor = MagicMock(name='FakeCursor', spec=Cursor)
@@ -77,7 +77,6 @@ class SqlAlchemyCreateTableTest(TestCase):
             __tablename__ = 'dummy'
             pk = sa.Column(sa.String, primary_key=True)
             obj_col = sa.Column(Object)
-
         self.Base.metadata.create_all(bind=self.engine)
         fake_cursor.execute.assert_called_with(
             ('\nCREATE TABLE dummy (\n\tpk STRING NOT NULL, \n\tobj_col OBJECT, '
@@ -92,7 +91,6 @@ class SqlAlchemyCreateTableTest(TestCase):
             }
             pk = sa.Column(sa.String, primary_key=True)
             p = sa.Column(sa.String)
-
         self.Base.metadata.create_all(bind=self.engine)
         fake_cursor.execute.assert_called_with(
             ('\nCREATE TABLE t (\n\t'
@@ -107,7 +105,6 @@ class SqlAlchemyCreateTableTest(TestCase):
             __tablename__ = 't'
             ts = sa.Column(sa.BigInteger, primary_key=True)
             p = sa.Column(sa.BigInteger, sa.Computed("date_trunc('day', ts)"))
-
         self.Base.metadata.create_all(bind=self.engine)
         fake_cursor.execute.assert_called_with(
             ('\nCREATE TABLE t (\n\t'
@@ -122,7 +119,6 @@ class SqlAlchemyCreateTableTest(TestCase):
             __tablename__ = 't'
             ts = sa.Column(sa.BigInteger, primary_key=True)
             p = sa.Column(sa.BigInteger, sa.Computed("date_trunc('day', ts)", persisted=False))
-
         with self.assertRaises(sa.exc.CompileError):
             self.Base.metadata.create_all(bind=self.engine)
 
@@ -135,7 +131,6 @@ class SqlAlchemyCreateTableTest(TestCase):
             }
             pk = sa.Column(sa.String, primary_key=True)
             p = sa.Column(sa.String)
-
         self.Base.metadata.create_all(bind=self.engine)
         fake_cursor.execute.assert_called_with(
             ('\nCREATE TABLE t (\n\t'
@@ -171,7 +166,6 @@ class SqlAlchemyCreateTableTest(TestCase):
             }
             pk = sa.Column(sa.String, primary_key=True)
             p = sa.Column(sa.String, primary_key=True)
-
         self.Base.metadata.create_all(bind=self.engine)
         fake_cursor.execute.assert_called_with(
             ('\nCREATE TABLE t (\n\t'
@@ -213,7 +207,6 @@ class SqlAlchemyCreateTableTest(TestCase):
         class DummyTable(self.Base):
             __tablename__ = 't'
             pk = sa.Column(sa.String, primary_key=True, nullable=True)
-
         with self.assertRaises(sa.exc.CompileError):
             self.Base.metadata.create_all(bind=self.engine)
 
@@ -237,7 +230,6 @@ class SqlAlchemyCreateTableTest(TestCase):
             __tablename__ = 't'
             pk = sa.Column(sa.String, primary_key=True)
             a = sa.Column(Geopoint, crate_index=False)
-
         with self.assertRaises(sa.exc.CompileError):
             self.Base.metadata.create_all(bind=self.engine)
 

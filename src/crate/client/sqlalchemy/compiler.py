@@ -25,6 +25,7 @@ from collections import defaultdict
 import sqlalchemy as sa
 from sqlalchemy.dialects.postgresql.base import PGCompiler
 from sqlalchemy.sql import compiler
+from sqlalchemy.types import String
 from .types import MutableDict, _Craty, Geopoint, Geoshape
 from .sa_version import SA_VERSION, SA_1_4
 
@@ -129,6 +130,11 @@ class CrateDDLCompiler(compiler.DDLCompiler):
             colspec += " INDEX OFF"
 
         if column.dialect_options['crate'].get('columnstore') is False:
+            if not isinstance(column.type, (String, )):
+                raise sa.exc.CompileError(
+                    "Controlling the columnstore is only allowed for STRING columns"
+                )
+
             colspec += " STORAGE WITH (columnstore = false)"
 
         return colspec

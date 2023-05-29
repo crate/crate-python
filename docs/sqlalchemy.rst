@@ -205,6 +205,7 @@ system <sa:orm_declarative_mapping>`:
     ...     more_details = sa.Column(types.ObjectArray)
     ...     name_ft = sa.Column(sa.String)
     ...     quote_ft = sa.Column(sa.String)
+    ...     even_more_details = sa.Column(sa.String, crate_columnstore=False)
     ...
     ...     __mapper_args__ = {
     ...         'exclude_properties': ['name_ft', 'quote_ft']
@@ -220,6 +221,7 @@ In this example, we:
 - Use standard SQLAlchemy types for the ``id``, ``name``, and ``quote`` columns
 - Use ``nullable=False`` to define a ``NOT NULL`` constraint
 - Disable indexing of the ``name`` column using ``crate_index=False``
+- Disable the columnstore of the ``even_more_details`` column using ``crate_columnstore=False``
 - Define a computed column ``name_normalized`` (based on ``name``) that
   translates into a generated column
 - Use the `Object`_ extension type for the ``details`` column

@@ -5,6 +5,9 @@ Changes for crate
 Unreleased
 ==========
 
+- SQLAlchemy DDL: Allow turning off column store using ``crate_columnstore=False``.
+  Thanks, @fetzerms.
+
 
 2023/04/18 0.31.1
 =================

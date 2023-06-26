@@ -40,7 +40,7 @@ from base64 import b64decode
 from urllib.parse import urlparse, parse_qs
 from setuptools.ssl_support import find_ca_bundle
 
-from .http import Client, _get_socket_opts, _remove_certs_for_non_https
+from .http import Client, CrateJsonEncoder, _get_socket_opts, _remove_certs_for_non_https
 from .exceptions import ConnectionError, ProgrammingError
 
 
@@ -626,3 +626,16 @@ class TestUsernameSentAsHeader(TestingHttpServerTestCase):
         self.assertEqual(TestingHTTPServer.SHARED['usernameFromXUser'], 'testDBUser')
         self.assertEqual(TestingHTTPServer.SHARED['username'], 'testDBUser')
         self.assertEqual(TestingHTTPServer.SHARED['password'], 'test:password')
+
+
+class TestCrateJsonEncoder(TestCase):
+
+    def test_naive_datetime(self):
+        data = dt.datetime.fromisoformat("2023-06-26T09:24:00.123")
+        result = json.dumps(data, cls=CrateJsonEncoder)
+        self.assertEqual(result, "1687771440123")
+
+    def test_aware_datetime(self):
+        data = dt.datetime.fromisoformat("2023-06-26T09:24:00.123+02:00")
+        result = json.dumps(data, cls=CrateJsonEncoder)
+        self.assertEqual(result, "1687764240123")

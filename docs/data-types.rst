@@ -94,8 +94,19 @@ __ https://crate.io/docs/crate/reference/en/latest/general/ddl/data-types.html#c
 
 .. NOTE::
 
-    The type that ``date`` and ``datetime`` objects are mapped depends on the
+    The type that ``date`` and ``datetime`` objects are mapped to, depends on the
     CrateDB column type.
+
+.. NOTE::
+
+    Values of ``TIMESTAMP`` columns will always be stored using a ``LONG`` type,
+    representing the `Unix time`_ (epoch) timestamp, i.e. number of seconds which
+    have passed since 00:00:00 UTC on Thursday, 1 January 1970.
+
+    This means, when inserting or updating records using timezone-aware Python
+    ``datetime`` objects, timezone information will not be preserved. If you
+    need to store it, you will need to use a separate column.
+
 
 .. _data-types-sqlalchemy:
 
@@ -156,3 +167,6 @@ __ https://crate.io/docs/crate/reference/en/latest/general/ddl/data-types.html#o
 __ https://crate.io/docs/crate/reference/en/latest/general/ddl/data-types.html#array
 __ https://crate.io/docs/crate/reference/en/latest/general/ddl/data-types.html#geo-point
 __ https://crate.io/docs/crate/reference/en/latest/general/ddl/data-types.html#geo-shape
+
+
+.. _Unix time: https://en.wikipedia.org/wiki/Unix_time

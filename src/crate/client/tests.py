@@ -51,6 +51,7 @@ from .test_http import (
     RetryOnTimeoutServerTest,
     RequestsCaBundleTest,
     TestUsernameSentAsHeader,
+    TestCrateJsonEncoder,
     TestDefaultSchemaHeader,
 )
 from .sqlalchemy.tests import test_suite as sqlalchemy_test_suite
@@ -341,6 +342,7 @@ def test_suite():
     suite.addTest(unittest.makeSuite(RetryOnTimeoutServerTest))
     suite.addTest(unittest.makeSuite(RequestsCaBundleTest))
     suite.addTest(unittest.makeSuite(TestUsernameSentAsHeader))
+    suite.addTest(unittest.makeSuite(TestCrateJsonEncoder))
     suite.addTest(unittest.makeSuite(TestDefaultSchemaHeader))
     suite.addTest(sqlalchemy_test_suite())
     suite.addTest(doctest.DocTestSuite('crate.client.connection'))

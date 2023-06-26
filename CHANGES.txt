@@ -11,6 +11,8 @@ Unreleased
 - SQLAlchemy DDL: Allow setting ``server_default`` on columns to enable
   server-generated defaults. Thanks, @JanLikar.
 
+- Allow handling "aware" datetime values with time zone info when inserting or updating.
+
 
 2023/04/18 0.31.1
 =================

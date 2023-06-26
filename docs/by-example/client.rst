@@ -139,6 +139,24 @@ Refresh locations:
 
     >>> cursor.execute("REFRESH TABLE locations")
 
+Updating Data
+=============
+
+Both when inserting or updating data, values for ``TIMESTAMP`` columns can be obtained
+in different formats. Both literal strings and datetime objects are supported.
+
+    >>> import datetime as dt
+    >>> timestamp_full = "2023-06-26T09:24:00.123+02:00"
+    >>> timestamp_date = "2023-06-26"
+    >>> datetime_aware = dt.datetime.fromisoformat("2023-06-26T09:24:00.123+02:00")
+    >>> datetime_naive = dt.datetime.fromisoformat("2023-06-26T09:24:00.123")
+    >>> datetime_date = dt.date.fromisoformat("2023-06-26")
+    >>> cursor.execute("UPDATE locations SET date=? WHERE name='Cloverleaf'", (timestamp_full, ))
+    >>> cursor.execute("UPDATE locations SET date=? WHERE name='Cloverleaf'", (timestamp_date, ))
+    >>> cursor.execute("UPDATE locations SET date=? WHERE name='Cloverleaf'", (datetime_aware, ))
+    >>> cursor.execute("UPDATE locations SET date=? WHERE name='Cloverleaf'", (datetime_naive, ))
+    >>> cursor.execute("UPDATE locations SET date=? WHERE name='Cloverleaf'", (datetime_date, ))
+
 Selecting Data
 ==============
 

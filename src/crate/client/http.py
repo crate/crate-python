@@ -33,7 +33,7 @@ import threading
 from urllib.parse import urlparse
 from base64 import b64encode
 from time import time
-from datetime import datetime, date
+from datetime import datetime, date, timezone
 from decimal import Decimal
 from urllib3 import connection_from_url
 from urllib3.connection import HTTPConnection
@@ -82,13 +82,17 @@ def super_len(o):
 
 class CrateJsonEncoder(json.JSONEncoder):
 
-    epoch = datetime(1970, 1, 1)
+    epoch_aware = datetime(1970, 1, 1, tzinfo=timezone.utc)
+    epoch_naive = datetime(1970, 1, 1)
 
     def default(self, o):
         if isinstance(o, Decimal):
             return str(o)
         if isinstance(o, datetime):
-            delta = o - self.epoch
+            if o.tzinfo is not None:
+                delta = o - self.epoch_aware
+            else:
+                delta = o - self.epoch_naive
             return int(delta.microseconds / 1000.0 +
                        (delta.seconds + delta.days * 24 * 3600) * 1000.0)
         if isinstance(o, date):

@@ -99,13 +99,14 @@ __ https://crate.io/docs/crate/reference/en/latest/general/ddl/data-types.html#c
 
 .. NOTE::
 
-    Values of ``TIMESTAMP`` columns will always be stored using a ``LONG`` type,
-    representing the `Unix time`_ (epoch) timestamp, i.e. number of seconds which
-    have passed since 00:00:00 UTC on Thursday, 1 January 1970.
+    When using ``date`` or ``datetime`` objects with ``timezone`` information,
+    the value is implicitly converted to a `Unix time`_ (epoch) timestamp, i.e.
+    the number of seconds which have passed since 00:00:00 UTC on
+    Thursday, 1 January 1970.
 
     This means, when inserting or updating records using timezone-aware Python
-    ``datetime`` objects, timezone information will not be preserved. If you
-    need to store it, you will need to use a separate column.
+    ``date`` or ``datetime`` objects, timezone information will not be
+    preserved. If you need to store it, you will need to use a separate column.
 
 
 .. _data-types-sqlalchemy:

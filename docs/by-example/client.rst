@@ -142,8 +142,9 @@ Refresh locations:
 Updating Data
 =============
 
-Both when inserting or updating data, values for ``TIMESTAMP`` columns can be obtained
-in different formats. Both literal strings and datetime objects are supported.
+Values for ``TIMESTAMP`` columns can be obtained as a string literal, ``date``,
+or ``datetime`` object. If it contains timezone information, it is converted to
+UTC, and the timezone information is discarded.
 
     >>> import datetime as dt
     >>> timestamp_full = "2023-06-26T09:24:00.123+02:00"

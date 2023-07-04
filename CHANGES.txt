@@ -13,6 +13,8 @@ Unreleased
 
 - Allow handling datetime values tagged with time zone info when inserting or updating.
 
+- SQLAlchemy: Fix SQL statement caching for CrateDB's ``OBJECT`` type.
+
 
 2023/04/18 0.31.1
 =================

@@ -54,7 +54,8 @@ from .test_http import (
     TestCrateJsonEncoder,
     TestDefaultSchemaHeader,
 )
-from .sqlalchemy.tests import test_suite as sqlalchemy_test_suite
+from .sqlalchemy.tests import test_suite_unit as sqlalchemy_test_suite_unit
+from .sqlalchemy.tests import test_suite_integration as sqlalchemy_test_suite_integration
 
 log = logging.getLogger('crate.testing.layer')
 ch = logging.StreamHandler()
@@ -344,7 +345,7 @@ def test_suite():
     suite.addTest(unittest.makeSuite(TestUsernameSentAsHeader))
     suite.addTest(unittest.makeSuite(TestCrateJsonEncoder))
     suite.addTest(unittest.makeSuite(TestDefaultSchemaHeader))
-    suite.addTest(sqlalchemy_test_suite())
+    suite.addTest(sqlalchemy_test_suite_unit())
     suite.addTest(doctest.DocTestSuite('crate.client.connection'))
     suite.addTest(doctest.DocTestSuite('crate.client.http'))
 
@@ -394,6 +395,7 @@ def test_suite():
         encoding='utf-8'
     )
     s.layer = ensure_cratedb_layer()
+    s.addTest(sqlalchemy_test_suite_integration())
     suite.addTest(s)
 
     return suite

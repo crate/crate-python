@@ -23,9 +23,10 @@ from .array_test import SqlAlchemyArrayTypeTest
 from .dialect_test import SqlAlchemyDialectTest
 from .function_test import SqlAlchemyFunctionTest
 from .warnings_test import SqlAlchemyWarningsTest
+from .query_caching import SqlAlchemyQueryCompilationCaching
 
 
-def test_suite():
+def test_suite_unit():
     tests = TestSuite()
     tests.addTest(makeSuite(SqlAlchemyConnectionTest))
     tests.addTest(makeSuite(SqlAlchemyDictTypeTest))
@@ -41,4 +42,10 @@ def test_suite():
     tests.addTest(makeSuite(SqlAlchemyFunctionTest))
     tests.addTest(makeSuite(SqlAlchemyArrayTypeTest))
     tests.addTest(makeSuite(SqlAlchemyWarningsTest))
+    return tests
+
+
+def test_suite_integration():
+    tests = TestSuite()
+    tests.addTest(makeSuite(SqlAlchemyQueryCompilationCaching))
     return tests

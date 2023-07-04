@@ -132,7 +132,7 @@ class MutableDict(Mutable, dict):
 
 
 class _Craty(sqltypes.UserDefinedType):
-    cache_ok = True
+    cache_ok = False
 
     class Comparator(sqltypes.TypeEngine.Comparator):
 

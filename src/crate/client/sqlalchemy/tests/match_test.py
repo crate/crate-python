@@ -30,7 +30,7 @@ try:
 except ImportError:
     from sqlalchemy.ext.declarative import declarative_base
 
-from crate.client.sqlalchemy.types import Craty
+from crate.client.sqlalchemy.types import ObjectType
 from crate.client.sqlalchemy.predicates import match
 from crate.client.cursor import Cursor
 
@@ -60,7 +60,7 @@ class SqlAlchemyMatchTest(TestCase):
         class Character(Base):
             __tablename__ = 'characters'
             name = sa.Column(sa.String, primary_key=True)
-            info = sa.Column(Craty)
+            info = sa.Column(ObjectType)
 
         session = Session(bind=self.engine)
         return session, Character

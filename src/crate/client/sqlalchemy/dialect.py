@@ -183,10 +183,17 @@ class CrateDialect(default.DefaultDialect):
     insert_returning = True
     update_returning = True
 
-    def __init__(self, *args, **kwargs):
-        super(CrateDialect, self).__init__(*args, **kwargs)
-        # currently our sql parser doesn't support unquoted column names that
-        # start with _. Adding it here causes sqlalchemy to quote such columns
+    def __init__(self, **kwargs):
+        default.DefaultDialect.__init__(self, **kwargs)
+
+        # CrateDB does not need `OBJECT` types to be serialized as JSON.
+        # Corresponding data is forwarded 1:1, and will get marshalled
+        # by the low-level driver.
+        self._json_deserializer = lambda x: x
+        self._json_serializer = lambda x: x
+
+        # Currently, our SQL parser doesn't support unquoted column names that
+        # start with _. Adding it here causes sqlalchemy to quote such columns.
         self.identifier_preparer.illegal_initial_characters.add('_')
 
     def initialize(self, connection):

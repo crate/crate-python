@@ -27,7 +27,7 @@ import sqlalchemy as sa
 from sqlalchemy.sql import text, Update
 
 from crate.client.sqlalchemy.sa_version import SA_VERSION, SA_1_4, SA_2_0
-from crate.client.sqlalchemy.types import Craty
+from crate.client.sqlalchemy.types import ObjectType
 
 
 class SqlAlchemyCompilerTest(TestCase):
@@ -38,7 +38,7 @@ class SqlAlchemyCompilerTest(TestCase):
         self.metadata = sa.MetaData()
         self.mytable = sa.Table('mytable', self.metadata,
                                 sa.Column('name', sa.String),
-                                sa.Column('data', Craty))
+                                sa.Column('data', ObjectType))
 
         self.update = Update(self.mytable).where(text('name=:name'))
         self.values = [{'name': 'crate'}]

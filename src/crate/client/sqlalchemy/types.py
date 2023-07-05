@@ -18,6 +18,7 @@
 # However, if you have executed another commercial license agreement
 # with Crate these terms will supersede the license and you may use the
 # software solely pursuant to the terms of the relevant commercial agreement.
+import warnings
 
 import sqlalchemy.types as sqltypes
 from sqlalchemy.sql import operators, expression
@@ -131,24 +132,31 @@ class MutableDict(Mutable, dict):
         return dict.__eq__(self, other)
 
 
-class _Craty(sqltypes.UserDefinedType):
+class ObjectTypeImpl(sqltypes.UserDefinedType, sqltypes.JSON):
+
+    __visit_name__ = "OBJECT"
+
     cache_ok = False
-
-    class Comparator(sqltypes.TypeEngine.Comparator):
-
-        def __getitem__(self, key):
-            return default_comparator._binary_operate(self.expr,
-                                                      operators.getitem,
-                                                      key)
-
-    def get_col_spec(self):
-        return 'OBJECT'
-
-    type = MutableDict
-    comparator_factory = Comparator
+    none_as_null = False
 
 
-Object = Craty = MutableDict.as_mutable(_Craty)
+# Designated name to refer to. `Object` is too ambiguous.
+ObjectType = MutableDict.as_mutable(ObjectTypeImpl)
+
+# Backward-compatibility aliases.
+_deprecated_Craty = ObjectType
+_deprecated_Object = ObjectType
+
+# https://www.lesinskis.com/deprecating-module-scope-variables.html
+deprecated_names = ["Craty", "Object"]
+
+
+def __getattr__(name):
+    if name in deprecated_names:
+        warnings.warn(f"{name} is deprecated and will be removed in future releases. "
+                      f"Please use ObjectType instead.", DeprecationWarning)
+        return globals()[f"_deprecated_{name}"]
+    raise AttributeError(f"module {__name__} has no attribute {name}")
 
 
 class Any(expression.ColumnElement):

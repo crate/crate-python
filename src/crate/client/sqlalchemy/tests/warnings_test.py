@@ -8,14 +8,17 @@ from crate.testing.util import ExtraAssertions
 
 
 class SqlAlchemyWarningsTest(TestCase, ExtraAssertions):
+    """
+    Verify a few `DeprecationWarning` spots.
+
+    https://docs.python.org/3/library/warnings.html#testing-warnings
+    """
 
     @skipIf(SA_VERSION >= SA_1_4, "There is no deprecation warning for "
                                   "SQLAlchemy 1.3 on higher versions")
     def test_sa13_deprecation_warning(self):
         """
         Verify that a `DeprecationWarning` is issued when running SQLAlchemy 1.3.
-
-        https://docs.python.org/3/library/warnings.html#testing-warnings
         """
         with warnings.catch_warnings(record=True) as w:
 
@@ -31,3 +34,31 @@ class SqlAlchemyWarningsTest(TestCase, ExtraAssertions):
             self.assertEqual(len(w), 1)
             self.assertIsSubclass(w[-1].category, DeprecationWarning)
             self.assertIn("SQLAlchemy 1.3 is effectively EOL.", str(w[-1].message))
+
+    def test_craty_object_deprecation_warning(self):
+        """
+        Verify that a `DeprecationWarning` is issued when accessing the deprecated
+        module variables `Craty`, and `Object`. The new type is called `ObjectType`.
+        """
+
+        with warnings.catch_warnings(record=True) as w:
+
+            # Import the deprecated symbol.
+            from crate.client.sqlalchemy.types import Craty  # noqa: F401
+
+            # Verify details of the deprecation warning.
+            self.assertEqual(len(w), 1)
+            self.assertIsSubclass(w[-1].category, DeprecationWarning)
+            self.assertIn("Craty is deprecated and will be removed in future releases. "
+                          "Please use ObjectType instead.", str(w[-1].message))
+
+        with warnings.catch_warnings(record=True) as w:
+
+            # Import the deprecated symbol.
+            from crate.client.sqlalchemy.types import Object  # noqa: F401
+
+            # Verify details of the deprecation warning.
+            self.assertEqual(len(w), 1)
+            self.assertIsSubclass(w[-1].category, DeprecationWarning)
+            self.assertIn("Object is deprecated and will be removed in future releases. "
+                          "Please use ObjectType instead.", str(w[-1].message))

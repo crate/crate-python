@@ -76,7 +76,7 @@ class SqlAlchemyQueryCompilationCaching(TestCase):
         self.session.execute(sa.text("REFRESH TABLE testdrive.characters;"))
 
     @skipIf(SA_VERSION < SA_1_4, "On SA13, the 'ResultProxy' object has no attribute 'scalar_one'")
-    def test_object_multiple_select(self):
+    def test_object_multiple_select_legacy(self):
         """
         The SQLAlchemy implementation of CrateDB's `OBJECT` type offers indexed
         access to the instance's content in form of a dictionary. Thus, it must
@@ -85,6 +85,8 @@ class SqlAlchemyQueryCompilationCaching(TestCase):
 
         This test verifies that two subsequent `SELECT` statements are translated
         well, and don't trip on incorrect SQL compiled statement caching.
+
+        This variant uses direct value matching on the `OBJECT`s attribute.
         """
         self.setup_data()
         Character = self.Character
@@ -94,6 +96,30 @@ class SqlAlchemyQueryCompilationCaching(TestCase):
         self.assertEqual({"x": 1}, result)
 
         selectable = sa.select(Character).where(Character.data['y'] == 2)
+        result = self.session.execute(selectable).scalar_one().data
+        self.assertEqual({"y": 2}, result)
+
+    @skipIf(SA_VERSION < SA_1_4, "On SA13, the 'ResultProxy' object has no attribute 'scalar_one'")
+    def test_object_multiple_select_modern(self):
+        """
+        The SQLAlchemy implementation of CrateDB's `OBJECT` type offers indexed
+        access to the instance's content in form of a dictionary. Thus, it must
+        not use `cache_ok = True` on its implementation, i.e. this part of the
+        compiled SQL clause must not be cached.
+
+        This test verifies that two subsequent `SELECT` statements are translated
+        well, and don't trip on incorrect SQL compiled statement caching.
+
+        This variant uses comparator method matching on the `OBJECT`s attribute.
+        """
+        self.setup_data()
+        Character = self.Character
+
+        selectable = sa.select(Character).where(Character.data['x'].as_integer() == 1)
+        result = self.session.execute(selectable).scalar_one().data
+        self.assertEqual({"x": 1}, result)
+
+        selectable = sa.select(Character).where(Character.data['y'].as_integer() == 2)
         result = self.session.execute(selectable).scalar_one().data
         self.assertEqual({"y": 2}, result)
 

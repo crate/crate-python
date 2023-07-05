@@ -26,7 +26,7 @@ import sqlalchemy as sa
 from sqlalchemy.dialects.postgresql.base import PGCompiler
 from sqlalchemy.sql import compiler
 from sqlalchemy.types import String
-from .types import MutableDict, _Craty, Geopoint, Geoshape
+from .types import MutableDict, ObjectTypeImpl, Geopoint, Geoshape
 from .sa_version import SA_VERSION, SA_1_4
 
 
@@ -41,7 +41,7 @@ def rewrite_update(clauseelement, multiparams, params):
 
         "col['x'] = ?, col['y'] = ?", (1, 2)
 
-    by using the `Craty` (`MutableDict`) type.
+    by using the `ObjectType` (`MutableDict`) type.
     The update statement is only rewritten if an item of the MutableDict was
     changed.
     """
@@ -124,7 +124,7 @@ class CrateDDLCompiler(compiler.DDLCompiler):
             )
 
         if column.dialect_options['crate'].get('index') is False:
-            if isinstance(column.type, (Geopoint, Geoshape, _Craty)):
+            if isinstance(column.type, (Geopoint, Geoshape, ObjectTypeImpl)):
                 raise sa.exc.CompileError(
                     "Disabling indexing is not supported for column "
                     "types OBJECT, GEO_POINT, and GEO_SHAPE"
@@ -217,10 +217,21 @@ class CrateTypeCompiler(compiler.GenericTypeCompiler):
                 "CrateDB doesn't support multidimensional arrays")
         return 'ARRAY({0})'.format(self.process(type_.item_type))
 
+    def visit_OBJECT(self, type_, **kw):
+        return "OBJECT"
+
 
 class CrateCompiler(compiler.SQLCompiler):
 
     def visit_getitem_binary(self, binary, operator, **kw):
+        return "{0}['{1}']".format(
+            self.process(binary.left, **kw),
+            binary.right.value
+        )
+
+    def visit_json_getitem_op_binary(
+        self, binary, operator, _cast_applied=False, **kw
+    ):
         return "{0}['{1}']".format(
             self.process(binary.left, **kw),
             binary.right.value

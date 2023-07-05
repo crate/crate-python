@@ -31,7 +31,7 @@ try:
 except ImportError:
     from sqlalchemy.ext.declarative import declarative_base
 
-from crate.client.sqlalchemy.types import Craty, ObjectArray
+from crate.client.sqlalchemy.types import ObjectArray, ObjectType
 from crate.client.cursor import Cursor
 
 
@@ -47,7 +47,7 @@ class SqlAlchemyDictTypeTest(TestCase):
         metadata = sa.MetaData()
         self.mytable = sa.Table('mytable', metadata,
                                 sa.Column('name', sa.String),
-                                sa.Column('data', Craty))
+                                sa.Column('data', ObjectType))
 
     def assertSQL(self, expected_str, selectable):
         actual_expr = selectable.compile(bind=self.engine)
@@ -124,7 +124,7 @@ class SqlAlchemyDictTypeTest(TestCase):
             __tablename__ = 'characters'
             name = sa.Column(sa.String, primary_key=True)
             age = sa.Column(sa.Integer)
-            data = sa.Column(Craty)
+            data = sa.Column(ObjectType)
             data_list = sa.Column(ObjectArray)
 
         session = Session(bind=self.engine)
@@ -140,7 +140,7 @@ class SqlAlchemyDictTypeTest(TestCase):
         self.assertEqual(char_3.data_list, [None])
 
     @patch('crate.client.connection.Cursor', FakeCursor)
-    def test_assign_to_craty_type_after_commit(self):
+    def test_assign_to_object_type_after_commit(self):
         session, Character = self.set_up_character_and_cursor(
             return_value=[('Trillian', None)]
         )

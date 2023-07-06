@@ -18,7 +18,7 @@
 # However, if you have executed another commercial license agreement
 # with Crate these terms will supersede the license and you may use the
 # software solely pursuant to the terms of the relevant commercial agreement.
-
+from textwrap import dedent
 from unittest import mock, TestCase, skipIf
 
 from crate.client.sqlalchemy.compiler import crate_before_execute
@@ -70,6 +70,58 @@ class SqlAlchemyCompilerTest(TestCase):
         )
 
         self.assertFalse(hasattr(clauseelement, '_crate_specific'))
+
+    def test_select_with_ilike(self):
+        """
+        Verify the compiler uses CrateDB's native `ILIKE` method.
+        """
+        selectable = self.mytable.select().where(self.mytable.c.name.ilike("%foo%"))
+        statement = str(selectable.compile(bind=self.crate_engine))
+        self.assertEqual(statement, dedent("""
+            SELECT mytable.name, mytable.data 
+            FROM mytable 
+            WHERE mytable.name ILIKE ?
+        """).strip())  # noqa: W291
+
+    def test_select_with_not_ilike(self):
+        """
+        Verify the compiler uses CrateDB's native `ILIKE` method.
+        """
+        selectable = self.mytable.select().where(self.mytable.c.name.notilike("%foo%"))
+        statement = str(selectable.compile(bind=self.crate_engine))
+        if SA_VERSION < SA_1_4:
+            self.assertEqual(statement, dedent("""
+                SELECT mytable.name, mytable.data 
+                FROM mytable 
+                WHERE lower(mytable.name) NOT LIKE lower(?)
+            """).strip())  # noqa: W291
+        else:
+            self.assertEqual(statement, dedent("""
+                SELECT mytable.name, mytable.data 
+                FROM mytable 
+                WHERE mytable.name NOT ILIKE ?
+            """).strip())  # noqa: W291
+
+    def test_select_with_ilike_and_escape(self):
+        """
+        Verify the compiler fails when using CrateDB's native `ILIKE` method together with `ESCAPE`.
+        """
+
+        selectable = self.mytable.select().where(self.mytable.c.name.ilike("%foo%", escape='\\'))
+        with self.assertRaises(NotImplementedError) as cmex:
+            selectable.compile(bind=self.crate_engine)
+        self.assertEqual(str(cmex.exception), "Unsupported feature: ESCAPE is not supported")
+
+    @skipIf(SA_VERSION < SA_1_4, "SQLAlchemy 1.3 and earlier do not support native `NOT ILIKE` compilation")
+    def test_select_with_not_ilike_and_escape(self):
+        """
+        Verify the compiler fails when using CrateDB's native `ILIKE` method together with `ESCAPE`.
+        """
+
+        selectable = self.mytable.select().where(self.mytable.c.name.notilike("%foo%", escape='\\'))
+        with self.assertRaises(NotImplementedError) as cmex:
+            selectable.compile(bind=self.crate_engine)
+        self.assertEqual(str(cmex.exception), "Unsupported feature: ESCAPE is not supported")
 
     def test_select_with_offset(self):
         """

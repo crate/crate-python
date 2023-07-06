@@ -244,6 +244,40 @@ class CrateCompiler(compiler.SQLCompiler):
             self.process(element.right, **kw)
         )
 
+    def visit_ilike_case_insensitive_operand(self, element, **kw):
+        """
+        Use native `ILIKE` operator, like PostgreSQL's `PGCompiler`.
+        """
+        return element.element._compiler_dispatch(self, **kw)
+
+    def visit_ilike_op_binary(self, binary, operator, **kw):
+        """
+        Use native `ILIKE` operator, like PostgreSQL's `PGCompiler`.
+
+        Do not implement the `ESCAPE` functionality, because it is not
+        supported by CrateDB.
+        """
+        if binary.modifiers.get("escape", None) is not None:
+            raise NotImplementedError("Unsupported feature: ESCAPE is not supported")
+        return "%s ILIKE %s" % (
+            self.process(binary.left, **kw),
+            self.process(binary.right, **kw),
+        )
+
+    def visit_not_ilike_op_binary(self, binary, operator, **kw):
+        """
+        Use native `ILIKE` operator, like PostgreSQL's `PGCompiler`.
+
+        Do not implement the `ESCAPE` functionality, because it is not
+        supported by CrateDB.
+        """
+        if binary.modifiers.get("escape", None) is not None:
+            raise NotImplementedError("Unsupported feature: ESCAPE is not supported")
+        return "%s NOT ILIKE %s" % (
+            self.process(binary.left, **kw),
+            self.process(binary.right, **kw),
+        )
+
     def limit_clause(self, select, **kw):
         """
         Generate OFFSET / LIMIT clause, PostgreSQL-compatible.

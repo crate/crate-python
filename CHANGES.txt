@@ -8,6 +8,9 @@ Unreleased
 - SQLAlchemy: Rename leftover occurrences of ``Object``. The new symbol to represent
   CrateDB's ``OBJECT`` column type is now ``ObjectType``.
 
+- SQLAlchemy DQL: Use CrateDB's native ``ILIKE`` operator instead of using SA's
+  generic implementation ``lower() LIKE lower()``. Thanks, @hlcianfagna.
+
 
 2023/07/06 0.32.0
 =================

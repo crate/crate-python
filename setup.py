@@ -74,7 +74,7 @@ setup(
               'pandas',
               'pytz',
               # `test_http.py` needs `setuptools.ssl_support`
-              'setuptools<57',
+              'setuptools<69',
               ],
         doc=['sphinx>=3.5,<7',
              'crate-docs-theme>=0.26.5'],

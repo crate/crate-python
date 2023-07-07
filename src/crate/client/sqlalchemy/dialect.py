@@ -33,7 +33,7 @@ from .compiler import (
 )
 from crate.client.exceptions import TimezoneUnawareException
 from .sa_version import SA_VERSION, SA_1_4, SA_2_0
-from .types import Object, ObjectArray
+from .types import ObjectType, ObjectArray
 
 TYPES_MAP = {
     "boolean": sqltypes.Boolean,
@@ -41,7 +41,7 @@ TYPES_MAP = {
     "smallint": sqltypes.SmallInteger,
     "timestamp": sqltypes.TIMESTAMP,
     "timestamp with time zone": sqltypes.TIMESTAMP,
-    "object": Object,
+    "object": ObjectType,
     "integer": sqltypes.Integer,
     "long": sqltypes.NUMERIC,
     "bigint": sqltypes.NUMERIC,

@@ -7,7 +7,7 @@ SQLAlchemy: Working with special CrateDB types
 This section of the documentation shows how to work with special data types
 from the CrateDB SQLAlchemy dialect. Currently, these are:
 
-- Container types ``Object`` and ``ObjectArray``.
+- Container types ``ObjectType`` and ``ObjectArray``.
 - Geospatial types ``Geopoint`` and ``Geoshape``.
 
 
@@ -33,7 +33,7 @@ Import the relevant symbols:
     ... except ImportError:
     ...     from sqlalchemy.ext.declarative import declarative_base
     >>> from uuid import uuid4
-    >>> from crate.client.sqlalchemy.types import Object, ObjectArray
+    >>> from crate.client.sqlalchemy.types import ObjectType, ObjectArray
     >>> from crate.client.sqlalchemy.types import Geopoint, Geoshape
 
 Establish a connection to the database, see also :ref:`sa:engines_toplevel`
@@ -53,9 +53,9 @@ Introduction to container types
 
 In a document oriented database, it is a common pattern to store objects within
 a single field. For such cases, the CrateDB SQLAlchemy dialect provides the
-``Object`` and ``ObjectArray`` types.
+``ObjectType`` and ``ObjectArray`` types.
 
-The ``Object`` type effectively implements a dictionary- or map-like type. The
+The ``ObjectType`` type effectively implements a dictionary- or map-like type. The
 ``ObjectArray`` type maps to a Python list of dictionaries.
 
 For exercising those features, let's define a schema using SQLAlchemy's
@@ -69,15 +69,15 @@ For exercising those features, let's define a schema using SQLAlchemy's
     ...     id = sa.Column(sa.String, primary_key=True, default=gen_key)
     ...     name = sa.Column(sa.String)
     ...     quote = sa.Column(sa.String)
-    ...     details = sa.Column(Object)
+    ...     details = sa.Column(ObjectType)
     ...     more_details = sa.Column(ObjectArray)
 
 In CrateDB's SQL dialect, those container types map to :ref:`crate-reference:type-object`
 and :ref:`crate-reference:type-array`.
 
 
-``Object``
-==========
+``ObjectType``
+==============
 
 Let's add two records which have additional items within the ``details`` field.
 Note that item keys have not been defined in the DDL schema, effectively
@@ -113,7 +113,7 @@ A subsequent select query will see all the records:
     [('Arthur Dent', 'male'), ('Tricia McMillan', 'female')]
 
 It is also possible to just select a part of the document, even inside the
-``Object`` type:
+``ObjectType`` type:
 
     >>> sorted(session.query(Character.details['gender']).all())
     [('female',), ('male',)]
@@ -129,7 +129,7 @@ Update dictionary
 -----------------
 
 The SQLAlchemy CrateDB dialect supports change tracking deep down the nested
-levels of a ``Object`` type field. For example, the following query will only
+levels of a ``ObjectType`` type field. For example, the following query will only
 update the ``gender`` key. The ``species`` key which is on the same level will
 be left untouched.
 
@@ -170,7 +170,7 @@ Refresh and query "characters" table:
 ``ObjectArray``
 ===============
 
-Note that opposed to the ``Object`` type, the ``ObjectArray`` type isn't smart
+Note that opposed to the ``ObjectType`` type, the ``ObjectArray`` type isn't smart
 and doesn't have intelligent change tracking. Therefore, the generated
 ``UPDATE`` statement will affect the whole list:
 

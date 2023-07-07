@@ -201,7 +201,7 @@ system <sa:orm_declarative_mapping>`:
     ...     name = sa.Column(sa.String, crate_index=False)
     ...     name_normalized = sa.Column(sa.String, sa.Computed("lower(name)"))
     ...     quote = sa.Column(sa.String, nullable=False)
-    ...     details = sa.Column(types.Object)
+    ...     details = sa.Column(types.ObjectType)
     ...     more_details = sa.Column(types.ObjectArray)
     ...     name_ft = sa.Column(sa.String)
     ...     quote_ft = sa.Column(sa.String)
@@ -224,7 +224,7 @@ In this example, we:
 - Disable indexing of the ``name`` column using ``crate_index=False``
 - Define a computed column ``name_normalized`` (based on ``name``) that
   translates into a generated column
-- Use the `Object`_ extension type for the ``details`` column
+- Use the `ObjectType`_ extension type for the ``details`` column
 - Use the `ObjectArray`_ extension type for the ``more_details`` column
 - Set up the ``name_ft`` and ``quote_ft`` fulltext indexes, but exclude them from
   the mapping (so SQLAlchemy doesn't try to update them as if they were columns)
@@ -314,9 +314,10 @@ dialect provides.
     The appendix has a full :ref:`data types reference <data-types-sqlalchemy>`.
 
 .. _object:
+.. _objecttype:
 
-``Object``
-..........
+``ObjectType``
+..............
 
 Objects are a common, and useful, data type when using CrateDB, so the CrateDB
 SQLAlchemy dialect provides a custom ``Object`` type extension for working with
@@ -355,7 +356,7 @@ insert two records:
 
 .. NOTE::
 
-    Behind the scenes, if you update an ``Object`` property and ``commit`` that
+    Behind the scenes, if you update an ``ObjectType`` property, and ``commit`` that
     change, the :ref:`UPDATE <crate-reference:dml-updating-data>` statement sent
     to CrateDB will only include the data necessary to update the changed
     sub-columns.
@@ -365,7 +366,7 @@ insert two records:
 ``ObjectArray``
 ...............
 
-In addition to the `Object`_ type, the CrateDB SQLAlchemy dialect also provides
+In addition to the `ObjectType`_ type, the CrateDB SQLAlchemy dialect also provides
 an ``ObjectArray`` type, which is structured as a :class:`py:list` of
 :class:`dictionaries <py:dict>`.
 
@@ -386,7 +387,7 @@ The resulting object will look like this:
 
 .. CAUTION::
 
-    Behind the scenes, if you update an ``ObjectArray`` and ``commit`` that
+    Behind the scenes, if you update an ``ObjectArray``, and ``commit`` that
     change, the :ref:`UPDATE <crate-reference:dml-updating-data>` statement
     sent to CrateDB will include all of the ``ObjectArray`` data.
 
@@ -468,12 +469,12 @@ Here's what a regular select might look like:
     [('Arthur Dent', 'male'), ('Tricia McMillan', 'female')]
 
 You can also select a portion of each record, and this even works inside
-`Object`_ columns:
+`ObjectType`_ columns:
 
     >>> sorted(session.query(Character.details['gender']).all())
     [('female',), ('male',)]
 
-You can also filter on attributes inside the `Object`_ column:
+You can also filter on attributes inside the `ObjectType`_ column:
 
     >>> query = session.query(Character.name)
     >>> query.filter(Character.details['gender'] == 'male').all()

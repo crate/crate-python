@@ -34,7 +34,7 @@ try:
 except ImportError:
     from sqlalchemy.ext.declarative import declarative_base
 
-from crate.client.sqlalchemy.types import Object, ObjectArray
+from crate.client.sqlalchemy.types import ObjectType, ObjectArray
 
 
 class SqlAlchemyQueryCompilationCaching(TestCase):
@@ -55,7 +55,7 @@ class SqlAlchemyQueryCompilationCaching(TestCase):
             __tablename__ = 'characters'
             name = sa.Column(sa.String, primary_key=True)
             age = sa.Column(sa.Integer)
-            data = sa.Column(Object)
+            data = sa.Column(ObjectType)
             data_list = sa.Column(ObjectArray)
 
         return Character

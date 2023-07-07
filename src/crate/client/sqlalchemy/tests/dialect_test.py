@@ -28,7 +28,7 @@ import sqlalchemy as sa
 from crate.client.cursor import Cursor
 from crate.client.sqlalchemy import SA_VERSION
 from crate.client.sqlalchemy.sa_version import SA_1_4, SA_2_0
-from crate.client.sqlalchemy.types import Object
+from crate.client.sqlalchemy.types import ObjectType
 from sqlalchemy import inspect
 from sqlalchemy.orm import Session
 try:
@@ -67,7 +67,7 @@ class SqlAlchemyDialectTest(TestCase):
 
             name = sa.Column(sa.String, primary_key=True)
             age = sa.Column(sa.Integer, primary_key=True)
-            obj = sa.Column(Object)
+            obj = sa.Column(ObjectType)
             ts = sa.Column(sa.DateTime, onupdate=datetime.utcnow)
 
         self.session = Session(bind=self.engine)

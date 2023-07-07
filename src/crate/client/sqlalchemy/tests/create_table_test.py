@@ -25,7 +25,7 @@ try:
 except ImportError:
     from sqlalchemy.ext.declarative import declarative_base
 
-from crate.client.sqlalchemy.types import Object, ObjectArray, Geopoint
+from crate.client.sqlalchemy.types import ObjectType, ObjectArray, Geopoint
 from crate.client.cursor import Cursor
 
 from unittest import TestCase
@@ -76,7 +76,7 @@ class SqlAlchemyCreateTableTest(TestCase):
         class DummyTable(self.Base):
             __tablename__ = 'dummy'
             pk = sa.Column(sa.String, primary_key=True)
-            obj_col = sa.Column(Object)
+            obj_col = sa.Column(ObjectType)
         self.Base.metadata.create_all(bind=self.engine)
         fake_cursor.execute.assert_called_with(
             ('\nCREATE TABLE dummy (\n\tpk STRING NOT NULL, \n\tobj_col OBJECT, '

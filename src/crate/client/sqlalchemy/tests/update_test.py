@@ -23,7 +23,7 @@ from datetime import datetime
 from unittest import TestCase
 from unittest.mock import patch, MagicMock
 
-from crate.client.sqlalchemy.types import Object
+from crate.client.sqlalchemy.types import ObjectType
 
 import sqlalchemy as sa
 from sqlalchemy.orm import Session
@@ -52,7 +52,7 @@ class SqlAlchemyUpdateTest(TestCase):
 
             name = sa.Column(sa.String, primary_key=True)
             age = sa.Column(sa.Integer)
-            obj = sa.Column(Object)
+            obj = sa.Column(ObjectType)
             ts = sa.Column(sa.DateTime, onupdate=datetime.utcnow)
 
         self.character = Character

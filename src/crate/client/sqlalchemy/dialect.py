@@ -356,6 +356,13 @@ class CrateDialect(default.DefaultDialect):
     def _resolve_type(self, type_):
         return TYPES_MAP.get(type_, sqltypes.UserDefinedType)
 
+    def has_ilike_operator(self):
+        """
+        Only CrateDB 4.1.0 and higher implements the `ILIKE` operator.
+        """
+        server_version_info = self.server_version_info
+        return server_version_info is not None and server_version_info >= (4, 1, 0)
+
 
 class DateTrunc(functions.GenericFunction):
     name = "date_trunc"

@@ -2,6 +2,7 @@
 
 from ..compat.api13 import monkeypatch_amend_select_sa14, monkeypatch_add_connectionfairy_driver_connection
 from ..sa_version import SA_1_4, SA_VERSION
+from ...test_util import ParametrizedTestCase
 
 # `sql.select()` of SQLAlchemy 1.3 uses old calling semantics,
 # but the test cases already need the modern ones.
@@ -32,6 +33,9 @@ def test_suite_unit():
     tests.addTest(makeSuite(SqlAlchemyDictTypeTest))
     tests.addTest(makeSuite(SqlAlchemyDateAndDateTimeTest))
     tests.addTest(makeSuite(SqlAlchemyCompilerTest))
+    tests.addTest(ParametrizedTestCase.parametrize(SqlAlchemyCompilerTest, param={"server_version_info": None}))
+    tests.addTest(ParametrizedTestCase.parametrize(SqlAlchemyCompilerTest, param={"server_version_info": (4, 0, 12)}))
+    tests.addTest(ParametrizedTestCase.parametrize(SqlAlchemyCompilerTest, param={"server_version_info": (4, 1, 10)}))
     tests.addTest(makeSuite(SqlAlchemyUpdateTest))
     tests.addTest(makeSuite(SqlAlchemyMatchTest))
     tests.addTest(makeSuite(SqlAlchemyCreateTableTest))

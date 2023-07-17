@@ -19,7 +19,7 @@
 # with Crate these terms will supersede the license and you may use the
 # software solely pursuant to the terms of the relevant commercial agreement.
 from textwrap import dedent
-from unittest import mock, TestCase, skipIf
+from unittest import mock, skipIf
 
 from crate.client.sqlalchemy.compiler import crate_before_execute
 
@@ -28,12 +28,16 @@ from sqlalchemy.sql import text, Update
 
 from crate.client.sqlalchemy.sa_version import SA_VERSION, SA_1_4, SA_2_0
 from crate.client.sqlalchemy.types import ObjectType
+from crate.client.test_util import ParametrizedTestCase
 
 
-class SqlAlchemyCompilerTest(TestCase):
+class SqlAlchemyCompilerTest(ParametrizedTestCase):
 
     def setUp(self):
         self.crate_engine = sa.create_engine('crate://')
+        if isinstance(self.param, dict) and "server_version_info" in self.param:
+            server_version_info = self.param["server_version_info"]
+            self.crate_engine.dialect.server_version_info = server_version_info
         self.sqlite_engine = sa.create_engine('sqlite://')
         self.metadata = sa.MetaData()
         self.mytable = sa.Table('mytable', self.metadata,
@@ -71,25 +75,32 @@ class SqlAlchemyCompilerTest(TestCase):
 
         self.assertFalse(hasattr(clauseelement, '_crate_specific'))
 
-    def test_select_with_ilike(self):
+    def test_select_with_ilike_no_escape(self):
         """
         Verify the compiler uses CrateDB's native `ILIKE` method.
         """
         selectable = self.mytable.select().where(self.mytable.c.name.ilike("%foo%"))
         statement = str(selectable.compile(bind=self.crate_engine))
-        self.assertEqual(statement, dedent("""
-            SELECT mytable.name, mytable.data 
-            FROM mytable 
-            WHERE mytable.name ILIKE ?
-        """).strip())  # noqa: W291
+        if self.crate_engine.dialect.has_ilike_operator():
+            self.assertEqual(statement, dedent("""
+                SELECT mytable.name, mytable.data 
+                FROM mytable 
+                WHERE mytable.name ILIKE ?
+            """).strip())  # noqa: W291
+        else:
+            self.assertEqual(statement, dedent("""
+                SELECT mytable.name, mytable.data 
+                FROM mytable 
+                WHERE lower(mytable.name) LIKE lower(?)
+            """).strip())  # noqa: W291
 
-    def test_select_with_not_ilike(self):
+    def test_select_with_not_ilike_no_escape(self):
         """
         Verify the compiler uses CrateDB's native `ILIKE` method.
         """
         selectable = self.mytable.select().where(self.mytable.c.name.notilike("%foo%"))
         statement = str(selectable.compile(bind=self.crate_engine))
-        if SA_VERSION < SA_1_4:
+        if SA_VERSION < SA_1_4 or not self.crate_engine.dialect.has_ilike_operator():
             self.assertEqual(statement, dedent("""
                 SELECT mytable.name, mytable.data 
                 FROM mytable 

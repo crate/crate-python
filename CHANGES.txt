@@ -5,6 +5,10 @@ Changes for crate
 Unreleased
 ==========
 
+
+2023/07/17 0.33.0
+=================
+
 - SQLAlchemy: Rename leftover occurrences of ``Object``. The new symbol to represent
   CrateDB's ``OBJECT`` column type is now ``ObjectType``.
 

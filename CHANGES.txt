@@ -5,6 +5,7 @@ Changes for crate
 Unreleased
 ==========
 
+- Properly handle Python-native UUID types in SQL parameters
 
 2023/07/17 0.33.0
 =================

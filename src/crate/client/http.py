@@ -35,6 +35,8 @@ from base64 import b64encode
 from time import time
 from datetime import datetime, date, timezone
 from decimal import Decimal
+from uuid import UUID
+
 from urllib3 import connection_from_url
 from urllib3.connection import HTTPConnection
 from urllib3.exceptions import (
@@ -86,7 +88,7 @@ class CrateJsonEncoder(json.JSONEncoder):
     epoch_naive = datetime(1970, 1, 1)
 
     def default(self, o):
-        if isinstance(o, Decimal):
+        if isinstance(o, (Decimal, UUID)):
             return str(o)
         if isinstance(o, datetime):
             if o.tzinfo is not None:

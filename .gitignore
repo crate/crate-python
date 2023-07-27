@@ -19,3 +19,4 @@ htmlcov/
 out/
 parts/
 tmp/
+env/

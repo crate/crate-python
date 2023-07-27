@@ -35,9 +35,12 @@ from unittest.mock import patch, MagicMock
 from threading import Thread, Event
 from decimal import Decimal
 import datetime as dt
+
 import urllib3.exceptions
 from base64 import b64decode
 from urllib.parse import urlparse, parse_qs
+
+import uuid
 from setuptools.ssl_support import find_ca_bundle
 
 from .http import Client, CrateJsonEncoder, _get_socket_opts, _remove_certs_for_non_https
@@ -285,6 +288,18 @@ class HttpClientTest(TestCase):
         self.assertIn(
             (socket.SOL_SOCKET, socket.SO_KEEPALIVE, 1), conn_kw['socket_options']
         )
+        client.close()
+
+    @patch(REQUEST, autospec=True)
+    def test_uuid_serialization(self, request):
+        client = Client(servers="localhost:4200")
+        request.return_value = fake_response(200)
+
+        uid = uuid.uuid4()
+        client.sql('insert into my_table (str_col) values (?)', (uid,))
+
+        data = json.loads(request.call_args[1]['data'])
+        self.assertEqual(data['args'], [str(uid)])
         client.close()
 
 

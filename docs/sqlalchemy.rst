@@ -28,7 +28,7 @@ The CrateDB SQLAlchemy dialect is validated to work with SQLAlchemy versions
 .. SEEALSO::
 
     For general help using SQLAlchemy, consult the :ref:`SQLAlchemy tutorial
-    <sa:ormtutorial_toplevel>` or the `SQLAlchemy library`_.
+    <sa:unified_tutorial>` or the `SQLAlchemy library`_.
 
     Supplementary information about the CrateDB SQLAlchemy dialect can be found
     in the :ref:`data types appendix <data-types-sqlalchemy>`.

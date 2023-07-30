@@ -5,8 +5,9 @@ SQLAlchemy: Advanced querying
 =============================
 
 This section of the documentation demonstrates running queries using a fulltext
-index with analyzer, queries using counting and aggregations, and support for
-the ``INSERT...FROM SELECT`` construct, all using the CrateDB SQLAlchemy dialect.
+index with an analyzer, queries using counting and aggregations, and support for
+the ``INSERT...FROM SELECT`` and ``INSERT...RETURNING`` constructs, all using the
+CrateDB SQLAlchemy dialect.
 
 
 .. rubric:: Table of Contents

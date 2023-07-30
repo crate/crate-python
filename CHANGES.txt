@@ -28,7 +28,7 @@ Unreleased
 
 - Allow handling datetime values tagged with time zone info when inserting or updating.
 
-- SQLAlchemy: Fix SQL statement caching for CrateDB's ``OBJECT`` type.
+- SQLAlchemy: Fix SQL statement caching for CrateDB's ``OBJECT`` type. Thanks, @faymarie.
 
 - SQLAlchemy: Refactor ``OBJECT`` type to use SQLAlchemy's JSON type infrastructure.
 

@@ -248,7 +248,7 @@ class CrateLayer(object):
                                         transport_port or '4300-4399',
                                         settings)
         # ES 5 cannot parse 'True'/'False' as booleans so convert to lowercase
-        start_cmd = (crate_exec, ) + tuple(["-C%s=%s" % ((key, str(value).lower()) if type(value) == bool else (key, value))
+        start_cmd = (crate_exec, ) + tuple(["-C%s=%s" % ((key, str(value).lower()) if isinstance(value, bool) else (key, value))
                                             for key, value in settings.items()])
 
         self._wd = wd = os.path.join(CrateLayer.tmpdir, 'crate_layer', name)

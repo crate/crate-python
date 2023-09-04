@@ -83,6 +83,22 @@ class SqlAlchemyConnectionTest(TestCase):
         conn.close()
         engine.dispose()
 
+    def test_connection_server_uri_parameter_timeout(self):
+        engine = sa.create_engine(
+            "crate://otherhost:19201/?timeout=42.42")
+        conn = engine.raw_connection()
+        self.assertEqual(conn.driver_connection.client._pool_kw["timeout"], 42.42)
+        conn.close()
+        engine.dispose()
+
+    def test_connection_server_uri_parameter_pool_size(self):
+        engine = sa.create_engine(
+            "crate://otherhost:19201/?pool_size=20")
+        conn = engine.raw_connection()
+        self.assertEqual(conn.driver_connection.client._pool_kw["maxsize"], 20)
+        conn.close()
+        engine.dispose()
+
     def test_connection_multiple_server_http(self):
         engine = sa.create_engine(
             "crate://", connect_args={

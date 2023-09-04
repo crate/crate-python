@@ -255,10 +255,11 @@ def _pool_kw_args(verify_ssl_cert, ca_cert, client_cert, client_key,
         'cert_reqs': ssl.CERT_REQUIRED if verify_ssl_cert else ssl.CERT_NONE,
         'cert_file': client_cert,
         'key_file': client_key,
-        'timeout': timeout,
     }
+    if timeout is not None:
+        kw['timeout'] = float(timeout)
     if pool_size is not None:
-        kw['maxsize'] = pool_size
+        kw['maxsize'] = int(pool_size)
     return kw
 
 

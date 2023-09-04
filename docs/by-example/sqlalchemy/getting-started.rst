@@ -46,8 +46,8 @@ Create an SQLAlchemy :doc:`Session <sa:orm/session_basics>`:
     >>> Base = declarative_base()
 
 
-Connection string
-=================
+Connect
+=======
 
 In SQLAlchemy, a connection is established using the ``create_engine`` function.
 This function takes a connection string, actually an `URL`_, that varies from
@@ -65,7 +65,9 @@ to a different server the following syntax can be used:
     >>> sa.create_engine('crate://otherserver:4200')
     Engine(crate://otherserver:4200)
 
-Since CrateDB is a clustered database running on multiple servers, it is
+Multiple Hosts
+--------------
+Because CrateDB is a clustered database running on multiple servers, it is
 recommended to connect to all of them. This enables the DB-API layer to
 use round-robin to distribute the load and skip a server if it becomes
 unavailable. In order to make the driver aware of multiple servers, use
@@ -76,6 +78,8 @@ the ``connect_args`` parameter like so:
     ... })
     Engine(crate://)
 
+TLS Options
+-----------
 As defined in :ref:`https_connection`, the client validates SSL server
 certificates by default. To configure this further, use e.g. the ``ca_cert``
 attribute within the ``connect_args``, like:
@@ -95,6 +99,37 @@ In order to disable SSL verification, use ``verify_ssl_cert = False``, like:
     ...         'servers': ['https://host1:4200'],
     ...         'verify_ssl_cert': False,
     ...     })
+
+Timeout Options
+---------------
+In order to configure TCP timeout options, use the ``timeout`` parameter within
+``connect_args``,
+
+    >>> timeout_engine = sa.create_engine('crate://localhost/', connect_args={'timeout': 42.42})
+    >>> timeout_engine.raw_connection().driver_connection.client._pool_kw["timeout"]
+    42.42
+
+or use the ``timeout`` URL parameter within the database connection URL.
+
+    >>> timeout_engine = sa.create_engine('crate://localhost/?timeout=42.42')
+    >>> timeout_engine.raw_connection().driver_connection.client._pool_kw["timeout"]
+    42.42
+
+Pool Size
+---------
+
+In order to configure the database connection pool size, use the ``pool_size``
+parameter within ``connect_args``,
+
+    >>> timeout_engine = sa.create_engine('crate://localhost/', connect_args={'pool_size': 20})
+    >>> timeout_engine.raw_connection().driver_connection.client._pool_kw["maxsize"]
+    20
+
+or use the ``pool_size`` URL parameter within the database connection URL.
+
+    >>> timeout_engine = sa.create_engine('crate://localhost/?pool_size=20')
+    >>> timeout_engine.raw_connection().driver_connection.client._pool_kw["maxsize"]
+    20
 
 
 Basic DDL operations

@@ -6,6 +6,8 @@ Unreleased
 ==========
 
 - Properly handle Python-native UUID types in SQL parameters
+- SQLAlchemy: Fix handling URL parameters ``timeout`` and ``pool_size``
+
 
 2023/07/17 0.33.0
 =================

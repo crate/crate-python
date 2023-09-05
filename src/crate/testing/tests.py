@@ -24,8 +24,11 @@ import unittest
 from .test_layer import LayerUtilsTest, LayerTest
 
 
+makeSuite = unittest.TestLoader().loadTestsFromTestCase
+
+
 def test_suite():
     suite = unittest.TestSuite()
-    suite.addTest(unittest.makeSuite(LayerUtilsTest))
-    suite.addTest(unittest.makeSuite(LayerTest))
+    suite.addTest(makeSuite(LayerUtilsTest))
+    suite.addTest(makeSuite(LayerTest))
     return suite

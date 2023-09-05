@@ -10,7 +10,7 @@ if SA_VERSION < SA_1_4:
     monkeypatch_amend_select_sa14()
     monkeypatch_add_connectionfairy_driver_connection()
 
-from unittest import TestSuite, makeSuite
+from unittest import TestLoader, TestSuite
 from .connection_test import SqlAlchemyConnectionTest
 from .dict_test import SqlAlchemyDictTypeTest
 from .datetime_test import SqlAlchemyDateAndDateTimeTest
@@ -25,6 +25,9 @@ from .dialect_test import SqlAlchemyDialectTest
 from .function_test import SqlAlchemyFunctionTest
 from .warnings_test import SqlAlchemyWarningsTest
 from .query_caching import SqlAlchemyQueryCompilationCaching
+
+
+makeSuite = TestLoader().loadTestsFromTestCase
 
 
 def test_suite_unit():

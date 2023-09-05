@@ -59,6 +59,8 @@ from .test_http import (
 from .sqlalchemy.tests import test_suite_unit as sqlalchemy_test_suite_unit
 from .sqlalchemy.tests import test_suite_integration as sqlalchemy_test_suite_integration
 
+makeSuite = unittest.TestLoader().loadTestsFromTestCase
+
 log = logging.getLogger('crate.testing.layer')
 ch = logging.StreamHandler()
 ch.setLevel(logging.ERROR)
@@ -336,17 +338,17 @@ def test_suite():
     flags = (doctest.NORMALIZE_WHITESPACE | doctest.ELLIPSIS)
 
     # Unit tests.
-    suite.addTest(unittest.makeSuite(CursorTest))
-    suite.addTest(unittest.makeSuite(HttpClientTest))
-    suite.addTest(unittest.makeSuite(KeepAliveClientTest))
-    suite.addTest(unittest.makeSuite(ThreadSafeHttpClientTest))
-    suite.addTest(unittest.makeSuite(ParamsTest))
-    suite.addTest(unittest.makeSuite(ConnectionTest))
-    suite.addTest(unittest.makeSuite(RetryOnTimeoutServerTest))
-    suite.addTest(unittest.makeSuite(RequestsCaBundleTest))
-    suite.addTest(unittest.makeSuite(TestUsernameSentAsHeader))
-    suite.addTest(unittest.makeSuite(TestCrateJsonEncoder))
-    suite.addTest(unittest.makeSuite(TestDefaultSchemaHeader))
+    suite.addTest(makeSuite(CursorTest))
+    suite.addTest(makeSuite(HttpClientTest))
+    suite.addTest(makeSuite(KeepAliveClientTest))
+    suite.addTest(makeSuite(ThreadSafeHttpClientTest))
+    suite.addTest(makeSuite(ParamsTest))
+    suite.addTest(makeSuite(ConnectionTest))
+    suite.addTest(makeSuite(RetryOnTimeoutServerTest))
+    suite.addTest(makeSuite(RequestsCaBundleTest))
+    suite.addTest(makeSuite(TestUsernameSentAsHeader))
+    suite.addTest(makeSuite(TestCrateJsonEncoder))
+    suite.addTest(makeSuite(TestDefaultSchemaHeader))
     suite.addTest(sqlalchemy_test_suite_unit())
     suite.addTest(doctest.DocTestSuite('crate.client.connection'))
     suite.addTest(doctest.DocTestSuite('crate.client.http'))

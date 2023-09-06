@@ -160,6 +160,11 @@ The DB API driver and the SQLAlchemy dialect support :ref:`CrateDB's data types
 please consult the :ref:`data-types` and :ref:`SQLAlchemy extension types
 <using-extension-types>` documentation pages.
 
+.. toctree::
+    :maxdepth: 2
+
+    data-types
+
 Examples
 ========
 
@@ -172,6 +177,11 @@ Examples
 - `Use CrateDB with pandas`_ has corresponding code snippets about how to
   connect to CrateDB using `pandas`_, and how to load and export data.
 - The `Apache Superset`_ and `FIWARE QuantumLeap data historian`_ projects.
+
+.. toctree::
+    :maxdepth: 2
+
+    by-example/index
 
 
 *******************

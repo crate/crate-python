@@ -4,13 +4,8 @@
 By example
 ##########
 
-
-*****
-About
-*****
-
-This part of the documentation contains examples how to use the CrateDB Python
-client.
+This part of the documentation enumerates different kinds of examples how to
+use the CrateDB Python client.
 
 
 DB API, HTTP, and BLOB interfaces

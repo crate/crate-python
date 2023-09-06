@@ -36,11 +36,9 @@ Documentation
 For general help about the Python Database API, or SQLAlchemy, please consult
 `PEP 249`_, the `SQLAlchemy tutorial`_, and the general `SQLAlchemy
 documentation`_.
-
 For more detailed information about how to install the client driver, how to
 connect to a CrateDB cluster, and how to run queries, consult the resources
-referenced below. A dedicated section demonstrates how to use the :ref:`blob
-storage capabilities <crate-reference:blob_support>` of CrateDB.
+referenced below.
 
 .. toctree::
     :titlesonly:

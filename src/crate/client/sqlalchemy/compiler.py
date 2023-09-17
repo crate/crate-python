@@ -116,6 +116,22 @@ class CrateDDLCompiler(compiler.DDLCompiler):
         if column.computed is not None:
             colspec += " " + self.process(column.computed)
 
+        if column.dialect_options['crate'].get('autogenerate_uuid'):
+            if not isinstance(column.type, (sa.String, sa.Text)):
+                raise sa.exc.CompileError(
+                    "Auto generate uuid is only supported for column"
+                    "types STRING and TEXT"
+                )
+            if default is not None:
+                raise sa.exc.CompileError(
+                    "Can only have one default value but server_default"
+                    " and crate_generate_uuid are set"
+                )
+
+            colspec += " DEFAULT gen_random_text_uuid()"
+
+        # nullable should go after 'DEFAULT' query modifications, otherwise
+        # invalid statements will be generated, ex: `x STRING NOT NULL DEFAULT 'value'`
         if column.nullable is False:
             colspec += " NOT NULL"
         elif column.nullable and column.primary_key:

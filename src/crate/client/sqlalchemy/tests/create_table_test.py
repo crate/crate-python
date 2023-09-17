@@ -311,3 +311,36 @@ class SqlAlchemyCreateTableTest(TestCase):
              'pk STRING NOT NULL, \n\t'
              'answer INT DEFAULT 42, \n\t'
              'PRIMARY KEY (pk)\n)\n\n'), ())
+
+    def test_column_autogenerate_uuid(self):
+        class DummyTable(self.Base):
+            __tablename__ = 't'
+            pk = sa.Column(sa.String, primary_key=True, crate_autogenerate_uuid=True)
+            other = sa.Column(sa.Boolean)
+
+        self.Base.metadata.create_all(bind=self.engine)
+        fake_cursor.execute.assert_called_with(
+            '\nCREATE TABLE t (\n\t'
+            'pk STRING DEFAULT gen_random_text_uuid() NOT NULL, \n\t'
+            'other BOOLEAN, \n\tPRIMARY KEY (pk)\n)\n\n', ()
+        )
+
+    def test_column_autogenerate_uuid_correct_type(self):
+        class DummyTable(self.Base):
+            __tablename__ = 't'
+            pk = sa.Column(sa.Integer, primary_key=True, crate_autogenerate_uuid=True)
+            other = sa.Column(sa.Boolean)
+
+        with self.assertRaises(sa.exc.CompileError):
+            self.Base.metadata.create_all(bind=self.engine)
+
+    def test_column_autogenerate_uuid_clashes_with_server_default(self):
+        class DummyTable(self.Base):
+            __tablename__ = 't'
+            pk = sa.Column(sa.String, primary_key=True,
+                           crate_autogenerate_uuid=True,
+                           server_default='value')
+            other = sa.Column(sa.Boolean)
+
+        with self.assertRaises(sa.exc.CompileError):
+            self.Base.metadata.create_all(bind=self.engine)

@@ -5,6 +5,7 @@ Changes for crate
 Unreleased
 ==========
 
+- Add support for CrateDB's gen_random_text_uuid in SQLAlchemy column generation ORM
 - Properly handle Python-native UUID types in SQL parameters
 - SQLAlchemy: Fix handling URL parameters ``timeout`` and ``pool_size``
 - Permit installation with urllib3 v2, see also `urllib3 v2.0 roadmap`_

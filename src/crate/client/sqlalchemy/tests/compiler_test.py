@@ -19,8 +19,10 @@
 # with Crate these terms will supersede the license and you may use the
 # software solely pursuant to the terms of the relevant commercial agreement.
 from textwrap import dedent
-from unittest import mock, skipIf
+from unittest import mock, skipIf, TestCase
+from unittest.mock import MagicMock, patch
 
+from crate.client.cursor import Cursor
 from crate.client.sqlalchemy.compiler import crate_before_execute
 
 import sqlalchemy as sa
@@ -29,6 +31,8 @@ from sqlalchemy.sql import text, Update
 from crate.client.sqlalchemy.sa_version import SA_VERSION, SA_1_4, SA_2_0
 from crate.client.sqlalchemy.types import ObjectType
 from crate.client.test_util import ParametrizedTestCase
+
+from crate.testing.settings import crate_host
 
 
 class SqlAlchemyCompilerTest(ParametrizedTestCase):
@@ -244,3 +248,101 @@ class SqlAlchemyCompilerTest(ParametrizedTestCase):
             mock.call(mock.ANY, 'INSERT INTO mytable (name) VALUES (?), (?)', ('foo_2', 'foo_3'), None),
             mock.call(mock.ANY, 'INSERT INTO mytable (name) VALUES (?)', ('foo_4', ), None),
         ])
+
+
+FakeCursor = MagicMock(name='FakeCursor', spec=Cursor)
+
+
+class CompilerTestCase(TestCase):
+    """
+    A base class for providing mocking infrastructure to validate the DDL compiler.
+    """
+
+    def setUp(self):
+        self.engine = sa.create_engine(f"crate://{crate_host}")
+        self.metadata = sa.MetaData(schema="testdrive")
+        self.session = sa.orm.Session(bind=self.engine)
+        self.setup_mock()
+
+    def setup_mock(self):
+        """
+        Set up a fake cursor, in order to intercept query execution.
+        """
+
+        self.fake_cursor = MagicMock(name="fake_cursor")
+        FakeCursor.return_value = self.fake_cursor
+
+        self.executed_statement = None
+        self.fake_cursor.execute = self.execute_wrapper
+
+    def execute_wrapper(self, query, *args, **kwargs):
+        """
+        Receive the SQL query expression, and store it.
+        """
+        self.executed_statement = query
+        return self.fake_cursor
+
+
+@patch('crate.client.connection.Cursor', FakeCursor)
+class SqlAlchemyDDLCompilerTest(CompilerTestCase):
+    """
+    Verify a few scenarios regarding the DDL compiler.
+    """
+
+    def test_ddl_with_foreign_keys(self):
+        """
+        Verify the CrateDB dialect properly ignores foreign key constraints.
+        """
+
+        Base = sa.orm.declarative_base(metadata=self.metadata)
+
+        class RootStore(Base):
+            """The main store."""
+
+            __tablename__ = "root"
+
+            id = sa.Column(sa.Integer, primary_key=True)
+            name = sa.Column(sa.String)
+
+            items = sa.orm.relationship(
+                "ItemStore",
+                back_populates="root",
+                passive_deletes=True,
+            )
+
+        class ItemStore(Base):
+            """The auxiliary store."""
+
+            __tablename__ = "item"
+
+            id = sa.Column(sa.Integer, primary_key=True)
+            name = sa.Column(sa.String)
+            root_id = sa.Column(
+                sa.Integer,
+                sa.ForeignKey(
+                    f"{RootStore.__tablename__}.id",
+                    ondelete="CASCADE",
+                ),
+            )
+            root = sa.orm.relationship(RootStore, back_populates="items")
+
+        self.metadata.create_all(self.engine, tables=[RootStore.__table__], checkfirst=False)
+        self.assertEqual(self.executed_statement, dedent("""
+            CREATE TABLE testdrive.root (
+            \tid INT NOT NULL, 
+            \tname STRING, 
+            \tPRIMARY KEY (id)
+            )
+
+        """))  # noqa: W291
+
+        self.metadata.create_all(self.engine, tables=[ItemStore.__table__], checkfirst=False)
+        self.assertEqual(self.executed_statement, dedent("""
+            CREATE TABLE testdrive.item (
+            \tid INT NOT NULL, 
+            \tname STRING, 
+            \troot_id INT, 
+            \tPRIMARY KEY (id)
+            )
+
+        """))  # noqa: W291, W293

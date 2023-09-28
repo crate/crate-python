@@ -27,6 +27,10 @@ from crate.client.sqlalchemy.compiler import crate_before_execute
 
 import sqlalchemy as sa
 from sqlalchemy.sql import text, Update
+try:
+    from sqlalchemy.orm import declarative_base
+except ImportError:
+    from sqlalchemy.ext.declarative import declarative_base
 
 from crate.client.sqlalchemy.sa_version import SA_VERSION, SA_1_4, SA_2_0
 from crate.client.sqlalchemy.types import ObjectType
@@ -294,7 +298,7 @@ class SqlAlchemyDDLCompilerTest(CompilerTestCase):
         Verify the CrateDB dialect properly ignores foreign key constraints.
         """
 
-        Base = sa.orm.declarative_base(metadata=self.metadata)
+        Base = declarative_base(metadata=self.metadata)
 
         class RootStore(Base):
             """The main store."""
@@ -346,3 +350,28 @@ class SqlAlchemyDDLCompilerTest(CompilerTestCase):
             )
 
         """))  # noqa: W291, W293
+
+    def test_ddl_with_unique_key(self):
+        """
+        Verify the CrateDB dialect properly ignores unique key constraints.
+        """
+
+        Base = declarative_base(metadata=self.metadata)
+
+        class FooBar(Base):
+            """The entity."""
+
+            __tablename__ = "foobar"
+
+            id = sa.Column(sa.Integer, primary_key=True)
+            name = sa.Column(sa.String, unique=True)
+
+        self.metadata.create_all(self.engine, tables=[FooBar.__table__], checkfirst=False)
+        self.assertEqual(self.executed_statement, dedent("""
+            CREATE TABLE testdrive.foobar (
+            \tid INT NOT NULL, 
+            \tname STRING, 
+            \tPRIMARY KEY (id)
+            )
+
+        """))  # noqa: W291

@@ -13,7 +13,8 @@ Unreleased
   certificate details are immanent, like no longer accepting the long
   deprecated ``commonName`` attribute. Instead, going forward, only the
   ``subjectAltName`` attribute will be used.
-- SQLAlchemy: Improve DDL compiler to ignore foreign key constraints
+- SQLAlchemy: Improve DDL compiler to ignore foreign key and uniqueness
+  constraints
 
 .. _urllib3 v2.0 migration guide: https://urllib3.readthedocs.io/en/latest/v2-migration-guide.html
 .. _urllib3 v2.0 roadmap: https://urllib3.readthedocs.io/en/stable/v2-roadmap.html

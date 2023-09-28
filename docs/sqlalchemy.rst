@@ -300,6 +300,41 @@ would translate into the following declarative model:
     >>> log.id
     ...
 
+
+Auto-generated primary key
+..........................
+
+CrateDB 4.5.0 added the :ref:`gen_random_text_uuid() <crate-reference:scalar-gen_random_text_uuid>`
+scalar function, which can also be used within an SQL DDL statement, in order to automatically
+assign random identifiers to newly inserted records on the server side.
+
+In this spirit, it is suitable to be used as a ``PRIMARY KEY`` constraint for SQLAlchemy.
+
+A table schema like this
+
+.. code-block:: sql
+
+   CREATE TABLE "doc"."items" (
+     "id" STRING DEFAULT gen_random_text_uuid() NOT NULL PRIMARY KEY,
+     "name" STRING
+   )
+
+would translate into the following declarative model:
+
+    >>> class Item(Base):
+    ...
+    ...     __tablename__ = 'items'
+    ...
+    ...     id = sa.Column("id", sa.String, server_default=func.gen_random_text_uuid(), primary_key=True)
+    ...     name = sa.Column("name", sa.String)
+
+    >>> item = Item(name="Foobar")
+    >>> session.add(item)
+    >>> session.commit()
+    >>> item.id
+    ...
+
+
 .. _using-extension-types:
 
 Extension types

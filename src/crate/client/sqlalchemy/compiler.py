@@ -184,6 +184,13 @@ class CrateDDLCompiler(compiler.DDLCompiler):
         """
         return None
 
+    def visit_unique_constraint(self, constraint, **kw):
+        """
+        CrateDB does not support unique key constraints.
+        """
+        return None
+
+
 class CrateTypeCompiler(compiler.GenericTypeCompiler):
 
     def visit_string(self, type_, **kw):

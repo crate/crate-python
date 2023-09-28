@@ -44,8 +44,7 @@ import uuid
 from setuptools.ssl_support import find_ca_bundle
 
 from .http import Client, CrateJsonEncoder, _get_socket_opts, _remove_certs_for_non_https
-from .exceptions import ConnectionError, ProgrammingError
-
+from .exceptions import ConnectionError, ProgrammingError, IntegrityError
 
 REQUEST = 'crate.client.http.Server.request'
 CA_CERT_PATH = find_ca_bundle()
@@ -88,6 +87,17 @@ def bad_bulk_response():
             {"error_message": ""},
             {"error_message": None}
         ]}).encode()
+    return r
+
+
+def duplicate_key_exception():
+    r = fake_response(409, 'Conflict')
+    r.data = json.dumps({
+        "error": {
+            "code": 4091,
+            "message": "DuplicateKeyException[A document with the same primary key exists already]"
+        }
+    }).encode()
     return r
 
 
@@ -301,6 +311,18 @@ class HttpClientTest(TestCase):
         data = json.loads(request.call_args[1]['data'])
         self.assertEqual(data['args'], [str(uid)])
         client.close()
+
+    @patch(REQUEST, fake_request(duplicate_key_exception()))
+    def test_duplicate_key_error(self):
+        """
+        Verify that an `IntegrityError` is raised on duplicate key errors,
+        instead of the more general `ProgrammingError`.
+        """
+        client = Client(servers="localhost:4200")
+        with self.assertRaises(IntegrityError) as cm:
+            client.sql('INSERT INTO testdrive (foo) VALUES (42)')
+        self.assertEqual(cm.exception.message,
+                         "DuplicateKeyException[A document with the same primary key exists already]")
 
 
 @patch(REQUEST, fail_sometimes)

@@ -15,6 +15,8 @@ Unreleased
   ``subjectAltName`` attribute will be used.
 - SQLAlchemy: Improve DDL compiler to ignore foreign key and uniqueness
   constraints
+- DBAPI: Properly raise ``IntegrityError`` exceptions instead of
+  ``ProgrammingError``, when CrateDB raises a ``DuplicateKeyException``.
 
 .. _urllib3 v2.0 migration guide: https://urllib3.readthedocs.io/en/latest/v2-migration-guide.html
 .. _urllib3 v2.0 roadmap: https://urllib3.readthedocs.io/en/stable/v2-roadmap.html

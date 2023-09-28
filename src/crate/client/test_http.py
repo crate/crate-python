@@ -41,13 +41,13 @@ from base64 import b64decode
 from urllib.parse import urlparse, parse_qs
 
 import uuid
-from setuptools.ssl_support import find_ca_bundle
+import certifi
 
 from .http import Client, CrateJsonEncoder, _get_socket_opts, _remove_certs_for_non_https
 from .exceptions import ConnectionError, ProgrammingError, IntegrityError
 
 REQUEST = 'crate.client.http.Server.request'
-CA_CERT_PATH = find_ca_bundle()
+CA_CERT_PATH = certifi.where()
 
 
 def fake_request(response=None):

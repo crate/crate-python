@@ -178,6 +178,11 @@ class CrateDDLCompiler(compiler.DDLCompiler):
                 ', '.join(sorted(table_opts)))
         return special_options
 
+    def visit_foreign_key_constraint(self, constraint, **kw):
+        """
+        CrateDB does not support foreign key constraints.
+        """
+        return None
 
 class CrateTypeCompiler(compiler.GenericTypeCompiler):
 

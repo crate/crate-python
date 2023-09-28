@@ -14,7 +14,7 @@ from unittest import TestLoader, TestSuite
 from .connection_test import SqlAlchemyConnectionTest
 from .dict_test import SqlAlchemyDictTypeTest
 from .datetime_test import SqlAlchemyDateAndDateTimeTest
-from .compiler_test import SqlAlchemyCompilerTest
+from .compiler_test import SqlAlchemyCompilerTest, SqlAlchemyDDLCompilerTest
 from .update_test import SqlAlchemyUpdateTest
 from .match_test import SqlAlchemyMatchTest
 from .bulk_test import SqlAlchemyBulkTest
@@ -36,6 +36,7 @@ def test_suite_unit():
     tests.addTest(makeSuite(SqlAlchemyDictTypeTest))
     tests.addTest(makeSuite(SqlAlchemyDateAndDateTimeTest))
     tests.addTest(makeSuite(SqlAlchemyCompilerTest))
+    tests.addTest(makeSuite(SqlAlchemyDDLCompilerTest))
     tests.addTest(ParametrizedTestCase.parametrize(SqlAlchemyCompilerTest, param={"server_version_info": None}))
     tests.addTest(ParametrizedTestCase.parametrize(SqlAlchemyCompilerTest, param={"server_version_info": (4, 0, 12)}))
     tests.addTest(ParametrizedTestCase.parametrize(SqlAlchemyCompilerTest, param={"server_version_info": (4, 1, 10)}))

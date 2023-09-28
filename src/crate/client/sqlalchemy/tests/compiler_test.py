@@ -18,6 +18,7 @@
 # However, if you have executed another commercial license agreement
 # with Crate these terms will supersede the license and you may use the
 # software solely pursuant to the terms of the relevant commercial agreement.
+import warnings
 from textwrap import dedent
 from unittest import mock, skipIf, TestCase
 from unittest.mock import MagicMock, patch
@@ -27,6 +28,9 @@ from crate.client.sqlalchemy.compiler import crate_before_execute
 
 import sqlalchemy as sa
 from sqlalchemy.sql import text, Update
+
+from crate.testing.util import ExtraAssertions
+
 try:
     from sqlalchemy.orm import declarative_base
 except ImportError:
@@ -288,7 +292,7 @@ class CompilerTestCase(TestCase):
 
 
 @patch('crate.client.connection.Cursor', FakeCursor)
-class SqlAlchemyDDLCompilerTest(CompilerTestCase):
+class SqlAlchemyDDLCompilerTest(CompilerTestCase, ExtraAssertions):
     """
     Verify a few scenarios regarding the DDL compiler.
     """
@@ -330,26 +334,39 @@ class SqlAlchemyDDLCompilerTest(CompilerTestCase):
             )
             root = sa.orm.relationship(RootStore, back_populates="items")
 
-        self.metadata.create_all(self.engine, tables=[RootStore.__table__], checkfirst=False)
-        self.assertEqual(self.executed_statement, dedent("""
-            CREATE TABLE testdrive.root (
-            \tid INT NOT NULL, 
-            \tname STRING, 
-            \tPRIMARY KEY (id)
-            )
+        with warnings.catch_warnings(record=True) as w:
 
-        """))  # noqa: W291
+            # Cause all warnings to always be triggered.
+            warnings.simplefilter("always")
 
-        self.metadata.create_all(self.engine, tables=[ItemStore.__table__], checkfirst=False)
-        self.assertEqual(self.executed_statement, dedent("""
-            CREATE TABLE testdrive.item (
-            \tid INT NOT NULL, 
-            \tname STRING, 
-            \troot_id INT, 
-            \tPRIMARY KEY (id)
-            )
+            # Verify SQL DDL statement.
+            self.metadata.create_all(self.engine, tables=[RootStore.__table__], checkfirst=False)
+            self.assertEqual(self.executed_statement, dedent("""
+                CREATE TABLE testdrive.root (
+                \tid INT NOT NULL, 
+                \tname STRING, 
+                \tPRIMARY KEY (id)
+                )
+    
+            """))  # noqa: W291, W293
 
-        """))  # noqa: W291, W293
+            # Verify SQL DDL statement.
+            self.metadata.create_all(self.engine, tables=[ItemStore.__table__], checkfirst=False)
+            self.assertEqual(self.executed_statement, dedent("""
+                CREATE TABLE testdrive.item (
+                \tid INT NOT NULL, 
+                \tname STRING, 
+                \troot_id INT, 
+                \tPRIMARY KEY (id)
+                )
+    
+            """))  # noqa: W291, W293
+
+        # Verify if corresponding warning is emitted.
+        self.assertEqual(len(w), 1)
+        self.assertIsSubclass(w[-1].category, UserWarning)
+        self.assertIn("CrateDB does not support foreign key constraints, "
+                      "they will be omitted when generating DDL statements.", str(w[-1].message))
 
     def test_ddl_with_unique_key(self):
         """
@@ -366,12 +383,24 @@ class SqlAlchemyDDLCompilerTest(CompilerTestCase):
             id = sa.Column(sa.Integer, primary_key=True)
             name = sa.Column(sa.String, unique=True)
 
-        self.metadata.create_all(self.engine, tables=[FooBar.__table__], checkfirst=False)
-        self.assertEqual(self.executed_statement, dedent("""
-            CREATE TABLE testdrive.foobar (
-            \tid INT NOT NULL, 
-            \tname STRING, 
-            \tPRIMARY KEY (id)
-            )
+        with warnings.catch_warnings(record=True) as w:
 
-        """))  # noqa: W291
+            # Cause all warnings to always be triggered.
+            warnings.simplefilter("always")
+
+            # Verify SQL DDL statement.
+            self.metadata.create_all(self.engine, tables=[FooBar.__table__], checkfirst=False)
+            self.assertEqual(self.executed_statement, dedent("""
+                CREATE TABLE testdrive.foobar (
+                \tid INT NOT NULL, 
+                \tname STRING, 
+                \tPRIMARY KEY (id)
+                )
+    
+            """))  # noqa: W291, W293
+
+        # Verify if corresponding warning is emitted.
+        self.assertEqual(len(w), 1)
+        self.assertIsSubclass(w[-1].category, UserWarning)
+        self.assertIn("CrateDB does not support unique constraints, "
+                      "they will be omitted when generating DDL statements.", str(w[-1].message))

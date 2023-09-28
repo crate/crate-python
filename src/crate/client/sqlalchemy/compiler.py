@@ -20,6 +20,7 @@
 # software solely pursuant to the terms of the relevant commercial agreement.
 
 import string
+import warnings
 from collections import defaultdict
 
 import sqlalchemy as sa
@@ -182,12 +183,16 @@ class CrateDDLCompiler(compiler.DDLCompiler):
         """
         CrateDB does not support foreign key constraints.
         """
+        warnings.warn("CrateDB does not support foreign key constraints, "
+                      "they will be omitted when generating DDL statements.")
         return None
 
     def visit_unique_constraint(self, constraint, **kw):
         """
         CrateDB does not support unique key constraints.
         """
+        warnings.warn("CrateDB does not support unique constraints, "
+                      "they will be omitted when generating DDL statements.")
         return None
 
 

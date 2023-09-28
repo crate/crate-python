@@ -56,6 +56,7 @@ from crate.client.exceptions import (
     BlobLocationNotFoundException,
     DigestNotFoundException,
     ProgrammingError,
+    IntegrityError,
 )
 
 
@@ -191,6 +192,18 @@ def _ex_to_message(ex):
 
 
 def _raise_for_status(response):
+    """
+    Properly raise `IntegrityError` exceptions for CrateDB's `DuplicateKeyException` errors.
+    """
+    try:
+        return _raise_for_status_real(response)
+    except ProgrammingError as ex:
+        if "DuplicateKeyException" in ex.message:
+            raise IntegrityError(ex.message, error_trace=ex.error_trace) from ex
+        raise
+
+
+def _raise_for_status_real(response):
     """ make sure that only crate.exceptions are raised that are defined in
     the DB-API specification """
     message = ''

@@ -5,7 +5,12 @@ Changes for crate
 Unreleased
 ==========
 
-- Properly handle Python-native UUID types in SQL parameters
+
+2023/09/29 0.34.0
+=================
+
+- Properly handle Python-native UUID types in SQL parameters. Thanks,
+  @SStorm.
 - SQLAlchemy: Fix handling URL parameters ``timeout`` and ``pool_size``
 - Permit installation with urllib3 v2, see also `urllib3 v2.0 roadmap`_
   and `urllib3 v2.0 migration guide`_. You can optionally retain support
@@ -14,7 +19,7 @@ Unreleased
   deprecated ``commonName`` attribute. Instead, going forward, only the
   ``subjectAltName`` attribute will be used.
 - SQLAlchemy: Improve DDL compiler to ignore foreign key and uniqueness
-  constraints
+  constraints.
 - DBAPI: Properly raise ``IntegrityError`` exceptions instead of
   ``ProgrammingError``, when CrateDB raises a ``DuplicateKeyException``.
 - SQLAlchemy: Ignore SQL's ``FOR UPDATE`` clause. Thanks, @surister.

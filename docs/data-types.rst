@@ -47,7 +47,7 @@ CrateDB       Python
 ============= ===========
 
 __ https://crate.io/docs/crate/reference/en/latest/general/ddl/data-types.html#boolean
-__ https://docs.python.org/3/library/stdtypes.html#boolean-values
+__ https://docs.python.org/3/library/stdtypes.html#boolean-type-bool
 __ https://crate.io/docs/crate/reference/en/latest/general/ddl/data-types.html#character-data
 __ https://docs.python.org/3/library/stdtypes.html#str
 __ https://crate.io/docs/crate/reference/en/latest/general/ddl/data-types.html#numeric-data

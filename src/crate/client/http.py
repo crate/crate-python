@@ -49,8 +49,8 @@ from urllib3.exceptions import (
     SSLError,
 )
 from urllib3.util.retry import Retry
+from verlib2 import Version
 
-from crate.client._pep440 import Version
 from crate.client.exceptions import (
     ConnectionError,
     BlobLocationNotFoundException,

@@ -20,7 +20,7 @@
 # software solely pursuant to the terms of the relevant commercial agreement.
 
 import sqlalchemy as sa
-from crate.client._pep440 import Version
+from verlib2 import Version
 
 SA_VERSION = Version(sa.__version__)
 

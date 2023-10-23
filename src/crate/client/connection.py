@@ -23,7 +23,7 @@ from .cursor import Cursor
 from .exceptions import ProgrammingError, ConnectionError
 from .http import Client
 from .blob import BlobContainer
-from ._pep440 import Version
+from verlib2 import Version
 
 
 class Connection(object):

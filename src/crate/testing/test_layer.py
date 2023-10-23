@@ -22,7 +22,7 @@ import json
 import os
 import tempfile
 import urllib
-from crate.client._pep440 import Version
+from verlib2 import Version
 from unittest import TestCase, mock
 from io import BytesIO
 

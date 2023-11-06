@@ -38,7 +38,7 @@ jobs:
         # Another CI test matrix slot to test against prerelease versions of Python packages.
         include:
           - os: 'ubuntu-latest'
-            python-version: '3.11'
+            python-version: '3.12'
             cratedb-version: '5.2.2'
             sqla-version: 'latest'
             pip-allow-prerelease: 'true'

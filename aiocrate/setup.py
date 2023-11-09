@@ -34,35 +34,24 @@ def read(path):
         return f.read()
 
 
-long_description = read('README.rst')
-versionf_content = read("src/crate/client/__init__.py")
-version_rex = r'^__version__ = [\'"]([^\'"]*)[\'"]$'
-m = re.search(version_rex, versionf_content, re.M)
-if m:
-    version = m.group(1)
-else:
-    raise RuntimeError('Unable to find version string')
+#versionf_content = read("src/crate/client/__init__.py")
+#version_rex = r'^__version__ = [\'"]([^\'"]*)[\'"]$'
+#m = re.search(version_rex, versionf_content, re.M)
+#if m:
+#    version = m.group(1)
+#else:
+#    raise RuntimeError('Unable to find version string')
 
 setup(
-    name='crate',
-    version=version,
-    url='https://github.com/crate/crate-python',
-    author='Crate.io',
-    author_email='office@crate.io',
-    package_dir={'': 'src'},
+    name='aiocrate',
+    version='0.0.1',
+    #package_dir={'': 'src'},
     description='CrateDB Python Client',
-    long_description=long_description,
+    long_description='',
     long_description_content_type='text/x-rst',
     platforms=['any'],
     license='Apache License 2.0',
     keywords='crate db api sqlalchemy',
-    packages=find_packages('src'),
-    namespace_packages=['crate'],
-    entry_points={
-        'sqlalchemy.dialects': [
-            'crate = crate.client.sqlalchemy:CrateDialect'
-        ]
-    },
     extras_require=dict(
         test=['zope.testing',
               'zc.customdoctests>=1.0.1'],

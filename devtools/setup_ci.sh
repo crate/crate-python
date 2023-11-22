@@ -12,7 +12,7 @@ function main() {
 
   # Replace CrateDB version.
   if [ ${CRATEDB_VERSION} = "nightly" ]; then
-    sed -ir "s/releases/releases\/nightly/g" buildout.cfg
+    sed -ir "s!releases/cratedb/x64_linux!releases/nightly!g" buildout.cfg
     sed -ir "s/crate_server.*/crate_server = latest/g" versions.cfg
   else
     sed -ir "s/crate_server.*/crate_server = ${CRATEDB_VERSION}/g" versions.cfg

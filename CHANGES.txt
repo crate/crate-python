@@ -5,6 +5,10 @@ Changes for crate
 Unreleased
 ==========
 
+- Permit ``urllib3.Timeout`` instances for defining timeout values.
+  This way, both ``connect`` and ``read`` socket timeout settings can be
+  configured. The unit is seconds.
+
 
 2023/09/29 0.34.0
 =================

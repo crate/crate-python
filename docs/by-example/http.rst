@@ -199,10 +199,21 @@ timeout exception:
     {...}
     >>> http_client.close()
 
-It's possible to define a HTTP timeout in seconds on client instantiation, so
-an exception is raised when the timeout is reached:
+It is possible to define a HTTP timeout in seconds when creating a client
+object, so an exception is raised when the timeout expires:
 
     >>> http_client = HttpClient(crate_host, timeout=0.01)
+    >>> http_client.sql('select fib(32)')
+    Traceback (most recent call last):
+    ...
+    crate.client.exceptions.ConnectionError: No more Servers available, exception from last server: ...
+    >>> http_client.close()
+
+In order to adjust the connect- vs. read-timeout values individually,
+please use the ``urllib3.Timeout`` object like:
+
+    >>> import urllib3
+    >>> http_client = HttpClient(crate_host, timeout=urllib3.Timeout(connect=1.11, read=0.01))
     >>> http_client.sql('select fib(32)')
     Traceback (most recent call last):
     ...

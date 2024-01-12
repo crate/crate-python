@@ -1,5 +1,7 @@
 import datetime
 
+from urllib3 import Timeout
+
 from .connection import Connection
 from .http import Client
 from crate.client import connect
@@ -72,3 +74,25 @@ class ConnectionTest(TestCase):
         cursor = connection.cursor()
         self.assertEqual(cursor.time_zone.tzname(None), "UTC")
         self.assertEqual(cursor.time_zone.utcoffset(None), datetime.timedelta(0))
+
+    def test_timeout_float(self):
+        """
+        Verify setting the timeout value as a scalar (float) works.
+        """
+        with connect('localhost:4200', timeout=2.42) as conn:
+            self.assertEqual(conn.client._pool_kw["timeout"], 2.42)
+
+    def test_timeout_string(self):
+        """
+        Verify setting the timeout value as a scalar (string) works.
+        """
+        with connect('localhost:4200', timeout="2.42") as conn:
+            self.assertEqual(conn.client._pool_kw["timeout"], 2.42)
+
+    def test_timeout_object(self):
+        """
+        Verify setting the timeout value as a Timeout object works.
+        """
+        timeout = Timeout(connect=2.42, read=0.01)
+        with connect('localhost:4200', timeout=timeout) as conn:
+            self.assertEqual(conn.client._pool_kw["timeout"], timeout)

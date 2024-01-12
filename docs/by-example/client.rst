@@ -48,10 +48,23 @@ traceback if a server error occurs:
     >>> connection = client.connect([crate_host], error_trace=True)
     >>> connection.close()
 
+Network Timeouts
+----------------
+
 It's possible to define a default timeout value in seconds for all servers
-using the optional parameter ``timeout``:
+using the optional parameter ``timeout``. In this case, it will serve as a
+total timeout (connect and read):
 
     >>> connection = client.connect([crate_host, invalid_host], timeout=5)
+    >>> connection.close()
+
+If you want to adjust the connect- vs. read-timeout values individually,
+please use the ``urllib3.Timeout`` object like:
+
+    >>> import urllib3
+    >>> connection = client.connect(
+    ...     [crate_host, invalid_host],
+    ...     timeout=urllib3.Timeout(connect=5, read=None))
     >>> connection.close()
 
 Authentication

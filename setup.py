@@ -74,7 +74,7 @@ setup(
               'createcoverage>=1,<2',
               'dask',
               'stopit>=1.1.2,<2',
-              'flake8>=4,<7',
+              'flake8>=4,<8',
               'pandas<2.1',
               'pytz',
               ],

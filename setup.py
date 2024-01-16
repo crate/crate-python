@@ -53,11 +53,6 @@ setup(
     keywords='crate db api sqlalchemy',
     packages=find_packages('src'),
     namespace_packages=['crate'],
-    entry_points={
-        'sqlalchemy.dialects': [
-            'crate = crate.client.sqlalchemy:CrateDialect'
-        ]
-    },
     install_requires=[
         'urllib3<2.2',
         'verlib2==0.2.0',

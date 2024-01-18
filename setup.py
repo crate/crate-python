@@ -75,7 +75,7 @@ setup(
               'dask',
               'stopit>=1.1.2,<2',
               'flake8>=4,<8',
-              'pandas<2.1',
+              'pandas<2.2',
               'pytz',
               ],
         doc=['sphinx>=3.5,<8',

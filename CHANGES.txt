@@ -6,6 +6,12 @@ Unreleased
 ==========
 
 
+2024/01/18 0.35.2
+=================
+
+- Test compatibility: Permit installation of pandas 2.1.
+
+
 2024/01/18 0.35.1
 =================
 

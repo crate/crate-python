@@ -26,7 +26,7 @@ from unittest.mock import patch, MagicMock
 import sqlalchemy as sa
 from sqlalchemy.orm import Session
 
-from crate.client.sqlalchemy.sa_version import SA_VERSION, SA_2_0, SA_1_4
+from crate.client.sqlalchemy.sa_version import SA_VERSION, SA_2_0
 
 try:
     from sqlalchemy.orm import declarative_base
@@ -170,7 +170,7 @@ class SqlAlchemyBulkTest(TestCase):
         self.assertSequenceEqual(expected_bulk_args, bulk_args)
 
     @skipIf(sys.version_info < (3, 8), "SQLAlchemy/pandas is not supported on Python <3.8")
-    @skipIf(SA_VERSION < SA_1_4, "SQLAlchemy 1.3 is not supported by pandas")
+    @skipIf(SA_VERSION < SA_2_0, "SQLAlchemy 1.4 is no longer supported by pandas 2.2")
     @patch('crate.client.connection.Cursor', mock_cursor=FakeCursor)
     def test_bulk_save_pandas(self, mock_cursor):
         """
@@ -209,7 +209,7 @@ class SqlAlchemyBulkTest(TestCase):
         self.assertEqual(effective_op_count, OPCOUNT)
 
     @skipIf(sys.version_info < (3, 8), "SQLAlchemy/Dask is not supported on Python <3.8")
-    @skipIf(SA_VERSION < SA_1_4, "SQLAlchemy 1.3 is not supported by pandas")
+    @skipIf(SA_VERSION < SA_2_0, "SQLAlchemy 1.4 is no longer supported by pandas 2.2")
     @patch('crate.client.connection.Cursor', mock_cursor=FakeCursor)
     def test_bulk_save_dask(self, mock_cursor):
         """

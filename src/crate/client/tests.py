@@ -41,7 +41,7 @@ from crate.testing.settings import \
     crate_host, crate_path, crate_port, \
     crate_transport_port, docs_path, localhost
 from crate.client import connect
-from .sqlalchemy import SA_VERSION, SA_1_4
+from .sqlalchemy import SA_VERSION, SA_2_0
 
 from .test_cursor import CursorTest
 from .test_connection import ConnectionTest
@@ -395,7 +395,7 @@ def test_suite():
     ]
 
     # Don't run DataFrame integration tests on SQLAlchemy 1.3 and Python 3.7.
-    skip_dataframe = SA_VERSION < SA_1_4 or sys.version_info < (3, 8)
+    skip_dataframe = SA_VERSION < SA_2_0 or sys.version_info < (3, 8)
     if not skip_dataframe:
         sqlalchemy_integration_tests += [
             'docs/by-example/sqlalchemy/dataframe.rst',

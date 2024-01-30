@@ -21,7 +21,7 @@
 
 from .compat.api13 import monkeypatch_add_exec_driver_sql
 from .dialect import CrateDialect
-from .sa_version import SA_1_4, SA_VERSION
+from .sa_version import SA_1_4, SA_2_0, SA_VERSION  # noqa: F401
 
 
 if SA_VERSION < SA_1_4:

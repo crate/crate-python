@@ -76,6 +76,7 @@ setup(
               'stopit>=1.1.2,<2',
               'flake8>=4,<8',
               'pandas<2.3',
+              'pueblo>=0.0.7',
               'pytz',
               ],
         doc=['sphinx>=3.5,<8',

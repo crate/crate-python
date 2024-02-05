@@ -59,7 +59,7 @@ setup(
         ]
     },
     install_requires=[
-        'urllib3<2.2',
+        'urllib3<2.3',
         'verlib2==0.2.0',
     ],
     extras_require=dict(

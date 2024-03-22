@@ -92,7 +92,9 @@ class CrateJsonEncoder(json.JSONEncoder):
     epoch_naive = datetime(1970, 1, 1)
 
     def default(self, o):
-        if isinstance(o, (Decimal, UUID)):
+        if isinstance(o, (Decimal,)):
+            return float(o)
+        if isinstance(o, (UUID,)):
             return str(o)
         if isinstance(o, datetime):
             if o.tzinfo is not None:

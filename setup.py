@@ -72,7 +72,7 @@ setup(
               'zc.customdoctests>=1.0.1,<2',
               'certifi',
               'createcoverage>=1,<2',
-              'dask',
+              'dask[dataframe]',
               'stopit>=1.1.2,<2',
               'flake8>=4,<8',
               'pandas<2.3',

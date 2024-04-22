@@ -21,6 +21,12 @@ intersphinx_mapping.update({
 linkcheck_anchors = True
 linkcheck_ignore = [r"https://github.com/crate/cratedb-examples/blob/main/by-language/python-sqlalchemy/.*"]
 
+# Disable version chooser.
+html_context.update({
+    "display_version": False,
+    "current_version": None,
+    "versions": [],
+})
 
 rst_prolog = """
 .. |nbsp| unicode:: 0xA0

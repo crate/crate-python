@@ -18,7 +18,6 @@
 
 # Default variables.
 CRATEDB_VERSION=${CRATEDB_VERSION:-5.2.2}
-SQLALCHEMY_VERSION=${SQLALCHEMY_VERSION:-<2.1}
 
 
 function print_header() {
@@ -71,16 +70,7 @@ function setup_package() {
     fi
 
     # Install package in editable mode.
-    pip install ${PIP_OPTIONS} --editable='.[sqlalchemy,test]'
-
-    # Install designated SQLAlchemy version.
-    if [ -n "${SQLALCHEMY_VERSION}" ]; then
-      if [ "${SQLALCHEMY_VERSION}" = "latest" ]; then
-        pip install ${PIP_OPTIONS} --upgrade "sqlalchemy"
-      else
-        pip install ${PIP_OPTIONS} --upgrade "sqlalchemy${SQLALCHEMY_VERSION}"
-      fi
-    fi
+    pip install ${PIP_OPTIONS} --editable='.[test]'
 
 }
 
@@ -93,8 +83,6 @@ function finalize() {
     # Some steps before dropping into the activated virtualenv.
     echo
     echo "Sandbox environment ready"
-    echo -n "Using SQLAlchemy version: "
-    python -c 'import sqlalchemy; print(sqlalchemy.__version__)'
     echo
 
 }

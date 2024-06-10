@@ -50,26 +50,19 @@ setup(
     long_description_content_type='text/x-rst',
     platforms=['any'],
     license='Apache License 2.0',
-    keywords='crate db api sqlalchemy',
+    keywords='cratedb db api dbapi database sql http rdbms olap',
     packages=find_packages('src'),
     namespace_packages=['crate'],
-    entry_points={
-        'sqlalchemy.dialects': [
-            'crate = crate.client.sqlalchemy:CrateDialect'
-        ]
-    },
     install_requires=[
         'urllib3<2.3',
         'verlib2==0.2.0',
     ],
     extras_require=dict(
-        sqlalchemy=['sqlalchemy>=1.0,<2.1',
-                    'geojson>=2.5.0,<4',
-                    'backports.zoneinfo<1; python_version<"3.9"'],
         test=['tox>=3,<5',
               'zope.testing>=4,<6',
               'zope.testrunner>=5,<7',
               'zc.customdoctests>=1.0.1,<2',
+              'backports.zoneinfo<1; python_version<"3.9"',
               'certifi',
               'createcoverage>=1,<2',
               'dask[dataframe]',

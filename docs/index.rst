@@ -16,8 +16,7 @@ Introduction
 ************
 
 The Python client library for `CrateDB`_ implements the Python Database API
-Specification v2.0 (`PEP 249`_), and also includes the :ref:`CrateDB dialect
-<using-sqlalchemy>` for `SQLAlchemy`_.
+Specification v2.0 (`PEP 249`_).
 
 The Python driver can be used to connect to both `CrateDB`_ and `CrateDB
 Cloud`_, and is verified to work on Linux, macOS, and Windows. It is used by
@@ -28,14 +27,15 @@ it has also been tested successfully with `PyPy`_.
 Please make sure to also visit the section about :ref:`other-options`, using
 the :ref:`crate-reference:interface-postgresql` interface of `CrateDB`_.
 
+The :ref:`CrateDB dialect <using-sqlalchemy>` for `SQLAlchemy`_ is provided
+by the ``sqlalchemy-cratedb`` package.
+
 
 *************
 Documentation
 *************
 
-For general help about the Python Database API, or SQLAlchemy, please consult
-`PEP 249`_, the `SQLAlchemy tutorial`_, and the general `SQLAlchemy
-documentation`_.
+For general help about the Python Database API, please consult `PEP 249`_.
 For more detailed information about how to install the client driver, how to
 connect to a CrateDB cluster, and how to run queries, consult the resources
 referenced below.
@@ -86,77 +86,12 @@ Connect to `CrateDB Cloud`_.
         password="<PASSWORD>")
 
 
-SQLAlchemy
-==========
-
-The CrateDB dialect for `SQLAlchemy`_ offers convenient ORM access and supports
-CrateDB's ``OBJECT``, ``ARRAY``, and geospatial data types using `GeoJSON`_,
-supporting different kinds of `GeoJSON geometry objects`_.
-
-.. toctree::
-    :maxdepth: 2
-
-    sqlalchemy
-
-Install package from PyPI with DB API and SQLAlchemy support.
-
-.. code-block:: shell
-
-    pip install 'crate[sqlalchemy]' pandas
-
-Connect to CrateDB instance running on ``localhost``.
-
-.. code-block:: python
-
-    # Connect using SQLAlchemy Core.
-    import pkg_resources
-    import sqlalchemy as sa
-    from pprint import pp
-
-    pkg_resources.require("sqlalchemy>=2.0")
-    
-    dburi = "crate://localhost:4200"
-    query = "SELECT country, mountain, coordinates, height FROM sys.summits ORDER BY country;"
-    
-    engine = sa.create_engine(dburi, echo=True)
-    with engine.connect() as connection:
-        with connection.execute(sa.text(query)) as result:
-            pp(result.mappings().fetchall())
-
-Connect to `CrateDB Cloud`_.
-
-.. code-block:: python
-
-    # Connect using SQLAlchemy Core.
-    import sqlalchemy as sa
-    dburi = "crate://admin:<PASSWORD>@example.aks1.westeurope.azure.cratedb.net:4200?ssl=true"
-    engine = sa.create_engine(dburi, echo=True)
-
-Load results into `pandas`_ DataFrame.
-
-.. code-block:: python
-
-    # Connect using SQLAlchemy Core and pandas.
-    import pandas as pd
-    import sqlalchemy as sa
-    
-    dburi = "crate://localhost:4200"
-    query = "SELECT * FROM sys.summits ORDER BY country;"
-    
-    engine = sa.create_engine(dburi, echo=True)
-    with engine.connect() as connection:
-        df = pd.read_sql(sql=sa.text(query), con=connection)
-        df.info()
-        print(df)
-
-
 Data types
 ==========
 
-The DB API driver and the SQLAlchemy dialect support :ref:`CrateDB's data types
+The DB API driver supports :ref:`CrateDB's data types
 <crate-reference:data-types>` to different degrees. For more information,
-please consult the :ref:`data-types` and :ref:`SQLAlchemy extension types
-<using-extension-types>` documentation pages.
+please consult the :ref:`data-types` documentation page.
 
 .. toctree::
     :maxdepth: 2
@@ -168,11 +103,13 @@ Examples
 
 - The :ref:`by-example` section enumerates concise examples demonstrating the
   different API interfaces of the CrateDB Python client library. Those are
-  DB API, HTTP, and BLOB interfaces, and the SQLAlchemy dialect.
+  DB API, HTTP, and BLOB interfaces.
 - Executable code examples are maintained within the `cratedb-examples repository`_.
 - The `sample application`_ and the corresponding `sample application
   documentation`_ demonstrate the use of the driver on behalf of an example
   "guestbook" application.
+- ``sqlalchemy-cratedb`` has relevant code snippets about how to
+  connect to CrateDB using `SQLAlchemy`_, `pandas`_, and `Dask`_.
 - `Use CrateDB with pandas`_ has corresponding code snippets about how to
   connect to CrateDB using `pandas`_, and how to load and export data.
 - The `Apache Superset`_ and `FIWARE QuantumLeap data historian`_ projects.
@@ -223,6 +160,7 @@ The project is licensed under the terms of the Apache 2.0 license, like
 .. _CrateDB Cloud: https://console.cratedb.cloud/
 .. _CrateDB source: https://github.com/crate/crate
 .. _Create an issue: https://github.com/crate/crate-python/issues
+.. _Dask: https://en.wikipedia.org/wiki/Dask_(software)
 .. _development sandbox: https://github.com/crate/crate-python/blob/master/DEVELOP.rst
 .. _cratedb-examples repository: https://github.com/crate/cratedb-examples/tree/main/by-language
 .. _FIWARE QuantumLeap data historian: https://github.com/orchestracities/ngsi-timeseries-api
@@ -230,12 +168,10 @@ The project is licensed under the terms of the Apache 2.0 license, like
 .. _GeoJSON geometry objects: https://tools.ietf.org/html/rfc7946#section-3.1
 .. _LICENSE: https://github.com/crate/crate-python/blob/master/LICENSE
 .. _managed on GitHub: https://github.com/crate/crate-python
-.. _pandas: https://pandas.pydata.org/
+.. _pandas: https://en.wikipedia.org/wiki/Pandas_(software)
 .. _PEP 249: https://peps.python.org/pep-0249/
 .. _PyPy: https://www.pypy.org/
 .. _sample application: https://github.com/crate/crate-sample-apps/tree/main/python-flask
 .. _sample application documentation: https://github.com/crate/crate-sample-apps/blob/main/python-flask/documentation.md
-.. _SQLAlchemy: https://www.sqlalchemy.org/
-.. _SQLAlchemy documentation: https://docs.sqlalchemy.org/
-.. _SQLAlchemy tutorial: https://docs.sqlalchemy.org/en/latest/tutorial/
+.. _SQLAlchemy: https://en.wikipedia.org/wiki/Sqlalchemy
 .. _Use CrateDB with pandas: https://github.com/crate/crate-qa/pull/246

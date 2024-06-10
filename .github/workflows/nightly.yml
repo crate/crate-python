@@ -9,7 +9,6 @@ on:
 jobs:
   nightly:
     name: "Python: ${{ matrix.python-version }}
-     SQLA: ${{ matrix.sqla-version }}
      CrateDB: ${{ matrix.cratedb-version }}
      on ${{ matrix.os }}"
     runs-on: ${{ matrix.os }}
@@ -18,23 +17,11 @@ jobs:
         os: ['ubuntu-latest']
         python-version: ['3.7', '3.8', '3.9', '3.10', '3.11', '3.12']
         cratedb-version: ['nightly']
-        sqla-version: ['latest']
-        pip-allow-prerelease: ['false']
-
-        # Another CI test matrix slot to test against prerelease versions of Python packages.
-        include:
-          - os: 'ubuntu-latest'
-            python-version: '3.12'
-            cratedb-version: 'nightly'
-            sqla-version: 'latest'
-            pip-allow-prerelease: 'true'
 
       fail-fast: false
 
     env:
       CRATEDB_VERSION: ${{ matrix.cratedb-version }}
-      SQLALCHEMY_VERSION: ${{ matrix.sqla-version }}
-      PIP_ALLOW_PRERELEASE: ${{ matrix.pip-allow-prerelease }}
 
     steps:
       - uses: actions/checkout@v4
@@ -55,11 +42,10 @@ jobs:
           source bootstrap.sh
 
           # Report about the test matrix slot.
-          echo "Invoking tests with CrateDB ${CRATEDB_VERSION} and SQLAlchemy ${SQLALCHEMY_VERSION}"
+          echo "Invoking tests with CrateDB ${CRATEDB_VERSION}"
 
           # Run linter.
           flake8 src bin
           
           # Run tests.
-          export SQLALCHEMY_WARN_20=1
           bin/test -vvv

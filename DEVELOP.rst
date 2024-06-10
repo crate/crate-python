@@ -30,9 +30,7 @@ Run all tests::
 
 Run specific tests::
 
-    ./bin/test -vvvv -t SqlAlchemyCompilerTest
     ./bin/test -vvvv -t test_score
-    ./bin/test -vvvv -t sqlalchemy
 
 Ignore specific test directories::
 

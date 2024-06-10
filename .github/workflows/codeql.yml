@@ -19,7 +19,7 @@ concurrency:
 jobs:
 
   analyze:
-    name: "Analyze with SQLAlchemy ${{ matrix.sqla-version }}"
+    name: "Analyze Python code"
     runs-on: ubuntu-latest
     permissions:
       actions: read
@@ -28,9 +28,7 @@ jobs:
 
     strategy:
       fail-fast: false
-      matrix:
-        language: [ python ]
-        sqla-version: ['<1.4', '<1.5', '<2.1']
+      language: [ python ]
 
     steps:
       - name: Checkout
@@ -57,10 +55,7 @@ jobs:
 
       - name: Install project
         run: |
-          pip install --editable=.[sqlalchemy,test]
-          pip install "sqlalchemy${{ matrix.sqla-version }}" --upgrade --pre
+          pip install --editable=.[test]
 
       - name: Perform CodeQL Analysis
         uses: github/codeql-action/analyze@v3
-        with:
-          category: "/language:${{ matrix.language }}/sqla-version:${{ matrix.sqla-version }}"

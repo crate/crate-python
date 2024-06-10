@@ -13,7 +13,6 @@ concurrency:
 jobs:
   test:
     name: "Python: ${{ matrix.python-version }}
-     SQLA: ${{ matrix.sqla-version }}
      on ${{ matrix.os }}"
     runs-on: ${{ matrix.os }}
     strategy:
@@ -21,8 +20,6 @@ jobs:
         os: ['ubuntu-latest', 'macos-latest']
         python-version: ['3.7', '3.8', '3.9', '3.10', '3.11', '3.12']
         cratedb-version: ['5.4.5']
-        sqla-version: ['<1.4', '<1.5', '<2.1']
-        pip-allow-prerelease: ['false']
 
         # To save resources, only use the most recent Python versions on macOS.
         exclude:
@@ -35,20 +32,10 @@ jobs:
           - os: 'macos-latest'
             python-version: '3.10'
 
-        # Another CI test matrix slot to test against prerelease versions of Python packages.
-        include:
-          - os: 'ubuntu-latest'
-            python-version: '3.12'
-            cratedb-version: '5.4.5'
-            sqla-version: 'latest'
-            pip-allow-prerelease: 'true'
-
       fail-fast: false
 
     env:
       CRATEDB_VERSION: ${{ matrix.cratedb-version }}
-      SQLALCHEMY_VERSION: ${{ matrix.sqla-version }}
-      PIP_ALLOW_PRERELEASE: ${{ matrix.pip-allow-prerelease }}
       CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
 
     steps:
@@ -70,13 +57,12 @@ jobs:
           source bootstrap.sh
 
           # Report about the test matrix slot.
-          echo "Invoking tests with CrateDB ${CRATEDB_VERSION} and SQLAlchemy ${SQLALCHEMY_VERSION}"
+          echo "Invoking tests with CrateDB ${CRATEDB_VERSION}"
 
           # Run linter.
           flake8 src bin
           
           # Run tests.
-          export SQLALCHEMY_WARN_20=1
           coverage run bin/test -vvv
 
           # Set the stage for uploading the coverage report.

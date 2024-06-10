@@ -24,7 +24,6 @@ from __future__ import absolute_import
 import json
 import os
 import socket
-import sys
 import unittest
 import doctest
 from pprint import pprint
@@ -41,7 +40,6 @@ from crate.testing.settings import \
     crate_host, crate_path, crate_port, \
     crate_transport_port, docs_path, localhost
 from crate.client import connect
-from .sqlalchemy import SA_VERSION, SA_2_0
 
 from .test_cursor import CursorTest
 from .test_connection import ConnectionTest
@@ -56,8 +54,6 @@ from .test_http import (
     TestCrateJsonEncoder,
     TestDefaultSchemaHeader,
 )
-from .sqlalchemy.tests import test_suite_unit as sqlalchemy_test_suite_unit
-from .sqlalchemy.tests import test_suite_integration as sqlalchemy_test_suite_integration
 
 makeSuite = unittest.TestLoader().loadTestsFromTestCase
 
@@ -145,37 +141,6 @@ def setUpCrateLayerBaseline(test):
         cursor.close()
 
 
-def setUpCrateLayerSqlAlchemy(test):
-    """
-    Setup tables and views needed for SQLAlchemy tests.
-    """
-    setUpCrateLayerBaseline(test)
-
-    ddl_statements = [
-        """
-        CREATE TABLE characters (
-            id STRING PRIMARY KEY,
-            name STRING,
-            quote STRING,
-            details OBJECT,
-            more_details ARRAY(OBJECT),
-            INDEX name_ft USING fulltext(name) WITH (analyzer = 'english'),
-            INDEX quote_ft USING fulltext(quote) WITH (analyzer = 'english')
-            )""",
-        """
-        CREATE VIEW characters_view
-            AS SELECT * FROM characters
-        """,
-        """
-        CREATE TABLE cities (
-            name STRING PRIMARY KEY,
-            coordinate GEO_POINT,
-            area GEO_SHAPE
-        )"""
-    ]
-    _execute_statements(ddl_statements, on_error="raise")
-
-
 def tearDownDropEntitiesBaseline(test):
     """
     Drop all tables, views, and users created by `setUpWithCrateLayer*`.
@@ -185,19 +150,6 @@ def tearDownDropEntitiesBaseline(test):
         "DROP BLOB TABLE myfiles",
         "DROP USER me",
         "DROP USER trusted_me",
-    ]
-    _execute_statements(ddl_statements)
-
-
-def tearDownDropEntitiesSqlAlchemy(test):
-    """
-    Drop all tables, views, and users created by `setUpWithCrateLayer*`.
-    """
-    tearDownDropEntitiesBaseline(test)
-    ddl_statements = [
-        "DROP TABLE characters",
-        "DROP VIEW characters_view",
-        "DROP TABLE cities",
     ]
     _execute_statements(ddl_statements)
 
@@ -349,7 +301,6 @@ def test_suite():
     suite.addTest(makeSuite(TestUsernameSentAsHeader))
     suite.addTest(makeSuite(TestCrateJsonEncoder))
     suite.addTest(makeSuite(TestDefaultSchemaHeader))
-    suite.addTest(sqlalchemy_test_suite_unit())
     suite.addTest(doctest.DocTestSuite('crate.client.connection'))
     suite.addTest(doctest.DocTestSuite('crate.client.http'))
 
@@ -384,33 +335,6 @@ def test_suite():
         encoding='utf-8'
     )
     s.layer = ensure_cratedb_layer()
-    suite.addTest(s)
-
-    sqlalchemy_integration_tests = [
-        'docs/by-example/sqlalchemy/getting-started.rst',
-        'docs/by-example/sqlalchemy/crud.rst',
-        'docs/by-example/sqlalchemy/working-with-types.rst',
-        'docs/by-example/sqlalchemy/advanced-querying.rst',
-        'docs/by-example/sqlalchemy/inspection-reflection.rst',
-    ]
-
-    # Don't run DataFrame integration tests on SQLAlchemy 1.3 and Python 3.7.
-    skip_dataframe = SA_VERSION < SA_2_0 or sys.version_info < (3, 8)
-    if not skip_dataframe:
-        sqlalchemy_integration_tests += [
-            'docs/by-example/sqlalchemy/dataframe.rst',
-        ]
-
-    s = doctest.DocFileSuite(
-        *sqlalchemy_integration_tests,
-        module_relative=False,
-        setUp=setUpCrateLayerSqlAlchemy,
-        tearDown=tearDownDropEntitiesSqlAlchemy,
-        optionflags=flags,
-        encoding='utf-8'
-    )
-    s.layer = ensure_cratedb_layer()
-    s.addTest(sqlalchemy_test_suite_integration())
     suite.addTest(s)
 
     return suite

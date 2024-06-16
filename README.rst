@@ -22,8 +22,8 @@ CrateDB Python Client
     :target: https://pypi.org/project/crate/
     :alt: Python Version
 
-.. image:: https://img.shields.io/pypi/dw/crate.svg
-    :target: https://pypi.org/project/crate/
+.. image:: https://static.pepy.tech/badge/crate/month
+    :target: https://pepy.tech/project/crate
     :alt: PyPI Downloads
 
 .. image:: https://img.shields.io/pypi/wheel/crate.svg

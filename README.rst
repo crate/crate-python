@@ -41,12 +41,11 @@ CrateDB Python Client
 
 |
 
-A Python client library for CrateDB_.
+A Python client library for `CrateDB`_, implementing the Python `DB API 2.0`_
+specification.
 
-This library:
-
-- Implements the Python `DB API 2.0`_ specification.
-- Includes support for SQLAlchemy_ in form of an `SQLAlchemy dialect`_.
+The CrateDB dialect for `SQLAlchemy`_ is provided by the `sqlalchemy-cratedb`_
+package, see also `sqlalchemy-cratedb documentation`_.
 
 
 Installation
@@ -54,10 +53,9 @@ Installation
 
 The CrateDB Python client is available as package `crate`_ on `PyPI`_.
 
-To install the most recent driver version, including the SQLAlchemy dialect
-extension, run::
+To install the most recent driver version, run::
 
-    $ pip install "crate[sqlalchemy]" --upgrade
+    $ pip install --upgrade crate
 
 
 Documentation and help
@@ -87,7 +85,8 @@ GitHub`_. We appreciate contributions of any kind.
 .. _Developer documentation: DEVELOP.rst
 .. _managed on GitHub: https://github.com/crate/crate-python
 .. _PyPI: https://pypi.org/
-.. _SQLAlchemy: https://www.sqlalchemy.org
-.. _SQLAlchemy dialect: https://docs.sqlalchemy.org/dialects/
+.. _SQLAlchemy: https://www.sqlalchemy.org/
+.. _sqlalchemy-cratedb: https://github.com/crate/sqlalchemy-cratedb
+.. _sqlalchemy-cratedb documentation: https://cratedb.com/docs/sqlalchemy-cratedb/
 .. _StackOverflow: https://stackoverflow.com/tags/cratedb
 .. _support channels: https://crate.io/support/

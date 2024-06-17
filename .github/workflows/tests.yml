@@ -20,7 +20,7 @@ jobs:
       matrix:
         os: ['ubuntu-latest', 'macos-latest']
         python-version: ['3.7', '3.8', '3.9', '3.10', '3.11', '3.12']
-        cratedb-version: ['5.4.5']
+        cratedb-version: ['nightly']
         sqla-version: ['<1.4', '<1.5', '<2.1']
         pip-allow-prerelease: ['false']
 
@@ -39,7 +39,7 @@ jobs:
         include:
           - os: 'ubuntu-latest'
             python-version: '3.12'
-            cratedb-version: '5.4.5'
+            cratedb-version: 'nightly'
             sqla-version: 'latest'
             pip-allow-prerelease: 'true'
 

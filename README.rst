@@ -11,7 +11,7 @@ CrateDB Python Client
     :alt: Coverage
 
 .. image:: https://readthedocs.org/projects/crate-python/badge/
-    :target: https://crate.io/docs/python/
+    :target: https://cratedb.com/docs/python/
     :alt: Build status (documentation)
 
 .. image:: https://img.shields.io/pypi/v/crate.svg
@@ -77,9 +77,9 @@ GitHub`_. We appreciate contributions of any kind.
 
 .. _Contributing: CONTRIBUTING.rst
 .. _crate: https://pypi.org/project/crate/
-.. _Crate.io: https://crate.io/
+.. _Crate.io: https://cratedb.com/
 .. _CrateDB: https://github.com/crate/crate
-.. _CrateDB Python Client documentation: https://crate.io/docs/python/
+.. _CrateDB Python Client documentation: https://cratedb.com/docs/python/
 .. _CrateDB reference documentation: https://crate.io/docs/reference/
 .. _DB API 2.0: https://peps.python.org/pep-0249/
 .. _Developer documentation: DEVELOP.rst
@@ -89,4 +89,4 @@ GitHub`_. We appreciate contributions of any kind.
 .. _sqlalchemy-cratedb: https://github.com/crate/sqlalchemy-cratedb
 .. _sqlalchemy-cratedb documentation: https://cratedb.com/docs/sqlalchemy-cratedb/
 .. _StackOverflow: https://stackoverflow.com/tags/cratedb
-.. _support channels: https://crate.io/support/
+.. _support channels: https://cratedb.com/support/

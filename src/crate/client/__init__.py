@@ -32,5 +32,5 @@ __all__ = [
 __version__ = "0.35.2"
 
 apilevel = "2.0"
-threadsafety = 2
+threadsafety = 1
 paramstyle = "qmark"

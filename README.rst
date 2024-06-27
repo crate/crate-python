@@ -58,7 +58,18 @@ To install the most recent driver version, run::
     $ pip install --upgrade crate
 
 
-Documentation and help
+Migration Notes
+===============
+
+If you are migrating from previous versions of ``crate[sqlalchemy]<1.0.0``, you
+will find that the newer releases ``crate>=1.0.0`` no longer include the
+SQLAlchemy dialect for CrateDB.
+
+See `migrate to sqlalchemy-cratedb`_ for relevant guidelines about how to
+successfully migrate to the `sqlalchemy-cratedb`_ package.
+
+
+Documentation and Help
 ======================
 
 - `CrateDB Python Client documentation`_
@@ -68,8 +79,8 @@ Documentation and help
 - Other `support channels`_
 
 
-Contributing
-============
+Contributions
+=============
 
 The CrateDB Python client library is an open source project, and is `managed on
 GitHub`_. We appreciate contributions of any kind.
@@ -84,6 +95,7 @@ GitHub`_. We appreciate contributions of any kind.
 .. _DB API 2.0: https://peps.python.org/pep-0249/
 .. _Developer documentation: DEVELOP.rst
 .. _managed on GitHub: https://github.com/crate/crate-python
+.. _migrate to sqlalchemy-cratedb: https://cratedb.com/docs/sqlalchemy-cratedb/migrate-from-crate-client.html
 .. _PyPI: https://pypi.org/
 .. _SQLAlchemy: https://www.sqlalchemy.org/
 .. _sqlalchemy-cratedb: https://github.com/crate/sqlalchemy-cratedb

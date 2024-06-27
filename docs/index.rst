@@ -27,9 +27,6 @@ it has also been tested successfully with `PyPy`_.
 Please make sure to also visit the section about :ref:`other-options`, using
 the :ref:`crate-reference:interface-postgresql` interface of `CrateDB`_.
 
-The :ref:`CrateDB dialect <using-sqlalchemy>` for `SQLAlchemy`_ is provided
-by the ``sqlalchemy-cratedb`` package.
-
 
 *************
 Documentation
@@ -97,6 +94,21 @@ please consult the :ref:`data-types` documentation page.
     :maxdepth: 2
 
     data-types
+
+
+Migration Notes
+===============
+
+The :ref:`CrateDB dialect <using-sqlalchemy>` for `SQLAlchemy`_ is provided
+by the `sqlalchemy-cratedb`_ package.
+
+If you are migrating from previous versions of ``crate[sqlalchemy]<1.0.0``, you
+will find that the newer releases ``crate>=1.0.0`` no longer include the
+SQLAlchemy dialect for CrateDB.
+
+See `migrate to sqlalchemy-cratedb`_ for relevant guidelines about how to
+successfully migrate to the `sqlalchemy-cratedb`_ package.
+
 
 Examples
 ========
@@ -168,10 +180,12 @@ The project is licensed under the terms of the Apache 2.0 license, like
 .. _GeoJSON geometry objects: https://tools.ietf.org/html/rfc7946#section-3.1
 .. _LICENSE: https://github.com/crate/crate-python/blob/master/LICENSE
 .. _managed on GitHub: https://github.com/crate/crate-python
+.. _migrate to sqlalchemy-cratedb: https://cratedb.com/docs/sqlalchemy-cratedb/migrate-from-crate-client.html
 .. _pandas: https://en.wikipedia.org/wiki/Pandas_(software)
 .. _PEP 249: https://peps.python.org/pep-0249/
 .. _PyPy: https://www.pypy.org/
 .. _sample application: https://github.com/crate/crate-sample-apps/tree/main/python-flask
 .. _sample application documentation: https://github.com/crate/crate-sample-apps/blob/main/python-flask/documentation.md
 .. _SQLAlchemy: https://en.wikipedia.org/wiki/Sqlalchemy
+.. _sqlalchemy-cratedb: https://github.com/crate/sqlalchemy-cratedb
 .. _Use CrateDB with pandas: https://github.com/crate/crate-qa/pull/246

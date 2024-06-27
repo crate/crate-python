@@ -116,15 +116,16 @@ Examples
 - The :ref:`by-example` section enumerates concise examples demonstrating the
   different API interfaces of the CrateDB Python client library. Those are
   DB API, HTTP, and BLOB interfaces.
+
 - Executable code examples are maintained within the `cratedb-examples repository`_.
+  `sqlalchemy-cratedb`_, `python-dataframe-examples`_, and `python-sqlalchemy-examples`_
+  provide relevant code snippets about how to connect to CrateDB using
+  `SQLAlchemy`_, `pandas`_, or `Dask`_, and how to load and export data.
+
 - The `sample application`_ and the corresponding `sample application
   documentation`_ demonstrate the use of the driver on behalf of an example
-  "guestbook" application.
-- ``sqlalchemy-cratedb`` has relevant code snippets about how to
-  connect to CrateDB using `SQLAlchemy`_, `pandas`_, and `Dask`_.
-- `Use CrateDB with pandas`_ has corresponding code snippets about how to
-  connect to CrateDB using `pandas`_, and how to load and export data.
-- The `Apache Superset`_ and `FIWARE QuantumLeap data historian`_ projects.
+  "guestbook" application, using Flask.
+
 
 .. toctree::
     :maxdepth: 2
@@ -174,7 +175,7 @@ The project is licensed under the terms of the Apache 2.0 license, like
 .. _Create an issue: https://github.com/crate/crate-python/issues
 .. _Dask: https://en.wikipedia.org/wiki/Dask_(software)
 .. _development sandbox: https://github.com/crate/crate-python/blob/master/DEVELOP.rst
-.. _cratedb-examples repository: https://github.com/crate/cratedb-examples/tree/main/by-language
+.. _cratedb-examples repository: https://github.com/crate/cratedb-examples
 .. _FIWARE QuantumLeap data historian: https://github.com/orchestracities/ngsi-timeseries-api
 .. _GeoJSON: https://geojson.org/
 .. _GeoJSON geometry objects: https://tools.ietf.org/html/rfc7946#section-3.1
@@ -184,6 +185,8 @@ The project is licensed under the terms of the Apache 2.0 license, like
 .. _pandas: https://en.wikipedia.org/wiki/Pandas_(software)
 .. _PEP 249: https://peps.python.org/pep-0249/
 .. _PyPy: https://www.pypy.org/
+.. _python-dataframe-examples: https://github.com/crate/cratedb-examples/tree/main/by-dataframe
+.. _python-sqlalchemy-examples: https://github.com/crate/cratedb-examples/tree/main/by-language/python-sqlalchemy
 .. _sample application: https://github.com/crate/crate-sample-apps/tree/main/python-flask
 .. _sample application documentation: https://github.com/crate/crate-sample-apps/blob/main/python-flask/documentation.md
 .. _SQLAlchemy: https://en.wikipedia.org/wiki/Sqlalchemy

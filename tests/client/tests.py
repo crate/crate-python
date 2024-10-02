@@ -8,6 +8,7 @@ from .test_http import HttpClientTest, KeepAliveClientTest, ThreadSafeHttpClient
     TestDefaultSchemaHeader
 from .layer import makeSuite, setUpWithHttps, HttpsTestServerLayer, setUpCrateLayerBaseline, \
     tearDownDropEntitiesBaseline, ensure_cratedb_layer
+from .test_result import BulkOperationTest
 
 
 def test_suite():
@@ -50,6 +51,10 @@ def test_suite():
 
     # Integration tests.
     layer = ensure_cratedb_layer()
+
+    s = makeSuite(BulkOperationTest)
+    s.layer = layer
+    suite.addTest(s)
 
     s = doctest.DocFileSuite(
         'docs/by-example/http.rst',

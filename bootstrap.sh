@@ -17,7 +17,7 @@
 # set -x
 
 # Default variables.
-CRATEDB_VERSION=${CRATEDB_VERSION:-5.2.2}
+CRATEDB_VERSION=${CRATEDB_VERSION:-5.8.3}
 
 
 function print_header() {

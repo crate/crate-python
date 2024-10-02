@@ -10,6 +10,8 @@ Unreleased
   about necessary migration steps.
 - Configured DB API interface attribute ``threadsafety = 1``, which signals
   "Threads may share the module, but not connections."
+- Added ``error_trace`` to string representation of an Error to relay
+  server stacktraces into exception messages.
 
 .. _Migrate from crate.client to sqlalchemy-cratedb: https://cratedb.com/docs/sqlalchemy-cratedb/migrate-from-crate-client.html
 .. _sqlalchemy-cratedb: https://pypi.org/project/sqlalchemy-cratedb/

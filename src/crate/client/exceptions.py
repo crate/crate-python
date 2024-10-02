@@ -30,6 +30,11 @@ class Error(Exception):
         super(Error, self).__init__(msg)
         self.error_trace = error_trace
 
+    def __str__(self):
+        if self.error_trace is None:
+            return super().__str__()
+        return "\n".join([super().__str__(), str(self.error_trace)])
+
 
 class Warning(Exception):
     pass

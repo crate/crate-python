@@ -1,3 +1,2 @@
-setuptools<70
 zc.buildout==3.1.0
 zope.interface==6.4.post2

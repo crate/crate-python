@@ -20,8 +20,12 @@ class BulkResponse:
 
     def __init__(
             self,
-            records: t.Union[t.Iterable[t.Dict[str, t.Any]], None],
-            results: t.Union[t.Iterable[BulkResultItem], None]):
+            records: t.List[t.Dict[str, t.Any]],
+            results: t.List[BulkResultItem]):
+        if records is None:
+            raise ValueError("Processing a bulk response without records is an invalid operation")
+        if results is None:
+            raise ValueError("Processing a bulk response without results is an invalid operation")
         self.records = records
         self.results = results
 
@@ -34,8 +38,6 @@ class BulkResponse:
 
         https://cratedb.com/docs/crate/reference/en/latest/interfaces/http.html#error-handling
         """
-        if self.records is None or self.results is None:
-            return []
         errors: t.List[t.Dict[str, t.Any]] = []
         for record, status in zip(self.records, self.results):
             if status["rowcount"] == -2:

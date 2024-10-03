@@ -68,3 +68,21 @@ class BulkOperationTest(unittest.TestCase):
 
         cursor.close()
         connection.close()
+
+    @unittest.skipIf(sys.version_info < (3, 8), "BulkResponse needs Python 3.8 or higher")
+    def test_bulk_response_empty_records_or_results(self):
+
+        # Import at runtime is on purpose, to permit skipping the test case.
+        from crate.client.result import BulkResponse
+
+        with self.assertRaises(ValueError) as cm:
+            BulkResponse(records=None, results=None)
+        self.assertEqual(
+            str(cm.exception),
+            "Processing a bulk response without records is an invalid operation")
+
+        with self.assertRaises(ValueError) as cm:
+            BulkResponse(records=[], results=None)
+        self.assertEqual(
+            str(cm.exception),
+            "Processing a bulk response without results is an invalid operation")

@@ -72,7 +72,7 @@ setup(
               'pueblo>=0.0.7',
               'pytz',
               ],
-        doc=['sphinx>=3.5,<8',
+        doc=['sphinx>=3.5,<9',
              'crate-docs-theme>=0.26.5'],
     ),
     python_requires='>=3.6',

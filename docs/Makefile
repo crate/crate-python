@@ -86,7 +86,7 @@ SRC_MAKE      := $(MAKE) -f $(SRC_DIR)/rules.mk
 
 # Parse the JSON file
 BUILD_VERSION := $(shell cat $(BUILD_JSON) | \
-    python -c 'import json, sys; print(json.load(sys.stdin)["message"])')
+    python3 -c 'import json, sys; print(json.load(sys.stdin)["message"])')
 
 ifeq ($(BUILD_VERSION),)
 $(error No build version specified in `$(BUILD_JSON)`.)

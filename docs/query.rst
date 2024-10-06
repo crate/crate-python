@@ -76,6 +76,20 @@ for every tuple. This dictionary always has a ``rowcount`` key, indicating
 how many rows were inserted. If an error occurs, the ``rowcount`` value is
 ``-2``, and the dictionary may additionally have an ``error_message`` key.
 
+The package includes a helper utility ``BulkResponse`` that supports parsing
+such responses to bulk operation requests. It works like this::
+
+    from crate.client.result import BulkResponse
+
+    result = cursor.executemany(statement, records)
+    bulk_response = BulkResponse(records, result)
+
+It provides properties ``failed_records``, ``record_count``, ``success_count``,
+and ``failed_count``. ``failed_records`` will provide information which records
+of the bulk operation failed to succeed, by evaluating ``{'rowcount': -2}``
+items, and matching them against submitted records.
+
+
 .. _selects:
 
 Selecting data

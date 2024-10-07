@@ -18,10 +18,10 @@ jobs:
     strategy:
       matrix:
         os: ['ubuntu-latest', 'macos-latest']
-        python-version: ['3.7', '3.8', '3.9', '3.10', '3.11', '3.12']
+        python-version: ['3.7', '3.8', '3.9', '3.10', '3.11', '3.12', '3.13']
         cratedb-version: ['5.8.3']
 
-        # To save resources, only use the most recent Python versions on macOS.
+        # To save resources, only verify the most recent Python versions on macOS.
         exclude:
           - os: 'macos-latest'
             python-version: '3.7'

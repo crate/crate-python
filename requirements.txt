@@ -1,2 +1,2 @@
 zc.buildout==3.3
-zope.interface==6.4.post2
+zope.interface==7.1.1

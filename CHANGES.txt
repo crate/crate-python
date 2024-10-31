@@ -14,6 +14,8 @@ Unreleased
   server stacktraces into exception messages.
 - Refactoring: The module namespace ``crate.client.test_util`` has been
   renamed to ``crate.testing.util``.
+- Added ``BulkResponse`` wrapper for improved decoding of CrateDB HTTP bulk
+  responses including ``rowcount=`` items.
 
 .. _Migrate from crate.client to sqlalchemy-cratedb: https://cratedb.com/docs/sqlalchemy-cratedb/migrate-from-crate-client.html
 .. _sqlalchemy-cratedb: https://pypi.org/project/sqlalchemy-cratedb/

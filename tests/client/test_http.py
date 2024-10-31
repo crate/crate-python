@@ -19,34 +19,42 @@
 # with Crate these terms will supersede the license and you may use the
 # software solely pursuant to the terms of the relevant commercial agreement.
 
+import datetime as dt
 import json
-import time
-import socket
 import multiprocessing
-import sys
 import os
 import queue
 import random
+import socket
+import sys
+import time
 import traceback
+import uuid
+from base64 import b64decode
+from decimal import Decimal
 from http.server import BaseHTTPRequestHandler, HTTPServer
 from multiprocessing.context import ForkProcess
+from threading import Event, Thread
 from unittest import TestCase
-from unittest.mock import patch, MagicMock
-from threading import Thread, Event
-from decimal import Decimal
-import datetime as dt
+from unittest.mock import MagicMock, patch
+from urllib.parse import parse_qs, urlparse
 
-import urllib3.exceptions
-from base64 import b64decode
-from urllib.parse import urlparse, parse_qs
-
-import uuid
 import certifi
+import urllib3.exceptions
 
-from crate.client.http import Client, CrateJsonEncoder, _get_socket_opts, _remove_certs_for_non_https
-from crate.client.exceptions import ConnectionError, ProgrammingError, IntegrityError
+from crate.client.exceptions import (
+    ConnectionError,
+    IntegrityError,
+    ProgrammingError,
+)
+from crate.client.http import (
+    Client,
+    CrateJsonEncoder,
+    _get_socket_opts,
+    _remove_certs_for_non_https,
+)
 
-REQUEST = 'crate.client.http.Server.request'
+REQUEST = "crate.client.http.Server.request"
 CA_CERT_PATH = certifi.where()
 
 
@@ -60,14 +68,15 @@ def fake_request(response=None):
             return response
         else:
             return MagicMock(spec=urllib3.response.HTTPResponse)
+
     return request
 
 
-def fake_response(status, reason=None, content_type='application/json'):
+def fake_response(status, reason=None, content_type="application/json"):
     m = MagicMock(spec=urllib3.response.HTTPResponse)
     m.status = status
-    m.reason = reason or ''
-    m.headers = {'content-type': content_type}
+    m.reason = reason or ""
+    m.headers = {"content-type": content_type}
     return m
 
 
@@ -78,47 +87,61 @@ def fake_redirect(location):
 
 
 def bad_bulk_response():
-    r = fake_response(400, 'Bad Request')
-    r.data = json.dumps({
-        "results": [
-            {"rowcount": 1},
-            {"error_message": "an error occured"},
-            {"error_message": "another error"},
-            {"error_message": ""},
-            {"error_message": None}
-        ]}).encode()
+    r = fake_response(400, "Bad Request")
+    r.data = json.dumps(
+        {
+            "results": [
+                {"rowcount": 1},
+                {"error_message": "an error occured"},
+                {"error_message": "another error"},
+                {"error_message": ""},
+                {"error_message": None},
+            ]
+        }
+    ).encode()
     return r
 
 
 def duplicate_key_exception():
-    r = fake_response(409, 'Conflict')
-    r.data = json.dumps({
-        "error": {
-            "code": 4091,
-            "message": "DuplicateKeyException[A document with the same primary key exists already]"
+    r = fake_response(409, "Conflict")
+    r.data = json.dumps(
+        {
+            "error": {
+                "code": 4091,
+                "message": "DuplicateKeyException[A document with the "
+                "same primary key exists already]",
+            }
         }
-    }).encode()
+    ).encode()
     return r
 
 
 def fail_sometimes(*args, **kwargs):
     if random.randint(1, 100) % 10 == 0:
-        raise urllib3.exceptions.MaxRetryError(None, '/_sql', '')
+        raise urllib3.exceptions.MaxRetryError(None, "/_sql", "")
     return fake_response(200)
 
 
 class HttpClientTest(TestCase):
-
-    @patch(REQUEST, fake_request([fake_response(200),
-                                  fake_response(104, 'Connection reset by peer'),
-                                  fake_response(503, 'Service Unavailable')]))
+    @patch(
+        REQUEST,
+        fake_request(
+            [
+                fake_response(200),
+                fake_response(104, "Connection reset by peer"),
+                fake_response(503, "Service Unavailable"),
+            ]
+        ),
+    )
     def test_connection_reset_exception(self):
         client = Client(servers="localhost:4200")
-        client.sql('select 1')
-        client.sql('select 2')
-        self.assertEqual(['http://localhost:4200'], list(client._active_servers))
+        client.sql("select 1")
+        client.sql("select 2")
+        self.assertEqual(
+            ["http://localhost:4200"], list(client._active_servers)
+        )
         try:
-            client.sql('select 3')
+            client.sql("select 3")
         except ProgrammingError:
             self.assertEqual([], list(client._active_servers))
         else:
@@ -128,7 +151,7 @@ class HttpClientTest(TestCase):
 
     def test_no_connection_exception(self):
         client = Client(servers="localhost:9999")
-        self.assertRaises(ConnectionError, client.sql, 'select foo')
+        self.assertRaises(ConnectionError, client.sql, "select foo")
         client.close()
 
     @patch(REQUEST)
@@ -136,16 +159,18 @@ class HttpClientTest(TestCase):
         request.side_effect = Exception
 
         client = Client()
-        self.assertRaises(ProgrammingError, client.sql, 'select foo')
+        self.assertRaises(ProgrammingError, client.sql, "select foo")
         client.close()
 
     @patch(REQUEST)
-    def test_programming_error_contains_http_error_response_content(self, request):
+    def test_programming_error_contains_http_error_response_content(
+        self, request
+    ):
         request.side_effect = Exception("this shouldn't be raised")
 
         client = Client()
         try:
-            client.sql('select 1')
+            client.sql("select 1")
         except ProgrammingError as e:
             self.assertEqual("this shouldn't be raised", e.message)
         else:
@@ -153,18 +178,24 @@ class HttpClientTest(TestCase):
         finally:
             client.close()
 
-    @patch(REQUEST, fake_request([fake_response(200),
-                                  fake_response(503, 'Service Unavailable')]))
+    @patch(
+        REQUEST,
+        fake_request(
+            [fake_response(200), fake_response(503, "Service Unavailable")]
+        ),
+    )
     def test_server_error_50x(self):
         client = Client(servers="localhost:4200 localhost:4201")
-        client.sql('select 1')
-        client.sql('select 2')
+        client.sql("select 1")
+        client.sql("select 2")
         try:
-            client.sql('select 3')
+            client.sql("select 3")
         except ProgrammingError as e:
-            self.assertEqual("No more Servers available, " +
-                             "exception from last server: Service Unavailable",
-                             e.message)
+            self.assertEqual(
+                "No more Servers available, "
+                + "exception from last server: Service Unavailable",
+                e.message,
+            )
             self.assertEqual([], list(client._active_servers))
         else:
             self.assertTrue(False)
@@ -173,8 +204,10 @@ class HttpClientTest(TestCase):
 
     def test_connect(self):
         client = Client(servers="localhost:4200 localhost:4201")
-        self.assertEqual(client._active_servers,
-                         ["http://localhost:4200", "http://localhost:4201"])
+        self.assertEqual(
+            client._active_servers,
+            ["http://localhost:4200", "http://localhost:4201"],
+        )
         client.close()
 
         client = Client(servers="localhost:4200")
@@ -186,54 +219,60 @@ class HttpClientTest(TestCase):
         client.close()
 
         client = Client(servers=["localhost:4200", "127.0.0.1:4201"])
-        self.assertEqual(client._active_servers,
-                         ["http://localhost:4200", "http://127.0.0.1:4201"])
+        self.assertEqual(
+            client._active_servers,
+            ["http://localhost:4200", "http://127.0.0.1:4201"],
+        )
         client.close()
 
-    @patch(REQUEST, fake_request(fake_redirect('http://localhost:4201')))
+    @patch(REQUEST, fake_request(fake_redirect("http://localhost:4201")))
     def test_redirect_handling(self):
-        client = Client(servers='localhost:4200')
+        client = Client(servers="localhost:4200")
         try:
-            client.blob_get('blobs', 'fake_digest')
+            client.blob_get("blobs", "fake_digest")
         except ProgrammingError:
             # 4201 gets added to serverpool but isn't available
             # that's why we run into an infinite recursion
             # exception message is: maximum recursion depth exceeded
             pass
         self.assertEqual(
-            ['http://localhost:4200', 'http://localhost:4201'],
-            sorted(list(client.server_pool.keys()))
+            ["http://localhost:4200", "http://localhost:4201"],
+            sorted(client.server_pool.keys()),
         )
         # the new non-https server must not contain any SSL only arguments
         # regression test for github issue #179/#180
         self.assertEqual(
-            {'socket_options': _get_socket_opts(keepalive=True)},
-            client.server_pool['http://localhost:4201'].pool.conn_kw
+            {"socket_options": _get_socket_opts(keepalive=True)},
+            client.server_pool["http://localhost:4201"].pool.conn_kw,
         )
         client.close()
 
     @patch(REQUEST)
     def test_server_infos(self, request):
         request.side_effect = urllib3.exceptions.MaxRetryError(
-            None, '/', "this shouldn't be raised")
+            None, "/", "this shouldn't be raised"
+        )
         client = Client(servers="localhost:4200 localhost:4201")
         self.assertRaises(
-            ConnectionError, client.server_infos, 'http://localhost:4200')
+            ConnectionError, client.server_infos, "http://localhost:4200"
+        )
         client.close()
 
     @patch(REQUEST, fake_request(fake_response(503)))
     def test_server_infos_503(self):
         client = Client(servers="localhost:4200")
         self.assertRaises(
-            ConnectionError, client.server_infos, 'http://localhost:4200')
+            ConnectionError, client.server_infos, "http://localhost:4200"
+        )
         client.close()
 
-    @patch(REQUEST, fake_request(
-        fake_response(401, 'Unauthorized', 'text/html')))
+    @patch(
+        REQUEST, fake_request(fake_response(401, "Unauthorized", "text/html"))
+    )
     def test_server_infos_401(self):
         client = Client(servers="localhost:4200")
         try:
-            client.server_infos('http://localhost:4200')
+            client.server_infos("http://localhost:4200")
         except ProgrammingError as e:
             self.assertEqual("401 Client Error: Unauthorized", e.message)
         else:
@@ -245,8 +284,10 @@ class HttpClientTest(TestCase):
     def test_bad_bulk_400(self):
         client = Client(servers="localhost:4200")
         try:
-            client.sql("Insert into users (name) values(?)",
-                       bulk_parameters=[["douglas"], ["monthy"]])
+            client.sql(
+                "Insert into users (name) values(?)",
+                bulk_parameters=[["douglas"], ["monthy"]],
+            )
         except ProgrammingError as e:
             self.assertEqual("an error occured\nanother error", e.message)
         else:
@@ -260,10 +301,10 @@ class HttpClientTest(TestCase):
         request.return_value = fake_response(200)
 
         dec = Decimal(0.12)
-        client.sql('insert into users (float_col) values (?)', (dec,))
+        client.sql("insert into users (float_col) values (?)", (dec,))
 
-        data = json.loads(request.call_args[1]['data'])
-        self.assertEqual(data['args'], [str(dec)])
+        data = json.loads(request.call_args[1]["data"])
+        self.assertEqual(data["args"], [str(dec)])
         client.close()
 
     @patch(REQUEST, autospec=True)
@@ -272,12 +313,12 @@ class HttpClientTest(TestCase):
         request.return_value = fake_response(200)
 
         datetime = dt.datetime(2015, 2, 28, 7, 31, 40)
-        client.sql('insert into users (dt) values (?)', (datetime,))
+        client.sql("insert into users (dt) values (?)", (datetime,))
 
         # convert string to dict
         # because the order of the keys isn't deterministic
-        data = json.loads(request.call_args[1]['data'])
-        self.assertEqual(data['args'], [1425108700000])
+        data = json.loads(request.call_args[1]["data"])
+        self.assertEqual(data["args"], [1425108700000])
         client.close()
 
     @patch(REQUEST, autospec=True)
@@ -286,17 +327,18 @@ class HttpClientTest(TestCase):
         request.return_value = fake_response(200)
 
         day = dt.date(2016, 4, 21)
-        client.sql('insert into users (dt) values (?)', (day,))
-        data = json.loads(request.call_args[1]['data'])
-        self.assertEqual(data['args'], [1461196800000])
+        client.sql("insert into users (dt) values (?)", (day,))
+        data = json.loads(request.call_args[1]["data"])
+        self.assertEqual(data["args"], [1461196800000])
         client.close()
 
     def test_socket_options_contain_keepalive(self):
-        server = 'http://localhost:4200'
+        server = "http://localhost:4200"
         client = Client(servers=server)
         conn_kw = client.server_pool[server].pool.conn_kw
         self.assertIn(
-            (socket.SOL_SOCKET, socket.SO_KEEPALIVE, 1), conn_kw['socket_options']
+            (socket.SOL_SOCKET, socket.SO_KEEPALIVE, 1),
+            conn_kw["socket_options"],
         )
         client.close()
 
@@ -306,10 +348,10 @@ class HttpClientTest(TestCase):
         request.return_value = fake_response(200)
 
         uid = uuid.uuid4()
-        client.sql('insert into my_table (str_col) values (?)', (uid,))
+        client.sql("insert into my_table (str_col) values (?)", (uid,))
 
-        data = json.loads(request.call_args[1]['data'])
-        self.assertEqual(data['args'], [str(uid)])
+        data = json.loads(request.call_args[1]["data"])
+        self.assertEqual(data["args"], [str(uid)])
         client.close()
 
     @patch(REQUEST, fake_request(duplicate_key_exception()))
@@ -320,9 +362,12 @@ class HttpClientTest(TestCase):
         """
         client = Client(servers="localhost:4200")
         with self.assertRaises(IntegrityError) as cm:
-            client.sql('INSERT INTO testdrive (foo) VALUES (42)')
-        self.assertEqual(cm.exception.message,
-                         "DuplicateKeyException[A document with the same primary key exists already]")
+            client.sql("INSERT INTO testdrive (foo) VALUES (42)")
+        self.assertEqual(
+            cm.exception.message,
+            "DuplicateKeyException[A document with the "
+            "same primary key exists already]",
+        )
 
 
 @patch(REQUEST, fail_sometimes)
@@ -334,6 +379,7 @@ class ThreadSafeHttpClientTest(TestCase):
     check if number of servers in _inactive_servers and _active_servers always
     equals the number of servers initially given.
     """
+
     servers = [
         "127.0.0.1:44209",
         "127.0.0.2:44209",
@@ -358,20 +404,21 @@ class ThreadSafeHttpClientTest(TestCase):
     def _run(self):
         self.event.wait()  # wait for the others
         expected_num_servers = len(self.servers)
-        for x in range(self.num_commands):
+        for _ in range(self.num_commands):
             try:
-                self.client.sql('select name from sys.cluster')
+                self.client.sql("select name from sys.cluster")
             except ConnectionError:
                 pass
             try:
                 with self.client._lock:
-                    num_servers = len(self.client._active_servers) + \
-                        len(self.client._inactive_servers)
+                    num_servers = len(self.client._active_servers) + len(
+                        self.client._inactive_servers
+                    )
                 self.assertEqual(
                     expected_num_servers,
                     num_servers,
-                    "expected %d but got %d" % (expected_num_servers,
-                                                num_servers)
+                    "expected %d but got %d"
+                    % (expected_num_servers, num_servers),
                 )
             except AssertionError:
                 self.err_queue.put(sys.exc_info())
@@ -397,8 +444,12 @@ class ThreadSafeHttpClientTest(TestCase):
             t.join(self.thread_timeout)
 
         if not self.err_queue.empty():
-            self.assertTrue(False, "".join(
-                traceback.format_exception(*self.err_queue.get(block=False))))
+            self.assertTrue(
+                False,
+                "".join(
+                    traceback.format_exception(*self.err_queue.get(block=False))
+                ),
+            )
 
 
 class ClientAddressRequestHandler(BaseHTTPRequestHandler):
@@ -407,31 +458,30 @@ class ClientAddressRequestHandler(BaseHTTPRequestHandler):
 
     returns client host and port in crate-conform-responses
     """
-    protocol_version = 'HTTP/1.1'
+
+    protocol_version = "HTTP/1.1"
 
     def do_GET(self):
         content_length = self.headers.get("content-length")
         if content_length:
             self.rfile.read(int(content_length))
-        response = json.dumps({
-            "cols": ["host", "port"],
-            "rows": [
-                self.client_address[0],
-                self.client_address[1]
-            ],
-            "rowCount": 1,
-        })
+        response = json.dumps(
+            {
+                "cols": ["host", "port"],
+                "rows": [self.client_address[0], self.client_address[1]],
+                "rowCount": 1,
+            }
+        )
         self.send_response(200)
         self.send_header("Content-Length", len(response))
         self.send_header("Content-Type", "application/json; charset=UTF-8")
         self.end_headers()
-        self.wfile.write(response.encode('UTF-8'))
+        self.wfile.write(response.encode("UTF-8"))
 
     do_POST = do_PUT = do_DELETE = do_HEAD = do_GET
 
 
 class KeepAliveClientTest(TestCase):
-
     server_address = ("127.0.0.1", 65535)
 
     def __init__(self, *args, **kwargs):
@@ -442,7 +492,7 @@ class KeepAliveClientTest(TestCase):
         super(KeepAliveClientTest, self).setUp()
         self.client = Client(["%s:%d" % self.server_address])
         self.server_process.start()
-        time.sleep(.10)
+        time.sleep(0.10)
 
     def tearDown(self):
         self.server_process.terminate()
@@ -450,12 +500,13 @@ class KeepAliveClientTest(TestCase):
         super(KeepAliveClientTest, self).tearDown()
 
     def _run_server(self):
-        self.server = HTTPServer(self.server_address,
-                                 ClientAddressRequestHandler)
+        self.server = HTTPServer(
+            self.server_address, ClientAddressRequestHandler
+        )
         self.server.handle_request()
 
     def test_client_keepalive(self):
-        for x in range(10):
+        for _ in range(10):
             result = self.client.sql("select * from fake")
 
             another_result = self.client.sql("select again from fake")
@@ -463,9 +514,8 @@ class KeepAliveClientTest(TestCase):
 
 
 class ParamsTest(TestCase):
-
     def test_params(self):
-        client = Client(['127.0.0.1:4200'], error_trace=True)
+        client = Client(["127.0.0.1:4200"], error_trace=True)
         parsed = urlparse(client.path)
         params = parse_qs(parsed.query)
         self.assertEqual(params["error_trace"], ["true"])
@@ -478,26 +528,25 @@ class ParamsTest(TestCase):
 
 
 class RequestsCaBundleTest(TestCase):
-
     def test_open_client(self):
         os.environ["REQUESTS_CA_BUNDLE"] = CA_CERT_PATH
         try:
-            Client('http://127.0.0.1:4200')
+            Client("http://127.0.0.1:4200")
         except ProgrammingError:
             self.fail("HTTP not working with REQUESTS_CA_BUNDLE")
         finally:
-            os.unsetenv('REQUESTS_CA_BUNDLE')
-            os.environ["REQUESTS_CA_BUNDLE"] = ''
+            os.unsetenv("REQUESTS_CA_BUNDLE")
+            os.environ["REQUESTS_CA_BUNDLE"] = ""
 
     def test_remove_certs_for_non_https(self):
-        d = _remove_certs_for_non_https('https', {"ca_certs": 1})
-        self.assertIn('ca_certs', d)
+        d = _remove_certs_for_non_https("https", {"ca_certs": 1})
+        self.assertIn("ca_certs", d)
 
-        kwargs = {'ca_certs': 1, 'foobar': 2, 'cert_file': 3}
-        d = _remove_certs_for_non_https('http', kwargs)
-        self.assertNotIn('ca_certs', d)
-        self.assertNotIn('cert_file', d)
-        self.assertIn('foobar', d)
+        kwargs = {"ca_certs": 1, "foobar": 2, "cert_file": 3}
+        d = _remove_certs_for_non_https("http", kwargs)
+        self.assertNotIn("ca_certs", d)
+        self.assertNotIn("cert_file", d)
+        self.assertIn("foobar", d)
 
 
 class TimeoutRequestHandler(BaseHTTPRequestHandler):
@@ -507,7 +556,7 @@ class TimeoutRequestHandler(BaseHTTPRequestHandler):
     """
 
     def do_POST(self):
-        self.server.SHARED['count'] += 1
+        self.server.SHARED["count"] += 1
         time.sleep(5)
 
 
@@ -518,45 +567,46 @@ class SharedStateRequestHandler(BaseHTTPRequestHandler):
     """
 
     def do_POST(self):
-        self.server.SHARED['count'] += 1
-        self.server.SHARED['schema'] = self.headers.get('Default-Schema')
+        self.server.SHARED["count"] += 1
+        self.server.SHARED["schema"] = self.headers.get("Default-Schema")
 
-        if self.headers.get('Authorization') is not None:
-            auth_header = self.headers['Authorization'].replace('Basic ', '')
-            credentials = b64decode(auth_header).decode('utf-8').split(":", 1)
-            self.server.SHARED['username'] = credentials[0]
+        if self.headers.get("Authorization") is not None:
+            auth_header = self.headers["Authorization"].replace("Basic ", "")
+            credentials = b64decode(auth_header).decode("utf-8").split(":", 1)
+            self.server.SHARED["username"] = credentials[0]
             if len(credentials) > 1 and credentials[1]:
-                self.server.SHARED['password'] = credentials[1]
+                self.server.SHARED["password"] = credentials[1]
             else:
-                self.server.SHARED['password'] = None
+                self.server.SHARED["password"] = None
         else:
-            self.server.SHARED['username'] = None
+            self.server.SHARED["username"] = None
 
-        if self.headers.get('X-User') is not None:
-            self.server.SHARED['usernameFromXUser'] = self.headers['X-User']
+        if self.headers.get("X-User") is not None:
+            self.server.SHARED["usernameFromXUser"] = self.headers["X-User"]
         else:
-            self.server.SHARED['usernameFromXUser'] = None
+            self.server.SHARED["usernameFromXUser"] = None
 
         # send empty response
-        response = '{}'
+        response = "{}"
         self.send_response(200)
         self.send_header("Content-Length", len(response))
         self.send_header("Content-Type", "application/json; charset=UTF-8")
         self.end_headers()
-        self.wfile.write(response.encode('utf-8'))
+        self.wfile.write(response.encode("utf-8"))
 
 
 class TestingHTTPServer(HTTPServer):
     """
     http server providing a shared dict
     """
+
     manager = multiprocessing.Manager()
     SHARED = manager.dict()
-    SHARED['count'] = 0
-    SHARED['usernameFromXUser'] = None
-    SHARED['username'] = None
-    SHARED['password'] = None
-    SHARED['schema'] = None
+    SHARED["count"] = 0
+    SHARED["usernameFromXUser"] = None
+    SHARED["username"] = None
+    SHARED["password"] = None
+    SHARED["schema"] = None
 
     @classmethod
     def run_server(cls, server_address, request_handler_cls):
@@ -564,13 +614,14 @@ class TestingHTTPServer(HTTPServer):
 
 
 class TestingHttpServerTestCase(TestCase):
-
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.assertIsNotNone(self.request_handler)
-        self.server_address = ('127.0.0.1', random.randint(65000, 65535))
-        self.server_process = ForkProcess(target=TestingHTTPServer.run_server,
-                                          args=(self.server_address, self.request_handler))
+        self.server_address = ("127.0.0.1", random.randint(65000, 65535))
+        self.server_process = ForkProcess(
+            target=TestingHTTPServer.run_server,
+            args=(self.server_address, self.request_handler),
+        )
 
     def setUp(self):
         self.server_process.start()
@@ -582,7 +633,7 @@ class TestingHttpServerTestCase(TestCase):
                 with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
                     s.connect(self.server_address)
             except Exception:
-                time.sleep(.25)
+                time.sleep(0.25)
             else:
                 break
 
@@ -594,7 +645,6 @@ class TestingHttpServerTestCase(TestCase):
 
 
 class RetryOnTimeoutServerTest(TestingHttpServerTestCase):
-
     request_handler = TimeoutRequestHandler
 
     def setUp(self):
@@ -609,38 +659,40 @@ class RetryOnTimeoutServerTest(TestingHttpServerTestCase):
         try:
             self.client.sql("select * from fake")
         except ConnectionError as e:
-            self.assertIn('Read timed out', e.message,
-                          msg='Error message must contain: Read timed out')
-        self.assertEqual(TestingHTTPServer.SHARED['count'], 1)
+            self.assertIn(
+                "Read timed out",
+                e.message,
+                msg="Error message must contain: Read timed out",
+            )
+        self.assertEqual(TestingHTTPServer.SHARED["count"], 1)
 
 
 class TestDefaultSchemaHeader(TestingHttpServerTestCase):
-
     request_handler = SharedStateRequestHandler
 
     def setUp(self):
         super().setUp()
-        self.client = self.clientWithKwargs(schema='my_custom_schema')
+        self.client = self.clientWithKwargs(schema="my_custom_schema")
 
     def tearDown(self):
         self.client.close()
         super().tearDown()
 
     def test_default_schema(self):
-        self.client.sql('SELECT 1')
-        self.assertEqual(TestingHTTPServer.SHARED['schema'], 'my_custom_schema')
+        self.client.sql("SELECT 1")
+        self.assertEqual(TestingHTTPServer.SHARED["schema"], "my_custom_schema")
 
 
 class TestUsernameSentAsHeader(TestingHttpServerTestCase):
-
     request_handler = SharedStateRequestHandler
 
     def setUp(self):
         super().setUp()
         self.clientWithoutUsername = self.clientWithKwargs()
-        self.clientWithUsername = self.clientWithKwargs(username='testDBUser')
-        self.clientWithUsernameAndPassword = self.clientWithKwargs(username='testDBUser',
-                                                                   password='test:password')
+        self.clientWithUsername = self.clientWithKwargs(username="testDBUser")
+        self.clientWithUsernameAndPassword = self.clientWithKwargs(
+            username="testDBUser", password="test:password"
+        )
 
     def tearDown(self):
         self.clientWithoutUsername.close()
@@ -650,23 +702,26 @@ class TestUsernameSentAsHeader(TestingHttpServerTestCase):
 
     def test_username(self):
         self.clientWithoutUsername.sql("select * from fake")
-        self.assertEqual(TestingHTTPServer.SHARED['usernameFromXUser'], None)
-        self.assertEqual(TestingHTTPServer.SHARED['username'], None)
-        self.assertEqual(TestingHTTPServer.SHARED['password'], None)
+        self.assertEqual(TestingHTTPServer.SHARED["usernameFromXUser"], None)
+        self.assertEqual(TestingHTTPServer.SHARED["username"], None)
+        self.assertEqual(TestingHTTPServer.SHARED["password"], None)
 
         self.clientWithUsername.sql("select * from fake")
-        self.assertEqual(TestingHTTPServer.SHARED['usernameFromXUser'], 'testDBUser')
-        self.assertEqual(TestingHTTPServer.SHARED['username'], 'testDBUser')
-        self.assertEqual(TestingHTTPServer.SHARED['password'], None)
+        self.assertEqual(
+            TestingHTTPServer.SHARED["usernameFromXUser"], "testDBUser"
+        )
+        self.assertEqual(TestingHTTPServer.SHARED["username"], "testDBUser")
+        self.assertEqual(TestingHTTPServer.SHARED["password"], None)
 
         self.clientWithUsernameAndPassword.sql("select * from fake")
-        self.assertEqual(TestingHTTPServer.SHARED['usernameFromXUser'], 'testDBUser')
-        self.assertEqual(TestingHTTPServer.SHARED['username'], 'testDBUser')
-        self.assertEqual(TestingHTTPServer.SHARED['password'], 'test:password')
+        self.assertEqual(
+            TestingHTTPServer.SHARED["usernameFromXUser"], "testDBUser"
+        )
+        self.assertEqual(TestingHTTPServer.SHARED["username"], "testDBUser")
+        self.assertEqual(TestingHTTPServer.SHARED["password"], "test:password")
 
 
 class TestCrateJsonEncoder(TestCase):
-
     def test_naive_datetime(self):
         data = dt.datetime.fromisoformat("2023-06-26T09:24:00.123")
         result = json.dumps(data, cls=CrateJsonEncoder)

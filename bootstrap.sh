@@ -110,7 +110,7 @@ function main() {
 }
 
 function lint() {
-    flake8 "$@" src bin
+    poe lint
 }
 
 main

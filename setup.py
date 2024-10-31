@@ -19,9 +19,10 @@
 # with Crate these terms will supersede the license and you may use the
 # software solely pursuant to the terms of the relevant commercial agreement.
 
-from setuptools import setup, find_packages
 import os
 import re
+
+from setuptools import find_packages, setup
 
 
 def read(path):
@@ -29,68 +30,73 @@ def read(path):
         return f.read()
 
 
-long_description = read('README.rst')
+long_description = read("README.rst")
 versionf_content = read("src/crate/client/__init__.py")
 version_rex = r'^__version__ = [\'"]([^\'"]*)[\'"]$'
 m = re.search(version_rex, versionf_content, re.M)
 if m:
     version = m.group(1)
 else:
-    raise RuntimeError('Unable to find version string')
+    raise RuntimeError("Unable to find version string")
 
 setup(
-    name='crate',
+    name="crate",
     version=version,
-    url='https://github.com/crate/crate-python',
-    author='Crate.io',
-    author_email='office@crate.io',
-    package_dir={'': 'src'},
-    description='CrateDB Python Client',
+    url="https://github.com/crate/crate-python",
+    author="Crate.io",
+    author_email="office@crate.io",
+    package_dir={"": "src"},
+    description="CrateDB Python Client",
     long_description=long_description,
-    long_description_content_type='text/x-rst',
-    platforms=['any'],
-    license='Apache License 2.0',
-    keywords='cratedb db api dbapi database sql http rdbms olap',
-    packages=find_packages('src'),
-    namespace_packages=['crate'],
+    long_description_content_type="text/x-rst",
+    platforms=["any"],
+    license="Apache License 2.0",
+    keywords="cratedb db api dbapi database sql http rdbms olap",
+    packages=find_packages("src"),
+    namespace_packages=["crate"],
     install_requires=[
-        'urllib3<2.3',
-        'verlib2==0.2.0',
+        "urllib3<2.3",
+        "verlib2==0.2.0",
     ],
-    extras_require=dict(
-        test=['tox>=3,<5',
-              'zope.testing>=4,<6',
-              'zope.testrunner>=5,<7',
-              'zc.customdoctests>=1.0.1,<2',
-              'backports.zoneinfo<1; python_version<"3.9"',
-              'certifi',
-              'createcoverage>=1,<2',
-              'stopit>=1.1.2,<2',
-              'flake8>=4,<8',
-              'pytz',
-              ],
-        doc=['sphinx>=3.5,<9',
-             'crate-docs-theme>=0.26.5'],
-    ),
-    python_requires='>=3.6',
-    package_data={'': ['*.txt']},
+    extras_require={
+        "doc": [
+            "crate-docs-theme>=0.26.5",
+            "sphinx>=3.5,<9",
+        ],
+        "test": [
+            'backports.zoneinfo<1; python_version<"3.9"',
+            "certifi",
+            "createcoverage>=1,<2",
+            "mypy<1.14",
+            "poethepoet<0.30",
+            "ruff<0.8",
+            "stopit>=1.1.2,<2",
+            "tox>=3,<5",
+            "pytz",
+            "zc.customdoctests>=1.0.1,<2",
+            "zope.testing>=4,<6",
+            "zope.testrunner>=5,<7",
+        ],
+    },
+    python_requires=">=3.6",
+    package_data={"": ["*.txt"]},
     classifiers=[
-        'Development Status :: 5 - Production/Stable',
-        'Intended Audience :: Developers',
-        'License :: OSI Approved :: Apache Software License',
-        'Operating System :: OS Independent',
-        'Programming Language :: Python',
-        'Programming Language :: Python :: 3',
-        'Programming Language :: Python :: 3.6',
-        'Programming Language :: Python :: 3.7',
-        'Programming Language :: Python :: 3.8',
-        'Programming Language :: Python :: 3.9',
-        'Programming Language :: Python :: 3.10',
-        'Programming Language :: Python :: 3.11',
-        'Programming Language :: Python :: 3.12',
-        'Programming Language :: Python :: 3.13',
-        'Programming Language :: Python :: Implementation :: CPython',
-        'Programming Language :: Python :: Implementation :: PyPy',
-        'Topic :: Database'
+        "Development Status :: 5 - Production/Stable",
+        "Intended Audience :: Developers",
+        "License :: OSI Approved :: Apache Software License",
+        "Operating System :: OS Independent",
+        "Programming Language :: Python",
+        "Programming Language :: Python :: 3",
+        "Programming Language :: Python :: 3.6",
+        "Programming Language :: Python :: 3.7",
+        "Programming Language :: Python :: 3.8",
+        "Programming Language :: Python :: 3.9",
+        "Programming Language :: Python :: 3.10",
+        "Programming Language :: Python :: 3.11",
+        "Programming Language :: Python :: 3.12",
+        "Programming Language :: Python :: 3.13",
+        "Programming Language :: Python :: Implementation :: CPython",
+        "Programming Language :: Python :: Implementation :: PyPy",
+        "Topic :: Database",
     ],
 )

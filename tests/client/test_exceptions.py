@@ -4,7 +4,6 @@ from crate.client import Error
 
 
 class ErrorTestCase(unittest.TestCase):
-
     def test_error_with_msg(self):
         err = Error("foo")
         self.assertEqual(str(err), "foo")

@@ -21,7 +21,6 @@
 
 
 class Error(Exception):
-
     def __init__(self, msg=None, error_trace=None):
         # for compatibility reasons we want to keep the exception message
         # attribute because clients may depend on it
@@ -36,7 +35,8 @@ class Error(Exception):
         return "\n".join([super().__str__(), str(self.error_trace)])
 
 
-class Warning(Exception):
+# A001 Variable `Warning` is shadowing a Python builtin
+class Warning(Exception):  # noqa: A001
     pass
 
 
@@ -74,7 +74,9 @@ class NotSupportedError(DatabaseError):
 
 # exceptions not in db api
 
-class ConnectionError(OperationalError):
+
+# A001 Variable `ConnectionError` is shadowing a Python builtin
+class ConnectionError(OperationalError):  # noqa: A001
     pass
 
 

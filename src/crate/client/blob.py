@@ -22,8 +22,8 @@
 import hashlib
 
 
-class BlobContainer(object):
-    """ class that represents a blob collection in crate.
+class BlobContainer:
+    """class that represents a blob collection in crate.
 
     can be used to download, upload and delete blobs
     """
@@ -34,7 +34,7 @@ class BlobContainer(object):
 
     def _compute_digest(self, f):
         f.seek(0)
-        m = hashlib.sha1()
+        m = hashlib.sha1()  # noqa: S324
         while True:
             d = f.read(1024 * 32)
             if not d:
@@ -64,8 +64,9 @@ class BlobContainer(object):
         else:
             actual_digest = self._compute_digest(f)
 
-        created = self.conn.client.blob_put(self.container_name,
-                                            actual_digest, f)
+        created = self.conn.client.blob_put(
+            self.container_name, actual_digest, f
+        )
         if digest:
             return created
         return actual_digest
@@ -78,8 +79,9 @@ class BlobContainer(object):
         :param chunk_size: the size of the chunks returned on each iteration
         :return: generator returning chunks of data
         """
-        return self.conn.client.blob_get(self.container_name, digest,
-                                         chunk_size)
+        return self.conn.client.blob_get(
+            self.container_name, digest, chunk_size
+        )
 
     def delete(self, digest):
         """

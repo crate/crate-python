@@ -23,8 +23,8 @@ from .connection import Connection as connect
 from .exceptions import Error
 
 __all__ = [
-    connect,
-    Error,
+    "connect",
+    "Error",
 ]
 
 # version string read from setup.py using a regex. Take care not to break the

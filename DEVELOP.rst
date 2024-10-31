@@ -32,7 +32,7 @@ see, for example, `useful command-line options for zope-testrunner`_.
 
 Run all tests::
 
-    bin/test
+    poe test
 
 Run specific tests::
 
@@ -81,6 +81,23 @@ To run against a single interpreter, you can also invoke::
 *Note*: Before running the tests, make sure to stop all CrateDB instances which
 are listening on the default CrateDB transport port to avoid side effects with
 the test layer.
+
+
+Formatting and linting code
+===========================
+
+To use Ruff for code formatting, according to the standards configured in
+``pyproject.toml``, use::
+
+    poe format
+
+To lint the code base using Ruff and mypy, use::
+
+    poe lint
+
+Linting and software testing, all together now::
+
+    poe check
 
 
 Renew certificates

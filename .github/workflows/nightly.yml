@@ -32,6 +32,9 @@ jobs:
           cache: 'pip'
           cache-dependency-path: 'setup.py'
 
+      - name: Install uv
+        uses: yezz123/setup-uv@v4
+
       - name: Invoke tests
         run: |
 

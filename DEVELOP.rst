@@ -5,6 +5,12 @@ CrateDB Python developer guide
 Setup
 =====
 
+Optionally install Python package and project manager ``uv``,
+in order to significantly speed up the package installation::
+
+    {apt,brew,pip,zypper} install uv
+    alias pip="uv pip"
+
 To start things off, bootstrap the sandbox environment::
 
     git clone https://github.com/crate/crate-python

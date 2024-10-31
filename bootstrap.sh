@@ -87,12 +87,25 @@ function finalize() {
 
 }
 
+function activate_uv() {
+  if command -v uv; then
+    function pip() {
+      uv pip "$@"
+    }
+  fi
+}
+function deactivate_uv() {
+  unset -f pip
+}
+
 function main() {
+    activate_uv
     ensure_virtualenv
     activate_virtualenv
     before_setup
     setup_package
     run_buildout
+    deactivate_uv
     finalize
 }
 

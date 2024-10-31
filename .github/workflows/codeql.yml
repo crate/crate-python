@@ -43,6 +43,9 @@ jobs:
           cache-dependency-path: |
             setup.py
 
+      - name: Install uv
+        uses: yezz123/setup-uv@v4
+
       - name: Initialize CodeQL
         uses: github/codeql-action/init@v3
         with:
@@ -55,7 +58,7 @@ jobs:
 
       - name: Install project
         run: |
-          pip install --editable=.[test]
+          uv pip install --editable=.[test]
 
       - name: Perform CodeQL Analysis
         uses: github/codeql-action/analyze@v3

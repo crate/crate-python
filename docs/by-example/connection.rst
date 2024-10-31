@@ -21,7 +21,7 @@ connect()
 This section sets up a connection object, and inspects some of its attributes.
 
     >>> from crate.client import connect
-    >>> from crate.client.test_util import ClientMocked
+    >>> from crate.testing.util import ClientMocked
 
     >>> connection = connect(client=ClientMocked())
     >>> connection.lowest_server_version.version

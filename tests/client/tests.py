@@ -1,12 +1,12 @@
 import doctest
 import unittest
 
-from crate.client.test_connection import ConnectionTest
-from crate.client.test_cursor import CursorTest
-from crate.client.test_http import HttpClientTest, KeepAliveClientTest, ThreadSafeHttpClientTest, ParamsTest, \
+from .test_connection import ConnectionTest
+from .test_cursor import CursorTest
+from .test_http import HttpClientTest, KeepAliveClientTest, ThreadSafeHttpClientTest, ParamsTest, \
     RetryOnTimeoutServerTest, RequestsCaBundleTest, TestUsernameSentAsHeader, TestCrateJsonEncoder, \
     TestDefaultSchemaHeader
-from crate.client.test_support import makeSuite, setUpWithHttps, HttpsTestServerLayer, setUpCrateLayerBaseline, \
+from .layer import makeSuite, setUpWithHttps, HttpsTestServerLayer, setUpCrateLayerBaseline, \
     tearDownDropEntitiesBaseline, ensure_cratedb_layer
 
 

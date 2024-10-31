@@ -34,11 +34,11 @@ import logging
 
 import stopit
 
-from crate.testing.layer import CrateLayer
-from crate.testing.settings import \
-    crate_host, crate_path, crate_port, \
-    crate_transport_port, docs_path, localhost
 from crate.client import connect
+from crate.testing.layer import CrateLayer
+from .settings import \
+    assets_path, crate_host, crate_path, crate_port, \
+    crate_transport_port, localhost
 
 
 makeSuite = unittest.TestLoader().loadTestsFromTestCase
@@ -104,7 +104,7 @@ def setUpCrateLayerBaseline(test):
     with connect(crate_host) as conn:
         cursor = conn.cursor()
 
-        with open(docs_path('testing/testdata/mappings/locations.sql')) as s:
+        with open(assets_path('mappings/locations.sql')) as s:
             stmt = s.read()
             cursor.execute(stmt)
             stmt = ("select count(*) from information_schema.tables "
@@ -112,7 +112,7 @@ def setUpCrateLayerBaseline(test):
             cursor.execute(stmt)
             assert cursor.fetchall()[0][0] == 1
 
-        data_path = docs_path('testing/testdata/data/test_a.json')
+        data_path = assets_path('import/test_a.json')
         # load testing data into crate
         cursor.execute("copy locations from ?", (data_path,))
         # refresh location table so imported data is visible immediately
@@ -145,10 +145,8 @@ def tearDownDropEntitiesBaseline(test):
 class HttpsTestServerLayer:
     PORT = 65534
     HOST = "localhost"
-    CERT_FILE = os.path.abspath(os.path.join(os.path.dirname(__file__),
-                                "pki/server_valid.pem"))
-    CACERT_FILE = os.path.abspath(os.path.join(os.path.dirname(__file__),
-                                  "pki/cacert_valid.pem"))
+    CERT_FILE = assets_path("pki/server_valid.pem")
+    CACERT_FILE = assets_path("pki/cacert_valid.pem")
 
     __name__ = "httpsserver"
     __bases__ = tuple()
@@ -237,18 +235,10 @@ def setUpWithHttps(test):
     test.globs['pprint'] = pprint
     test.globs['print'] = cprint
 
-    test.globs['cacert_valid'] = os.path.abspath(
-        os.path.join(os.path.dirname(__file__), "pki/cacert_valid.pem")
-    )
-    test.globs['cacert_invalid'] = os.path.abspath(
-        os.path.join(os.path.dirname(__file__), "pki/cacert_invalid.pem")
-    )
-    test.globs['clientcert_valid'] = os.path.abspath(
-        os.path.join(os.path.dirname(__file__), "pki/client_valid.pem")
-    )
-    test.globs['clientcert_invalid'] = os.path.abspath(
-        os.path.join(os.path.dirname(__file__), "pki/client_invalid.pem")
-    )
+    test.globs['cacert_valid'] = assets_path("pki/cacert_valid.pem")
+    test.globs['cacert_invalid'] = assets_path("pki/cacert_invalid.pem")
+    test.globs['clientcert_valid'] = assets_path("pki/client_valid.pem")
+    test.globs['clientcert_invalid'] = assets_path("pki/client_invalid.pem")
 
 
 def _execute_statements(statements, on_error="ignore"):

@@ -32,34 +32,40 @@ see, for example, `useful command-line options for zope-testrunner`_.
 
 Run all tests::
 
-    ./bin/test -vvvv
+    bin/test
 
 Run specific tests::
 
-    ./bin/test -vvvv -t test_score
+    # Select modules.
+    bin/test -t test_cursor
+    bin/test -t client
+    bin/test -t testing
+
+    # Select doctests.
+    bin/test -t http.rst
 
 Ignore specific test directories::
 
-    ./bin/test -vvvv --ignore_dir=testing
+    bin/test --ignore_dir=testing
 
 The ``LayerTest`` test cases have quite some overhead. Omitting them will save
 a few cycles (~70 seconds runtime)::
 
-    ./bin/test -t '!LayerTest'
+    bin/test -t '!LayerTest'
 
-Invoke all tests without integration tests (~15 seconds runtime)::
+Invoke all tests without integration tests (~10 seconds runtime)::
 
-    ./bin/test --layer '!crate.testing.layer.crate' --test '!LayerTest'
+    bin/test --layer '!crate.testing.layer.crate' --test '!LayerTest'
 
-Yet ~130 test cases, but only ~5 seconds runtime::
+Yet ~60 test cases, but only ~1 second runtime::
 
-    ./bin/test --layer '!crate.testing.layer.crate' --test '!LayerTest' \
+    bin/test --layer '!crate.testing.layer.crate' --test '!LayerTest' \
         -t '!test_client_threaded' -t '!test_no_retry_on_read_timeout' \
         -t '!test_wait_for_http' -t '!test_table_clustered_by'
 
 To inspect the whole list of test cases, run::
 
-    ./bin/test --list-tests
+    bin/test --list-tests
 
 You can run the tests against multiple Python interpreters with `tox`_::
 

@@ -21,27 +21,20 @@
 # software solely pursuant to the terms of the relevant commercial agreement.
 from __future__ import absolute_import
 
-import os
+from pathlib import Path
 
 
-def docs_path(*parts):
-    return os.path.abspath(
-        os.path.join(
-            os.path.dirname(os.path.dirname(__file__)), *parts
-        )
-    )
+def assets_path(*parts) -> str:
+    return str((project_root() / "tests" / "assets").joinpath(*parts).absolute())
 
 
-def project_root(*parts):
-    return os.path.abspath(
-        os.path.join(docs_path("..", ".."), *parts)
-    )
+def crate_path() -> str:
+    return str(project_root() / "parts" / "crate")
 
 
-def crate_path(*parts):
-    return os.path.abspath(
-        project_root("parts", "crate", *parts)
-    )
+def project_root() -> Path:
+    return Path(__file__).parent.parent.parent
+
 
 
 crate_port = 44209

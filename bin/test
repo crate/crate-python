@@ -12,6 +12,6 @@ sys.argv[0] = os.path.abspath(sys.argv[0])
 
 if __name__ == '__main__':
     zope.testrunner.run([
-        '-vvv', '--auto-color',
-        '--test-path', join(base, 'src')],
-    )
+        '-vvvv', '--auto-color',
+        '--path', join(base, 'tests'),
+    ])

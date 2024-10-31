@@ -23,7 +23,7 @@ up the response for subsequent cursor operations.
     >>> from crate.client import connect
     >>> from crate.client.converter import DefaultTypeConverter
     >>> from crate.client.cursor import Cursor
-    >>> from crate.client.test_util import ClientMocked
+    >>> from crate.testing.util import ClientMocked
 
     >>> connection = connect(client=ClientMocked())
     >>> cursor = connection.cursor()

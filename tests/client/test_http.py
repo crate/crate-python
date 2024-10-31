@@ -43,8 +43,8 @@ from urllib.parse import urlparse, parse_qs
 import uuid
 import certifi
 
-from .http import Client, CrateJsonEncoder, _get_socket_opts, _remove_certs_for_non_https
-from .exceptions import ConnectionError, ProgrammingError, IntegrityError
+from crate.client.http import Client, CrateJsonEncoder, _get_socket_opts, _remove_certs_for_non_https
+from crate.client.exceptions import ConnectionError, ProgrammingError, IntegrityError
 
 REQUEST = 'crate.client.http.Server.request'
 CA_CERT_PATH = certifi.where()

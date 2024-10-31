@@ -33,7 +33,7 @@ import pytz
 from crate.client import connect
 from crate.client.converter import DataType, DefaultTypeConverter
 from crate.client.http import Client
-from crate.client.test_util import ClientMocked
+from crate.testing.util import ClientMocked
 
 
 class CursorTest(TestCase):

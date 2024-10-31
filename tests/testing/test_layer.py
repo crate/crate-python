@@ -29,7 +29,7 @@ from io import BytesIO
 import urllib3
 
 import crate
-from .layer import CrateLayer, prepend_http, http_url_from_host_port, wait_for_http_url
+from crate.testing.layer import CrateLayer, prepend_http, http_url_from_host_port, wait_for_http_url
 from .settings import crate_path
 
 

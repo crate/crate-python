@@ -2,12 +2,12 @@ import datetime
 
 from urllib3 import Timeout
 
-from .connection import Connection
-from .http import Client
+from crate.client.connection import Connection
+from crate.client.http import Client
 from crate.client import connect
 from unittest import TestCase
 
-from ..testing.settings import crate_host
+from .settings import crate_host
 
 
 class ConnectionTest(TestCase):

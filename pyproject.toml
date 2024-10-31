@@ -1,5 +1,102 @@
 [tool.mypy]
+mypy_path = "src"
+packages = [
+  "crate",
+]
+exclude = [
+]
+check_untyped_defs = true
+explicit_package_bases = true
+ignore_missing_imports = true
+implicit_optional = true
+install_types = true
+namespace_packages = true
+non_interactive = true
 
-# Needed until `mypy-0.990` for `ConverterDefinition` in `converter.py`.
-# https://github.com/python/mypy/issues/731#issuecomment-1260976955
-enable_recursive_aliases = true
+
+[tool.ruff]
+line-length = 80
+
+extend-exclude = [
+  "/example_*",
+]
+
+lint.select = [
+  # Builtins
+  "A",
+  # Bugbear
+  "B",
+  # comprehensions
+  "C4",
+  # Pycodestyle
+  "E",
+  # eradicate
+  "ERA",
+  # Pyflakes
+  "F",
+  # isort
+  "I",
+  # pandas-vet
+  "PD",
+  # return
+  "RET",
+  # Bandit
+  "S",
+  # print
+  "T20",
+  "W",
+  # flake8-2020
+  "YTT",
+]
+
+lint.extend-ignore = [
+  # Unnecessary variable assignment before `return` statement
+  "RET504",
+  # Unnecessary `elif` after `return` statement
+  "RET505",
+]
+
+lint.per-file-ignores."example_*" = [
+  "ERA001", # Found commented-out code
+  "T201",   # Allow `print`
+]
+lint.per-file-ignores."devtools/*" = [
+  "T201",   # Allow `print`
+]
+lint.per-file-ignores."examples/*" = [
+  "ERA001", # Found commented-out code
+  "T201",   # Allow `print`
+]
+lint.per-file-ignores."tests/*" = [
+  "S106",  # Possible hardcoded password assigned to argument: "password"
+  "S311",  # Standard pseudo-random generators are not suitable for cryptographic purposes
+]
+
+
+# ===================
+# Tasks configuration
+# ===================
+
+[tool.poe.tasks]
+
+check = [
+  "lint",
+  "test",
+]
+
+format = [
+  { cmd = "ruff format ." },
+  # Configure Ruff not to auto-fix (remove!):
+  # unused imports (F401), unused variables (F841), `print` statements (T201), and commented-out code (ERA001).
+  { cmd = "ruff check --fix --ignore=ERA --ignore=F401 --ignore=F841 --ignore=T20 --ignore=ERA001 ." },
+]
+
+lint = [
+  { cmd = "ruff format --check ." },
+  { cmd = "ruff check ." },
+  { cmd = "mypy" },
+]
+
+test = [
+  { cmd = "bin/test" },
+]

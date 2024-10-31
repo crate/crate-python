@@ -19,38 +19,44 @@
 # with Crate these terms will supersede the license and you may use the
 # software solely pursuant to the terms of the relevant commercial agreement.
 
+# ruff: noqa: S603  # `subprocess` call: check for execution of untrusted input
+# ruff: noqa: S202  # Uses of `tarfile.extractall()`
+
+import io
+import json
+import logging
 import os
 import re
-import sys
-import time
-import json
-import urllib3
-import tempfile
 import shutil
 import subprocess
+import sys
 import tarfile
-import io
+import tempfile
 import threading
-import logging
+import time
+
+import urllib3
 
 try:
     from urllib.request import urlopen
 except ImportError:
-    from urllib import urlopen
+    from urllib import urlopen  # type: ignore[attr-defined,no-redef]
 
 
 log = logging.getLogger(__name__)
 
 
-CRATE_CONFIG_ERROR = 'crate_config must point to a folder or to a file named "crate.yml"'
+CRATE_CONFIG_ERROR = (
+    'crate_config must point to a folder or to a file named "crate.yml"'
+)
 HTTP_ADDRESS_RE = re.compile(
-    r'.*\[(http|.*HttpServer.*)\s*] \[.*\] .*'
-    'publish_address {'
-    r'(?:inet\[[\w\d\.-]*/|\[)?'
-    r'(?:[\w\d\.-]+/)?'
-    r'(?P<addr>[\d\.:]+)'
-    r'(?:\])?'
-    '}'
+    r".*\[(http|.*HttpServer.*)\s*] \[.*\] .*"
+    "publish_address {"
+    r"(?:inet\[[\w\d\.-]*/|\[)?"
+    r"(?:[\w\d\.-]+/)?"
+    r"(?P<addr>[\d\.:]+)"
+    r"(?:\])?"
+    "}"
 )
 
 
@@ -61,18 +67,22 @@ def http_url_from_host_port(host, port):
                 port = int(port)
             except ValueError:
                 return None
-        return '{}:{}'.format(prepend_http(host), port)
+        return "{}:{}".format(prepend_http(host), port)
     return None
 
 
 def prepend_http(host):
-    if not re.match(r'^https?\:\/\/.*', host):
-        return 'http://{}'.format(host)
+    if not re.match(r"^https?\:\/\/.*", host):
+        return "http://{}".format(host)
     return host
 
 
 def _download_and_extract(uri, directory):
-    sys.stderr.write("\nINFO:    Downloading CrateDB archive from {} into {}".format(uri, directory))
+    sys.stderr.write(
+        "\nINFO:    Downloading CrateDB archive from {} into {}".format(
+            uri, directory
+        )
+    )
     sys.stderr.flush()
     with io.BytesIO(urlopen(uri).read()) as tmpfile:
         with tarfile.open(fileobj=tmpfile) as t:
@@ -82,19 +92,18 @@ def _download_and_extract(uri, directory):
 def wait_for_http_url(log, timeout=30, verbose=False):
     start = time.monotonic()
     while True:
-        line = log.readline().decode('utf-8').strip()
+        line = log.readline().decode("utf-8").strip()
         elapsed = time.monotonic() - start
         if verbose:
-            sys.stderr.write('[{:>4.1f}s]{}\n'.format(elapsed, line))
+            sys.stderr.write("[{:>4.1f}s]{}\n".format(elapsed, line))
         m = HTTP_ADDRESS_RE.match(line)
         if m:
-            return prepend_http(m.group('addr'))
+            return prepend_http(m.group("addr"))
         elif elapsed > timeout:
             return None
 
 
 class OutputMonitor:
-
     def __init__(self):
         self.consumers = []
 
@@ -105,7 +114,9 @@ class OutputMonitor:
 
     def start(self, proc):
         self._stop_out_thread = threading.Event()
-        self._out_thread = threading.Thread(target=self.consume, args=(proc.stdout,))
+        self._out_thread = threading.Thread(
+            target=self.consume, args=(proc.stdout,)
+        )
         self._out_thread.daemon = True
         self._out_thread.start()
 
@@ -116,7 +127,6 @@ class OutputMonitor:
 
 
 class LineBuffer:
-
     def __init__(self):
         self.lines = []
 
@@ -124,7 +134,7 @@ class LineBuffer:
         self.lines.append(line.strip())
 
 
-class CrateLayer(object):
+class CrateLayer:
     """
     This layer starts a Crate server.
     """
@@ -135,14 +145,16 @@ class CrateLayer(object):
     wait_interval = 0.2
 
     @staticmethod
-    def from_uri(uri,
-                 name,
-                 http_port='4200-4299',
-                 transport_port='4300-4399',
-                 settings=None,
-                 directory=None,
-                 cleanup=True,
-                 verbose=False):
+    def from_uri(
+        uri,
+        name,
+        http_port="4200-4299",
+        transport_port="4300-4399",
+        settings=None,
+        directory=None,
+        cleanup=True,
+        verbose=False,
+    ):
         """Download the Crate tarball from a URI and create a CrateLayer
 
         :param uri: The uri that points to the Crate tarball
@@ -158,11 +170,14 @@ class CrateLayer(object):
         """
         directory = directory or tempfile.mkdtemp()
         filename = os.path.basename(uri)
-        crate_dir = re.sub(r'\.tar(\.gz)?$', '', filename)
+        crate_dir = re.sub(r"\.tar(\.gz)?$", "", filename)
         crate_home = os.path.join(directory, crate_dir)
 
         if os.path.exists(crate_home):
-            sys.stderr.write("\nWARNING: Not extracting Crate tarball because folder already exists")
+            sys.stderr.write(
+                "\nWARNING: Not extracting CrateDB tarball"
+                " because folder already exists"
+            )
             sys.stderr.flush()
         else:
             _download_and_extract(uri, directory)
@@ -173,29 +188,33 @@ class CrateLayer(object):
             port=http_port,
             transport_port=transport_port,
             settings=settings,
-            verbose=verbose)
+            verbose=verbose,
+        )
         if cleanup:
             tearDown = layer.tearDown
 
             def new_teardown(*args, **kws):
                 shutil.rmtree(directory)
                 tearDown(*args, **kws)
-            layer.tearDown = new_teardown
+
+            layer.tearDown = new_teardown  # type: ignore[method-assign]
         return layer
 
-    def __init__(self,
-                 name,
-                 crate_home,
-                 crate_config=None,
-                 port=None,
-                 keepRunning=False,
-                 transport_port=None,
-                 crate_exec=None,
-                 cluster_name=None,
-                 host="127.0.0.1",
-                 settings=None,
-                 verbose=False,
-                 env=None):
+    def __init__(
+        self,
+        name,
+        crate_home,
+        crate_config=None,
+        port=None,
+        keepRunning=False,
+        transport_port=None,
+        crate_exec=None,
+        cluster_name=None,
+        host="127.0.0.1",
+        settings=None,
+        verbose=False,
+        env=None,
+    ):
         """
         :param name: layer name, is also used as the cluser name
         :param crate_home: path to home directory of the crate installation
@@ -216,52 +235,69 @@ class CrateLayer(object):
         self.__name__ = name
         if settings and isinstance(settings, dict):
             # extra settings may override host/port specification!
-            self.http_url = http_url_from_host_port(settings.get('network.host', host),
-                                                    settings.get('http.port', port))
+            self.http_url = http_url_from_host_port(
+                settings.get("network.host", host),
+                settings.get("http.port", port),
+            )
         else:
             self.http_url = http_url_from_host_port(host, port)
 
         self.process = None
         self.verbose = verbose
         self.env = env or {}
-        self.env.setdefault('CRATE_USE_IPV4', 'true')
-        self.env.setdefault('JAVA_HOME', os.environ.get('JAVA_HOME', ''))
+        self.env.setdefault("CRATE_USE_IPV4", "true")
+        self.env.setdefault("JAVA_HOME", os.environ.get("JAVA_HOME", ""))
         self._stdout_consumers = []
         self.conn_pool = urllib3.PoolManager(num_pools=1)
 
         crate_home = os.path.abspath(crate_home)
         if crate_exec is None:
-            start_script = 'crate.bat' if sys.platform == 'win32' else 'crate'
-            crate_exec = os.path.join(crate_home, 'bin', start_script)
+            start_script = "crate.bat" if sys.platform == "win32" else "crate"
+            crate_exec = os.path.join(crate_home, "bin", start_script)
         if crate_config is None:
-            crate_config = os.path.join(crate_home, 'config', 'crate.yml')
-        elif (os.path.isfile(crate_config) and
-              os.path.basename(crate_config) != 'crate.yml'):
+            crate_config = os.path.join(crate_home, "config", "crate.yml")
+        elif (
+            os.path.isfile(crate_config)
+            and os.path.basename(crate_config) != "crate.yml"
+        ):
             raise ValueError(CRATE_CONFIG_ERROR)
         if cluster_name is None:
-            cluster_name = "Testing{0}".format(port or 'Dynamic')
-        settings = self.create_settings(crate_config,
-                                        cluster_name,
-                                        name,
-                                        host,
-                                        port or '4200-4299',
-                                        transport_port or '4300-4399',
-                                        settings)
+            cluster_name = "Testing{0}".format(port or "Dynamic")
+        settings = self.create_settings(
+            crate_config,
+            cluster_name,
+            name,
+            host,
+            port or "4200-4299",
+            transport_port or "4300-4399",
+            settings,
+        )
         # ES 5 cannot parse 'True'/'False' as booleans so convert to lowercase
-        start_cmd = (crate_exec, ) + tuple(["-C%s=%s" % ((key, str(value).lower()) if isinstance(value, bool) else (key, value))
-                                            for key, value in settings.items()])
+        start_cmd = (crate_exec,) + tuple(
+            [
+                "-C%s=%s"
+                % (
+                    (key, str(value).lower())
+                    if isinstance(value, bool)
+                    else (key, value)
+                )
+                for key, value in settings.items()
+            ]
+        )
 
-        self._wd = wd = os.path.join(CrateLayer.tmpdir, 'crate_layer', name)
-        self.start_cmd = start_cmd + ('-Cpath.data=%s' % wd,)
+        self._wd = wd = os.path.join(CrateLayer.tmpdir, "crate_layer", name)
+        self.start_cmd = start_cmd + ("-Cpath.data=%s" % wd,)
 
-    def create_settings(self,
-                        crate_config,
-                        cluster_name,
-                        node_name,
-                        host,
-                        http_port,
-                        transport_port,
-                        further_settings=None):
+    def create_settings(
+        self,
+        crate_config,
+        cluster_name,
+        node_name,
+        host,
+        http_port,
+        transport_port,
+        further_settings=None,
+    ):
         settings = {
             "discovery.type": "zen",
             "discovery.initial_state_timeout": 0,
@@ -294,20 +330,23 @@ class CrateLayer(object):
 
     def start(self):
         self._clean()
-        self.process = subprocess.Popen(self.start_cmd,
-                                        env=self.env,
-                                        stdout=subprocess.PIPE)
+        self.process = subprocess.Popen(
+            self.start_cmd, env=self.env, stdout=subprocess.PIPE
+        )
         returncode = self.process.poll()
         if returncode is not None:
             raise SystemError(
-                'Failed to start server rc={0} cmd={1}'.format(returncode,
-                                                               self.start_cmd)
+                "Failed to start server rc={0} cmd={1}".format(
+                    returncode, self.start_cmd
+                )
             )
 
         if not self.http_url:
             # try to read http_url from startup logs
             # this is necessary if no static port is assigned
-            self.http_url = wait_for_http_url(self.process.stdout, verbose=self.verbose)
+            self.http_url = wait_for_http_url(
+                self.process.stdout, verbose=self.verbose
+            )
 
         self.monitor = OutputMonitor()
         self.monitor.start(self.process)
@@ -315,10 +354,10 @@ class CrateLayer(object):
         if not self.http_url:
             self.stop()
         else:
-            sys.stderr.write('HTTP: {}\n'.format(self.http_url))
+            sys.stderr.write("HTTP: {}\n".format(self.http_url))
             self._wait_for_start()
             self._wait_for_master()
-            sys.stderr.write('\nCrate instance ready.\n')
+            sys.stderr.write("\nCrate instance ready.\n")
 
     def stop(self):
         self.conn_pool.clear()
@@ -352,10 +391,9 @@ class CrateLayer(object):
                 for line in line_buf.lines:
                     log.error(line)
                 self.stop()
-                raise SystemError('Failed to start Crate instance in time.')
-            else:
-                sys.stderr.write('.')
-                time.sleep(self.wait_interval)
+                raise SystemError("Failed to start Crate instance in time.")
+            sys.stderr.write(".")
+            time.sleep(self.wait_interval)
 
         self.monitor.consumers.remove(line_buf)
 
@@ -367,7 +405,7 @@ class CrateLayer(object):
         # after the layer starts don't result in 503
         def validator():
             try:
-                resp = self.conn_pool.request('HEAD', self.http_url)
+                resp = self.conn_pool.request("HEAD", self.http_url)
                 return resp.status == 200
             except Exception:
                 return False
@@ -379,12 +417,12 @@ class CrateLayer(object):
 
         def validator():
             resp = self.conn_pool.urlopen(
-                'POST',
-                '{server}/_sql'.format(server=self.http_url),
-                headers={'Content-Type': 'application/json'},
-                body='{"stmt": "select master_node from sys.cluster"}'
+                "POST",
+                "{server}/_sql".format(server=self.http_url),
+                headers={"Content-Type": "application/json"},
+                body='{"stmt": "select master_node from sys.cluster"}',
             )
-            data = json.loads(resp.data.decode('utf-8'))
-            return resp.status == 200 and data['rows'][0][0]
+            data = json.loads(resp.data.decode("utf-8"))
+            return resp.status == 200 and data["rows"][0][0]
 
         self._wait_for(validator)

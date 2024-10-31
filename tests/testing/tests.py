@@ -21,8 +21,8 @@
 # software solely pursuant to the terms of the relevant commercial agreement.
 
 import unittest
-from .test_layer import LayerUtilsTest, LayerTest
 
+from .test_layer import LayerTest, LayerUtilsTest
 
 makeSuite = unittest.TestLoader().loadTestsFromTestCase
 

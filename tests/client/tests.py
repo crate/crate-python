@@ -1,18 +1,32 @@
 import doctest
 import unittest
 
+from .layer import (
+    HttpsTestServerLayer,
+    ensure_cratedb_layer,
+    makeSuite,
+    setUpCrateLayerBaseline,
+    setUpWithHttps,
+    tearDownDropEntitiesBaseline,
+)
 from .test_connection import ConnectionTest
 from .test_cursor import CursorTest
-from .test_http import HttpClientTest, KeepAliveClientTest, ThreadSafeHttpClientTest, ParamsTest, \
-    RetryOnTimeoutServerTest, RequestsCaBundleTest, TestUsernameSentAsHeader, TestCrateJsonEncoder, \
-    TestDefaultSchemaHeader
-from .layer import makeSuite, setUpWithHttps, HttpsTestServerLayer, setUpCrateLayerBaseline, \
-    tearDownDropEntitiesBaseline, ensure_cratedb_layer
+from .test_http import (
+    HttpClientTest,
+    KeepAliveClientTest,
+    ParamsTest,
+    RequestsCaBundleTest,
+    RetryOnTimeoutServerTest,
+    TestCrateJsonEncoder,
+    TestDefaultSchemaHeader,
+    TestUsernameSentAsHeader,
+    ThreadSafeHttpClientTest,
+)
 
 
 def test_suite():
     suite = unittest.TestSuite()
-    flags = (doctest.NORMALIZE_WHITESPACE | doctest.ELLIPSIS)
+    flags = doctest.NORMALIZE_WHITESPACE | doctest.ELLIPSIS
 
     # Unit tests.
     suite.addTest(makeSuite(CursorTest))
@@ -26,24 +40,24 @@ def test_suite():
     suite.addTest(makeSuite(TestUsernameSentAsHeader))
     suite.addTest(makeSuite(TestCrateJsonEncoder))
     suite.addTest(makeSuite(TestDefaultSchemaHeader))
-    suite.addTest(doctest.DocTestSuite('crate.client.connection'))
-    suite.addTest(doctest.DocTestSuite('crate.client.http'))
+    suite.addTest(doctest.DocTestSuite("crate.client.connection"))
+    suite.addTest(doctest.DocTestSuite("crate.client.http"))
 
     s = doctest.DocFileSuite(
-        'docs/by-example/connection.rst',
-        'docs/by-example/cursor.rst',
+        "docs/by-example/connection.rst",
+        "docs/by-example/cursor.rst",
         module_relative=False,
         optionflags=flags,
-        encoding='utf-8'
+        encoding="utf-8",
     )
     suite.addTest(s)
 
     s = doctest.DocFileSuite(
-        'docs/by-example/https.rst',
+        "docs/by-example/https.rst",
         module_relative=False,
         setUp=setUpWithHttps,
         optionflags=flags,
-        encoding='utf-8'
+        encoding="utf-8",
     )
     s.layer = HttpsTestServerLayer()
     suite.addTest(s)
@@ -52,14 +66,14 @@ def test_suite():
     layer = ensure_cratedb_layer()
 
     s = doctest.DocFileSuite(
-        'docs/by-example/http.rst',
-        'docs/by-example/client.rst',
-        'docs/by-example/blob.rst',
+        "docs/by-example/http.rst",
+        "docs/by-example/client.rst",
+        "docs/by-example/blob.rst",
         module_relative=False,
         setUp=setUpCrateLayerBaseline,
         tearDown=tearDownDropEntitiesBaseline,
         optionflags=flags,
-        encoding='utf-8'
+        encoding="utf-8",
     )
     s.layer = layer
     suite.addTest(s)

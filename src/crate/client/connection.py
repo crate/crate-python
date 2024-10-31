@@ -19,37 +19,38 @@
 # with Crate these terms will supersede the license and you may use the
 # software solely pursuant to the terms of the relevant commercial agreement.
 
-from .cursor import Cursor
-from .exceptions import ProgrammingError, ConnectionError
-from .http import Client
-from .blob import BlobContainer
 from verlib2 import Version
 
+from .blob import BlobContainer
+from .cursor import Cursor
+from .exceptions import ConnectionError, ProgrammingError
+from .http import Client
 
-class Connection(object):
 
-    def __init__(self,
-                 servers=None,
-                 timeout=None,
-                 backoff_factor=0,
-                 client=None,
-                 verify_ssl_cert=True,
-                 ca_cert=None,
-                 error_trace=False,
-                 cert_file=None,
-                 key_file=None,
-                 ssl_relax_minimum_version=False,
-                 username=None,
-                 password=None,
-                 schema=None,
-                 pool_size=None,
-                 socket_keepalive=True,
-                 socket_tcp_keepidle=None,
-                 socket_tcp_keepintvl=None,
-                 socket_tcp_keepcnt=None,
-                 converter=None,
-                 time_zone=None,
-                 ):
+class Connection:
+    def __init__(
+        self,
+        servers=None,
+        timeout=None,
+        backoff_factor=0,
+        client=None,
+        verify_ssl_cert=True,
+        ca_cert=None,
+        error_trace=False,
+        cert_file=None,
+        key_file=None,
+        ssl_relax_minimum_version=False,
+        username=None,
+        password=None,
+        schema=None,
+        pool_size=None,
+        socket_keepalive=True,
+        socket_tcp_keepidle=None,
+        socket_tcp_keepintvl=None,
+        socket_tcp_keepcnt=None,
+        converter=None,
+        time_zone=None,
+    ):
         """
         :param servers:
             either a string in the form of '<hostname>:<port>'
@@ -123,7 +124,7 @@ class Connection(object):
 
             When `time_zone` is given, the returned `datetime` objects are "aware",
             with `tzinfo` set, converted using ``datetime.fromtimestamp(..., tz=...)``.
-        """
+        """  # noqa: E501
 
         self._converter = converter
         self.time_zone = time_zone
@@ -131,24 +132,25 @@ class Connection(object):
         if client:
             self.client = client
         else:
-            self.client = Client(servers,
-                                 timeout=timeout,
-                                 backoff_factor=backoff_factor,
-                                 verify_ssl_cert=verify_ssl_cert,
-                                 ca_cert=ca_cert,
-                                 error_trace=error_trace,
-                                 cert_file=cert_file,
-                                 key_file=key_file,
-                                 ssl_relax_minimum_version=ssl_relax_minimum_version,
-                                 username=username,
-                                 password=password,
-                                 schema=schema,
-                                 pool_size=pool_size,
-                                 socket_keepalive=socket_keepalive,
-                                 socket_tcp_keepidle=socket_tcp_keepidle,
-                                 socket_tcp_keepintvl=socket_tcp_keepintvl,
-                                 socket_tcp_keepcnt=socket_tcp_keepcnt,
-                                 )
+            self.client = Client(
+                servers,
+                timeout=timeout,
+                backoff_factor=backoff_factor,
+                verify_ssl_cert=verify_ssl_cert,
+                ca_cert=ca_cert,
+                error_trace=error_trace,
+                cert_file=cert_file,
+                key_file=key_file,
+                ssl_relax_minimum_version=ssl_relax_minimum_version,
+                username=username,
+                password=password,
+                schema=schema,
+                pool_size=pool_size,
+                socket_keepalive=socket_keepalive,
+                socket_tcp_keepidle=socket_tcp_keepidle,
+                socket_tcp_keepintvl=socket_tcp_keepintvl,
+                socket_tcp_keepcnt=socket_tcp_keepcnt,
+            )
         self.lowest_server_version = self._lowest_server_version()
         self._closed = False
 
@@ -182,7 +184,7 @@ class Connection(object):
             raise ProgrammingError("Connection closed")
 
     def get_blob_container(self, container_name):
-        """ Retrieve a BlobContainer for `container_name`
+        """Retrieve a BlobContainer for `container_name`
 
         :param container_name: the name of the BLOB container.
         :returns: a :class:ContainerObject
@@ -199,10 +201,10 @@ class Connection(object):
                 continue
             if not lowest or version < lowest:
                 lowest = version
-        return lowest or Version('0.0.0')
+        return lowest or Version("0.0.0")
 
     def __repr__(self):
-        return '<Connection {0}>'.format(repr(self.client))
+        return "<Connection {0}>".format(repr(self.client))
 
     def __enter__(self):
         return self

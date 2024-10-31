@@ -25,7 +25,9 @@ from pathlib import Path
 
 
 def assets_path(*parts) -> str:
-    return str((project_root() / "tests" / "assets").joinpath(*parts).absolute())
+    return str(
+        (project_root() / "tests" / "assets").joinpath(*parts).absolute()
+    )
 
 
 def crate_path() -> str:
@@ -36,9 +38,8 @@ def project_root() -> Path:
     return Path(__file__).parent.parent.parent
 
 
-
 crate_port = 44209
 crate_transport_port = 44309
-localhost = '127.0.0.1'
+localhost = "127.0.0.1"
 crate_host = "{host}:{port}".format(host=localhost, port=crate_port)
 crate_uri = "http://%s" % crate_host

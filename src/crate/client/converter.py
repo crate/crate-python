@@ -23,6 +23,7 @@ Machinery for converting CrateDB database types to native Python data types.
 
 https://crate.io/docs/crate/reference/en/latest/interfaces/http.html#column-types
 """
+
 import ipaddress
 from copy import deepcopy
 from datetime import datetime
@@ -33,7 +34,9 @@ ConverterFunction = Callable[[Optional[Any]], Optional[Any]]
 ColTypesDefinition = Union[int, List[Union[int, "ColTypesDefinition"]]]
 
 
-def _to_ipaddress(value: Optional[str]) -> Optional[Union[ipaddress.IPv4Address, ipaddress.IPv6Address]]:
+def _to_ipaddress(
+    value: Optional[str],
+) -> Optional[Union[ipaddress.IPv4Address, ipaddress.IPv6Address]]:
     """
     https://docs.python.org/3/library/ipaddress.html
     """
@@ -55,7 +58,7 @@ def _to_default(value: Optional[Any]) -> Optional[Any]:
     return value
 
 
-# Symbolic aliases for the numeric data type identifiers defined by the CrateDB HTTP interface.
+# Data type identifiers defined by the CrateDB HTTP interface.
 # https://crate.io/docs/crate/reference/en/latest/interfaces/http.html#column-types
 class DataType(Enum):
     NULL = 0
@@ -112,7 +115,9 @@ class Converter:
             return self._mappings.get(DataType(type_), self._default)
         type_, inner_type = type_
         if DataType(type_) is not DataType.ARRAY:
-            raise ValueError(f"Data type {type_} is not implemented as collection type")
+            raise ValueError(
+                f"Data type {type_} is not implemented as collection type"
+            )
 
         inner_convert = self.get(inner_type)
 
@@ -128,11 +133,11 @@ class Converter:
 
 
 class DefaultTypeConverter(Converter):
-    def __init__(self, more_mappings: Optional[ConverterMapping] = None) -> None:
+    def __init__(
+        self, more_mappings: Optional[ConverterMapping] = None
+    ) -> None:
         mappings: ConverterMapping = {}
         mappings.update(deepcopy(_DEFAULT_CONVERTERS))
         if more_mappings:
             mappings.update(deepcopy(more_mappings))
-        super().__init__(
-            mappings=mappings, default=_to_default
-        )
+        super().__init__(mappings=mappings, default=_to_default)

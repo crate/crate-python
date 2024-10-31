@@ -127,7 +127,7 @@ class HttpClientTest(TestCase):
             client.close()
 
     def test_no_connection_exception(self):
-        client = Client()
+        client = Client(servers="localhost:9999")
         self.assertRaises(ConnectionError, client.sql, 'select foo')
         client.close()
 

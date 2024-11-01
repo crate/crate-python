@@ -205,7 +205,16 @@ class CursorTest(TestCase):
                 [
                     "foo",
                     IPv4Address("10.10.10.1"),
-                    datetime.datetime(2022, 7, 18, 18, 10, 36, 758000),
+                    datetime.datetime(
+                        2022,
+                        7,
+                        18,
+                        18,
+                        10,
+                        36,
+                        758000,
+                        tzinfo=datetime.timezone.utc,
+                    ),
                     6,
                 ],
                 [None, None, None, None],

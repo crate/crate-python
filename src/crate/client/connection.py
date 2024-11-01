@@ -119,11 +119,15 @@ class Connection:
             - ``zoneinfo.ZoneInfo("Australia/Sydney")``
             - ``+0530`` (UTC offset in string format)
 
-            When `time_zone` is `None`, the returned `datetime` objects are
-            "naive", without any `tzinfo`, converted using ``datetime.utcfromtimestamp(...)``.
+            The driver always returns timezone-"aware" `datetime` objects,
+            with their `tzinfo` attribute set.
 
-            When `time_zone` is given, the returned `datetime` objects are "aware",
-            with `tzinfo` set, converted using ``datetime.fromtimestamp(..., tz=...)``.
+            When `time_zone` is `None`, the returned `datetime` objects are
+            using Coordinated Universal Time (UTC), because CrateDB is storing
+            timestamp values in this format.
+
+            When `time_zone` is given, the timestamp values will be transparently
+            converted from UTC to use the given time zone.
         """  # noqa: E501
 
         self._converter = converter

@@ -24,9 +24,9 @@ Machinery for converting CrateDB database types to native Python data types.
 https://crate.io/docs/crate/reference/en/latest/interfaces/http.html#column-types
 """
 
+import datetime as dt
 import ipaddress
 from copy import deepcopy
-from datetime import datetime
 from enum import Enum
 from typing import Any, Callable, Dict, List, Optional, Union
 
@@ -45,13 +45,13 @@ def _to_ipaddress(
     return ipaddress.ip_address(value)
 
 
-def _to_datetime(value: Optional[float]) -> Optional[datetime]:
+def _to_datetime(value: Optional[float]) -> Optional[dt.datetime]:
     """
     https://docs.python.org/3/library/datetime.html
     """
     if value is None:
         return None
-    return datetime.utcfromtimestamp(value / 1e3)
+    return dt.datetime.fromtimestamp(value / 1e3, tz=dt.timezone.utc)
 
 
 def _to_default(value: Optional[Any]) -> Optional[Any]:

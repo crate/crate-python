@@ -55,8 +55,8 @@ setup(
     packages=find_packages("src"),
     namespace_packages=["crate"],
     install_requires=[
-        "urllib3<2.3",
-        "verlib2==0.2.0",
+        "urllib3",
+        "verlib2",
     ],
     extras_require={
         "doc": [

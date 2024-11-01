@@ -222,9 +222,11 @@ class Cursor:
         """
         Iterate rows, apply type converters, and generate converted rows.
         """
-        assert (  # noqa: S101
-            "col_types" in self._result and self._result["col_types"]
-        ), "Unable to apply type conversion without `col_types` information"
+        if not ("col_types" in self._result and self._result["col_types"]):
+            raise ValueError(
+                "Unable to apply type conversion "
+                "without `col_types` information"
+            )
 
         # Resolve `col_types` definition to converter functions. Running
         # the lookup redundantly on each row loop iteration would be a
@@ -302,10 +304,10 @@ class Cursor:
         """
         UTC offset in string format (e.g. `+0530`) to `datetime.timezone`.
         """
-        # TODO: Remove use of `assert`. Better use exceptions?
-        assert (  # noqa: S101
-            len(tz) == 5
-        ), f"Time zone '{tz}' is given in invalid UTC offset format"
+        if len(tz) != 5:
+            raise ValueError(
+                f"Time zone '{tz}' is given in invalid UTC offset format"
+            )
         try:
             hours = int(tz[:3])
             minutes = int(tz[0] + tz[3:])

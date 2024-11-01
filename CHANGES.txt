@@ -14,6 +14,10 @@ Unreleased
   server stacktraces into exception messages.
 - Refactoring: The module namespace ``crate.client.test_util`` has been
   renamed to ``crate.testing.util``.
+- Error handling: At two spots in cursor / value converter handling, where
+  ``assert`` statements have been used, ``ValueError`` exceptions are raised
+  now.
+
 
 .. _Migrate from crate.client to sqlalchemy-cratedb: https://cratedb.com/docs/sqlalchemy-cratedb/migrate-from-crate-client.html
 .. _sqlalchemy-cratedb: https://pypi.org/project/sqlalchemy-cratedb/

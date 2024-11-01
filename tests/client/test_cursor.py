@@ -116,7 +116,7 @@ class CursorTest(TestCase):
         Verify the cursor trips when trying to use invalid UTC offset strings.
         """
         connection = self.get_mocked_connection()
-        with self.assertRaises(AssertionError) as ex:
+        with self.assertRaises(ValueError) as ex:
             connection.cursor(time_zone="foobar")
         self.assertEqual(
             str(ex.exception),

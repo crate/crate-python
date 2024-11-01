@@ -22,7 +22,7 @@
 import os
 import re
 
-from setuptools import find_packages, setup
+from setuptools import find_namespace_packages, setup
 
 
 def read(path):
@@ -45,15 +45,14 @@ setup(
     url="https://github.com/crate/crate-python",
     author="Crate.io",
     author_email="office@crate.io",
-    package_dir={"": "src"},
     description="CrateDB Python Client",
     long_description=long_description,
     long_description_content_type="text/x-rst",
     platforms=["any"],
     license="Apache License 2.0",
     keywords="cratedb db api dbapi database sql http rdbms olap",
-    packages=find_packages("src"),
-    namespace_packages=["crate"],
+    packages=find_namespace_packages("src"),
+    package_dir={"": "src"},
     install_requires=[
         "urllib3<2.3",
         "verlib2==0.2.0",

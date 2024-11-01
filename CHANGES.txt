@@ -17,9 +17,12 @@ Unreleased
 - Error handling: At two spots in cursor / value converter handling, where
   ``assert`` statements have been used, ``ValueError`` exceptions are raised
   now.
+- Python: Migrated to use "implicit namespace packages" instead of "declared
+  namespaces" for the ``crate`` namespace package, see `PEP 420`_.
 
 
 .. _Migrate from crate.client to sqlalchemy-cratedb: https://cratedb.com/docs/sqlalchemy-cratedb/migrate-from-crate-client.html
+.. _PEP 420: https://peps.python.org/pep-0420/
 .. _sqlalchemy-cratedb: https://pypi.org/project/sqlalchemy-cratedb/
 
 

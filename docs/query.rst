@@ -244,8 +244,7 @@ converter function defined as ``lambda``, which assigns ``yes`` for boolean
 =======================================
 
 Based on the data type converter functionality, the driver offers a convenient
-interface to make it return timezone-aware ``datetime`` objects, using the
-desired time zone.
+interface to make it return ``datetime`` objects using the desired time zone.
 
 For your reference, in the following examples, epoch 1658167836758 is
 ``Mon, 18 Jul 2022 18:10:36 GMT``.

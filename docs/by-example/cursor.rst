@@ -333,7 +333,7 @@ types. Currently, this is implemented for the CrateDB data types ``IP`` and
     >>> cursor.execute('')
 
     >>> cursor.fetchone()
-    ['foo', IPv4Address('10.10.10.1'), datetime.datetime(2022, 7, 18, 18, 10, 36, 758000)]
+    ['foo', IPv4Address('10.10.10.1'), datetime.datetime(2022, 7, 18, 18, 10, 36, 758000, tzinfo=datetime.timezone.utc)]
 
 
 Custom data type conversion
@@ -374,8 +374,7 @@ Proof that the converter works correctly, ``B\'0110\'`` should be converted to
 =======================================
 
 Based on the data type converter functionality, the driver offers a convenient
-interface to make it return timezone-aware ``datetime`` objects, using the
-desired time zone.
+interface to make it return ``datetime`` objects using the desired time zone.
 
 For your reference, in the following examples, epoch 1658167836758 is
 ``Mon, 18 Jul 2022 18:10:36 GMT``.

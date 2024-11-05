@@ -5,13 +5,13 @@ Changes for crate
 Unreleased
 ==========
 
-- The SQLAlchemy dialect has been split off into the `sqlalchemy-cratedb`_
-  package. See `Migrate from crate.client to sqlalchemy-cratedb`_ to learn
-  about necessary migration steps.
-- Returned Python ``datetime`` objects are now always timezone-aware,
-  using UTC by default. This is a possible BREAKING CHANGE: Removed the use
-  of "naive" Python ``datetime`` objects, i.e. instances without ``tzinfo``
-  attribute set.
+- BREAKING CHANGE: The SQLAlchemy dialect has been split off into
+  the `sqlalchemy-cratedb`_ package, see notice below.
+- Feature: Returned Python ``datetime`` objects are now always timezone-aware,
+  using UTC by default.
+  It may be a breaking change for some users of the library that don't expect
+  to receive "aware" instead of "naive" Python ``datetime`` objects from now
+  on, i.e. instances with or without the ``tzinfo`` attribute set.
   When no ``time_zone`` information is specified when creating a database
   connection or cursor, ``datetime`` objects will now use Coordinated
   Universal Time (UTC), like CrateDB is storing timestamp values in this
@@ -19,13 +19,11 @@ Unreleased
   This update is coming from a deprecation of Python's
   ``datetime.utcfromtimestamp()``, which is effectively also phasing out
   the use of "naive" timestamp objects in Python, in favor of using
-  timezone-aware objects, also to represent datetimes in UTC. It may be a
-  breaking change for some users of the library that don't expect to
-  receive "aware" ``datetime`` objects from now on.
-- Configured DB API interface attribute ``threadsafety = 1``, which signals
-  "Threads may share the module, but not connections."
-- Added ``error_trace`` to string representation of an Error to relay
-  server stacktraces into exception messages.
+  timezone-aware objects, also to represent datetimes in UTC.
+- Feature: Configured DB API interface attribute ``threadsafety = 1``,
+  which signals "Threads may share the module, but not connections."
+- Feature: Added ``error_trace`` to string representation of an Error,
+  to relay server stacktraces into exception messages.
 - Refactoring: The module namespace ``crate.client.test_util`` has been
   renamed to ``crate.testing.util``.
 - Error handling: At two spots in cursor / value converter handling, where
@@ -33,6 +31,13 @@ Unreleased
   now.
 - Python: Migrated to use "implicit namespace packages" instead of "declared
   namespaces" for the ``crate`` namespace package, see `PEP 420`_.
+
+
+.. note::
+
+    For learning about the transition to `sqlalchemy-cratedb`_,
+    we recommend to read the enumeration of necessary migration steps
+    at `Migrate from crate.client to sqlalchemy-cratedb`_.
 
 
 .. _Migrate from crate.client to sqlalchemy-cratedb: https://cratedb.com/docs/sqlalchemy-cratedb/migrate-from-crate-client.html

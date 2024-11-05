@@ -48,7 +48,7 @@ jobs:
           echo "Invoking tests with CrateDB ${CRATEDB_VERSION}"
 
           # Run linter.
-          flake8 src bin
+          poe lint
           
           # Run tests.
           bin/test -vvv

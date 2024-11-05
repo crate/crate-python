@@ -5,6 +5,9 @@ Changes for crate
 Unreleased
 ==========
 
+2024/11/05 1.0.0
+================
+
 - BREAKING CHANGE: The SQLAlchemy dialect has been split off into
   the `sqlalchemy-cratedb`_ package, see notice below.
 - Feature: Returned Python ``datetime`` objects are now always timezone-aware,

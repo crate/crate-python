@@ -121,7 +121,7 @@ In the release branch:
 
 - Update ``__version__`` in ``src/crate/client/__init__.py``
 
-- Add a section for the new version in the ``CHANGES.txt`` file
+- Add a section for the new version in the ``CHANGES.rst`` file
 
 - Commit your changes with a message like "prepare release x.y.z"
 

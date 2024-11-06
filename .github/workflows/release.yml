@@ -23,7 +23,7 @@ jobs:
 
       - name: Build package
         run: |
-          uv pip install build twine wheel
+          uv pip install --system build twine wheel
           python -m build
           twine check dist/*
 

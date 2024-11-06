@@ -6,7 +6,7 @@ CrateDB Python Client
     :target: https://github.com/crate/crate-python/actions?workflow=Tests
     :alt: Build status
 
-.. image:: https://codecov.io/gh/crate/crate-python/branch/master/graph/badge.svg
+.. image:: https://codecov.io/gh/crate/crate-python/branch/main/graph/badge.svg
     :target: https://app.codecov.io/gh/crate/crate-python
     :alt: Coverage
 

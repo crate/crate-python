@@ -104,7 +104,7 @@ Renew certificates
 ==================
 
 For conducting TLS connectivity tests, there are a few X.509 certificates at
-`src/crate/client/pki/*.pem`_. In order to renew them, follow the instructions
+`tests/assets/pki/*.pem`_. In order to renew them, follow the instructions
 within the README file in this folder.
 
 
@@ -130,7 +130,7 @@ In the release branch:
 - Create a tag by running ``./devtools/create_tag.sh``. This will trigger a
   Github action which releases the new version to PyPi.
 
-On master:
+On branch ``main``:
 
 - Update the release notes to reflect the release
 
@@ -171,7 +171,7 @@ nothing special you need to do to get the live docs to update.
 .. _Read the Docs: http://readthedocs.org
 .. _ReStructuredText: http://docutils.sourceforge.net/rst.html
 .. _Sphinx: http://sphinx-doc.org/
-.. _src/crate/client/pki/*.pem: https://github.com/crate/crate-python/tree/master/src/crate/client/pki
+.. _tests/assets/pki/*.pem: https://github.com/crate/crate-python/tree/main/tests/assets/pki
 .. _tox: http://testrun.org/tox/latest/
 .. _twine: https://pypi.python.org/pypi/twine
 .. _useful command-line options for zope-testrunner: https://pypi.org/project/zope.testrunner/#some-useful-command-line-options-to-get-you-started

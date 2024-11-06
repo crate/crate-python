@@ -174,12 +174,12 @@ The project is licensed under the terms of the Apache 2.0 license, like
 .. _CrateDB source: https://github.com/crate/crate
 .. _Create an issue: https://github.com/crate/crate-python/issues
 .. _Dask: https://en.wikipedia.org/wiki/Dask_(software)
-.. _development sandbox: https://github.com/crate/crate-python/blob/master/DEVELOP.rst
+.. _development sandbox: https://github.com/crate/crate-python/blob/main/DEVELOP.rst
 .. _cratedb-examples repository: https://github.com/crate/cratedb-examples
 .. _FIWARE QuantumLeap data historian: https://github.com/orchestracities/ngsi-timeseries-api
 .. _GeoJSON: https://geojson.org/
 .. _GeoJSON geometry objects: https://tools.ietf.org/html/rfc7946#section-3.1
-.. _LICENSE: https://github.com/crate/crate-python/blob/master/LICENSE
+.. _LICENSE: https://github.com/crate/crate-python/blob/main/LICENSE
 .. _managed on GitHub: https://github.com/crate/crate-python
 .. _migrate to sqlalchemy-cratedb: https://cratedb.com/docs/sqlalchemy-cratedb/migrate-from-crate-client.html
 .. _pandas: https://en.wikipedia.org/wiki/Pandas_(software)

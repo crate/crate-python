@@ -8,7 +8,7 @@ About
 *****
 
 For conducting TLS connectivity tests, there are a few X.509 certificates at
-`src/crate/client/pki/*.pem`_. The instructions here outline how to renew them.
+`tests/assets/pki/*.pem`_. The instructions here outline how to renew them.
 
 In order to invoke the corresponding test cases, run::
 
@@ -88,4 +88,4 @@ Combine private key and certificate into single PEM file::
     cat invalid_cert.pem >> client_invalid.pem
 
 
-.. _src/crate/client/pki/*.pem: https://github.com/crate/crate-python/tree/master/src/crate/client/pki
+.. _tests/assets/pki/*.pem: https://github.com/crate/crate-python/tree/main/tests/assets/pki

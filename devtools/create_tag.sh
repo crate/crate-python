@@ -35,7 +35,7 @@ git fetch origin > /dev/null
 BRANCH=`git branch | grep "^*" | cut -d " " -f 2`
 echo "Current branch is $BRANCH."
 
-# check if master == origin/master
+# check if main == origin/main
 LOCAL_COMMIT=`git show --format="%H" $BRANCH`
 ORIGIN_COMMIT=`git show --format="%H" origin/$BRANCH`
 

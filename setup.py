@@ -67,7 +67,7 @@ setup(
             "certifi",
             "createcoverage>=1,<2",
             "mypy<1.14",
-            "poethepoet<0.30",
+            "poethepoet<0.31",
             "ruff<0.8",
             "stopit>=1.1.2,<2",
             "tox>=3,<5",

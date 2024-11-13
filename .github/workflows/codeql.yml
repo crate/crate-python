@@ -63,3 +63,19 @@ jobs:
 
       - name: Perform CodeQL Analysis
         uses: github/codeql-action/analyze@v3
+        with:
+          category: "/language:${{matrix.language}}"
+          # define the output folder for SARIF files
+          output: sarif-results
+
+      # Unlock inline mechanism to suppress CodeQL warnings.
+      # https://github.com/github/codeql/issues/11427#issuecomment-1721059096
+      - name: Dismiss alerts
+        # if: github.ref == 'refs/heads/main'
+        uses: advanced-security/dismiss-alerts@v1
+        with:
+          # specify a 'sarif-id' and 'sarif-file'
+          sarif-id: ${{ steps.analyze.outputs.sarif-id }}
+          sarif-file: sarif-results/${{ matrix.language }}.sarif
+        env:
+          GITHUB_TOKEN: ${{ github.token }}

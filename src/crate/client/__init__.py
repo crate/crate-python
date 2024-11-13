@@ -31,6 +31,6 @@ __all__ = [
 # regex!
 __version__ = "1.0.0"
 
-apilevel = "2.0"
-threadsafety = 1
-paramstyle = "qmark"
+apilevel = "2.0"  # codeql[py/unused-global-variable]
+threadsafety = 1  # codeql[py/unused-global-variable]
+paramstyle = "qmark"  # codeql[py/unused-global-variable]

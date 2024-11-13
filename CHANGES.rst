@@ -4,6 +4,10 @@ Changes for crate
 
 Unreleased
 ==========
+- Python: Fixed "implicit namespace packages" migration by omitting
+  ``__init__.py`` from ``crate`` namespace package, see `PEP 420`_
+  and `Package Discovery and Namespace Package » Finding namespace packages`_.
+
 
 2024/11/05 1.0.0
 ================
@@ -44,6 +48,7 @@ Unreleased
 
 
 .. _Migrate from crate.client to sqlalchemy-cratedb: https://cratedb.com/docs/sqlalchemy-cratedb/migrate-from-crate-client.html
+.. _Package Discovery and Namespace Package » Finding namespace packages: https://setuptools.pypa.io/en/latest/userguide/package_discovery.html#namespace-packages
 .. _PEP 420: https://peps.python.org/pep-0420/
 .. _sqlalchemy-cratedb: https://pypi.org/project/sqlalchemy-cratedb/
 

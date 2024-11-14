@@ -62,6 +62,7 @@ jobs:
           uv pip install --system '.[test]'
 
       - name: Perform CodeQL Analysis
+        id: analyze
         uses: github/codeql-action/analyze@v3
         with:
           category: "/language:${{matrix.language}}"

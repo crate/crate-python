@@ -33,7 +33,9 @@ jobs:
           cache-dependency-path: 'setup.py'
 
       - name: Install uv
-        uses: yezz123/setup-uv@v4
+        uses: astral-sh/setup-uv@v3
+        with:
+          version: "latest"
 
       - name: Invoke tests
         run: |

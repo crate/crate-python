@@ -4,6 +4,11 @@ Changes for crate
 
 Unreleased
 ==========
+
+
+2024/11/23 1.0.1
+================
+
 - Python: Fixed "implicit namespace packages" migration by omitting
   ``__init__.py`` from ``crate`` namespace package, see `PEP 420`_
   and `Package Discovery and Namespace Package » Finding namespace packages`_.

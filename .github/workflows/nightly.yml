@@ -33,7 +33,7 @@ jobs:
           cache-dependency-path: 'setup.py'
 
       - name: Install uv
-        uses: astral-sh/setup-uv@v3
+        uses: astral-sh/setup-uv@v4
         with:
           version: "latest"
 

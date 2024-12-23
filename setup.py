@@ -66,7 +66,7 @@ setup(
             'backports.zoneinfo<1; python_version<"3.9"',
             "certifi",
             "createcoverage>=1,<2",
-            "mypy<1.14",
+            "mypy<1.15",
             "poethepoet<0.32",
             "ruff<0.8",
             "stopit>=1.1.2,<2",

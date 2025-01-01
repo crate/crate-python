@@ -77,7 +77,7 @@ jobs:
       # https://github.com/github/codeql/issues/11427#issuecomment-1721059096
       - name: Dismiss alerts
         # if: github.ref == 'refs/heads/main'
-        uses: advanced-security/dismiss-alerts@v1
+        uses: advanced-security/dismiss-alerts@v2
         with:
           # specify a 'sarif-id' and 'sarif-file'
           sarif-id: ${{ steps.analyze.outputs.sarif-id }}

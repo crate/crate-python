@@ -68,7 +68,7 @@ setup(
             "createcoverage>=1,<2",
             "mypy<1.15",
             "poethepoet<0.33",
-            "ruff<0.8",
+            "ruff<0.10",
             "stopit>=1.1.2,<2",
             "tox>=3,<5",
             "pytz",

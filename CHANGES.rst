@@ -5,6 +5,17 @@ Changes for crate
 Unreleased
 ==========
 
+- Switched JSON encoder to use the `orjson`_ library, to improve JSON
+  marshalling performance. Thanks, @widmogrod.
+  orjson is fast and in some spots even more correct when compared against
+  Python's stdlib ``json`` module. Contrary to the stdlib variant, orjson
+  will serialize to ``bytes`` instead of ``str``. Please also note it
+  will not deserialize to dataclasses, UUIDs, decimals, etc., or support
+  ``object_hook``. Within ``crate-python``, it is applied with an encoder
+  function for additional type support about Python's ``Decimal`` type and
+  freezegun's ``FakeDatetime`` type.
+
+.. _orjson: https://github.com/ijl/orjson
 
 2024/11/23 1.0.1
 ================

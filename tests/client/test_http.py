@@ -49,9 +49,9 @@ from crate.client.exceptions import (
 )
 from crate.client.http import (
     Client,
-    CrateJsonEncoder,
     _get_socket_opts,
     _remove_certs_for_non_https,
+    json_dumps,
 )
 
 REQUEST = "crate.client.http.Server.request"
@@ -318,7 +318,7 @@ class HttpClientTest(TestCase):
         # convert string to dict
         # because the order of the keys isn't deterministic
         data = json.loads(request.call_args[1]["data"])
-        self.assertEqual(data["args"], [1425108700000])
+        self.assertEqual(data["args"], ["2015-02-28T07:31:40"])
         client.close()
 
     @patch(REQUEST, autospec=True)
@@ -329,7 +329,7 @@ class HttpClientTest(TestCase):
         day = dt.date(2016, 4, 21)
         client.sql("insert into users (dt) values (?)", (day,))
         data = json.loads(request.call_args[1]["data"])
-        self.assertEqual(data["args"], [1461196800000])
+        self.assertEqual(data["args"], ["2016-04-21"])
         client.close()
 
     def test_socket_options_contain_keepalive(self):
@@ -724,10 +724,10 @@ class TestUsernameSentAsHeader(TestingHttpServerTestCase):
 class TestCrateJsonEncoder(TestCase):
     def test_naive_datetime(self):
         data = dt.datetime.fromisoformat("2023-06-26T09:24:00.123")
-        result = json.dumps(data, cls=CrateJsonEncoder)
-        self.assertEqual(result, "1687771440123")
+        result = json_dumps(data)
+        self.assertEqual(result, b'"2023-06-26T09:24:00.123000"')
 
     def test_aware_datetime(self):
         data = dt.datetime.fromisoformat("2023-06-26T09:24:00.123+02:00")
-        result = json.dumps(data, cls=CrateJsonEncoder)
-        self.assertEqual(result, "1687764240123")
+        result = json_dumps(data)
+        self.assertEqual(result, b'"2023-06-26T09:24:00.123000+02:00"')

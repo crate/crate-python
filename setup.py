@@ -54,6 +54,7 @@ setup(
     packages=find_namespace_packages("src"),
     package_dir={"": "src"},
     install_requires=[
+        "orjson<4",
         "urllib3",
         "verlib2",
     ],

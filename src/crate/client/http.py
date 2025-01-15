@@ -20,23 +20,21 @@
 # software solely pursuant to the terms of the relevant commercial agreement.
 
 
-import calendar
 import heapq
 import io
-import json
 import logging
 import os
 import re
 import socket
 import ssl
 import threading
+import typing as t
 from base64 import b64encode
-from datetime import date, datetime, timezone
 from decimal import Decimal
 from time import time
 from urllib.parse import urlparse
-from uuid import UUID
 
+import orjson
 import urllib3
 from urllib3 import connection_from_url
 from urllib3.connection import HTTPConnection
@@ -86,25 +84,33 @@ def super_len(o):
     return None
 
 
-class CrateJsonEncoder(json.JSONEncoder):
-    epoch_aware = datetime(1970, 1, 1, tzinfo=timezone.utc)
-    epoch_naive = datetime(1970, 1, 1)
+def cratedb_json_encoder(obj: t.Any) -> str:
+    """
+    Encoder function for orjson, with additional type support.
 
-    def default(self, o):
-        if isinstance(o, (Decimal, UUID)):
-            return str(o)
-        if isinstance(o, datetime):
-            if o.tzinfo is not None:
-                delta = o - self.epoch_aware
-            else:
-                delta = o - self.epoch_naive
-            return int(
-                delta.microseconds / 1000.0
-                + (delta.seconds + delta.days * 24 * 3600) * 1000.0
-            )
-        if isinstance(o, date):
-            return calendar.timegm(o.timetuple()) * 1000
-        return json.JSONEncoder.default(self, o)
+    - Python's `Decimal` type.
+    - freezegun's `FakeDatetime` type.
+
+    https://github.com/ijl/orjson#default
+    """
+    if isinstance(obj, Decimal):
+        return str(obj)
+    elif hasattr(obj, "isoformat"):
+        return obj.isoformat()
+    raise TypeError
+
+
+def json_dumps(obj: t.Any) -> bytes:
+    """
+    Serialize to JSON format, using `orjson`, with additional type support.
+
+    https://github.com/ijl/orjson
+    """
+    return orjson.dumps(
+        obj,
+        default=cratedb_json_encoder,
+        option=(orjson.OPT_NON_STR_KEYS | orjson.OPT_SERIALIZE_NUMPY),
+    )
 
 
 class Server:
@@ -180,7 +186,7 @@ class Server:
 
 def _json_from_response(response):
     try:
-        return json.loads(response.data.decode("utf-8"))
+        return orjson.loads(response.data)
     except ValueError as ex:
         raise ProgrammingError(
             "Invalid server response of content-type '{}':\n{}".format(
@@ -223,7 +229,7 @@ def _raise_for_status_real(response):
     if response.status == 503:
         raise ConnectionError(message)
     if response.headers.get("content-type", "").startswith("application/json"):
-        data = json.loads(response.data.decode("utf-8"))
+        data = orjson.loads(response.data)
         error = data.get("error", {})
         error_trace = data.get("error_trace", None)
         if "results" in data:
@@ -323,7 +329,7 @@ def _update_pool_kwargs_for_ssl_minimum_version(server, kwargs):
             kwargs["ssl_minimum_version"] = ssl.TLSVersion.MINIMUM_SUPPORTED
 
 
-def _create_sql_payload(stmt, args, bulk_args):
+def _create_sql_payload(stmt, args, bulk_args) -> bytes:
     if not isinstance(stmt, str):
         raise ValueError("stmt is not a string")
     if args and bulk_args:
@@ -334,7 +340,7 @@ def _create_sql_payload(stmt, args, bulk_args):
         data["args"] = args
     if bulk_args:
         data["bulk_args"] = bulk_args
-    return json.dumps(data, cls=CrateJsonEncoder)
+    return json_dumps(data)
 
 
 def _get_socket_opts(

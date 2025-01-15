@@ -23,7 +23,6 @@
 import calendar
 import heapq
 import io
-import json
 import logging
 import os
 import re
@@ -37,6 +36,7 @@ from time import time
 from urllib.parse import urlparse
 from uuid import UUID
 
+import orjson
 import urllib3
 from urllib3 import connection_from_url
 from urllib3.connection import HTTPConnection
@@ -86,25 +86,31 @@ def super_len(o):
     return None
 
 
-class CrateJsonEncoder(json.JSONEncoder):
-    epoch_aware = datetime(1970, 1, 1, tzinfo=timezone.utc)
-    epoch_naive = datetime(1970, 1, 1)
+epoch_aware = datetime(1970, 1, 1, tzinfo=timezone.utc)
+epoch_naive = datetime(1970, 1, 1)
 
-    def default(self, o):
-        if isinstance(o, (Decimal, UUID)):
-            return str(o)
-        if isinstance(o, datetime):
-            if o.tzinfo is not None:
-                delta = o - self.epoch_aware
-            else:
-                delta = o - self.epoch_naive
-            return int(
-                delta.microseconds / 1000.0
-                + (delta.seconds + delta.days * 24 * 3600) * 1000.0
-            )
-        if isinstance(o, date):
-            return calendar.timegm(o.timetuple()) * 1000
-        return json.JSONEncoder.default(self, o)
+
+def cratedb_json_encoder(obj):
+    """
+    Encoder function for orjson.
+
+    https://github.com/ijl/orjson#default
+    https://github.com/ijl/orjson#opt_passthrough_datetime
+    """
+    if isinstance(obj, (Decimal, UUID)):
+        return str(obj)
+    if isinstance(obj, datetime):
+        if obj.tzinfo is not None:
+            delta = obj - epoch_aware
+        else:
+            delta = obj - epoch_naive
+        return int(
+            delta.microseconds / 1000.0
+            + (delta.seconds + delta.days * 24 * 3600) * 1000.0
+        )
+    if isinstance(obj, date):
+        return calendar.timegm(obj.timetuple()) * 1000
+    return obj
 
 
 class Server:
@@ -180,7 +186,7 @@ class Server:
 
 def _json_from_response(response):
     try:
-        return json.loads(response.data.decode("utf-8"))
+        return orjson.loads(response.data)
     except ValueError as ex:
         raise ProgrammingError(
             "Invalid server response of content-type '{}':\n{}".format(
@@ -223,7 +229,7 @@ def _raise_for_status_real(response):
     if response.status == 503:
         raise ConnectionError(message)
     if response.headers.get("content-type", "").startswith("application/json"):
-        data = json.loads(response.data.decode("utf-8"))
+        data = orjson.loads(response.data)
         error = data.get("error", {})
         error_trace = data.get("error_trace", None)
         if "results" in data:
@@ -334,7 +340,11 @@ def _create_sql_payload(stmt, args, bulk_args):
         data["args"] = args
     if bulk_args:
         data["bulk_args"] = bulk_args
-    return json.dumps(data, cls=CrateJsonEncoder)
+    return orjson.dumps(
+        data,
+        default=cratedb_json_encoder,
+        option=orjson.OPT_PASSTHROUGH_DATETIME,
+    )
 
 
 def _get_socket_opts(

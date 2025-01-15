@@ -5,6 +5,7 @@ Changes for crate
 Unreleased
 ==========
 
+- Use ``orjson`` to improve JSON marshalling performance. Thanks, @widmogrod.
 
 2024/11/23 1.0.1
 ================

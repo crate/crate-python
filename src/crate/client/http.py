@@ -670,7 +670,7 @@ class Client:
         # if this is the last server raise exception, otherwise try next
         if not self._active_servers:
             raise ConnectionError(
-                ("No more Servers available, " "exception from last server: %s")
+                ("No more Servers available, exception from last server: %s")
                 % message
             )
 

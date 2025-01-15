@@ -71,6 +71,13 @@ lint.per-file-ignores."tests/*" = [
   "S106",  # Possible hardcoded password assigned to argument: "password"
   "S311",  # Standard pseudo-random generators are not suitable for cryptographic purposes
 ]
+lint.per-file-ignores."src/crate/client/{connection.py,http.py}" = [
+  "A004",  # Import `ConnectionError` is shadowing a Python builtin
+  "A005",  # Import `ConnectionError` is shadowing a Python builtin
+]
+lint.per-file-ignores."tests/client/test_http.py" = [
+  "A004",  # Import `ConnectionError` is shadowing a Python builtin
+]
 
 
 # ===================

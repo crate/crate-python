@@ -51,7 +51,7 @@ from crate.client.http import (
     Client,
     _get_socket_opts,
     _remove_certs_for_non_https,
-    cratedb_json_encoder,
+    json_dumps,
 )
 
 REQUEST = "crate.client.http.Server.request"
@@ -724,10 +724,10 @@ class TestUsernameSentAsHeader(TestingHttpServerTestCase):
 class TestCrateJsonEncoder(TestCase):
     def test_naive_datetime(self):
         data = dt.datetime.fromisoformat("2023-06-26T09:24:00.123")
-        result = cratedb_json_encoder(data)
-        self.assertEqual(result, 1687771440123)
+        result = json_dumps(data)
+        self.assertEqual(result, b"1687771440123")
 
     def test_aware_datetime(self):
         data = dt.datetime.fromisoformat("2023-06-26T09:24:00.123+02:00")
-        result = cratedb_json_encoder(data)
-        self.assertEqual(result, 1687764240123)
+        result = json_dumps(data)
+        self.assertEqual(result, b"1687764240123")

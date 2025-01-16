@@ -113,6 +113,14 @@ def cratedb_json_encoder(obj):
     return obj
 
 
+def json_dumps(obj):
+    return orjson.dumps(
+        obj,
+        default=cratedb_json_encoder,
+        option=(orjson.OPT_PASSTHROUGH_DATETIME | orjson.OPT_SERIALIZE_NUMPY),
+    )
+
+
 class Server:
     def __init__(self, server, **pool_kw):
         socket_options = _get_socket_opts(
@@ -340,11 +348,7 @@ def _create_sql_payload(stmt, args, bulk_args):
         data["args"] = args
     if bulk_args:
         data["bulk_args"] = bulk_args
-    return orjson.dumps(
-        data,
-        default=cratedb_json_encoder,
-        option=(orjson.OPT_PASSTHROUGH_DATETIME | orjson.OPT_SERIALIZE_NUMPY),
-    )
+    return json_dumps(data)
 
 
 def _get_socket_opts(

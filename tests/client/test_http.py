@@ -725,9 +725,9 @@ class TestCrateJsonEncoder(TestCase):
     def test_naive_datetime(self):
         data = dt.datetime.fromisoformat("2023-06-26T09:24:00.123")
         result = json_dumps(data)
-        self.assertEqual(result, b"1687771440123")
+        self.assertEqual(result, b'"2023-06-26T09:24:00.123000"')
 
     def test_aware_datetime(self):
         data = dt.datetime.fromisoformat("2023-06-26T09:24:00.123+02:00")
         result = json_dumps(data)
-        self.assertEqual(result, b"1687764240123")
+        self.assertEqual(result, b'"2023-06-26T09:24:00.123000+02:00"')

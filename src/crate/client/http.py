@@ -20,7 +20,6 @@
 # software solely pursuant to the terms of the relevant commercial agreement.
 
 
-import calendar
 import heapq
 import io
 import logging
@@ -30,11 +29,10 @@ import socket
 import ssl
 import threading
 from base64 import b64encode
-from datetime import date, datetime, timezone
+from datetime import datetime, timezone
 from decimal import Decimal
 from time import time
 from urllib.parse import urlparse
-from uuid import UUID
 
 import orjson
 import urllib3

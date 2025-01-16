@@ -343,7 +343,7 @@ def _create_sql_payload(stmt, args, bulk_args):
     return orjson.dumps(
         data,
         default=cratedb_json_encoder,
-        option=orjson.OPT_PASSTHROUGH_DATETIME,
+        option=(orjson.OPT_PASSTHROUGH_DATETIME | orjson.OPT_SERIALIZE_NUMPY),
     )
 
 

@@ -95,21 +95,9 @@ def cratedb_json_encoder(obj):
     Encoder function for orjson.
 
     https://github.com/ijl/orjson#default
-    https://github.com/ijl/orjson#opt_passthrough_datetime
     """
-    if isinstance(obj, (Decimal, UUID)):
+    if isinstance(obj, (Decimal,)):
         return str(obj)
-    if isinstance(obj, datetime):
-        if obj.tzinfo is not None:
-            delta = obj - epoch_aware
-        else:
-            delta = obj - epoch_naive
-        return int(
-            delta.microseconds / 1000.0
-            + (delta.seconds + delta.days * 24 * 3600) * 1000.0
-        )
-    if isinstance(obj, date):
-        return calendar.timegm(obj.timetuple()) * 1000
     return obj
 
 
@@ -117,7 +105,7 @@ def json_dumps(obj):
     return orjson.dumps(
         obj,
         default=cratedb_json_encoder,
-        option=(orjson.OPT_PASSTHROUGH_DATETIME | orjson.OPT_SERIALIZE_NUMPY),
+        option=orjson.OPT_SERIALIZE_NUMPY,
     )
 
 

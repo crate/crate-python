@@ -20,6 +20,8 @@
 # software solely pursuant to the terms of the relevant commercial agreement.
 
 
+import calendar
+import datetime as dt
 import heapq
 import io
 import logging
@@ -84,19 +86,35 @@ def super_len(o):
     return None
 
 
-def cratedb_json_encoder(obj: t.Any) -> str:
+epoch_aware = dt.datetime(1970, 1, 1, tzinfo=dt.timezone.utc)
+epoch_naive = dt.datetime(1970, 1, 1)
+
+
+def json_encoder(obj: t.Any) -> t.Union[int, str]:
     """
     Encoder function for orjson, with additional type support.
 
-    - Python's `Decimal` type.
-    - freezegun's `FakeDatetime` type.
+    - Python's `Decimal` type will be serialized to `str`.
+    - Python's `dt.datetime` and `dt.date` types will be
+      serialized to `int` after converting to milliseconds
+      since epoch.
 
     https://github.com/ijl/orjson#default
+    https://cratedb.com/docs/crate/reference/en/latest/general/ddl/data-types.html#type-timestamp
     """
     if isinstance(obj, Decimal):
         return str(obj)
-    elif hasattr(obj, "isoformat"):
-        return obj.isoformat()
+    if isinstance(obj, dt.datetime):
+        if obj.tzinfo is not None:
+            delta = obj - epoch_aware
+        else:
+            delta = obj - epoch_naive
+        return int(
+            delta.microseconds / 1000.0
+            + (delta.seconds + delta.days * 24 * 3600) * 1000.0
+        )
+    if isinstance(obj, dt.date):
+        return calendar.timegm(obj.timetuple()) * 1000
     raise TypeError
 
 
@@ -108,8 +126,12 @@ def json_dumps(obj: t.Any) -> bytes:
     """
     return orjson.dumps(
         obj,
-        default=cratedb_json_encoder,
-        option=(orjson.OPT_NON_STR_KEYS | orjson.OPT_SERIALIZE_NUMPY),
+        default=json_encoder,
+        option=(
+            orjson.OPT_PASSTHROUGH_DATETIME
+            | orjson.OPT_NON_STR_KEYS
+            | orjson.OPT_SERIALIZE_NUMPY
+        ),
     )
 
 

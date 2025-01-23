@@ -5,7 +5,7 @@ CrateDB Python developer guide
 Setup
 =====
 
-Optionally install Python package and project manager ``uv``,
+Optionally install Python package and project manager `uv`_,
 in order to significantly speed up the package installation::
 
     {apt,brew,pip,zypper} install uv
@@ -67,16 +67,11 @@ To inspect the whole list of test cases, run::
 
     bin/test --list-tests
 
-You can run the tests against multiple Python interpreters with `tox`_::
-
-    tox
-
-To do this, you will need the respective Python interpreter versions available
-on your ``$PATH``.
-
-To run against a single interpreter, you can also invoke::
-
-    tox -e py37
+The CI setup on GitHub Actions (GHA) provides a full test matrix covering
+relevant Python versions. You can invoke the software tests against a specific
+Python interpreter or multiple `Python versions`_ on your workstation using
+`uv`_, by supplying the ``--python`` command-line option, or by defining the
+`UV_PYTHON`_ environment variable prior to invoking ``source bootstrap.sh``.
 
 *Note*: Before running the tests, make sure to stop all CrateDB instances which
 are listening on the default CrateDB transport port to avoid side effects with
@@ -168,12 +163,14 @@ nothing special you need to do to get the live docs to update.
 .. _@crate/docs: https://github.com/orgs/crate/teams/docs
 .. _buildout: https://pypi.python.org/pypi/zc.buildout
 .. _PyPI: https://pypi.python.org/pypi
+.. _Python versions: https://docs.astral.sh/uv/concepts/python-versions/
 .. _Read the Docs: http://readthedocs.org
 .. _ReStructuredText: http://docutils.sourceforge.net/rst.html
 .. _Sphinx: http://sphinx-doc.org/
 .. _tests/assets/pki/*.pem: https://github.com/crate/crate-python/tree/main/tests/assets/pki
-.. _tox: http://testrun.org/tox/latest/
 .. _twine: https://pypi.python.org/pypi/twine
 .. _useful command-line options for zope-testrunner: https://pypi.org/project/zope.testrunner/#some-useful-command-line-options-to-get-you-started
+.. _uv: https://docs.astral.sh/uv/
+.. _UV_PYTHON: https://docs.astral.sh/uv/configuration/environment/#uv_python
 .. _versions hosted on ReadTheDocs: https://readthedocs.org/projects/crate-python/versions/
 .. _zope.testrunner: https://pypi.org/project/zope.testrunner/

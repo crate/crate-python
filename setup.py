@@ -70,7 +70,6 @@ setup(
             "poethepoet<0.33",
             "ruff<0.10",
             "stopit>=1.1.2,<2",
-            "tox>=3,<5",
             "pytz",
             "zc.customdoctests>=1.0.1,<2",
             "zope.testing>=4,<6",

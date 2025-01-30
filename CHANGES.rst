@@ -5,6 +5,9 @@ Changes for crate
 Unreleased
 ==========
 
+2025/01/30 2.0.0
+================
+
 - Switched JSON encoder to use the `orjson`_ library, to improve JSON
   marshalling performance. Thanks, @widmogrod.
 

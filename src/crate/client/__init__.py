@@ -29,7 +29,7 @@ __all__ = [
 
 # version string read from setup.py using a regex. Take care not to break the
 # regex!
-__version__ = "1.0.1"
+__version__ = "2.0.0"
 
 # codeql[py/unused-global-variable]
 apilevel = "2.0"

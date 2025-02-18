@@ -40,16 +40,19 @@ jobs:
 
     steps:
       - uses: actions/checkout@v4
-      - name: Set up Python ${{ matrix.python-version }}
+
+      - name: Set up Python
         uses: actions/setup-python@v5
         with:
           python-version: ${{ matrix.python-version }}
-          cache: 'pip'
-          cache-dependency-path: setup.py
 
-      - name: Install uv
+      - name: Set up uv
         uses: astral-sh/setup-uv@v5
         with:
+          cache-dependency-glob: |
+            setup.py
+          cache-suffix: ${{ matrix.python-version }}
+          enable-cache: true
           version: "latest"
 
       - name: Invoke tests

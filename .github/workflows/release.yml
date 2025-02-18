@@ -6,7 +6,12 @@ on: push
 jobs:
   pypi:
     name: Build & publish package to pypi
-    runs-on: ubuntu-latest
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: ['ubuntu-latest']
+        python-version: ['3.11']
     if: startsWith(github.event.ref, 'refs/tags')
     steps:
       - uses: actions/checkout@v4
@@ -14,13 +19,15 @@ jobs:
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
-          python-version: '3.11'
-          cache: 'pip'
-          cache-dependency-path: 'setup.py'
+          python-version: ${{ matrix.python-version }}
 
-      - name: Install uv
+      - name: Set up uv
         uses: astral-sh/setup-uv@v5
         with:
+          cache-dependency-glob: |
+            setup.py
+          cache-suffix: ${{ matrix.python-version }}
+          enable-cache: true
           version: "latest"
 
       - name: Build package

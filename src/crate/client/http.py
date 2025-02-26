@@ -150,7 +150,7 @@ class Server(object):
         headers['Content-Type'] = 'application/json'
         kwargs['assert_same_host'] = False
         kwargs['redirect'] = False
-        kwargs['retries'] = Retry(read=0, backoff_factor=backoff_factor)
+        kwargs['retries'] = Retry(read=3, backoff_factor=backoff_factor)
         return self.pool.urlopen(
             method,
             path,

@@ -69,7 +69,7 @@ setup(
             "createcoverage>=1,<2",
             "mypy<1.16",
             "poethepoet<1",
-            "ruff<0.10",
+            "ruff<0.12",
             "stopit>=1.1.2,<2",
             "pytz",
             "zc.customdoctests>=1.0.1,<2",

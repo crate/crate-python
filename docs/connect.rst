@@ -10,7 +10,7 @@ Connect to CrateDB
     `Python Database API Specification v2.0`_ (PEP 249).
 
     For help using the `SQLAlchemy`_ dialect, consult the
-    :ref:`SQLAlchemy dialect documentation <using-sqlalchemy>`.
+    :ref:`SQLAlchemy dialect documentation <sqlalchemy-cratedb:index>`.
 
 .. SEEALSO::
 

@@ -10,7 +10,7 @@ Query CrateDB
     `Python Database API Specification v2.0`_ (PEP 249).
 
     For help using the `SQLAlchemy`_ dialect, consult
-    :ref:`the SQLAlchemy dialect documentation <using-sqlalchemy>`.
+    :ref:`the SQLAlchemy dialect documentation <sqlalchemy-cratedb:index>`.
 
 .. SEEALSO::
 

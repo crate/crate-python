@@ -16,7 +16,6 @@ CrateDB Python Client -- all pages
     connect
     query
     blobs
-    sqlalchemy
     data-types
     by-example/index
     other-options

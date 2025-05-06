@@ -20,6 +20,7 @@
 # software solely pursuant to the terms of the relevant commercial agreement.
 
 from verlib2 import Version
+from verlib2.packaging.version import InvalidVersion
 
 from .blob import BlobContainer
 from .cursor import Cursor
@@ -197,14 +198,20 @@ class Connection:
 
     def _lowest_server_version(self):
         lowest = None
+        last_connection_error = None
         for server in self.client.active_servers:
             try:
                 _, _, version = self.client.server_infos(server)
                 version = Version(version)
-            except (ValueError, ConnectionError):
+            except ConnectionError as ex:
+                last_connection_error = ex
+                continue
+            except (ValueError, InvalidVersion):
                 continue
             if not lowest or version < lowest:
                 lowest = version
+        if lowest is None and last_connection_error is not None:
+            raise last_connection_error
         return lowest or Version("0.0.0")
 
     def __repr__(self):

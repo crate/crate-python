@@ -18,6 +18,7 @@
 # However, if you have executed another commercial license agreement
 # with Crate these terms will supersede the license and you may use the
 # software solely pursuant to the terms of the relevant commercial agreement.
+import json
 
 from verlib2 import Version
 from verlib2.packaging.version import InvalidVersion
@@ -212,7 +213,7 @@ class Connection:
             if not lowest or version < lowest:
                 lowest = version
         if connection_errors and len(connection_errors) == server_count:
-            raise ConnectionError(str(connection_errors))
+            raise ConnectionError(json.dumps(list(map(str, connection_errors))))
         return lowest or Version("0.0.0")
 
     def __repr__(self):

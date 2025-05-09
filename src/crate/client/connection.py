@@ -198,20 +198,21 @@ class Connection:
 
     def _lowest_server_version(self):
         lowest = None
-        last_connection_error = None
+        server_count = len(self.client.active_servers)
+        connection_errors = []
         for server in self.client.active_servers:
             try:
                 _, _, version = self.client.server_infos(server)
                 version = Version(version)
             except ConnectionError as ex:
-                last_connection_error = ex
+                connection_errors.append(ex)
                 continue
             except (ValueError, InvalidVersion):
                 continue
             if not lowest or version < lowest:
                 lowest = version
-        if lowest is None and last_connection_error is not None:
-            raise last_connection_error
+        if connection_errors and len(connection_errors) == server_count:
+            raise ConnectionError(str(connection_errors))
         return lowest or Version("0.0.0")
 
     def __repr__(self):

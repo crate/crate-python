@@ -57,7 +57,7 @@ setup(
     install_requires=[
         "orjson<4",
         "urllib3",
-        "verlib2",
+        "verlib2>=0.3",
     ],
     extras_require={
         "doc": [

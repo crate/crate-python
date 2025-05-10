@@ -49,7 +49,8 @@ setup(
     long_description=long_description,
     long_description_content_type="text/x-rst",
     platforms=["any"],
-    license="Apache License 2.0",
+    license="Apache-2.0",
+    license_files=["LICENSE"],
     keywords="cratedb db api dbapi database sql http rdbms olap",
     packages=find_namespace_packages("src"),
     package_dir={"": "src"},
@@ -82,7 +83,6 @@ setup(
     classifiers=[
         "Development Status :: 5 - Production/Stable",
         "Intended Audience :: Developers",
-        "License :: OSI Approved :: Apache Software License",
         "Operating System :: OS Independent",
         "Programming Language :: Python",
         "Programming Language :: Python :: 3",

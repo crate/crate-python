@@ -14,6 +14,8 @@ Unreleased
 
 - Fixed compatibility with ``urllib3-future``.
 
+- Added JWT token authentication.
+
 2025/01/30 2.0.0
 ================
 

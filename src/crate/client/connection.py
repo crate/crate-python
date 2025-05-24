@@ -42,6 +42,7 @@ class Connection:
         ssl_relax_minimum_version=False,
         username=None,
         password=None,
+        jwt_token=None,
         schema=None,
         pool_size=None,
         socket_keepalive=True,
@@ -81,6 +82,8 @@ class Connection:
             the username in the database.
         :param password:
             the password of the user in the database.
+        :param jwt_token:
+            the JWT token to authenticate with the server.
         :param pool_size:
             (optional)
             Number of connections to save that can be reused.
@@ -148,6 +151,7 @@ class Connection:
                 ssl_relax_minimum_version=ssl_relax_minimum_version,
                 username=username,
                 password=password,
+                jwt_token=jwt_token,
                 schema=schema,
                 pool_size=pool_size,
                 socket_keepalive=socket_keepalive,

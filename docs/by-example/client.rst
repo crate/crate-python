@@ -7,12 +7,6 @@ Python. This section of the documentation outlines different methods to connect
 to the database cluster, as well as how to run basic inquiries to the database,
 and closing the connection again.
 
-.. rubric:: Table of Contents
-
-.. contents::
-   :local:
-
-
 Connect to a database
 =====================
 

@@ -6,11 +6,6 @@ Data types
 
 The data types of the :ref:`CrateDB DBAPI database API client <connect>`.
 
-.. rubric:: Table of contents
-
-.. contents::
-   :local:
-
 .. _data-types-db-api:
 
 Database API client

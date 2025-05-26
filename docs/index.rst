@@ -4,12 +4,6 @@
 CrateDB Python Client
 #####################
 
-.. rubric:: Table of contents
-
-.. contents::
-    :local:
-    :depth: 1
-
 
 ************
 Introduction
@@ -64,7 +58,7 @@ Connect to CrateDB instance running on ``localhost``.
     from pprint import pp
 
     query = "SELECT country, mountain, coordinates, height FROM sys.summits ORDER BY country;"
-    
+
     with client.connect("localhost:4200", username="crate") as connection:
         cursor = connection.cursor()
         cursor.execute(query)

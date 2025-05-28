@@ -17,11 +17,6 @@ Connect to CrateDB
     Supplementary information about the CrateDB Database API client can be found
     in the :ref:`data types appendix <data-types-db-api>`.
 
-.. rubric:: Table of contents
-
-.. contents::
-    :local:
-
 .. _single-node:
 
 Connect to a single node

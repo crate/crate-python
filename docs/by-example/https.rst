@@ -7,12 +7,6 @@ HTTPS connection support
 This documentation section outlines different options to connect to CrateDB
 using SSL/TLS.
 
-.. rubric:: Table of Contents
-
-.. contents::
-   :local:
-
-
 Introduction
 ============
 

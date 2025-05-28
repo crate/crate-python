@@ -2,12 +2,6 @@
 HTTP client
 ===========
 
-.. rubric:: Table of Contents
-
-.. contents::
-   :local:
-
-
 Introduction
 ============
 

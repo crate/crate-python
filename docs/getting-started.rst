@@ -7,11 +7,6 @@ Getting started
 Learn how to install and get started with the Python client library for
 `CrateDB`_.
 
-.. rubric:: Table of contents
-
-.. contents::
-   :local:
-
 Install
 =======
 

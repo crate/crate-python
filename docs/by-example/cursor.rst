@@ -8,12 +8,6 @@ behaviors of the ``crate.client.cursor.Cursor`` object.
 The example code uses ``ClientMocked`` and ``set_next_response`` for
 demonstration purposes, so they don't need a real database connection.
 
-.. rubric:: Table of Contents
-
-.. contents::
-   :local:
-
-
 Introduction
 ============
 

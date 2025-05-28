@@ -122,7 +122,7 @@ Examples
     by-example/index
 
 
-. seealso::
+.. seealso::
 
     The CrateDB Python client library is an open source project and is `managed
     on GitHub`_. Contributions, feedback, or patches are highly welcome!

@@ -88,7 +88,8 @@ please consult the :ref:`data-types` documentation page.
 Migration Notes
 ===============
 
-The :ref:`CrateDB dialect <sqlalchemy-cratedb:index>` for `SQLAlchemy`_ is provided by the `sqlalchemy-cratedb`_ package.
+The :ref:`CrateDB dialect <sqlalchemy-cratedb:index>` for `SQLAlchemy`_ is
+provided by the `sqlalchemy-cratedb`_ package.
 
 If you are migrating from previous versions of ``crate[sqlalchemy]<1.0.0``, you
 will find that the newer releases ``crate>=1.0.0`` no longer include the

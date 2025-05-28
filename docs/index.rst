@@ -84,6 +84,10 @@ The DB API driver supports :ref:`CrateDB's data types
 <crate-reference:data-types>` to different degrees. For more information,
 please consult the :ref:`data-types` documentation page.
 
+.. toctree::
+    :maxdepth: 2
+
+    data-types
 
 Migration Notes
 ===============

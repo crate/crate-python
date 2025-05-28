@@ -124,7 +124,8 @@ Examples
 
 . SEEALSO::
 
-    The CrateDB Python client library is an open source project and is `managed on GitHub`_. Contributions, feedback, or patches are highly welcome!
+    The CrateDB Python client library is an open source project and is `managed
+    on GitHub`_. Contributions, feedback, or patches are highly welcome!
 
 
 .. _CrateDB: https://crate.io/products/cratedb

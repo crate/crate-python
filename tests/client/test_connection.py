@@ -3,6 +3,7 @@ from unittest import TestCase
 
 from urllib3 import Timeout
 
+import crate.client.exceptions
 from crate.client import connect
 from crate.client.connection import Connection
 from crate.client.http import Client
@@ -21,20 +22,26 @@ class ConnectionTest(TestCase):
         """
 
         class MyConnectionClient:
-            active_servers = ["localhost:4200"]
+            active_servers = [crate_host]
 
             def __init__(self):
                 pass
 
             def server_infos(self, server):
-                return ("localhost:4200", "my server", "0.42.0")
+                return (crate_host, "my server", "0.42.0")
 
         connection = connect([crate_host], client=MyConnectionClient())
         self.assertIsInstance(connection, Connection)
         self.assertEqual(
             connection.client.server_infos("foo"),
-            ("localhost:4200", "my server", "0.42.0"),
+            (crate_host, "my server", "0.42.0"),
         )
+
+    def test_invalid_server_address(self):
+        client = Client(servers="localhost:4202")
+        with self.assertRaises(crate.client.exceptions.ConnectionError) as ex:
+            connect(client=client)
+        self.assertIn("Server not available", ex.exception.message)
 
     def test_lowest_server_version(self):
         infos = [
@@ -50,14 +57,14 @@ class ConnectionTest(TestCase):
         connection.close()
 
     def test_invalid_server_version(self):
-        client = Client(servers="localhost:4200")
+        client = Client(servers=crate_host)
         client.server_infos = lambda server: (None, None, "No version")
         connection = connect(client=client)
         self.assertEqual((0, 0, 0), connection.lowest_server_version.version)
         connection.close()
 
     def test_context_manager(self):
-        with connect("localhost:4200") as conn:
+        with connect(crate_host) as conn:
             pass
         self.assertEqual(conn._closed, True)
 
@@ -70,7 +77,7 @@ class ConnectionTest(TestCase):
         """
 
         tz_mst = datetime.timezone(datetime.timedelta(hours=7), name="MST")
-        connection = connect("localhost:4200", time_zone=tz_mst)
+        connection = connect(crate_host, time_zone=tz_mst)
         cursor = connection.cursor()
         self.assertEqual(cursor.time_zone.tzname(None), "MST")
         self.assertEqual(
@@ -88,14 +95,14 @@ class ConnectionTest(TestCase):
         """
         Verify setting the timeout value as a scalar (float) works.
         """
-        with connect("localhost:4200", timeout=2.42) as conn:
+        with connect(crate_host, timeout=2.42) as conn:
             self.assertEqual(conn.client._pool_kw["timeout"], 2.42)
 
     def test_timeout_string(self):
         """
         Verify setting the timeout value as a scalar (string) works.
         """
-        with connect("localhost:4200", timeout="2.42") as conn:
+        with connect(crate_host, timeout="2.42") as conn:
             self.assertEqual(conn.client._pool_kw["timeout"], 2.42)
 
     def test_timeout_object(self):
@@ -103,5 +110,5 @@ class ConnectionTest(TestCase):
         Verify setting the timeout value as a Timeout object works.
         """
         timeout = Timeout(connect=2.42, read=0.01)
-        with connect("localhost:4200", timeout=timeout) as conn:
+        with connect(crate_host, timeout=timeout) as conn:
             self.assertEqual(conn.client._pool_kw["timeout"], timeout)

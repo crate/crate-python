@@ -5,6 +5,9 @@ Changes for crate
 Unreleased
 ==========
 
+- Changed connection behaviour to fail early if the database cluster
+  does not respond
+
 2025/01/30 2.0.0
 ================
 

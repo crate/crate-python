@@ -34,7 +34,6 @@ def test_suite():
     suite.addTest(makeSuite(KeepAliveClientTest))
     suite.addTest(makeSuite(ThreadSafeHttpClientTest))
     suite.addTest(makeSuite(ParamsTest))
-    suite.addTest(makeSuite(ConnectionTest))
     suite.addTest(makeSuite(RetryOnTimeoutServerTest))
     suite.addTest(makeSuite(RequestsCaBundleTest))
     suite.addTest(makeSuite(TestUsernameSentAsHeader))
@@ -64,6 +63,10 @@ def test_suite():
 
     # Integration tests.
     layer = ensure_cratedb_layer()
+
+    s = makeSuite(ConnectionTest)
+    s.layer = layer
+    suite.addTest(s)
 
     s = doctest.DocFileSuite(
         "docs/by-example/http.rst",

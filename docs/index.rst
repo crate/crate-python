@@ -89,12 +89,11 @@ please consult the :ref:`data-types` documentation page.
 
     data-types
 
-
 Migration Notes
 ===============
 
-The :ref:`CrateDB dialect <sqlalchemy-cratedb:index>` for `SQLAlchemy`_ is provided
-by the `sqlalchemy-cratedb`_ package.
+The :ref:`CrateDB dialect <sqlalchemy-cratedb:index>` for `SQLAlchemy`_ is
+provided by the `sqlalchemy-cratedb`_ package.
 
 If you are migrating from previous versions of ``crate[sqlalchemy]<1.0.0``, you
 will find that the newer releases ``crate>=1.0.0`` no longer include the
@@ -127,53 +126,17 @@ Examples
     by-example/index
 
 
-*******************
-Project information
-*******************
+.. seealso::
 
-Resources
-=========
-- `Source code <https://github.com/crate/crate-python>`_
-- `Documentation <https://crate.io/docs/python/>`_
-- `Python Package Index (PyPI) <https://pypi.org/project/crate/>`_
-
-Contributions
-=============
-The CrateDB Python client library is an open source project, and is `managed on
-GitHub`_.
-Every kind of contribution, feedback, or patch, is much welcome. `Create an
-issue`_ or submit a patch if you think we should include a new feature, or to
-report or fix a bug.
-
-Development
-===========
-In order to setup a development environment on your workstation, please head
-over to the `development sandbox`_ documentation. When you see the software
-tests succeed, you should be ready to start hacking.
-
-Page index
-==========
-The full index for all documentation pages can be inspected at :ref:`index-all`.
-
-License
-=======
-The project is licensed under the terms of the Apache 2.0 license, like
-`CrateDB itself <CrateDB source_>`_, see `LICENSE`_.
+    The CrateDB Python client library is an open source project and is `managed
+    on GitHub`_. Contributions, feedback, or patches are highly welcome!
 
 
-.. _Apache Superset: https://github.com/apache/superset
-.. _Crash CLI: https://crate.io/docs/crate/crash/
 .. _CrateDB: https://crate.io/products/cratedb
 .. _CrateDB Cloud: https://console.cratedb.cloud/
-.. _CrateDB source: https://github.com/crate/crate
-.. _Create an issue: https://github.com/crate/crate-python/issues
+.. _Crash CLI: https://crate.io/docs/crate/crash/
 .. _Dask: https://en.wikipedia.org/wiki/Dask_(software)
-.. _development sandbox: https://github.com/crate/crate-python/blob/main/DEVELOP.rst
 .. _cratedb-examples repository: https://github.com/crate/cratedb-examples
-.. _FIWARE QuantumLeap data historian: https://github.com/orchestracities/ngsi-timeseries-api
-.. _GeoJSON: https://geojson.org/
-.. _GeoJSON geometry objects: https://tools.ietf.org/html/rfc7946#section-3.1
-.. _LICENSE: https://github.com/crate/crate-python/blob/main/LICENSE
 .. _managed on GitHub: https://github.com/crate/crate-python
 .. _migrate to sqlalchemy-cratedb: https://cratedb.com/docs/sqlalchemy-cratedb/migrate-from-crate-client.html
 .. _pandas: https://en.wikipedia.org/wiki/Pandas_(software)

@@ -98,6 +98,8 @@ def json_encoder(obj: t.Any) -> t.Union[int, str]:
     - Python's `dt.datetime` and `dt.date` types will be
       serialized to `int` after converting to milliseconds
       since epoch.
+    - Python's `dt.time` will be serialized to `str`, following
+    the ISO format.
 
     https://github.com/ijl/orjson#default
     https://cratedb.com/docs/crate/reference/en/latest/general/ddl/data-types.html#type-timestamp
@@ -113,6 +115,8 @@ def json_encoder(obj: t.Any) -> t.Union[int, str]:
             delta.microseconds / 1000.0
             + (delta.seconds + delta.days * 24 * 3600) * 1000.0
         )
+    if isinstance(obj, dt.time):
+        return obj.isoformat()
     if isinstance(obj, dt.date):
         return calendar.timegm(obj.timetuple()) * 1000
     raise TypeError

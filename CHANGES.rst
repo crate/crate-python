@@ -4,6 +4,7 @@ Changes for crate
 
 Unreleased
 ==========
+- Added JWT token authentication
 
 2025/01/30 2.0.0
 ================

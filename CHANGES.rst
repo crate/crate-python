@@ -4,6 +4,7 @@ Changes for crate
 
 Unreleased
 ==========
+- Make ``datetime.time`` json serializable.
 
 2025/01/30 2.0.0
 ================

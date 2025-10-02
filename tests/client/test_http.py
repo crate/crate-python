@@ -571,14 +571,22 @@ class SharedStateRequestHandler(BaseHTTPRequestHandler):
         self.server.SHARED["schema"] = self.headers.get("Default-Schema")
 
         if self.headers.get("Authorization") is not None:
-            auth_header = self.headers["Authorization"].replace("Basic ", "")
-            credentials = b64decode(auth_header).decode("utf-8").split(":", 1)
-            self.server.SHARED["username"] = credentials[0]
-            if len(credentials) > 1 and credentials[1]:
-                self.server.SHARED["password"] = credentials[1]
-            else:
-                self.server.SHARED["password"] = None
+            auth_header = self.headers["Authorization"]
+            if "Basic" in auth_header:
+                auth_header = auth_header.replace("Basic ", "")
+                credentials = (
+                    b64decode(auth_header).decode("utf-8").split(":", 1)
+                )
+                self.server.SHARED["username"] = credentials[0]
+                if len(credentials) > 1 and credentials[1]:
+                    self.server.SHARED["password"] = credentials[1]
+                else:
+                    self.server.SHARED["password"] = None
+            elif "Bearer" in auth_header:
+                jwt_token = auth_header.replace("Bearer ", "")
+                self.server.SHARED["jwt_token"] = jwt_token
         else:
+            self.server.SHARED["jwt_token"] = None
             self.server.SHARED["username"] = None
 
         if self.headers.get("X-User") is not None:
@@ -604,6 +612,7 @@ class TestingHTTPServer(HTTPServer):
     SHARED = manager.dict()
     SHARED["count"] = 0
     SHARED["usernameFromXUser"] = None
+    SHARED["jwt_token"] = None
     SHARED["username"] = None
     SHARED["password"] = None
     SHARED["schema"] = None
@@ -689,6 +698,9 @@ class TestUsernameSentAsHeader(TestingHttpServerTestCase):
     def setUp(self):
         super().setUp()
         self.clientWithoutUsername = self.clientWithKwargs()
+        self.clientWithJwtToken = self.clientWithKwargs(
+            jwt_token="testJwtToken"
+        )
         self.clientWithUsername = self.clientWithKwargs(username="testDBUser")
         self.clientWithUsernameAndPassword = self.clientWithKwargs(
             username="testDBUser", password="test:password"
@@ -696,6 +708,7 @@ class TestUsernameSentAsHeader(TestingHttpServerTestCase):
 
     def tearDown(self):
         self.clientWithoutUsername.close()
+        self.clientWithJwtToken.close()
         self.clientWithUsername.close()
         self.clientWithUsernameAndPassword.close()
         super().tearDown()
@@ -719,6 +732,13 @@ class TestUsernameSentAsHeader(TestingHttpServerTestCase):
         )
         self.assertEqual(TestingHTTPServer.SHARED["username"], "testDBUser")
         self.assertEqual(TestingHTTPServer.SHARED["password"], "test:password")
+
+    def test_jwt_token(self):
+        self.clientWithoutUsername.sql("select * from fake")
+        self.assertEqual(TestingHTTPServer.SHARED["jwt_token"], None)
+
+        self.clientWithJwtToken.sql("select * from fake")
+        self.assertEqual(TestingHTTPServer.SHARED["jwt_token"], "testJwtToken")
 
 
 class TestCrateJsonEncoder(TestCase):

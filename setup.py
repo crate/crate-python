@@ -73,7 +73,7 @@ setup(
             "stopit>=1.1.2,<2",
             "pytz",
             "zc.customdoctests>=1.0.1,<2",
-            "zope.testing>=4,<6",
+            "zope.testing>=4,<7",
             "zope.testrunner>=5,<8",
         ],
     },

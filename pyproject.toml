@@ -2,14 +2,20 @@
 requires = ["hatchling >= 1.26"]
 build-backend = "hatchling.build"
 
+[tool.hatch.build.targets.wheel]
+packages = ["src/crate"]
+
+[tool.hatch.version]
+path = "src/crate/client/__init__.py"
+
 [project]
 name = "crate-python"
 dynamic = ["version"]
 description = "CrateDB Python Client"
 authors = [{ name = "Crate.io", email = "office@crate.io" }]
 requires-python = ">=3.10"
-readme = "README.md"
-license = { file = "LICENSE.md"}
+readme = "README.rst"
+license = { file = "LICENSE"}
 classifiers = [
         "Development Status :: 5 - Production/Stable",
         "Intended Audience :: Developers",
@@ -26,11 +32,18 @@ classifiers = [
         "Topic :: Database",
 ]
 dependencies = [
-
+    "orjson>=3.11.3",
+    "urllib3>=2.5.0",
 ]
 
 [dependency-groups]
 dev = [
+    "certifi>=2025.10.5",
+    "pytest>=8.4.2",
+    "pytz>=2025.2",
+    "setuptools>=80.9.0",
+    "stopit>=1.1.2",
+    "verlib2>=0.3.1",
 ]
 
 

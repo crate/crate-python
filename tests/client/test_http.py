@@ -40,6 +40,7 @@ from unittest.mock import MagicMock, patch
 from urllib.parse import parse_qs, urlparse
 
 import certifi
+import pytest
 import urllib3.exceptions
 
 from crate.client.exceptions import (
@@ -57,6 +58,8 @@ from crate.client.http import (
 REQUEST = "crate.client.http.Server.request"
 CA_CERT_PATH = certifi.where()
 
+mocked_request = MagicMock(spec=urllib3.response.HTTPResponse)
+
 
 def fake_request(response=None):
     def request(*args, **kwargs):
@@ -67,7 +70,7 @@ def fake_request(response=None):
         elif response:
             return response
         else:
-            return MagicMock(spec=urllib3.response.HTTPResponse)
+            return mocked_request
 
     return request
 
@@ -80,26 +83,10 @@ def fake_response(status, reason=None, content_type="application/json"):
     return m
 
 
-def fake_redirect(location):
+def fake_redirect(location: str) -> MagicMock:
     m = fake_response(307)
     m.get_redirect_location.return_value = location
     return m
-
-
-def bad_bulk_response():
-    r = fake_response(400, "Bad Request")
-    r.data = json.dumps(
-        {
-            "results": [
-                {"rowcount": 1},
-                {"error_message": "an error occured"},
-                {"error_message": "another error"},
-                {"error_message": ""},
-                {"error_message": None},
-            ]
-        }
-    ).encode()
-    return r
 
 
 def duplicate_key_exception():
@@ -109,7 +96,7 @@ def duplicate_key_exception():
             "error": {
                 "code": 4091,
                 "message": "DuplicateKeyException[A document with the "
-                "same primary key exists already]",
+                           "same primary key exists already]",
             }
         }
     ).encode()
@@ -117,200 +104,183 @@ def duplicate_key_exception():
 
 
 def fail_sometimes(*args, **kwargs):
+    # random.randint(1, 10) % 2:
     if random.randint(1, 100) % 10 == 0:
         raise urllib3.exceptions.MaxRetryError(None, "/_sql", "")
     return fake_response(200)
 
 
-class HttpClientTest(TestCase):
-    @patch(
-        REQUEST,
-        fake_request(
-            [
-                fake_response(200),
-                fake_response(104, "Connection reset by peer"),
-                fake_response(503, "Service Unavailable"),
-            ]
-        ),
-    )
-    def test_connection_reset_exception(self):
+def test_connection_reset_exception():
+    """
+    Verify that a HTTP 503 status code response raises an exception.
+    """
+
+    expected_exception_msg = ("No more Servers available,"
+                              " exception from last server: Service Unavailable")
+    with patch(REQUEST, side_effect=[
+        fake_response(200),
+        fake_response(104, "Connection reset by peer"),
+        fake_response(503, "Service Unavailable"),
+    ]):
         client = Client(servers="localhost:4200")
-        client.sql("select 1")
-        client.sql("select 2")
-        self.assertEqual(
-            ["http://localhost:4200"], list(client._active_servers)
-        )
-        try:
-            client.sql("select 3")
-        except ProgrammingError:
-            self.assertEqual([], list(client._active_servers))
-        else:
-            self.assertTrue(False)
-        finally:
-            client.close()
+        client.sql("select 1")  # 200 response
+        client.sql("select 2")  # 104 response
+        assert list(client._active_servers) == ["http://localhost:4200"]
 
-    def test_no_connection_exception(self):
-        client = Client(servers="localhost:9999")
-        self.assertRaises(ConnectionError, client.sql, "select foo")
-        client.close()
+        with pytest.raises(ProgrammingError, match=expected_exception_msg):
+            client.sql("select 3")  # 503 response
+        assert not client._active_servers
 
-    @patch(REQUEST)
-    def test_http_error_is_re_raised(self, request):
-        request.side_effect = Exception
 
+def test_no_connection_exception():
+    """
+    Verify that when no connection can be made to the server, a `ConnectionError` is raised.
+    """
+    client = Client(servers="localhost:9999")
+    with pytest.raises(ConnectionError):
+        client.sql("")
+
+
+def test_http_error_is_re_raised():
+    """
+    Verify that when calling `REQUEST` if any error occurs, a `ProgrammingError` exception
+    is raised _from_ that exception.
+    """
+    client = Client()
+
+    with patch(REQUEST, side_effect=Exception):
+        client.sql("select foo")
+        with pytest.raises(ProgrammingError) as e:
+            client.sql("select foo")
+
+
+def test_programming_error_contains_http_error_response_content():
+    """
+    Verify that when calling `REQUEST` if any error occurs,
+    the raised `ProgrammingError` exception
+    contains the error message from the original error.
+    """
+    expected_msg = "this message should appear"
+    with patch(REQUEST, side_effect=Exception(expected_msg)):
         client = Client()
-        self.assertRaises(ProgrammingError, client.sql, "select foo")
-        client.close()
-
-    @patch(REQUEST)
-    def test_programming_error_contains_http_error_response_content(
-        self, request
-    ):
-        request.side_effect = Exception("this shouldn't be raised")
-
-        client = Client()
-        try:
+        with pytest.raises(ProgrammingError, match=expected_msg):
             client.sql("select 1")
-        except ProgrammingError as e:
-            self.assertEqual("this shouldn't be raised", e.message)
-        else:
-            self.assertTrue(False)
-        finally:
-            client.close()
 
-    @patch(
-        REQUEST,
-        fake_request(
-            [fake_response(200), fake_response(503, "Service Unavailable")]
-        ),
-    )
-    def test_server_error_50x(self):
-        client = Client(servers="localhost:4200 localhost:4201")
-        client.sql("select 1")
-        client.sql("select 2")
-        try:
-            client.sql("select 3")
-        except ProgrammingError as e:
-            self.assertEqual(
-                "No more Servers available, "
-                + "exception from last server: Service Unavailable",
-                e.message,
-            )
-            self.assertEqual([], list(client._active_servers))
-        else:
-            self.assertTrue(False)
-        finally:
-            client.close()
 
-    def test_connect(self):
-        client = Client(servers="localhost:4200 localhost:4201")
-        self.assertEqual(
-            client._active_servers,
-            ["http://localhost:4200", "http://localhost:4201"],
-        )
-        client.close()
+def test_connect():
+    """
+    Verify the correctness `server` parameter in `Client` instantiation.
+    """
+    client = Client(servers="localhost:4200 localhost:4201")
+    assert client._active_servers == \
+           ["http://localhost:4200", "http://localhost:4201"]
 
+    # By default, it's http://127.0.0.1:4200
+    client = Client(servers=None)
+    assert client._active_servers == ["http://127.0.0.1:4200"]
+
+    with pytest.raises(TypeError, match='expected string or bytes'):
+        Client(servers=[123, "127.0.0.1:4201", False])
+
+
+def test_redirect_handling():
+    """
+    Verify that when a redirect happens, that redirect uri gets added to the server pool.
+    """
+    with patch(REQUEST, return_value=fake_redirect("http://localhost:4201")):
         client = Client(servers="localhost:4200")
-        self.assertEqual(client._active_servers, ["http://localhost:4200"])
-        client.close()
 
-        client = Client(servers=["localhost:4200"])
-        self.assertEqual(client._active_servers, ["http://localhost:4200"])
-        client.close()
-
-        client = Client(servers=["localhost:4200", "127.0.0.1:4201"])
-        self.assertEqual(
-            client._active_servers,
-            ["http://localhost:4200", "http://127.0.0.1:4201"],
-        )
-        client.close()
-
-    @patch(REQUEST, fake_request(fake_redirect("http://localhost:4201")))
-    def test_redirect_handling(self):
-        client = Client(servers="localhost:4200")
-        try:
-            client.blob_get("blobs", "fake_digest")
-        except ProgrammingError:
+        # Don't try to print the exception or use `match`, otherwise
+        # the recursion will not be short-circuited and it will hang.
+        with pytest.raises(ProgrammingError):
             # 4201 gets added to serverpool but isn't available
             # that's why we run into an infinite recursion
             # exception message is: maximum recursion depth exceeded
-            pass
-        self.assertEqual(
-            ["http://localhost:4200", "http://localhost:4201"],
-            sorted(client.server_pool.keys()),
-        )
-        # the new non-https server must not contain any SSL only arguments
-        # regression test for github issue #179/#180
-        self.assertEqual(
-            {"socket_options": _get_socket_opts(keepalive=True)},
-            client.server_pool["http://localhost:4201"].pool.conn_kw,
-        )
-        client.close()
+            client.blob_get("blobs", "fake_digest")
 
-    @patch(REQUEST)
-    def test_server_infos(self, request):
-        request.side_effect = urllib3.exceptions.MaxRetryError(
-            None, "/", "this shouldn't be raised"
-        )
+        assert sorted(client.server_pool.keys()) == ["http://localhost:4200",
+                                                     "http://localhost:4201"]
+
+    # the new non-https server must not contain any SSL only arguments
+    # regression test for:
+    # - https://github.com/crate/crate-python/issues/179
+    # - https://github.com/crate/crate-python/issues/180
+
+    assert client.server_pool["http://localhost:4201"].pool.conn_kw == {
+        "socket_options": _get_socket_opts(keepalive=True)
+    }
+
+
+def test_server_infos():
+    """
+    Verify that when a `MaxRetryError` is raised, a `ConnectionError` is raised.
+    """
+    error = urllib3.exceptions.MaxRetryError(None, "/")
+    with patch(REQUEST, side_effect=error):
         client = Client(servers="localhost:4200 localhost:4201")
-        self.assertRaises(
-            ConnectionError, client.server_infos, "http://localhost:4200"
-        )
-        client.close()
-
-    @patch(REQUEST, fake_request(fake_response(503)))
-    def test_server_infos_503(self):
-        client = Client(servers="localhost:4200")
-        self.assertRaises(
-            ConnectionError, client.server_infos, "http://localhost:4200"
-        )
-        client.close()
-
-    @patch(
-        REQUEST, fake_request(fake_response(401, "Unauthorized", "text/html"))
-    )
-    def test_server_infos_401(self):
-        client = Client(servers="localhost:4200")
-        try:
+        with pytest.raises(ConnectionError):
             client.server_infos("http://localhost:4200")
-        except ProgrammingError as e:
-            self.assertEqual("401 Client Error: Unauthorized", e.message)
-        else:
-            self.assertTrue(False, msg="Exception should have been raised")
-        finally:
-            client.close()
 
-    @patch(REQUEST, fake_request(bad_bulk_response()))
-    def test_bad_bulk_400(self):
+
+def test_server_infos_401():
+    """
+    Verify that when a 401 status code is returned, a `ProgrammingError` is raised.
+    """
+    response = fake_response(401, "Unauthorized", "text/html")
+    with patch(REQUEST, return_value=response):
         client = Client(servers="localhost:4200")
-        try:
+        with pytest.raises(ProgrammingError, match="401 Client Error: Unauthorized"):
+            client.server_infos("http://localhost:4200")
+
+
+def test_bad_bulk_400():
+    """
+    Verify that a 400 response when doing a bulk request raises a `ProgrammingException` with
+    the error message of the response object's key `error_message`, several error messages can
+    be returned by the database.
+    """
+    response = fake_response(400, "Bad Request")
+    response.data = json.dumps(
+        {
+            "results": [
+                {"rowcount": 1},
+                {"error_message": "an error occurred"},
+                {"error_message": "another error"},
+                {"error_message": ""},
+                {"error_message": None},
+            ]
+        }
+    ).encode()
+
+    client = Client(servers="localhost:4200")
+    with patch(REQUEST, return_value=response):
+        with pytest.raises(ProgrammingError, match='an error occurred\nanother error'):
             client.sql(
                 "Insert into users (name) values(?)",
-                bulk_parameters=[["douglas"], ["monthy"]],
+                bulk_parameters=[["douglas"], ["monthy"]]
             )
-        except ProgrammingError as e:
-            self.assertEqual("an error occured\nanother error", e.message)
-        else:
-            self.assertTrue(False, msg="Exception should have been raised")
-        finally:
-            client.close()
 
-    @patch(REQUEST, autospec=True)
-    def test_decimal_serialization(self, request):
+
+def test_decimal_serialization():
+    """
+    Verify that a `Decimal` type can be serialized and sent to the server.
+    """
+    with patch(REQUEST, return_value=fake_response(200)) as request:
         client = Client(servers="localhost:4200")
-        request.return_value = fake_response(200)
 
         dec = Decimal(0.12)
         client.sql("insert into users (float_col) values (?)", (dec,))
-
         data = json.loads(request.call_args[1]["data"])
-        self.assertEqual(data["args"], [str(dec)])
-        client.close()
+        assert dec == Decimal(data["args"][0])
 
-    @patch(REQUEST, autospec=True)
-    def test_datetime_is_converted_to_ts(self, request):
+
+
+def test_datetime_is_converted_to_ts():
+    """
+    Verify that a `datetime.datetime` can be serialized.
+    """
+    with patch(REQUEST, return_value=fake_response(200)) as request:
         client = Client(servers="localhost:4200")
-        request.return_value = fake_response(200)
 
         datetime = dt.datetime(2015, 2, 28, 7, 31, 40)
         client.sql("insert into users (dt) values (?)", (datetime,))
@@ -318,30 +288,29 @@ class HttpClientTest(TestCase):
         # convert string to dict
         # because the order of the keys isn't deterministic
         data = json.loads(request.call_args[1]["data"])
-        self.assertEqual(data["args"], [1425108700000])
-        client.close()
+        assert data["args"][0] == 1425108700000
 
-    @patch(REQUEST, autospec=True)
-    def test_date_is_converted_to_ts(self, request):
+
+def test_date_is_converted_to_ts():
+    """
+    Verify that a `datetime.date` can be serialized.
+    """
+    with patch(REQUEST, return_value=fake_response(200)) as request:
         client = Client(servers="localhost:4200")
-        request.return_value = fake_response(200)
 
         day = dt.date(2016, 4, 21)
         client.sql("insert into users (dt) values (?)", (day,))
         data = json.loads(request.call_args[1]["data"])
-        self.assertEqual(data["args"], [1461196800000])
-        client.close()
+        assert data["args"][0] == 1461196800000
 
-    def test_socket_options_contain_keepalive(self):
-        server = "http://localhost:4200"
-        client = Client(servers=server)
-        conn_kw = client.server_pool[server].pool.conn_kw
-        self.assertIn(
-            (socket.SOL_SOCKET, socket.SO_KEEPALIVE, 1),
-            conn_kw["socket_options"],
-        )
-        client.close()
 
+def test_socket_options_contain_keepalive():
+    client = Client(servers="http://localhost:4200")
+    conn_kw = client.server_pool[server].pool.conn_kw
+    assert (socket.SOL_SOCKET, socket.SO_KEEPALIVE, 1) in conn_kw["socket_options"]
+
+
+class HttpClientTest(TestCase):
     @patch(REQUEST, autospec=True)
     def test_uuid_serialization(self, request):
         client = Client(servers="localhost:4200")

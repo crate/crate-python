@@ -35,11 +35,9 @@ import pytz
 
 from crate.client import connect
 from crate.client.converter import DataType, DefaultTypeConverter
-from crate.client.http import Client
-from crate.testing.util import ClientMocked
 
 
-def test_create_with_timezome_as_datetime_object(mocked_connection):
+def test_create_with_timezone_as_datetime_object(mocked_connection):
     """
      The cursor can return timezone-aware `datetime` objects when requested.
      Switching the time zone at runtime on the cursor object is possible.

@@ -76,7 +76,7 @@ def test_naive_datetime_serialization():
 
 def test_aware_datetime_serialization():
     """
-     Verify that a `datetime` that is tz aware type can be serialized.
+    Verify that a `datetime` that is tz aware type can be serialized.
     """
     data = dt.datetime.fromisoformat("2023-06-26T09:24:00.123+02:00")
     result = json_dumps(data)
@@ -106,13 +106,11 @@ def test_date_serialization():
     assert result == b'1461196800000'
 
 
-
 def test_uuid_serialization():
     """
     Verify that a `uuid.UUID` can be serialized. We do not care about specific uuid versions,
-    just the object that is re-used across all versions by the uuid module.
+    just the object that is re-used across all versions of the uuid module.
     """
     data = uuid.UUID(bytes=(50583033507982468033520929066863110751).to_bytes(16), version=4)
     result = json_dumps(data)
     assert result == b'"260df019-a183-431f-ad46-115ccdf12a5f"'
-

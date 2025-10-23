@@ -51,11 +51,11 @@ from crate.client.http import (
     _get_socket_opts,
     _remove_certs_for_non_https,
 )
+from tests.client.utils import temp_env
 from tests.conftest import REQUEST_PATH, fake_response
 
-CA_CERT_PATH = certifi.where()
-
 mocked_request = MagicMock(spec=urllib3.response.HTTPResponse)
+
 
 def fake_request(response=None):
     def request(*args, **kwargs):
@@ -373,14 +373,26 @@ def test_params():
 
 
 def test_client_ca():
-    os.environ["REQUESTS_CA_BUNDLE"] = CA_CERT_PATH
-    try:
-        Client("http://127.0.0.1:4200")
-    except ProgrammingError:
-        pytest.fail("HTTP not working with REQUESTS_CA_BUNDLE")
-    finally:
-        os.unsetenv("REQUESTS_CA_BUNDLE")
-        os.environ["REQUESTS_CA_BUNDLE"] = ""
+    """
+    Verify that if env variable `REQUESTS_CA_BUNDLE` is set, certs are loaded into the pool.
+    """
+    with temp_env(REQUESTS_CA_BUNDLE=certifi.where()):
+        client = Client("http://127.0.0.1:4200")
+        assert 'ca_certs' in client._pool_kw
+
+
+def test_remove_certs_for_non_https():
+    """
+    Verify that `_remove_certs_for_non_https` correctly removes ca_certs.
+    """
+    d = _remove_certs_for_non_https("https", {"ca_certs": 1})
+    assert "ca_certs" in d
+
+    kwargs = {"ca_certs": 1, "foobar": 2, "cert_file": 3}
+    d = _remove_certs_for_non_https("http", kwargs)
+    assert 'ca_certs' not in d
+    assert 'cert_file' not in d
+    assert 'foobar' in d
 
 
 class ClientAddressRequestHandler(BaseHTTPRequestHandler):
@@ -442,28 +454,6 @@ class KeepAliveClientTest(TestCase):
 
             another_result = self.client.sql("select again from fake")
             self.assertEqual(result, another_result)
-
-
-class RequestsCaBundleTest(TestCase):
-    def test_open_client(self):
-        os.environ["REQUESTS_CA_BUNDLE"] = CA_CERT_PATH
-        try:
-            Client("http://127.0.0.1:4200")
-        except ProgrammingError:
-            self.fail("HTTP not working with REQUESTS_CA_BUNDLE")
-        finally:
-            os.unsetenv("REQUESTS_CA_BUNDLE")
-            os.environ["REQUESTS_CA_BUNDLE"] = ""
-
-    def test_remove_certs_for_non_https(self):
-        d = _remove_certs_for_non_https("https", {"ca_certs": 1})
-        self.assertIn("ca_certs", d)
-
-        kwargs = {"ca_certs": 1, "foobar": 2, "cert_file": 3}
-        d = _remove_certs_for_non_https("http", kwargs)
-        self.assertNotIn("ca_certs", d)
-        self.assertNotIn("cert_file", d)
-        self.assertIn("foobar", d)
 
 
 class TimeoutRequestHandler(BaseHTTPRequestHandler):

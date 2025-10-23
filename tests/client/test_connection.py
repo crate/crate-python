@@ -1,5 +1,6 @@
 import datetime
 from unittest import TestCase
+from unittest.mock import patch, MagicMock
 
 from urllib3 import Timeout
 
@@ -8,6 +9,47 @@ from crate.client.connection import Connection
 from crate.client.http import Client
 
 from .settings import crate_host
+
+
+def test_lowest_server_version():
+    """
+    Verify the lowest server version is correctly set.
+    """
+    infos = [
+        (None, None, "1.0.3"),
+        (None, None, "5.5.2"),
+        (None, None, "6.0.0"),
+        (None, None, "not a version"),
+    ]
+
+    client = Client(servers="localhost:4200 localhost:4201 localhost:4202 localhost:4207")
+    client.server_infos = lambda server: infos.pop()
+    connection = connect(client=client)
+    assert (1, 0, 3) == connection.lowest_server_version.version
+
+
+def test_invalid_server_version():
+    """
+    Verify that when no correct version is set, the default (0, 0, 0) is returned.
+    """
+    client = Client(servers="localhost:4200")
+    client.server_infos = lambda server: (None, None, "No version")
+    connection = connect(client=client)
+    assert (0, 0, 0) == connection.lowest_server_version.version
+
+
+def test_context_manager():
+    """
+    Verify the context manager implementation of `Connection`.
+    """
+    with patch('crate.client.http.Client.close', return_value=MagicMock()) as close_func:
+        with connect("localhost:4200") as conn:
+            assert conn._closed == False
+
+        assert conn._closed == True
+        # Checks that the close method of the client
+        # is called when the connection is closed.
+        close_func.assert_called_once()
 
 
 class ConnectionTest(TestCase):
@@ -35,31 +77,6 @@ class ConnectionTest(TestCase):
             connection.client.server_infos("foo"),
             ("localhost:4200", "my server", "0.42.0"),
         )
-
-    def test_lowest_server_version(self):
-        infos = [
-            (None, None, "0.42.3"),
-            (None, None, "0.41.8"),
-            (None, None, "not a version"),
-        ]
-
-        client = Client(servers="localhost:4200 localhost:4201 localhost:4202")
-        client.server_infos = lambda server: infos.pop()
-        connection = connect(client=client)
-        self.assertEqual((0, 41, 8), connection.lowest_server_version.version)
-        connection.close()
-
-    def test_invalid_server_version(self):
-        client = Client(servers="localhost:4200")
-        client.server_infos = lambda server: (None, None, "No version")
-        connection = connect(client=client)
-        self.assertEqual((0, 0, 0), connection.lowest_server_version.version)
-        connection.close()
-
-    def test_context_manager(self):
-        with connect("localhost:4200") as conn:
-            pass
-        self.assertEqual(conn._closed, True)
 
     def test_with_timezone(self):
         """

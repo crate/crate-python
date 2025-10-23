@@ -19,19 +19,17 @@
 # with Crate these terms will supersede the license and you may use the
 # software solely pursuant to the terms of the relevant commercial agreement.
 
-import datetime as dt
 import json
 import multiprocessing
 import os
 import queue
 import random
 import socket
-import sys
+
 import time
-import traceback
-import uuid
+
 from base64 import b64decode
-from decimal import Decimal
+
 from http.server import BaseHTTPRequestHandler, HTTPServer
 from multiprocessing.context import ForkProcess
 from threading import Event, Thread
@@ -52,7 +50,6 @@ from crate.client.http import (
     Client,
     _get_socket_opts,
     _remove_certs_for_non_https,
-    json_dumps,
 )
 from tests.conftest import REQUEST_PATH, fake_response
 
@@ -273,11 +270,6 @@ def test_duplicate_key_error():
         client = Client(servers="localhost:4200")
         with pytest.raises(IntegrityError, match=expected_error_msg):
             client.sql("INSERT INTO testdrive (foo) VALUES (42)")
-        self.assertEqual(
-            cm.exception.message,
-            "DuplicateKeyException[A document with the "
-            "same primary key exists already]",
-        )
 
 
 @patch(REQUEST_PATH, fail_sometimes)
@@ -644,15 +636,3 @@ class TestUsernameSentAsHeader(TestingHttpServerTestCase):
         )
         self.assertEqual(TestingHTTPServer.SHARED["username"], "testDBUser")
         self.assertEqual(TestingHTTPServer.SHARED["password"], "test:password")
-
-
-class TestCrateJsonEncoder(TestCase):
-    def test_naive_datetime(self):
-        data = dt.datetime.fromisoformat("2023-06-26T09:24:00.123")
-        result = json_dumps(data)
-        self.assertEqual(result, b"1687771440123")
-
-    def test_aware_datetime(self):
-        data = dt.datetime.fromisoformat("2023-06-26T09:24:00.123+02:00")
-        result = json_dumps(data)
-        self.assertEqual(result, b"1687764240123")

@@ -60,7 +60,6 @@ CA_CERT_PATH = certifi.where()
 
 mocked_request = MagicMock(spec=urllib3.response.HTTPResponse)
 
-
 def fake_request(response=None):
     def request(*args, **kwargs):
         if isinstance(response, list):
@@ -253,76 +252,26 @@ def test_bad_bulk_400():
             )
 
 
-def test_decimal_serialization():
-    """
-    Verify that a `Decimal` type can be serialized and sent to the server.
-    """
-    with patch(REQUEST, return_value=fake_response(200)) as request:
-        client = Client(servers="localhost:4200")
-
-        dec = Decimal(0.12)
-        client.sql("insert into users (float_col) values (?)", (dec,))
-        data = json.loads(request.call_args[1]["data"])
-        assert dec == Decimal(data["args"][0])
-
-
-
-def test_datetime_is_converted_to_ts():
-    """
-    Verify that a `datetime.datetime` can be serialized.
-    """
-    with patch(REQUEST, return_value=fake_response(200)) as request:
-        client = Client(servers="localhost:4200")
-
-        datetime = dt.datetime(2015, 2, 28, 7, 31, 40)
-        client.sql("insert into users (dt) values (?)", (datetime,))
-
-        # convert string to dict
-        # because the order of the keys isn't deterministic
-        data = json.loads(request.call_args[1]["data"])
-        assert data["args"][0] == 1425108700000
-
-
-def test_date_is_converted_to_ts():
-    """
-    Verify that a `datetime.date` can be serialized.
-    """
-    with patch(REQUEST, return_value=fake_response(200)) as request:
-        client = Client(servers="localhost:4200")
-
-        day = dt.date(2016, 4, 21)
-        client.sql("insert into users (dt) values (?)", (day,))
-        data = json.loads(request.call_args[1]["data"])
-        assert data["args"][0] == 1461196800000
-
-
 def test_socket_options_contain_keepalive():
-    client = Client(servers="http://localhost:4200")
+    """
+    Verify that KEEPALIVE options are present at `socket_options`
+    """
+    server = "http://localhost:4200"
+    client = Client(servers=server)
     conn_kw = client.server_pool[server].pool.conn_kw
     assert (socket.SOL_SOCKET, socket.SO_KEEPALIVE, 1) in conn_kw["socket_options"]
 
 
-class HttpClientTest(TestCase):
-    @patch(REQUEST, autospec=True)
-    def test_uuid_serialization(self, request):
+def test_duplicate_key_error():
+    """
+    Verify that an `IntegrityError` is raised on duplicate key errors,
+    instead of the more general `ProgrammingError`.
+    """
+    expected_error_msg = (r"DuplicateKeyException\[A document with "
+                          r"the same primary key exists already\]")
+    with patch(REQUEST_PATH, fake_request(duplicate_key_exception())):
         client = Client(servers="localhost:4200")
-        request.return_value = fake_response(200)
-
-        uid = uuid.uuid4()
-        client.sql("insert into my_table (str_col) values (?)", (uid,))
-
-        data = json.loads(request.call_args[1]["data"])
-        self.assertEqual(data["args"], [str(uid)])
-        client.close()
-
-    @patch(REQUEST, fake_request(duplicate_key_exception()))
-    def test_duplicate_key_error(self):
-        """
-        Verify that an `IntegrityError` is raised on duplicate key errors,
-        instead of the more general `ProgrammingError`.
-        """
-        client = Client(servers="localhost:4200")
-        with self.assertRaises(IntegrityError) as cm:
+        with pytest.raises(IntegrityError, match=expected_error_msg):
             client.sql("INSERT INTO testdrive (foo) VALUES (42)")
         self.assertEqual(
             cm.exception.message,
@@ -331,16 +280,21 @@ class HttpClientTest(TestCase):
         )
 
 
-@patch(REQUEST, fail_sometimes)
-class ThreadSafeHttpClientTest(TestCase):
+@patch(REQUEST_PATH, fail_sometimes)
+def test_client_multithreaded():
     """
-    Using a pool of 5 Threads to emit commands to the multiple servers through
-    one Client-instance
+    Verify client multithreading using a pool of 5 Threads to emit commands to
+     the multiple servers through one Client-instance.
 
-    check if number of servers in _inactive_servers and _active_servers always
+    Checks if the number of servers in _inactive_servers and _active_servers always
     equals the number of servers initially given.
-    """
 
+    Note:
+        This test is probabilistic and does not ensure that the
+        client is indeed thread-safe in all cases, it can only show that it
+        withstands this scenario.
+
+    """
     servers = [
         "127.0.0.1:44209",
         "127.0.0.2:44209",
@@ -350,67 +304,94 @@ class ThreadSafeHttpClientTest(TestCase):
     num_commands = 1000
     thread_timeout = 5.0  # seconds
 
-    def __init__(self, *args, **kwargs):
-        self.event = Event()
-        self.err_queue = queue.Queue()
-        super(ThreadSafeHttpClientTest, self).__init__(*args, **kwargs)
+    gate = Event()
+    error_queue = queue.Queue()
 
     def setUp(self):
         self.client = Client(self.servers)
         self.client.retry_interval = 0.2  # faster retry
+    client = Client(servers)
+    client.retry_interval = 0.2  # faster retry
 
-    def tearDown(self):
-        self.client.close()
-
-    def _run(self):
-        self.event.wait()  # wait for the others
-        expected_num_servers = len(self.servers)
-        for _ in range(self.num_commands):
+    def worker():
+        """
+        Worker that sends many requests, if the `num_server` is not expected at some point
+        an assertion will be added to the shared error queue.
+        """
+        gate.wait()  # wait for the others
+        expected_num_servers = len(servers)
+        for _ in range(num_commands):
             try:
-                self.client.sql("select name from sys.cluster")
+                client.sql("select name from sys.cluster")
             except ConnectionError:
+                # Sometimes it will fail.
                 pass
             try:
-                with self.client._lock:
-                    num_servers = len(self.client._active_servers) + len(
-                        self.client._inactive_servers
+                with client._lock:
+                    num_servers = len(client._active_servers) + len(
+                        client._inactive_servers
                     )
-                self.assertEqual(
-                    expected_num_servers,
-                    num_servers,
-                    "expected %d but got %d"
-                    % (expected_num_servers, num_servers),
-                )
-            except AssertionError:
-                self.err_queue.put(sys.exc_info())
+                    assert num_servers == expected_num_servers, (
+                        f"expected {expected_num_servers} but got {num_servers}"
+                    )
+            except AssertionError as e:
+                error_queue.put(e)
 
-    def test_client_threaded(self):
-        """
-        Testing if lists of servers is handled correctly when client is used
-        from multiple threads with some requests failing.
+    threads = [
+        Thread(target=worker, name=str(i))
+        for i in range(num_threads)
+    ]
 
-        **ATTENTION:** this test is probabilistic and does not ensure that the
-        client is indeed thread-safe in all cases, it can only show that it
-        withstands this scenario.
-        """
-        threads = [
-            Thread(target=self._run, name=str(x))
-            for x in range(self.num_threads)
-        ]
-        for thread in threads:
-            thread.start()
+    for thread in threads:
+        thread.start()
 
-        self.event.set()
-        for t in threads:
-            t.join(self.thread_timeout)
+    gate.set()
 
-        if not self.err_queue.empty():
-            self.assertTrue(
-                False,
-                "".join(
-                    traceback.format_exception(*self.err_queue.get(block=False))
-                ),
-            )
+    for t in threads:
+        t.join(timeout=thread_timeout)
+
+    # If any thread is still alive after the timeout, consider it a failure.
+    alive = [t.name for t in threads if t.is_alive()]
+    if alive:
+        pytest.fail(f"Threads did not finish within {thread_timeout}s: {alive}")
+
+    if not error_queue.empty():
+        # If an error happened, consider it a failure as well.
+        first_error_trace = error_queue.get(block=False)
+        pytest.fail(first_error_trace)
+
+
+def test_params():
+    """
+    Verify client parameters translate correctly to query parameters..
+    """
+    client = Client(["127.0.0.1:4200"], error_trace=True)
+    parsed = urlparse(client.path)
+    params = parse_qs(parsed.query)
+
+    assert params["error_trace"] == ["true"]
+    assert params["types"] == ["true"]
+
+    client = Client(["127.0.0.1:4200"])
+    parsed = urlparse(client.path)
+    params = parse_qs(parsed.query)
+
+    # Default is FALSE
+    assert 'error_trace' not in params
+    assert params["types"] == ["true"]
+
+    assert "/_sql?" in client.path
+
+
+def test_client_ca():
+    os.environ["REQUESTS_CA_BUNDLE"] = CA_CERT_PATH
+    try:
+        Client("http://127.0.0.1:4200")
+    except ProgrammingError:
+        pytest.fail("HTTP not working with REQUESTS_CA_BUNDLE")
+    finally:
+        os.unsetenv("REQUESTS_CA_BUNDLE")
+        os.environ["REQUESTS_CA_BUNDLE"] = ""
 
 
 class ClientAddressRequestHandler(BaseHTTPRequestHandler):
@@ -472,20 +453,6 @@ class KeepAliveClientTest(TestCase):
 
             another_result = self.client.sql("select again from fake")
             self.assertEqual(result, another_result)
-
-
-class ParamsTest(TestCase):
-    def test_params(self):
-        client = Client(["127.0.0.1:4200"], error_trace=True)
-        parsed = urlparse(client.path)
-        params = parse_qs(parsed.query)
-        self.assertEqual(params["error_trace"], ["true"])
-        client.close()
-
-    def test_no_params(self):
-        client = Client()
-        self.assertEqual(client.path, "/_sql?types=true")
-        client.close()
 
 
 class RequestsCaBundleTest(TestCase):

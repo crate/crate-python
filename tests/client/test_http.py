@@ -307,9 +307,6 @@ def test_client_multithreaded():
     gate = Event()
     error_queue = queue.Queue()
 
-    def setUp(self):
-        self.client = Client(self.servers)
-        self.client.retry_interval = 0.2  # faster retry
     client = Client(servers)
     client.retry_interval = 0.2  # faster retry
 

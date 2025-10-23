@@ -54,8 +54,8 @@ from crate.client.http import (
     _remove_certs_for_non_https,
     json_dumps,
 )
+from tests.conftest import REQUEST_PATH, fake_response
 
-REQUEST = "crate.client.http.Server.request"
 CA_CERT_PATH = certifi.where()
 
 mocked_request = MagicMock(spec=urllib3.response.HTTPResponse)
@@ -73,14 +73,6 @@ def fake_request(response=None):
             return mocked_request
 
     return request
-
-
-def fake_response(status, reason=None, content_type="application/json"):
-    m = MagicMock(spec=urllib3.response.HTTPResponse)
-    m.status = status
-    m.reason = reason or ""
-    m.headers = {"content-type": content_type}
-    return m
 
 
 def fake_redirect(location: str) -> MagicMock:
@@ -117,7 +109,7 @@ def test_connection_reset_exception():
 
     expected_exception_msg = ("No more Servers available,"
                               " exception from last server: Service Unavailable")
-    with patch(REQUEST, side_effect=[
+    with patch(REQUEST_PATH, side_effect=[
         fake_response(200),
         fake_response(104, "Connection reset by peer"),
         fake_response(503, "Service Unavailable"),
@@ -148,7 +140,7 @@ def test_http_error_is_re_raised():
     """
     client = Client()
 
-    with patch(REQUEST, side_effect=Exception):
+    with patch(REQUEST_PATH, side_effect=Exception):
         client.sql("select foo")
         with pytest.raises(ProgrammingError) as e:
             client.sql("select foo")
@@ -161,7 +153,7 @@ def test_programming_error_contains_http_error_response_content():
     contains the error message from the original error.
     """
     expected_msg = "this message should appear"
-    with patch(REQUEST, side_effect=Exception(expected_msg)):
+    with patch(REQUEST_PATH, side_effect=Exception(expected_msg)):
         client = Client()
         with pytest.raises(ProgrammingError, match=expected_msg):
             client.sql("select 1")
@@ -169,7 +161,7 @@ def test_programming_error_contains_http_error_response_content():
 
 def test_connect():
     """
-    Verify the correctness `server` parameter in `Client` instantiation.
+    Verify the correctness of `server` parameter when `Client` is instantiated.
     """
     client = Client(servers="localhost:4200 localhost:4201")
     assert client._active_servers == \
@@ -187,7 +179,7 @@ def test_redirect_handling():
     """
     Verify that when a redirect happens, that redirect uri gets added to the server pool.
     """
-    with patch(REQUEST, return_value=fake_redirect("http://localhost:4201")):
+    with patch(REQUEST_PATH, return_value=fake_redirect("http://localhost:4201")):
         client = Client(servers="localhost:4200")
 
         # Don't try to print the exception or use `match`, otherwise
@@ -216,7 +208,7 @@ def test_server_infos():
     Verify that when a `MaxRetryError` is raised, a `ConnectionError` is raised.
     """
     error = urllib3.exceptions.MaxRetryError(None, "/")
-    with patch(REQUEST, side_effect=error):
+    with patch(REQUEST_PATH, side_effect=error):
         client = Client(servers="localhost:4200 localhost:4201")
         with pytest.raises(ConnectionError):
             client.server_infos("http://localhost:4200")
@@ -227,7 +219,7 @@ def test_server_infos_401():
     Verify that when a 401 status code is returned, a `ProgrammingError` is raised.
     """
     response = fake_response(401, "Unauthorized", "text/html")
-    with patch(REQUEST, return_value=response):
+    with patch(REQUEST_PATH, return_value=response):
         client = Client(servers="localhost:4200")
         with pytest.raises(ProgrammingError, match="401 Client Error: Unauthorized"):
             client.server_infos("http://localhost:4200")
@@ -253,7 +245,7 @@ def test_bad_bulk_400():
     ).encode()
 
     client = Client(servers="localhost:4200")
-    with patch(REQUEST, return_value=response):
+    with patch(REQUEST_PATH, return_value=response):
         with pytest.raises(ProgrammingError, match='an error occurred\nanother error'):
             client.sql(
                 "Insert into users (name) values(?)",

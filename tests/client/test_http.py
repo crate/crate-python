@@ -20,21 +20,14 @@
 # software solely pursuant to the terms of the relevant commercial agreement.
 
 import json
-
 import os
-
 import queue
 import random
 import socket
-
 import time
-
 from base64 import b64decode
-
 from http.server import BaseHTTPRequestHandler
-
 from threading import Event, Thread
-
 from unittest.mock import MagicMock, patch
 from urllib.parse import parse_qs, urlparse
 
@@ -53,7 +46,6 @@ from crate.client.http import (
     _get_socket_opts,
     _remove_certs_for_non_https,
 )
-
 from tests.conftest import REQUEST_PATH, fake_response
 
 mocked_request = MagicMock(spec=urllib3.response.HTTPResponse)
@@ -79,7 +71,7 @@ def duplicate_key_exception():
     return r
 
 
-def fail_sometimes() -> MagicMock:
+def fail_sometimes(*args, **kwargs) -> MagicMock:
     """
     Function that fails with a 50% chance. It either returns a successful mocked
     response or raises an urllib3 exception.
@@ -94,8 +86,8 @@ def test_connection_reset_exception():
     Verify that a HTTP 503 status code response raises an exception.
     """
 
-    expected_exception_msg = ("No more Servers available,"
-                              " exception from last server: Service Unavailable")
+    expected_exception_msg = ("No more Servers available, exception"
+         " from last server: Service Unavailable")
     with patch(REQUEST_PATH, side_effect=[
         fake_response(200),
         fake_response(104, "Connection reset by peer"),
@@ -113,7 +105,8 @@ def test_connection_reset_exception():
 
 def test_no_connection_exception():
     """
-    Verify that when no connection can be made to the server, a `ConnectionError` is raised.
+    Verify that when no connection can be made to the server,
+    a `ConnectionError` is raised.
     """
     client = Client(servers="localhost:9999")
     with pytest.raises(ConnectionError):
@@ -122,8 +115,8 @@ def test_no_connection_exception():
 
 def test_http_error_is_re_raised():
     """
-    Verify that when calling `REQUEST` if any error occurs, a `ProgrammingError` exception
-    is raised _from_ that exception.
+    Verify that when calling `REQUEST` if any error occurs,
+    a `ProgrammingError` exception is raised _from_ that exception.
     """
     client = Client()
 
@@ -164,9 +157,11 @@ def test_connect():
 
 def test_redirect_handling():
     """
-    Verify that when a redirect happens, that redirect uri gets added to the server pool.
+    Verify that when a redirect happens, that redirect uri
+    gets added to the server pool.
     """
-    with patch(REQUEST_PATH, return_value=fake_redirect("http://localhost:4201")):
+    with patch(REQUEST_PATH,
+               return_value=fake_redirect("http://localhost:4201")):
         client = Client(servers="localhost:4200")
 
         # Don't try to print the exception or use `match`, otherwise
@@ -203,20 +198,22 @@ def test_server_infos():
 
 def test_server_infos_401():
     """
-    Verify that when a 401 status code is returned, a `ProgrammingError` is raised.
+    Verify that when a 401 status code is returned, a `ProgrammingError`
+    is raised.
     """
     response = fake_response(401, "Unauthorized", "text/html")
     with patch(REQUEST_PATH, return_value=response):
         client = Client(servers="localhost:4200")
-        with pytest.raises(ProgrammingError, match="401 Client Error: Unauthorized"):
+        with pytest.raises(ProgrammingError,
+                           match="401 Client Error: Unauthorized"):
             client.server_infos("http://localhost:4200")
 
 
 def test_bad_bulk_400():
     """
-    Verify that a 400 response when doing a bulk request raises a `ProgrammingException` with
-    the error message of the response object's key `error_message`, several error messages can
-    be returned by the database.
+    Verify that a 400 response when doing a bulk request raises
+    a `ProgrammingException` with the error message of the response object's
+    key `error_message`, several error messages can be returned by the database.
     """
     response = fake_response(400, "Bad Request")
     response.data = json.dumps(
@@ -233,7 +230,8 @@ def test_bad_bulk_400():
 
     client = Client(servers="localhost:4200")
     with patch(REQUEST_PATH, return_value=response):
-        with pytest.raises(ProgrammingError, match='an error occurred\nanother error'):
+        with pytest.raises(ProgrammingError,
+                           match='an error occurred\nanother error'):
             client.sql(
                 "Insert into users (name) values(?)",
                 bulk_parameters=[["douglas"], ["monthy"]]
@@ -247,7 +245,8 @@ def test_socket_options_contain_keepalive():
     server = "http://localhost:4200"
     client = Client(servers=server)
     conn_kw = client.server_pool[server].pool.conn_kw
-    assert (socket.SOL_SOCKET, socket.SO_KEEPALIVE, 1) in conn_kw["socket_options"]
+    assert ((socket.SOL_SOCKET, socket.SO_KEEPALIVE, 1)
+            in conn_kw["socket_options"])
 
 
 def test_duplicate_key_error():
@@ -269,8 +268,8 @@ def test_client_multithreaded():
     Verify client multithreading using a pool of 5 Threads to emit commands to
      the multiple servers through one Client-instance.
 
-    Checks if the number of servers in _inactive_servers and _active_servers always
-    equals the number of servers initially given.
+    Checks if the number of servers in _inactive_servers and _active_servers
+    always equals the number of servers initially given.
 
     Note:
         This test is probabilistic and does not ensure that the
@@ -295,8 +294,9 @@ def test_client_multithreaded():
 
     def worker():
         """
-        Worker that sends many requests, if the `num_server` is not expected at some point
-        an assertion will be added to the shared error queue.
+        Worker that sends many requests, if the `num_server` is not the
+        expected value at some point, an assertion will be added to the shared
+        error queue.
         """
         gate.wait()  # wait for the others
         expected_num_servers = len(servers)
@@ -365,9 +365,12 @@ def test_params():
 
 def test_client_ca():
     """
-    Verify that if env variable `REQUESTS_CA_BUNDLE` is set, certs are loaded into the pool.
+    Verify that if env variable `REQUESTS_CA_BUNDLE` is set,  certs are
+    loaded into the pool.
     """
-    with patch.dict(os.environ, dict(REQUEST_PATH=certifi.where()), clear=True):
+    with patch.dict(os.environ,
+                    {"REQUEST_PATH": certifi.where()},
+                    clear=True):
         client = Client("http://127.0.0.1:4200")
         assert 'ca_certs' in client._pool_kw
 
@@ -388,8 +391,8 @@ def test_remove_certs_for_non_https():
 
 def test_keep_alive(serve_http):
     """
-    Verify that when launching several requests, the connection is kept alive and
-    successfully terminates.
+    Verify that when launching several requests, the connection is kept
+    alive and successfully terminates.
 
     This uses a real http sever that mocks CrateDB-like responses.
     """
@@ -497,6 +500,7 @@ class SharedStateRequestHandler(BaseHTTPRequestHandler):
     def do_GET(self):
         pass
 
+
 def test_default_schema(serve_http):
     """
     Verify that the schema is correctly sent.
@@ -506,6 +510,7 @@ def test_default_schema(serve_http):
         with connect(url, schema=test_schema) as conn:
             conn.client.sql("select 1;")
         assert server.SHARED.get("schema") == test_schema
+
 
 def test_credentials(serve_http):
     """

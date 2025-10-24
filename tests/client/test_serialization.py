@@ -20,29 +20,30 @@
 # software solely pursuant to the terms of the relevant commercial agreement.
 
 """
-Tests for serializing data, typically python objects into CrateDB-sql compatible structures.
+Tests for serializing data, typically python objects
+ into CrateDB-sql compatible structures.
 """
 import datetime
-
+import datetime as dt
 import uuid
 from decimal import Decimal
-from unittest.mock import patch, MagicMock
-import datetime as dt
+from unittest.mock import MagicMock, patch
 
-from crate.client.http import json_dumps, Client
+from crate.client.http import Client, json_dumps
 from tests.conftest import REQUEST_PATH, fake_response
 
 
 def test_data_is_serialized():
     """
-    Verify that when a request is issued, `json_dumps` is called with the right parameters
-    and that a requests gets the output from json_dumps, this verifies the entire
-    serialization call chain, so in the following tests we can just test `json_dumps` and ignore
+    Verify that when a request is issued, `json_dumps` is called with
+    the right parameters and that a requests gets the output from json_dumps,
+    this verifies the entire serialization call chain, so in the following
+    tests we can just test `json_dumps` and ignore
     `Client` altogether.
     """
     mock = MagicMock(spec=bytes)
 
-    with patch('crate.client.http.json_dumps', return_value=mock) as json_dumps:
+    with patch('crate.client.http.json_dumps', return_value=mock) as f:
         with patch(REQUEST_PATH, return_value=fake_response(200)) as request:
             client = Client(servers="localhost:4200")
             client.sql(
@@ -53,14 +54,15 @@ def test_data_is_serialized():
             )
 
             # Verify json_dumps is called with the right parameters.
-            json_dumps.assert_called_once_with(
+            f.assert_called_once_with(
                 {
                     'stmt': 'insert into t (a, b) values (?, ?)',
                     'args': (datetime.datetime(2025, 10, 23, 11, 0), 'ss')
                 }
             )
 
-            # Verify that the output of json_dumps is used as call argument for a request.
+            # Verify that the output of json_dumps is used as
+            # call argument for a request.
             assert request.call_args[1]['data'] is mock
 
 
@@ -90,11 +92,12 @@ def test_decimal_serialization():
     """
 
     data = Decimal(0.12)
+    expected = b'"0.11999999999999999555910790149937383830547332763671875"'
     result = json_dumps(data)
     assert isinstance(result, bytes)
 
     # Question: Is this deterministic in every Python release?
-    assert result == b'"0.11999999999999999555910790149937383830547332763671875"'
+    assert result == expected
 
 
 def test_date_serialization():
@@ -108,9 +111,13 @@ def test_date_serialization():
 
 def test_uuid_serialization():
     """
-    Verify that a `uuid.UUID` can be serialized. We do not care about specific uuid versions,
-    just the object that is re-used across all versions of the uuid module.
+    Verify that a `uuid.UUID` can be serialized.
+
+    We do not care about specific uuid versions, just the object that is
+    re-used across all versions of the uuid module.
     """
-    data = uuid.UUID(bytes=(50583033507982468033520929066863110751).to_bytes(16), version=4)
+    data = uuid.UUID(
+        bytes=(50583033507982468033520929066863110751).to_bytes(16),
+        version=4)
     result = json_dumps(data)
     assert result == b'"260df019-a183-431f-ad46-115ccdf12a5f"'

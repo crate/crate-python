@@ -21,6 +21,7 @@
 
 import json
 import multiprocessing
+import os
 
 import queue
 import random
@@ -51,7 +52,7 @@ from crate.client.http import (
     _get_socket_opts,
     _remove_certs_for_non_https,
 )
-from tests.client.utils import temp_env
+
 from tests.conftest import REQUEST_PATH, fake_response
 
 mocked_request = MagicMock(spec=urllib3.response.HTTPResponse)
@@ -379,7 +380,7 @@ def test_client_ca():
     """
     Verify that if env variable `REQUESTS_CA_BUNDLE` is set, certs are loaded into the pool.
     """
-    with temp_env(REQUESTS_CA_BUNDLE=certifi.where()):
+    with patch.dict(os.environ, dict(REQUEST_PATH=certifi.where()), clear=True):
         client = Client("http://127.0.0.1:4200")
         assert 'ca_certs' in client._pool_kw
 

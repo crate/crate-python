@@ -21,7 +21,7 @@
 
 import datetime
 from ipaddress import IPv4Address
-from unittest import TestCase, mock
+from unittest import mock
 import pytest
 
 from crate.client.exceptions import ProgrammingError

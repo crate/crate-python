@@ -20,7 +20,7 @@
 # software solely pursuant to the terms of the relevant commercial agreement.
 
 import json
-import multiprocessing
+
 import os
 
 import queue
@@ -31,10 +31,10 @@ import time
 
 from base64 import b64decode
 
-from http.server import BaseHTTPRequestHandler, HTTPServer
-from multiprocessing.context import ForkProcess
+from http.server import BaseHTTPRequestHandler
+
 from threading import Event, Thread
-from unittest import TestCase
+
 from unittest.mock import MagicMock, patch
 from urllib.parse import parse_qs, urlparse
 
@@ -42,6 +42,7 @@ import certifi
 import pytest
 import urllib3.exceptions
 
+from crate.client.connection import connect
 from crate.client.exceptions import (
     ConnectionError,
     IntegrityError,
@@ -56,20 +57,6 @@ from crate.client.http import (
 from tests.conftest import REQUEST_PATH, fake_response
 
 mocked_request = MagicMock(spec=urllib3.response.HTTPResponse)
-
-
-def fake_request(response=None):
-    def request(*args, **kwargs):
-        if isinstance(response, list):
-            resp = response.pop(0)
-            response.append(resp)
-            return resp
-        elif response:
-            return response
-        else:
-            return mocked_request
-
-    return request
 
 
 def fake_redirect(location: str) -> MagicMock:
@@ -92,7 +79,7 @@ def duplicate_key_exception():
     return r
 
 
-def fail_sometimes(*args, **kwargs) -> MagicMock:
+def fail_sometimes() -> MagicMock:
     """
     Function that fails with a 50% chance. It either returns a successful mocked
     response or raises an urllib3 exception.
@@ -140,9 +127,9 @@ def test_http_error_is_re_raised():
     """
     client = Client()
 
-    with patch(REQUEST_PATH, side_effect=Exception):
-        client.sql("select foo")
-        with pytest.raises(ProgrammingError) as e:
+    exception_msg = 'some exception did happen'
+    with patch(REQUEST_PATH, side_effect=Exception(exception_msg)):
+        with pytest.raises(ProgrammingError, match=exception_msg):
             client.sql("select foo")
 
 
@@ -270,7 +257,7 @@ def test_duplicate_key_error():
     """
     expected_error_msg = (r"DuplicateKeyException\[A document with "
                           r"the same primary key exists already\]")
-    with patch(REQUEST_PATH, fake_request(duplicate_key_exception())):
+    with patch(REQUEST_PATH, return_value=duplicate_key_exception()):
         client = Client(servers="localhost:4200")
         with pytest.raises(IntegrityError, match=expected_error_msg):
             client.sql("INSERT INTO testdrive (foo) VALUES (42)")
@@ -356,7 +343,7 @@ def test_client_multithreaded():
 
 def test_params():
     """
-    Verify client parameters translate correctly to query parameters..
+    Verify client parameters translate correctly to query parameters.
     """
     client = Client(["127.0.0.1:4200"], error_trace=True)
     parsed = urlparse(client.path)
@@ -369,7 +356,7 @@ def test_params():
     parsed = urlparse(client.path)
     params = parse_qs(parsed.query)
 
-    # Default is FALSE
+    # Default is False
     assert 'error_trace' not in params
     assert params["types"] == ["true"]
 
@@ -399,76 +386,78 @@ def test_remove_certs_for_non_https():
     assert 'foobar' in d
 
 
-class ClientAddressRequestHandler(BaseHTTPRequestHandler):
+def test_keep_alive(serve_http):
     """
-    http handler for use with HTTPServer
+    Verify that when launching several requests, the connection is kept alive and
+    successfully terminates.
 
-    returns client host and port in crate-conform-responses
-    """
-
-    protocol_version = "HTTP/1.1"
-
-    def do_GET(self):
-        content_length = self.headers.get("content-length")
-        if content_length:
-            self.rfile.read(int(content_length))
-        response = json.dumps(
-            {
-                "cols": ["host", "port"],
-                "rows": [self.client_address[0], self.client_address[1]],
-                "rowCount": 1,
-            }
-        )
-        self.send_response(200)
-        self.send_header("Content-Length", len(response))
-        self.send_header("Content-Type", "application/json; charset=UTF-8")
-        self.end_headers()
-        self.wfile.write(response.encode("UTF-8"))
-
-    do_POST = do_PUT = do_DELETE = do_HEAD = do_GET
-
-
-class KeepAliveClientTest(TestCase):
-    server_address = ("127.0.0.1", 65535)
-
-    def __init__(self, *args, **kwargs):
-        super(KeepAliveClientTest, self).__init__(*args, **kwargs)
-        self.server_process = ForkProcess(target=self._run_server)
-
-    def setUp(self):
-        super(KeepAliveClientTest, self).setUp()
-        self.client = Client(["%s:%d" % self.server_address])
-        self.server_process.start()
-        time.sleep(0.10)
-
-    def tearDown(self):
-        self.server_process.terminate()
-        self.client.close()
-        super(KeepAliveClientTest, self).tearDown()
-
-    def _run_server(self):
-        self.server = HTTPServer(
-            self.server_address, ClientAddressRequestHandler
-        )
-        self.server.handle_request()
-
-    def test_client_keepalive(self):
-        for _ in range(10):
-            result = self.client.sql("select * from fake")
-
-            another_result = self.client.sql("select again from fake")
-            self.assertEqual(result, another_result)
-
-
-class TimeoutRequestHandler(BaseHTTPRequestHandler):
-    """
-    HTTP handler for use with TestingHTTPServer
-    updates the shared counter and waits so that the client times out
+    This uses a real http sever that mocks CrateDB-like responses.
     """
 
-    def do_POST(self):
-        self.server.SHARED["count"] += 1
-        time.sleep(5)
+    class ClientAddressRequestHandler(BaseHTTPRequestHandler):
+        """
+        http handler for use with HTTPServer
+
+        returns client host and port in crate-conform-responses
+        """
+
+        protocol_version = "HTTP/1.1"
+
+        def do_GET(self):
+            content_length = self.headers.get("content-length")
+            if content_length:
+                self.rfile.read(int(content_length))
+
+            response = json.dumps(
+                {
+                    "cols": ["host", "port"],
+                    "rows": [self.client_address[0], self.client_address[1]],
+                    "rowCount": 1,
+                }
+            )
+
+            self.send_response(200)
+            self.send_header("Content-Length", str(len(response)))
+            self.send_header("Content-Type", "application/json; charset=UTF-8")
+            self.end_headers()
+            self.wfile.write(response.encode("UTF-8"))
+
+        do_POST = do_GET
+
+    with serve_http(ClientAddressRequestHandler) as (_, url):
+        with connect(url) as conn:
+            client = conn.client
+            for _ in range(25):
+                result = client.sql("select * from fake")
+
+                another_result = client.sql("select again from fake")
+                assert result == another_result
+
+
+def test_no_retry_on_read_timeout(serve_http):
+    timeout = 1
+
+    class TimeoutRequestHandler(BaseHTTPRequestHandler):
+        """
+        HTTP handler for use with TestingHTTPServer
+        updates the shared counter and waits so that the client times out
+        """
+
+        def do_POST(self):
+            self.server.SHARED["count"] += 1
+            time.sleep(timeout + 0.1)
+
+        def do_GET(self):
+            pass
+
+    # Start the http server.
+    with serve_http(TimeoutRequestHandler) as (server, url):
+        # Connect to the server.
+        with connect(url, timeout=timeout) as conn:
+            # We expect it to raise a `ConnectionError`
+            with pytest.raises(ConnectionError, match="Read timed out"):
+                conn.client.sql("select * from fake")
+            assert server.SHARED.get('count') == 1
 
 
 class SharedStateRequestHandler(BaseHTTPRequestHandler):
@@ -505,128 +494,51 @@ class SharedStateRequestHandler(BaseHTTPRequestHandler):
         self.end_headers()
         self.wfile.write(response.encode("utf-8"))
 
+    def do_GET(self):
+        pass
 
-class TestingHTTPServer(HTTPServer):
+def test_default_schema(serve_http):
     """
-    http server providing a shared dict
+    Verify that the schema is correctly sent.
     """
+    test_schema = 'some_schema'
+    with serve_http(SharedStateRequestHandler) as (server, url):
+        with connect(url, schema=test_schema) as conn:
+            conn.client.sql("select 1;")
+        assert server.SHARED.get("schema") == test_schema
 
-    manager = multiprocessing.Manager()
-    SHARED = manager.dict()
-    SHARED["count"] = 0
-    SHARED["usernameFromXUser"] = None
-    SHARED["username"] = None
-    SHARED["password"] = None
-    SHARED["schema"] = None
+def test_credentials(serve_http):
+    """
+    Verify credentials are correctly set in the connection and client.
+    """
+    with serve_http(SharedStateRequestHandler) as (server, url):
+        # Nothing default
+        with connect(url) as conn:
+            assert not conn.client.username
+            assert not conn.client.password
 
-    @classmethod
-    def run_server(cls, server_address, request_handler_cls):
-        cls(server_address, request_handler_cls).serve_forever()
+            conn.client.sql("select 1;")
+            assert not server.SHARED["usernameFromXUser"]
+            assert not server.SHARED["username"]
+            assert not server.SHARED["password"]
 
+        # Just the username
+        username = "some_username"
+        with connect(url, username=username) as conn:
+            assert conn.client.username == username
+            assert not conn.client.password
 
-class TestingHttpServerTestCase(TestCase):
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        self.assertIsNotNone(self.request_handler)
-        self.server_address = ("127.0.0.1", random.randint(65000, 65535))
-        self.server_process = ForkProcess(
-            target=TestingHTTPServer.run_server,
-            args=(self.server_address, self.request_handler),
-        )
+            conn.client.sql("select 2;")
+            assert server.SHARED["usernameFromXUser"] == username
+            assert server.SHARED["username"] == username
+            assert not server.SHARED["password"]
 
-    def setUp(self):
-        self.server_process.start()
-        self.wait_for_server()
-
-    def wait_for_server(self):
-        while True:
-            try:
-                with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
-                    s.connect(self.server_address)
-            except Exception:
-                time.sleep(0.25)
-            else:
-                break
-
-    def tearDown(self):
-        self.server_process.terminate()
-
-    def clientWithKwargs(self, **kwargs):
-        return Client(["%s:%d" % self.server_address], timeout=1, **kwargs)
-
-
-class RetryOnTimeoutServerTest(TestingHttpServerTestCase):
-    request_handler = TimeoutRequestHandler
-
-    def setUp(self):
-        super().setUp()
-        self.client = self.clientWithKwargs()
-
-    def tearDown(self):
-        super().tearDown()
-        self.client.close()
-
-    def test_no_retry_on_read_timeout(self):
-        try:
-            self.client.sql("select * from fake")
-        except ConnectionError as e:
-            self.assertIn(
-                "Read timed out",
-                e.message,
-                msg="Error message must contain: Read timed out",
-            )
-        self.assertEqual(TestingHTTPServer.SHARED["count"], 1)
-
-
-class TestDefaultSchemaHeader(TestingHttpServerTestCase):
-    request_handler = SharedStateRequestHandler
-
-    def setUp(self):
-        super().setUp()
-        self.client = self.clientWithKwargs(schema="my_custom_schema")
-
-    def tearDown(self):
-        self.client.close()
-        super().tearDown()
-
-    def test_default_schema(self):
-        self.client.sql("SELECT 1")
-        self.assertEqual(TestingHTTPServer.SHARED["schema"], "my_custom_schema")
-
-
-class TestUsernameSentAsHeader(TestingHttpServerTestCase):
-    request_handler = SharedStateRequestHandler
-
-    def setUp(self):
-        super().setUp()
-        self.clientWithoutUsername = self.clientWithKwargs()
-        self.clientWithUsername = self.clientWithKwargs(username="testDBUser")
-        self.clientWithUsernameAndPassword = self.clientWithKwargs(
-            username="testDBUser", password="test:password"
-        )
-
-    def tearDown(self):
-        self.clientWithoutUsername.close()
-        self.clientWithUsername.close()
-        self.clientWithUsernameAndPassword.close()
-        super().tearDown()
-
-    def test_username(self):
-        self.clientWithoutUsername.sql("select * from fake")
-        self.assertEqual(TestingHTTPServer.SHARED["usernameFromXUser"], None)
-        self.assertEqual(TestingHTTPServer.SHARED["username"], None)
-        self.assertEqual(TestingHTTPServer.SHARED["password"], None)
-
-        self.clientWithUsername.sql("select * from fake")
-        self.assertEqual(
-            TestingHTTPServer.SHARED["usernameFromXUser"], "testDBUser"
-        )
-        self.assertEqual(TestingHTTPServer.SHARED["username"], "testDBUser")
-        self.assertEqual(TestingHTTPServer.SHARED["password"], None)
-
-        self.clientWithUsernameAndPassword.sql("select * from fake")
-        self.assertEqual(
-            TestingHTTPServer.SHARED["usernameFromXUser"], "testDBUser"
-        )
-        self.assertEqual(TestingHTTPServer.SHARED["username"], "testDBUser")
-        self.assertEqual(TestingHTTPServer.SHARED["password"], "test:password")
+        # Both username and password
+        password = 'some_password'
+        with connect(url, username=username, password=password) as conn:
+            assert conn.client.username == username
+            assert conn.client.password == password
+            conn.client.sql("select 3;")
+            assert server.SHARED["usernameFromXUser"] == username
+            assert server.SHARED["username"] == username
+            assert server.SHARED["password"] == password

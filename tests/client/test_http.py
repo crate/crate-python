@@ -21,7 +21,7 @@
 
 import json
 import multiprocessing
-import os
+
 import queue
 import random
 import socket
@@ -91,9 +91,12 @@ def duplicate_key_exception():
     return r
 
 
-def fail_sometimes(*args, **kwargs):
-    # random.randint(1, 10) % 2:
-    if random.randint(1, 100) % 10 == 0:
+def fail_sometimes(*args, **kwargs) -> MagicMock:
+    """
+    Function that fails with a 50% chance. It either returns a successful mocked
+    response or raises an urllib3 exception.
+    """
+    if random.randint(1, 10) % 2:
         raise urllib3.exceptions.MaxRetryError(None, "/_sql", "")
     return fake_response(200)
 

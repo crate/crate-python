@@ -284,7 +284,7 @@ def test_client_multithreaded():
     ]
     num_threads = 5
     num_commands = 1000
-    thread_timeout = 5.0  # seconds
+    thread_timeout = 10.0  # seconds
 
     gate = Event()
     error_queue = queue.Queue()

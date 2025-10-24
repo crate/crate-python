@@ -116,8 +116,8 @@ def test_uuid_serialization():
     We do not care about specific uuid versions, just the object that is
     re-used across all versions of the uuid module.
     """
+    uuid_int = 50583033507982468033520929066863110751
     data = uuid.UUID(
-        bytes=(50583033507982468033520929066863110751).to_bytes(16),
-        version=4)
+        bytes=uuid_int.to_bytes(16, byteorder='big'), version=4)
     result = json_dumps(data)
     assert result == b'"260df019-a183-431f-ad46-115ccdf12a5f"'

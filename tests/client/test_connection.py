@@ -1,6 +1,5 @@
 import datetime
-from unittest import TestCase
-from unittest.mock import patch, MagicMock
+from unittest.mock import MagicMock, patch
 
 from urllib3 import Timeout
 
@@ -15,6 +14,7 @@ def test_lowest_server_version():
     """
     Verify the lowest server version is correctly set.
     """
+    servers = "localhost:4200 localhost:4201 localhost:4202 localhost:4207"
     infos = [
         (None, None, "1.0.3"),
         (None, None, "5.5.2"),
@@ -22,7 +22,7 @@ def test_lowest_server_version():
         (None, None, "not a version"),
     ]
 
-    client = Client(servers="localhost:4200 localhost:4201 localhost:4202 localhost:4207")
+    client = Client(servers=servers)
     client.server_infos = lambda server: infos.pop()
     connection = connect(client=client)
     assert (1, 0, 3) == connection.lowest_server_version.version
@@ -30,7 +30,8 @@ def test_lowest_server_version():
 
 def test_invalid_server_version():
     """
-    Verify that when no correct version is set, the default (0, 0, 0) is returned.
+    Verify that when no correct version is set,
+    the default (0, 0, 0) is returned.
     """
     client = Client(servers="localhost:4200")
     client.server_infos = lambda server: (None, None, "No version")
@@ -42,11 +43,12 @@ def test_context_manager():
     """
     Verify the context manager implementation of `Connection`.
     """
-    with patch('crate.client.http.Client.close', return_value=MagicMock()) as close_func:
+    close_method = 'crate.client.http.Client.close'
+    with patch(close_method, return_value=MagicMock()) as close_func:
         with connect("localhost:4200") as conn:
-            assert conn._closed == False
+            assert not conn._closed
 
-        assert conn._closed == True
+        assert conn._closed
         # Checks that the close method of the client
         # is called when the connection is closed.
         close_func.assert_called_once()
@@ -69,7 +71,9 @@ def test_connection_mock():
     connection = connect(crate_host, client=mock)
 
     assert isinstance(connection, Connection)
-    assert connection.client.server_infos("foo") == ("localhost:4200", "my server", "0.42.0")
+    assert connection.client.server_infos("foo") == ("localhost:4200",
+                                                     "my server",
+                                                     "0.42.0")
 
 
 def test_with_timezone():

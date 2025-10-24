@@ -3,11 +3,10 @@ import socket
 import threading
 from contextlib import contextmanager
 from http.server import BaseHTTPRequestHandler, HTTPServer
-
-import urllib3
 from unittest.mock import MagicMock
 
 import pytest
+import urllib3
 
 import crate
 
@@ -39,7 +38,7 @@ def mocked_connection():
             cursor = mocked_connection.cursor()
             statement = "select * from locations where position = ?"
             cursor.execute(statement, 1)
-            mocked_connection.client.sql.assert_called_once_with(statement, 1, None)
+            mocked_connection.client.sql.called_with(statement, 1, None)
     """
     yield crate.client.connect(client=MagicMock(spec=crate.client.http.Client))
 
@@ -49,10 +48,12 @@ def mocked_connection():
 @pytest.fixture
 def serve_http():
     """
-    Returns a context manager that start an http server running in another thread that returns
-    CrateDB successful responses.
+    Returns a context manager that start an http server running
+    in another thread that returns CrateDB successful responses.
 
-    It accepts an optional parameter, the handler class, it has to be an instance of `BaseHTTPRequestHandler`
+    It accepts an optional parameter, the handler class, it has to be an
+    instance of `BaseHTTPRequestHandler`
+
     The port will be an unused random port.
 
     Example:
@@ -65,7 +66,7 @@ def serve_http():
 
     @contextmanager
     def _serve(handler_cls=BaseHTTPRequestHandler):
-        assert issubclass(handler_cls, BaseHTTPRequestHandler)
+        assert issubclass(handler_cls, BaseHTTPRequestHandler) # noqa: S101
         sock = socket.socket()
         sock.bind(("127.0.0.1", 0))
         host, port = sock.getsockname()
@@ -82,10 +83,6 @@ def serve_http():
         server = HTTPServer((host, port), handler_cls)
 
         server.SHARED = SHARED
-
-        # We could use a process, but starting a thread is faster.
-        # process = ForkProcess(target=server.serve_forever)
-        # process.start()
 
         thread = threading.Thread(target=server.serve_forever, daemon=False)
         thread.start()

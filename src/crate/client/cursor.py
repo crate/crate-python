@@ -236,7 +236,8 @@ class Cursor:
 
         # Process result rows with conversion.
         for row in self._result["rows"]:
-            yield [convert(value) for convert, value in zip(converters, row)]
+            yield [convert(value) for convert, value
+                   in zip(converters, row, strict=False)]
 
     @property
     def time_zone(self):

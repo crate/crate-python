@@ -61,7 +61,7 @@ jobs:
           ./devtools/setup_ci.sh
 
           # Bootstrap environment.
-          # source bootstrap.sh
+          source bootstrap.sh
           
           # Run linter.
           uv run ruff check .

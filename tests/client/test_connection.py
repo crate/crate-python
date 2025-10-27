@@ -1,10 +1,12 @@
 import datetime
 from unittest.mock import MagicMock, patch
 
+import pytest
 from urllib3 import Timeout
 
 from crate.client import connect
 from crate.client.connection import Connection
+from crate.client.exceptions import ProgrammingError
 from crate.client.http import Client
 
 from .settings import crate_host
@@ -27,6 +29,37 @@ def test_lowest_server_version():
     connection = connect(client=client)
     assert (1, 0, 3) == connection.lowest_server_version.version
 
+
+
+def test_connection_closes_access():
+    """
+    Verify that a connection closes on exit and that it also closes
+    the client.
+    """
+    with patch('crate.client.connection.Client',
+               spec=Client,
+               return_value=MagicMock()) as client:
+
+        conn = connect()
+        conn.close()
+
+        assert conn._closed
+        client.assert_called_once()
+
+        # Should raise an exception if
+        # we try to access a cursor now.
+        with pytest.raises(ProgrammingError):
+            conn.cursor()
+
+        with pytest.raises(ProgrammingError):
+            conn.commit()
+
+def test_connection_closes_context_manager():
+    """Verify that the context manager of the client closes the connection"""
+    with patch.object(connect, 'close', autospec=True) as close_fn:
+        with connect():
+            pass
+        close_fn.assert_called_once()
 
 def test_invalid_server_version():
     """

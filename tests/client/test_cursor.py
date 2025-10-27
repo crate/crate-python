@@ -141,7 +141,6 @@ def test_execute_with_args(mocked_connection):
     cursor.execute(statement, 1)
     mocked_connection.client.sql.assert_called_once_with(statement, 1, None)
 
-
 def test_execute_with_bulk_args(mocked_connection):
     """
     Verify that `cursor.execute` is called with the right parameters
@@ -177,10 +176,9 @@ def test_execute_custom_converter(mocked_connection):
         "duration": 123,
     }
 
-    with mock.patch.object(
-            mocked_connection.client,
-            'sql',
-            return_value=response):
+    with mock.patch.object(mocked_connection.client,
+                           'sql',
+                           return_value=response):
         cursor.execute("")
         result = cursor.fetchall()
 
@@ -222,8 +220,7 @@ def test_execute_with_converter_and_invalid_data_type(mocked_connection):
     with mock.patch.object(
             mocked_connection.client,
             'sql',
-            return_value=response
-    ):
+            return_value=response):
         cursor.execute("")
         with pytest.raises(ValueError) as e:
             cursor.fetchone()
@@ -240,10 +237,9 @@ def test_execute_array_with_converter(mocked_connection):
         "rowcount": 1,
         "duration": 123,
     }
-    with mock.patch.object(
-            mocked_connection.client,
-            'sql',
-            return_value=response):
+    with mock.patch.object(mocked_connection.client,
+                           'sql',
+                           return_value=response):
         cursor.execute("")
         result = cursor.fetchone()
 

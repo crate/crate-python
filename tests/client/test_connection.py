@@ -75,6 +75,12 @@ def test_connection_mock():
                                                      "my server",
                                                      "0.42.0")
 
+def test_default_repr():
+    """
+    Verify default repr dunder method.
+    """
+    conn = connect()
+    assert repr(conn) == "<Connection <Client ['http://127.0.0.1:4200']>>"
 
 def test_with_timezone():
     """

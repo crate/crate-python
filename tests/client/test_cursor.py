@@ -38,6 +38,45 @@ from crate.client import connect
 from crate.client.converter import DataType, DefaultTypeConverter
 
 
+def test_cursor_fetch(mocked_connection):
+    """Verify fetchone/fetchmany behaviour"""
+    cursor = mocked_connection.cursor()
+    response = {
+        "col_types": [4, 5],
+        "cols": ["name", "address"],
+        "rows": [["foo", "10.10.10.1"], ["bar", "10.10.10.2"]],
+        "rowcount": 2,
+        "duration": 123,
+    }
+    with mock.patch.object(mocked_connection.client,
+                           'sql',
+                           return_value=response):
+        cursor.execute("")
+        assert cursor.fetchone() == ['foo', '10.10.10.1']
+        assert cursor.fetchmany() == [["bar", "10.10.10.2"], ]
+
+
+def test_cursor_executemany(mocked_connection):
+    """
+    Verify executemany.
+    """
+    response = {
+        "col_types": [],
+        "cols": [],
+        "duration": 123,
+        "results": [{'rowcount': 1, 'rowcount:': 1}]
+    }
+    with mock.patch.object(mocked_connection.client,
+                           'sql',
+                           return_value=response):
+
+        cursor = mocked_connection.cursor()
+        result = cursor.executemany("some sql", ())
+
+        assert isinstance(result, list)
+        assert response['results'] == result
+
+
 def test_create_with_timezone_as_datetime_object(mocked_connection):
     """
      The cursor can return timezone-aware `datetime` objects when requested.
@@ -140,6 +179,7 @@ def test_execute_with_args(mocked_connection):
     statement = "select * from locations where position = ?"
     cursor.execute(statement, 1)
     mocked_connection.client.sql.assert_called_once_with(statement, 1, None)
+
 
 def test_execute_with_bulk_args(mocked_connection):
     """
@@ -414,6 +454,11 @@ def test_cursor_close(mocked_connection):
 
     assert cursor._closed is True
     assert not cursor._result
+    assert cursor.duration == -1
+
+    with pytest.raises(ProgrammingError, match='Connection closed'):
+        mocked_connection.close()
+        cursor.execute("")
 
 
 def test_cursor_closes_access(mocked_connection):

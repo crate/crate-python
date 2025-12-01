@@ -1,4 +1,4 @@
 setuptools<80.3
 urllib3<2.4
-zc.buildout==3.3
+zc.buildout==5.1.1
 zope.interface==6.4.post2

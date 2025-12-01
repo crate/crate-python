@@ -18,7 +18,6 @@
 # However, if you have executed another commercial license agreement
 # with Crate these terms will supersede the license and you may use the
 # software solely pursuant to the terms of the relevant commercial agreement.
-
 import datetime as dt
 import json
 import multiprocessing
@@ -352,6 +351,18 @@ class HttpClientTest(TestCase):
 
         data = json.loads(request.call_args[1]["data"])
         self.assertEqual(data["args"], [str(uid)])
+        client.close()
+
+    @patch(REQUEST, autospec=True)
+    def test_time_serialization(self, request):
+        client = Client(servers="localhost:4200")
+        request.return_value = fake_response(200)
+
+        obj = dt.datetime.now().time()
+        client.sql("insert into my_table (str_col) values (?)", (obj,))
+
+        data = json.loads(request.call_args[1]["data"])
+        self.assertEqual(data["args"], [str(obj)])
         client.close()
 
     @patch(REQUEST, fake_request(duplicate_key_exception()))

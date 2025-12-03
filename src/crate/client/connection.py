@@ -208,7 +208,7 @@ class Connection:
         return lowest or Version("0.0.0")
 
     def __repr__(self):
-        return "<Connection {0}>".format(repr(self.client))
+        return f"<{self.__class__.__qualname__} {self.client!r}>"
 
     def __enter__(self):
         return self

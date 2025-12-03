@@ -1,3 +1,55 @@
+[build-system]
+requires = ["hatchling >= 1.26"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/crate"]
+
+[tool.hatch.version]
+path = "src/crate/client/__init__.py"
+
+[project]
+name = "crate-python"
+dynamic = ["version"]
+description = "CrateDB Python Client"
+authors = [{ name = "Crate.io", email = "office@crate.io" }]
+requires-python = ">=3.10"
+readme = "README.rst"
+license = { file = "LICENSE"}
+classifiers = [
+        "Development Status :: 5 - Production/Stable",
+        "Intended Audience :: Developers",
+        "License :: OSI Approved :: Apache Software License",
+        "Operating System :: OS Independent",
+        "Programming Language :: Python",
+        "Programming Language :: Python :: 3",
+        "Programming Language :: Python :: 3.10",
+        "Programming Language :: Python :: 3.11",
+        "Programming Language :: Python :: 3.12",
+        "Programming Language :: Python :: 3.13",
+        "Programming Language :: Python :: Implementation :: CPython",
+        "Programming Language :: Python :: Implementation :: PyPy",
+        "Topic :: Database",
+]
+dependencies = [
+    "orjson>=3.11.3",
+    "urllib3>=2.5.0",
+]
+
+[dependency-groups]
+dev = [
+    "certifi>=2025.10.5",
+    "coverage>=7.11.0",
+    "mypy>=1.18.2",
+    "pytest>=8.4.2",
+    "pytz>=2025.2",
+    "ruff>=0.14.2",
+    "setuptools>=80.9.0",
+    "stopit>=1.1.2",
+    "verlib2>=0.3.1",
+]
+
+
 [tool.mypy]
 mypy_path = "src"
 packages = [
@@ -18,65 +70,67 @@ non_interactive = true
 line-length = 80
 
 extend-exclude = [
-  "/example_*",
+    "/example_*",
 ]
 
 lint.select = [
-  # Builtins
-  "A",
-  # Bugbear
-  "B",
-  # comprehensions
-  "C4",
-  # Pycodestyle
-  "E",
-  # eradicate
-  "ERA",
-  # Pyflakes
-  "F",
-  # isort
-  "I",
-  # pandas-vet
-  "PD",
-  # return
-  "RET",
-  # Bandit
-  "S",
-  # print
-  "T20",
-  "W",
-  # flake8-2020
-  "YTT",
+    # Builtins
+    "A",
+    # Bugbear
+    "B",
+    # comprehensions
+    "C4",
+    # Pycodestyle
+    "E",
+    # eradicate
+    "ERA",
+    # Pyflakes
+    "F",
+    # isort
+    "I",
+    # pandas-vet
+    "PD",
+    # return
+    "RET",
+    # Bandit
+    "S",
+    # print
+    "T20",
+    "W",
+    # flake8-2020
+    "YTT",
 ]
 
 lint.extend-ignore = [
-  # Unnecessary variable assignment before `return` statement
-  "RET504",
-  # Unnecessary `elif` after `return` statement
-  "RET505",
+    # Unnecessary variable assignment before `return` statement
+    "RET504",
+    # Unnecessary `elif` after `return` statement
+    "RET505",
 ]
 
 lint.per-file-ignores."example_*" = [
-  "ERA001", # Found commented-out code
-  "T201",   # Allow `print`
+    "ERA001", # Found commented-out code
+    "T201", # Allow `print`
 ]
 lint.per-file-ignores."devtools/*" = [
-  "T201",   # Allow `print`
+    "T201", # Allow `print`
 ]
 lint.per-file-ignores."examples/*" = [
-  "ERA001", # Found commented-out code
-  "T201",   # Allow `print`
+    "ERA001", # Found commented-out code
+    "T201", # Allow `print`
 ]
 lint.per-file-ignores."tests/*" = [
-  "S106",  # Possible hardcoded password assigned to argument: "password"
-  "S311",  # Standard pseudo-random generators are not suitable for cryptographic purposes
+    "S101", # Asserts.
+    "S105", # Possible hardcoded password assigned to: "password"
+    "S106", # Possible hardcoded password assigned to argument: "password"
+    "S311", # Standard pseudo-random generators are not suitable for cryptographic purposes
 ]
 lint.per-file-ignores."src/crate/client/{connection.py,http.py}" = [
-  "A004",  # Import `ConnectionError` is shadowing a Python builtin
-  "A005",  # Import `ConnectionError` is shadowing a Python builtin
+    "A004", # Import `ConnectionError` is shadowing a Python builtin
+    "A005", # Import `ConnectionError` is shadowing a Python builtin
 ]
 lint.per-file-ignores."tests/client/test_http.py" = [
-  "A004",  # Import `ConnectionError` is shadowing a Python builtin
+    "A004", # Import `ConnectionError` is shadowing a Python builtin
 ]
 
 

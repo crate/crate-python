@@ -79,6 +79,36 @@ def test_cursor_description(mocked_connection):
 
         assert cursor.description is None
 
+
+def test_cursor_rowcount(mocked_connection):
+    """ Verify the logic of cursor.rowcount"""
+    cursor = mocked_connection.cursor()
+    response = {
+        "col_types": [4, 5],
+        "cols": ["name", "address"],
+        "rows": [["foo", "10.10.10.1"], ["bar", "10.10.10.2"]],
+        "rowcount": 2,
+        "duration": 123,
+    }
+    with mock.patch.object(
+        mocked_connection.client, "sql", return_value=response
+    ):
+        cursor.execute("")
+        assert cursor.rowcount == len(response["rows"])
+
+        cursor._result = None
+        assert cursor.rowcount == -1
+
+        cursor.execute("")
+        cursor._result = {}
+        assert cursor.rowcount == -1
+
+        cursor.execute("")
+        cursor.close()
+        assert cursor.rowcount == -1
+
+
+
 def test_cursor_executemany(mocked_connection):
     """
     Verify executemany.

@@ -5,8 +5,10 @@ from unittest.mock import patch
 
 import urllib3
 
-from crate.client.http import _update_pool_kwargs_for_ssl_minimum_version
-from crate.client.http import super_len
+from crate.client.http import (
+    _update_pool_kwargs_for_ssl_minimum_version,
+    super_len,
+)
 
 
 def test_super_len_all():

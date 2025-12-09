@@ -57,6 +57,7 @@ def test_cursor_fetch(mocked_connection):
             ["bar", "10.10.10.2"],
         ]
 
+
 def test_cursor_description(mocked_connection):
     cursor = mocked_connection.cursor()
     response = {
@@ -71,8 +72,10 @@ def test_cursor_description(mocked_connection):
     ):
         cursor.execute("")
         assert len(cursor.description) == len(response["cols"])
-        assert len(cursor.description[0]) == 7 # It's 7 by convention.
-        for expected_name, name in zip(response["cols"], cursor.description):
+        assert len(cursor.description[0]) == 7  # It's 7 by convention.
+        for expected_name, name in zip(
+            response["cols"], cursor.description, strict=False
+        ):
             assert expected_name == name[0]
 
         cursor.close()
@@ -81,7 +84,7 @@ def test_cursor_description(mocked_connection):
 
 
 def test_cursor_rowcount(mocked_connection):
-    """ Verify the logic of cursor.rowcount"""
+    """Verify the logic of cursor.rowcount"""
     cursor = mocked_connection.cursor()
     response = {
         "col_types": [4, 5],
@@ -106,7 +109,6 @@ def test_cursor_rowcount(mocked_connection):
         cursor.execute("")
         cursor.close()
         assert cursor.rowcount == -1
-
 
 
 def test_cursor_executemany(mocked_connection):

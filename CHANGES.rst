@@ -4,6 +4,13 @@ Changes for crate
 
 Unreleased
 ==========
+- Modernize project to latest practices:
+    * Use `pyproject.toml` instead of `setup.py`.
+    * Use hatchling instead of buildout to build project.
+    * Use pytest instead of unittests and zope runner (decreasing dependencies).
+    * Make `uv` the recommended tool for local development.
+    * Simplify versioning when creating a new release.
+    * Increase the number of tests and overall coverage.
 
 2025/01/30 2.0.0
 ================

@@ -326,7 +326,10 @@ def _pool_kw_args(
     return kw
 
 
-def _remove_certs_for_non_https(server, kwargs):
+def _remove_certs_for_non_https(server: str, kwargs: dict) -> dict:
+    """
+    Removes certificates for http requests.
+    """
     if server.lower().startswith("https"):
         return kwargs
     used_ssl_args = SSL_ONLY_ARGS & set(kwargs.keys())
@@ -435,6 +438,7 @@ class Client:
         if servers and not username:
             try:
                 url = urlparse(servers[0])
+
                 if url.username is not None:
                     username = url.username
                 if url.password is not None:

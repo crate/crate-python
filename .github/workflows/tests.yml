@@ -49,32 +49,32 @@ jobs:
       - name: Set up uv
         uses: astral-sh/setup-uv@v6
         with:
-          cache-dependency-glob: |
-            setup.py
           cache-suffix: ${{ matrix.python-version }}
           enable-cache: true
           version: "latest"
-
+      - name: Setup env
+        run: uv sync
       - name: Invoke tests
         run: |
-
+        
           # Propagate build matrix information.
           ./devtools/setup_ci.sh
 
           # Bootstrap environment.
           source bootstrap.sh
-
+          
+          # Run linter.
+          uv run ruff check .
+          
+          # Run type testing
+          uv run mypy
+          
           # Report about the test matrix slot.
           echo "Invoking tests with CrateDB ${CRATEDB_VERSION}"
-
-          # Run linter.
-          poe lint
+          uv run coverage run -m pytest
           
-          # Run tests.
-          coverage run bin/test -vvv
-
           # Set the stage for uploading the coverage report.
-          coverage xml
+          uv run coverage xml
 
       # https://github.com/codecov/codecov-action
       - name: Upload coverage results to Codecov

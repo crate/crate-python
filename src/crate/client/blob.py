@@ -56,7 +56,7 @@ class BlobContainer:
             read.
         :return:
             The hex digest of the uploaded blob if not provided in the call.
-            Otherwise a boolean indicating if the blob has been newly created.
+            Otherwise, a boolean indicating if the blob has been newly created.
         """
 
         if digest:

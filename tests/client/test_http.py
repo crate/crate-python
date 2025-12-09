@@ -37,7 +37,9 @@ import urllib3.exceptions
 
 from crate.client.connection import connect
 from crate.client.exceptions import (
+    BlobLocationNotFoundException,
     ConnectionError,
+    DigestNotFoundException,
     IntegrityError,
     ProgrammingError,
 )
@@ -386,7 +388,7 @@ def test_client_multithreaded():
         pytest.fail(first_error_trace)
 
 
-def test_params():
+def test_client_params():
     """
     Verify client parameters translate correctly to query parameters.
     """
@@ -416,6 +418,119 @@ def test_client_ca():
     with patch.dict(os.environ, {"REQUEST_PATH": certifi.where()}, clear=True):
         client = Client("http://127.0.0.1:4200")
         assert "ca_certs" in client._pool_kw
+
+
+def test_client_blob_put():
+    """Verifies the handling of put requests to CrateDB"""
+    expected_table = "sometable"
+    expected_digest = "somedigest"
+    expected_data = b"data"
+    with patch(REQUEST_PATH, return_value=fake_response(201)) as f:
+        created = Client("").blob_put(
+            expected_table, expected_digest, expected_data
+        )
+        assert f.call_args[0][0] == "PUT"
+        assert (
+            f.call_args[0][1] == f"/_blobs/{expected_table}/{expected_digest}"
+        )
+        assert created is True
+
+    with patch(REQUEST_PATH, return_value=fake_response(409)):
+        created = Client("").blob_put(
+            expected_table, expected_digest, expected_data
+        )
+        assert created is False
+
+    with patch(REQUEST_PATH, return_value=fake_response(400)):
+        with pytest.raises(BlobLocationNotFoundException):
+            Client("").blob_put(expected_table, expected_digest, expected_data)
+
+    response = fake_response(402)
+    expected_error_message = "someerrormsg"
+    response.data = json.dumps({"error": expected_error_message})
+
+    with patch(REQUEST_PATH, return_value=response):
+        with pytest.raises(ProgrammingError, match=expected_error_message):
+            Client("").blob_put(expected_table, expected_digest, expected_data)
+
+
+def test_client_blob_del():
+    """Verifies the handling of del requests to CrateDB"""
+    expected_table = "sometable"
+    expected_digest = "somedigest"
+    with patch(REQUEST_PATH, return_value=fake_response(204)) as f:
+        deleted = Client("").blob_del(expected_table, expected_digest)
+        assert f.call_args[0][0] == "DELETE"
+        assert (
+            f.call_args[0][1] == f"/_blobs/{expected_table}/{expected_digest}"
+        )
+        assert deleted is True
+
+    with patch(REQUEST_PATH, return_value=fake_response(404)):
+        deleted = Client("").blob_del(expected_table, expected_digest)
+        assert deleted is False
+
+    response = fake_response(500)
+    expected_error_message = "someerrormsg"
+    response.data = json.dumps({"error": expected_error_message})
+
+    with patch(REQUEST_PATH, return_value=response):
+        with pytest.raises(ProgrammingError, match=expected_error_message):
+            Client("").blob_del(expected_table, expected_digest)
+
+
+def test_client_blob_exists():
+    """Verifies the handling of exists requests to CrateDB"""
+    expected_table = "sometable"
+    expected_digest = "somedigest"
+    with patch(REQUEST_PATH, return_value=fake_response(200)) as f:
+        exists = Client("").blob_exists(expected_table, expected_digest)
+        assert f.call_args[0][0] == "HEAD"
+        assert (
+            f.call_args[0][1] == f"/_blobs/{expected_table}/{expected_digest}"
+        )
+        assert exists is True
+
+    with patch(REQUEST_PATH, return_value=fake_response(404)):
+        exists = Client("").blob_exists(expected_table, expected_digest)
+        assert exists is False
+
+    response = fake_response(500)
+    expected_error_message = "someerrormsg"
+    response.data = json.dumps({"error": expected_error_message})
+
+    with patch(REQUEST_PATH, return_value=response):
+        with pytest.raises(ProgrammingError, match=expected_error_message):
+            Client("").blob_exists(expected_table, expected_digest)
+
+
+def test_client_blob_get():
+    """Verifies the handling of getting a blob from CrateDB"""
+    expected_table = "sometable"
+    expected_digest = "somedigest"
+    expected_chunksize = 10
+
+    with patch(REQUEST_PATH, return_value=fake_response(200)) as f:
+        f.return_value.stream = MagicMock()
+        Client("").blob_get(expected_table, expected_digest, expected_chunksize)
+        assert f.call_args[0][0] == "GET"
+        assert (
+            f.call_args[0][1] == f"/_blobs/{expected_table}/{expected_digest}"
+        )
+        assert f.return_value.stream.call_count == 1
+        assert f.return_value.stream.call_args[1] == {"amt": expected_chunksize}
+
+    with pytest.raises(DigestNotFoundException):
+        with patch(REQUEST_PATH, return_value=fake_response(404)):
+            Client("").blob_get(expected_table, expected_digest)
+
+    response = fake_response(500)
+    expected_error_message = "someerrormsg"
+    response.data = json.dumps({"error": expected_error_message})
+
+    with patch(REQUEST_PATH, return_value=response):
+        with pytest.raises(ProgrammingError, match=expected_error_message):
+            Client("").blob_get(expected_table, expected_digest)
 
 
 def test_remove_certs_for_non_https():

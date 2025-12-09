@@ -77,7 +77,7 @@ def test_data_is_serialized():
 
 def test_serialization_unsupported():
     """Tests that when an object that is not serializable is given
-     a type error is raised."""
+    a type error is raised."""
     with pytest.raises(TypeError):
         json_dumps(type("d", (), {}))
 

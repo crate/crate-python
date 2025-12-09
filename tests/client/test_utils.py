@@ -1,6 +1,11 @@
 import io
+import ssl
 import tempfile
+from unittest.mock import patch
 
+import urllib3
+
+from crate.client.http import _update_pool_kwargs_for_ssl_minimum_version
 from crate.client.http import super_len
 
 
@@ -49,3 +54,30 @@ def test_super_len_all():
         pass
 
     assert super_len(Empty()) is None
+
+
+def test_update_pool_kwargs_for_ssl_minimum_version():
+    """Test that the ssl_minimum_version is set correctly in the kwargs"""
+    with patch.object(urllib3, "__version__", "2.0.0"):
+        kwargs = {}
+        _update_pool_kwargs_for_ssl_minimum_version(
+            "https://example.com", kwargs
+        )
+        assert (
+            kwargs.get("ssl_minimum_version")
+            == ssl.TLSVersion.MINIMUM_SUPPORTED
+        )
+
+        # not https
+        kwargs = {}
+        _update_pool_kwargs_for_ssl_minimum_version(
+            "http://example.com", kwargs
+        )
+        assert "ssl_minimum_version" not in kwargs
+
+    with patch.object(urllib3, "__version__", "1.26.0"):
+        kwargs = {}
+        _update_pool_kwargs_for_ssl_minimum_version(
+            "https://example.com", kwargs
+        )
+        assert "ssl_minimum_version" not in kwargs

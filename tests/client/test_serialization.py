@@ -23,11 +23,14 @@
 Tests for serializing data, typically python objects
  into CrateDB-sql compatible structures.
 """
+
 import datetime
 import datetime as dt
 import uuid
 from decimal import Decimal
 from unittest.mock import MagicMock, patch
+
+import pytest
 
 from crate.client.http import Client, json_dumps
 from tests.conftest import REQUEST_PATH, fake_response
@@ -43,27 +46,40 @@ def test_data_is_serialized():
     """
     mock = MagicMock(spec=bytes)
 
-    with patch('crate.client.http.json_dumps', return_value=mock) as f:
+    with patch("crate.client.http.json_dumps", return_value=mock) as f:
         with patch(REQUEST_PATH, return_value=fake_response(200)) as request:
             client = Client(servers="localhost:4200")
             client.sql(
                 "insert into t (a, b) values (?, ?)",
-                (datetime.datetime(2025, 10, 23, 11, ),
-                 "ss"
-                 )
+                (
+                    datetime.datetime(
+                        2025,
+                        10,
+                        23,
+                        11,
+                    ),
+                    "ss",
+                ),
             )
 
             # Verify json_dumps is called with the right parameters.
             f.assert_called_once_with(
                 {
-                    'stmt': 'insert into t (a, b) values (?, ?)',
-                    'args': (datetime.datetime(2025, 10, 23, 11, 0), 'ss')
+                    "stmt": "insert into t (a, b) values (?, ?)",
+                    "args": (datetime.datetime(2025, 10, 23, 11, 0), "ss"),
                 }
             )
 
             # Verify that the output of json_dumps is used as
             # call argument for a request.
-            assert request.call_args[1]['data'] is mock
+            assert request.call_args[1]["data"] is mock
+
+
+def test_serialization_unsupported():
+    """Tests that when an object that is not serializable is given
+     a type error is raised."""
+    with pytest.raises(TypeError):
+        json_dumps(type("d", (), {}))
 
 
 def test_naive_datetime_serialization():
@@ -73,7 +89,7 @@ def test_naive_datetime_serialization():
     data = dt.datetime(2015, 2, 28, 7, 31, 40)
     result = json_dumps(data)
     assert isinstance(result, bytes)
-    assert result == b'1425108700000'
+    assert result == b"1425108700000"
 
 
 def test_aware_datetime_serialization():
@@ -106,7 +122,7 @@ def test_date_serialization():
     """
     data = dt.date(2016, 4, 21)
     result = json_dumps(data)
-    assert result == b'1461196800000'
+    assert result == b"1461196800000"
 
 
 def test_uuid_serialization():
@@ -117,7 +133,6 @@ def test_uuid_serialization():
     re-used across all versions of the uuid module.
     """
     uuid_int = 50583033507982468033520929066863110751
-    data = uuid.UUID(
-        bytes=uuid_int.to_bytes(16, byteorder='big'), version=4)
+    data = uuid.UUID(bytes=uuid_int.to_bytes(16, byteorder="big"), version=4)
     result = json_dumps(data)
     assert result == b'"260df019-a183-431f-ad46-115ccdf12a5f"'

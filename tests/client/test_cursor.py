@@ -48,12 +48,14 @@ def test_cursor_fetch(mocked_connection):
         "rowcount": 2,
         "duration": 123,
     }
-    with mock.patch.object(mocked_connection.client,
-                           'sql',
-                           return_value=response):
+    with mock.patch.object(
+        mocked_connection.client, "sql", return_value=response
+    ):
         cursor.execute("")
-        assert cursor.fetchone() == ['foo', '10.10.10.1']
-        assert cursor.fetchmany() == [["bar", "10.10.10.2"], ]
+        assert cursor.fetchone() == ["foo", "10.10.10.1"]
+        assert cursor.fetchmany() == [
+            ["bar", "10.10.10.2"],
+        ]
 
 
 def test_cursor_executemany(mocked_connection):
@@ -64,25 +66,24 @@ def test_cursor_executemany(mocked_connection):
         "col_types": [],
         "cols": [],
         "duration": 123,
-        "results": [{'rowcount': 1, 'rowcount:': 1}]
+        "results": [{"rowcount": 1, "rowcount:": 1}],
     }
-    with mock.patch.object(mocked_connection.client,
-                           'sql',
-                           return_value=response):
-
+    with mock.patch.object(
+        mocked_connection.client, "sql", return_value=response
+    ):
         cursor = mocked_connection.cursor()
         result = cursor.executemany("some sql", ())
 
         assert isinstance(result, list)
-        assert response['results'] == result
+        assert response["results"] == result
 
 
 def test_create_with_timezone_as_datetime_object(mocked_connection):
     """
-     The cursor can return timezone-aware `datetime` objects when requested.
-     Switching the time zone at runtime on the cursor object is possible.
-     Here: Use a `datetime.timezone` instance.
-     """
+    The cursor can return timezone-aware `datetime` objects when requested.
+    Switching the time zone at runtime on the cursor object is possible.
+    Here: Use a `datetime.timezone` instance.
+    """
     tz_mst = datetime.timezone(datetime.timedelta(hours=7), name="MST")
     cursor = mocked_connection.cursor(time_zone=tz_mst)
 
@@ -101,8 +102,9 @@ def test_create_with_timezone_as_pytz_object(mocked_connection):
     Here: Use a `pytz.timezone` instance.
     """
 
-    cursor = (mocked_connection
-              .cursor(time_zone=pytz.timezone("Australia/Sydney")))
+    cursor = mocked_connection.cursor(
+        time_zone=pytz.timezone("Australia/Sydney")
+    )
     assert cursor.time_zone.tzname(None) == "Australia/Sydney"
 
     # Apparently, when using `pytz`, the timezone object does not return
@@ -136,8 +138,9 @@ def test_create_with_timezone_as_utc_offset_success(mocked_connection):
 
     cursor = mocked_connection.cursor(time_zone="-1145")
     assert cursor.time_zone.tzname(None) == "-1145"
-    assert cursor.time_zone.utcoffset(None) == datetime.timedelta(days=-1,
-                                                                  seconds=44100)
+    assert cursor.time_zone.utcoffset(None) == datetime.timedelta(
+        days=-1, seconds=44100
+    )
 
 
 def test_create_with_timezone_as_utc_offset_failure(mocked_connection):
@@ -147,14 +150,15 @@ def test_create_with_timezone_as_utc_offset_failure(mocked_connection):
 
     with pytest.raises(ValueError) as err:
         mocked_connection.cursor(time_zone="foobar")
-        assert err == \
-               "Time zone 'foobar' is given in invalid UTC offset format"
+        assert err == "Time zone 'foobar' is given in invalid UTC offset format"
 
     with pytest.raises(ValueError) as err:
         mocked_connection.cursor(time_zone="+abcd")
-        assert err == \
-               "Time zone '+abcd' is given in invalid UTC offset format: " + \
-               "invalid literal for int() with base 10: '+ab'"
+        assert (
+            err
+            == "Time zone '+abcd' is given in invalid UTC offset format: "
+            + "invalid literal for int() with base 10: '+ab'"
+        )
 
 
 def test_create_with_timezone_connection_cursor_precedence(mocked_connection):
@@ -164,7 +168,7 @@ def test_create_with_timezone_connection_cursor_precedence(mocked_connection):
     """
     connection = connect(
         client=mocked_connection.client,
-        time_zone=pytz.timezone("Australia/Sydney")
+        time_zone=pytz.timezone("Australia/Sydney"),
     )
     cursor = connection.cursor(time_zone="+0530")
     assert cursor.time_zone.tzname(None) == "+0530"
@@ -200,8 +204,8 @@ def test_execute_custom_converter(mocked_connection):
     converter = DefaultTypeConverter(
         {
             DataType.BIT: lambda value: value is not None
-                                        and int(value[2:-1], 2)
-                                        or None
+            and int(value[2:-1], 2)
+            or None
         }
     )
     cursor = mocked_connection.cursor(converter=converter)
@@ -216,9 +220,9 @@ def test_execute_custom_converter(mocked_connection):
         "duration": 123,
     }
 
-    with mock.patch.object(mocked_connection.client,
-                           'sql',
-                           return_value=response):
+    with mock.patch.object(
+        mocked_connection.client, "sql", return_value=response
+    ):
         cursor.execute("")
         result = cursor.fetchall()
 
@@ -258,9 +262,8 @@ def test_execute_with_converter_and_invalid_data_type(mocked_connection):
         "duration": 123,
     }
     with mock.patch.object(
-            mocked_connection.client,
-            'sql',
-            return_value=response):
+        mocked_connection.client, "sql", return_value=response
+    ):
         cursor.execute("")
         with pytest.raises(ValueError) as e:
             cursor.fetchone()
@@ -277,9 +280,9 @@ def test_execute_array_with_converter(mocked_connection):
         "rowcount": 1,
         "duration": 123,
     }
-    with mock.patch.object(mocked_connection.client,
-                           'sql',
-                           return_value=response):
+    with mock.patch.object(
+        mocked_connection.client, "sql", return_value=response
+    ):
         cursor.execute("")
         result = cursor.fetchone()
 
@@ -301,14 +304,15 @@ def test_execute_array_with_converter_invalid(mocked_connection):
     }
     # Converting collections only works for `ARRAY`s. (ID=100).
     # When using `DOUBLE` (ID=6), it should raise an Exception.
-    with mock.patch.object(mocked_connection.client,
-                           'sql',
-                           return_value=response):
+    with mock.patch.object(
+        mocked_connection.client, "sql", return_value=response
+    ):
         cursor.execute("")
         with pytest.raises(ValueError) as e:
             cursor.fetchone()
-            assert e.exception.args == ("Data type 6 is not implemented"
-                                        " as collection type")
+            assert e.exception.args == (
+                "Data type 6 is not implemented as collection type"
+            )
 
 
 def test_execute_nested_array_with_converter(mocked_connection):
@@ -332,9 +336,9 @@ def test_execute_nested_array_with_converter(mocked_connection):
         "duration": 123,
     }
 
-    with mock.patch.object(mocked_connection.client,
-                           'sql',
-                           return_value=response):
+    with mock.patch.object(
+        mocked_connection.client, "sql", return_value=response
+    ):
         cursor.execute("")
         result = cursor.fetchone()
         assert result == [
@@ -358,9 +362,9 @@ def test_executemany_with_converter(mocked_connection):
         "rowcount": 1,
         "duration": 123,
     }
-    with mock.patch.object(mocked_connection.client,
-                           'sql',
-                           return_value=response):
+    with mock.patch.object(
+        mocked_connection.client, "sql", return_value=response
+    ):
         cursor.executemany("", [])
         result = cursor.fetchall()
 
@@ -383,9 +387,9 @@ def test_execute_with_timezone(mocked_connection):
             [None, None],
         ],
     }
-    with mock.patch.object(mocked_connection.client,
-                           'sql',
-                           return_value=response):
+    with mock.patch.object(
+        mocked_connection.client, "sql", return_value=response
+    ):
         # Run execution and verify the returned `datetime` object is
         # timezone-aware, using the designated timezone object.
         cursor.execute("")
@@ -456,7 +460,7 @@ def test_cursor_close(mocked_connection):
     assert not cursor._result
     assert cursor.duration == -1
 
-    with pytest.raises(ProgrammingError, match='Connection closed'):
+    with pytest.raises(ProgrammingError, match="Connection closed"):
         mocked_connection.close()
         cursor.execute("")
 

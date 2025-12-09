@@ -64,7 +64,7 @@ def duplicate_key_exception():
             "error": {
                 "code": 4091,
                 "message": "DuplicateKeyException[A document with the "
-                           "same primary key exists already]",
+                "same primary key exists already]",
             }
         }
     ).encode()
@@ -86,13 +86,18 @@ def test_connection_reset_exception():
     Verify that a HTTP 503 status code response raises an exception.
     """
 
-    expected_exception_msg = ("No more Servers available, exception"
-         " from last server: Service Unavailable")
-    with patch(REQUEST_PATH, side_effect=[
-        fake_response(200),
-        fake_response(104, "Connection reset by peer"),
-        fake_response(503, "Service Unavailable"),
-    ]):
+    expected_exception_msg = (
+        "No more Servers available, exception"
+        " from last server: Service Unavailable"
+    )
+    with patch(
+        REQUEST_PATH,
+        side_effect=[
+            fake_response(200),
+            fake_response(104, "Connection reset by peer"),
+            fake_response(503, "Service Unavailable"),
+        ],
+    ):
         client = Client(servers="localhost:4200")
         client.sql("select 1")  # 200 response
         client.sql("select 2")  # 104 response
@@ -120,7 +125,7 @@ def test_http_error_is_re_raised():
     """
     client = Client()
 
-    exception_msg = 'some exception did happen'
+    exception_msg = "some exception did happen"
     with patch(REQUEST_PATH, side_effect=Exception(exception_msg)):
         with pytest.raises(ProgrammingError, match=exception_msg):
             client.sql("select foo")
@@ -144,14 +149,16 @@ def test_connect():
     Verify the correctness of `server` parameter when `Client` is instantiated.
     """
     client = Client(servers="localhost:4200 localhost:4201")
-    assert client._active_servers == \
-           ["http://localhost:4200", "http://localhost:4201"]
+    assert client._active_servers == [
+        "http://localhost:4200",
+        "http://localhost:4201",
+    ]
 
     # By default, it's http://127.0.0.1:4200
     client = Client(servers=None)
     assert client._active_servers == ["http://127.0.0.1:4200"]
 
-    with pytest.raises(TypeError, match='expected string or bytes'):
+    with pytest.raises(TypeError, match="expected string or bytes"):
         Client(servers=[123, "127.0.0.1:4201", False])
 
 
@@ -160,8 +167,9 @@ def test_redirect_handling():
     Verify that when a redirect happens, that redirect uri
     gets added to the server pool.
     """
-    with patch(REQUEST_PATH,
-               return_value=fake_redirect("http://localhost:4201")):
+    with patch(
+        REQUEST_PATH, return_value=fake_redirect("http://localhost:4201")
+    ):
         client = Client(servers="localhost:4200")
 
         # Don't try to print the exception or use `match`, otherwise
@@ -172,8 +180,10 @@ def test_redirect_handling():
             # exception message is: maximum recursion depth exceeded
             client.blob_get("blobs", "fake_digest")
 
-        assert sorted(client.server_pool.keys()) == ["http://localhost:4200",
-                                                     "http://localhost:4201"]
+        assert sorted(client.server_pool.keys()) == [
+            "http://localhost:4200",
+            "http://localhost:4201",
+        ]
 
     # the new non-https server must not contain any SSL only arguments
     # regression test for:
@@ -204,9 +214,43 @@ def test_server_infos_401():
     response = fake_response(401, "Unauthorized", "text/html")
     with patch(REQUEST_PATH, return_value=response):
         client = Client(servers="localhost:4200")
-        with pytest.raises(ProgrammingError,
-                           match="401 Client Error: Unauthorized"):
+        with pytest.raises(
+            ProgrammingError, match="401 Client Error: Unauthorized"
+        ):
             client.server_infos("http://localhost:4200")
+
+
+def test_credentials_derived():
+    """
+    Tests that Client correctly derives username and password from the url.
+    """
+    expected_user = "someuser"
+    expected_password = "somepassword"
+    client = Client(
+        f"http://{expected_user}:{expected_password}@localhost:4200"
+    )
+
+    assert client.username == expected_user
+    assert client.password == expected_password
+
+    with patch("crate.client.http.urlparse", side_effect=Exception):
+        Client("")
+
+    actual_username = "actual_username"
+    client = Client(
+        username=actual_username,
+        servers=[f"http://{expected_user}:{expected_password}@localhost:4200"],
+    )
+    assert client.username == actual_username
+    assert client.password is None
+
+    actual_password = "actual_password"
+    client = Client(
+        password=actual_password,
+        servers=[f"http://{expected_user}:{expected_password}@localhost:4200"],
+    )
+    assert client.username == expected_user
+    assert client.password == expected_password
 
 
 def test_bad_bulk_400():
@@ -230,11 +274,12 @@ def test_bad_bulk_400():
 
     client = Client(servers="localhost:4200")
     with patch(REQUEST_PATH, return_value=response):
-        with pytest.raises(ProgrammingError,
-                           match='an error occurred\nanother error'):
+        with pytest.raises(
+            ProgrammingError, match="an error occurred\nanother error"
+        ):
             client.sql(
                 "Insert into users (name) values(?)",
-                bulk_parameters=[["douglas"], ["monthy"]]
+                bulk_parameters=[["douglas"], ["monthy"]],
             )
 
 
@@ -245,8 +290,9 @@ def test_socket_options_contain_keepalive():
     server = "http://localhost:4200"
     client = Client(servers=server)
     conn_kw = client.server_pool[server].pool.conn_kw
-    assert ((socket.SOL_SOCKET, socket.SO_KEEPALIVE, 1)
-            in conn_kw["socket_options"])
+    assert (socket.SOL_SOCKET, socket.SO_KEEPALIVE, 1) in conn_kw[
+        "socket_options"
+    ]
 
 
 def test_duplicate_key_error():
@@ -254,8 +300,10 @@ def test_duplicate_key_error():
     Verify that an `IntegrityError` is raised on duplicate key errors,
     instead of the more general `ProgrammingError`.
     """
-    expected_error_msg = (r"DuplicateKeyException\[A document with "
-                          r"the same primary key exists already\]")
+    expected_error_msg = (
+        r"DuplicateKeyException\[A document with "
+        r"the same primary key exists already\]"
+    )
     with patch(REQUEST_PATH, return_value=duplicate_key_exception()):
         client = Client(servers="localhost:4200")
         with pytest.raises(IntegrityError, match=expected_error_msg):
@@ -317,10 +365,7 @@ def test_client_multithreaded():
             except AssertionError as e:
                 error_queue.put(e)
 
-    threads = [
-        Thread(target=worker, name=str(i))
-        for i in range(num_threads)
-    ]
+    threads = [Thread(target=worker, name=str(i)) for i in range(num_threads)]
 
     for thread in threads:
         thread.start()
@@ -357,7 +402,7 @@ def test_params():
     params = parse_qs(parsed.query)
 
     # Default is False
-    assert 'error_trace' not in params
+    assert "error_trace" not in params
     assert params["types"] == ["true"]
 
     assert "/_sql?" in client.path
@@ -368,11 +413,9 @@ def test_client_ca():
     Verify that if env variable `REQUESTS_CA_BUNDLE` is set,  certs are
     loaded into the pool.
     """
-    with patch.dict(os.environ,
-                    {"REQUEST_PATH": certifi.where()},
-                    clear=True):
+    with patch.dict(os.environ, {"REQUEST_PATH": certifi.where()}, clear=True):
         client = Client("http://127.0.0.1:4200")
-        assert 'ca_certs' in client._pool_kw
+        assert "ca_certs" in client._pool_kw
 
 
 def test_remove_certs_for_non_https():
@@ -384,9 +427,9 @@ def test_remove_certs_for_non_https():
 
     kwargs = {"ca_certs": 1, "foobar": 2, "cert_file": 3}
     d = _remove_certs_for_non_https("http", kwargs)
-    assert 'ca_certs' not in d
-    assert 'cert_file' not in d
-    assert 'foobar' in d
+    assert "ca_certs" not in d
+    assert "cert_file" not in d
+    assert "foobar" in d
 
 
 def test_keep_alive(serve_http):
@@ -460,7 +503,7 @@ def test_no_retry_on_read_timeout(serve_http):
             # We expect it to raise a `ConnectionError`
             with pytest.raises(ConnectionError, match="Read timed out"):
                 conn.client.sql("select * from fake")
-            assert server.SHARED.get('count') == 1
+            assert server.SHARED.get("count") == 1
 
 
 class SharedStateRequestHandler(BaseHTTPRequestHandler):
@@ -505,7 +548,7 @@ def test_default_schema(serve_http):
     """
     Verify that the schema is correctly sent.
     """
-    test_schema = 'some_schema'
+    test_schema = "some_schema"
     with serve_http(SharedStateRequestHandler) as (server, url):
         with connect(url, schema=test_schema) as conn:
             conn.client.sql("select 1;")
@@ -539,7 +582,7 @@ def test_credentials(serve_http):
             assert not server.SHARED["password"]
 
         # Both username and password
-        password = 'some_password'
+        password = "some_password"
         with connect(url, username=username, password=password) as conn:
             assert conn.client.username == username
             assert conn.client.password == password

@@ -438,6 +438,7 @@ class Client:
         if servers and not username:
             try:
                 url = urlparse(servers[0])
+
                 if url.username is not None:
                     username = url.username
                 if url.password is not None:

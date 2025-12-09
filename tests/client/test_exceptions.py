@@ -11,6 +11,7 @@ def test_error_with_error_trace():
     err = Error("foo", error_trace="### TRACE ###")
     assert str(err), "foo\n### TRACE ###"
 
+
 def test_blob_exception():
     err = BlobException(table="sometable", digest="somedigest")
     assert str(err) == "BlobException('sometable/somedigest)'"

@@ -47,4 +47,5 @@ def test_super_len_all():
 
     class Empty:
         pass
+
     assert super_len(Empty()) is None

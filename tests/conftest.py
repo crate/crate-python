@@ -14,9 +14,7 @@ REQUEST_PATH = "crate.client.http.Server.request"
 
 
 def fake_response(
-        status: int,
-        reason: str = None,
-        content_type: str = "application/json"
+    status: int, reason: str = None, content_type: str = "application/json"
 ) -> MagicMock:
     """
     Returns a mocked `urllib3.response.HTTPResponse` HTTP response.
@@ -43,8 +41,6 @@ def mocked_connection():
     yield crate.client.connect(client=MagicMock(spec=crate.client.http.Client))
 
 
-
-
 @pytest.fixture
 def serve_http():
     """
@@ -66,7 +62,7 @@ def serve_http():
 
     @contextmanager
     def _serve(handler_cls=BaseHTTPRequestHandler):
-        assert issubclass(handler_cls, BaseHTTPRequestHandler) # noqa: S101
+        assert issubclass(handler_cls, BaseHTTPRequestHandler)  # noqa: S101
         sock = socket.socket()
         sock.bind(("127.0.0.1", 0))
         host, port = sock.getsockname()
@@ -92,4 +88,5 @@ def serve_http():
         finally:
             server.shutdown()
             thread.join()
+
     return _serve

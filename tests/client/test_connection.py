@@ -30,16 +30,14 @@ def test_lowest_server_version():
     assert (1, 0, 3) == connection.lowest_server_version.version
 
 
-
 def test_connection_closes_access():
     """
     Verify that a connection closes on exit and that it also closes
     the client.
     """
-    with patch('crate.client.connection.Client',
-               spec=Client,
-               return_value=MagicMock()) as client:
-
+    with patch(
+        "crate.client.connection.Client", spec=Client, return_value=MagicMock()
+    ) as client:
         conn = connect()
         conn.close()
 
@@ -54,12 +52,14 @@ def test_connection_closes_access():
         with pytest.raises(ProgrammingError):
             conn.commit()
 
+
 def test_connection_closes_context_manager():
     """Verify that the context manager of the client closes the connection"""
-    with patch.object(connect, 'close', autospec=True) as close_fn:
+    with patch.object(connect, "close", autospec=True) as close_fn:
         with connect():
             pass
         close_fn.assert_called_once()
+
 
 def test_invalid_server_version():
     """
@@ -76,7 +76,7 @@ def test_context_manager():
     """
     Verify the context manager implementation of `Connection`.
     """
-    close_method = 'crate.client.http.Client.close'
+    close_method = "crate.client.http.Client.close"
     with patch(close_method, return_value=MagicMock()) as close_func:
         with connect("localhost:4200") as conn:
             assert not conn._closed
@@ -104,9 +104,12 @@ def test_connection_mock():
     connection = connect(crate_host, client=mock)
 
     assert isinstance(connection, Connection)
-    assert connection.client.server_infos("foo") == ("localhost:4200",
-                                                     "my server",
-                                                     "0.42.0")
+    assert connection.client.server_infos("foo") == (
+        "localhost:4200",
+        "my server",
+        "0.42.0",
+    )
+
 
 def test_default_repr():
     """
@@ -114,6 +117,7 @@ def test_default_repr():
     """
     conn = connect()
     assert repr(conn) == "<Connection <Client ['http://127.0.0.1:4200']>>"
+
 
 def test_with_timezone():
     """
@@ -138,7 +142,6 @@ def test_with_timezone():
     cursor = connection.cursor()
     assert cursor.time_zone.tzname(None) == "UTC"
     assert cursor.time_zone.utcoffset(None) == datetime.timedelta(0)
-
 
 
 def test_timeout_float():

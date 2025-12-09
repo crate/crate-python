@@ -57,6 +57,27 @@ def test_cursor_fetch(mocked_connection):
             ["bar", "10.10.10.2"],
         ]
 
+def test_cursor_description(mocked_connection):
+    cursor = mocked_connection.cursor()
+    response = {
+        "col_types": [4, 5],
+        "cols": ["name", "address"],
+        "rows": [["foo", "10.10.10.1"], ["bar", "10.10.10.2"]],
+        "rowcount": 2,
+        "duration": 123,
+    }
+    with mock.patch.object(
+        mocked_connection.client, "sql", return_value=response
+    ):
+        cursor.execute("")
+        assert len(cursor.description) == len(response["cols"])
+        assert len(cursor.description[0]) == 7 # It's 7 by convention.
+        for expected_name, name in zip(response["cols"], cursor.description):
+            assert expected_name == name[0]
+
+        cursor.close()
+
+        assert cursor.description is None
 
 def test_cursor_executemany(mocked_connection):
     """

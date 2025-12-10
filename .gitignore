@@ -5,6 +5,7 @@ coverage.xml
 .installed.cfg
 .tox/
 *.DS_Store
+*.lock
 *.pyc
 bin/*
 !bin/test

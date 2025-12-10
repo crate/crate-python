@@ -22,17 +22,28 @@ jobs:
         python-version: ['3.9', '3.10', '3.11', '3.12', '3.13', '3.14']
         cratedb-version: ['nightly']
 
-        # To save resources, only verify the most recent Python versions on macOS.
+        # To save resources, only verify other variants particularly.
         include:
+
+          # Older CrateDB versions.
+          - os: 'ubuntu-latest'
+            cratedb-version: '4.8.4'
+            python-version: '3.14'
+
+          # macOS/Intel
+          - os: 'macos-15-intel'
+            cratedb-version: 'nightly'
+            python-version: '3.14'
+
+          # macOS/ARM
           - os: 'macos-latest'
-            cratedb-version: '5.9.2'
-            python-version: '3.11'
-          - os: 'macos-latest'
-            cratedb-version: '5.9.2'
-            python-version: '3.12'
-          - os: 'macos-latest'
-            cratedb-version: '5.9.2'
-            python-version: '3.13'
+            cratedb-version: 'nightly'
+            python-version: '3.14'
+
+          # Linux/ARM
+          - os: 'ubuntu-latest-arm'
+            cratedb-version: 'nightly'
+            python-version: '3.14'
 
     env:
       CRATEDB_VERSION: ${{ matrix.cratedb-version }}

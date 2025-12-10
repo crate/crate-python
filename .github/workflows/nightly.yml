@@ -35,10 +35,13 @@ jobs:
         uses: astral-sh/setup-uv@v7
         with:
           cache-dependency-glob: |
-            setup.py
+            pyproject.toml
           cache-suffix: ${{ matrix.python-version }}
           enable-cache: true
           version: "latest"
+
+      - name: Setup env
+        run: uv sync
 
       - name: Invoke tests
         run: |

@@ -68,6 +68,21 @@ namespace_packages = true
 non_interactive = true
 
 
+[tool.pytest.ini_options]
+addopts = "-rA --verbosity=3"
+minversion = "2.0"
+log_level = "DEBUG"
+log_cli_level = "DEBUG"
+log_format = "%(asctime)-15s [%(name)-24s] %(levelname)-8s: %(message)s"
+testpaths = [
+  "src",
+  "tests",
+]
+xfail_strict = true
+markers = [
+]
+
+
 [tool.ruff]
 line-length = 80
 

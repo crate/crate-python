@@ -30,10 +30,18 @@ jobs:
         os: ["ubuntu-24.04"]
         python-version: ['3.10', '3.11', '3.12', '3.13', '3.14']
 
-        # Save resources - only verify the most recent Python versions on macOS.
+        # To save resources, only verify other variants particularly.
         include:
-          - os: 'macos-latest'
-            python-version: '3.13'
+
+          # Linux/ARM
+          - os: 'ubuntu-24.04-arm'
+            python-version: '3.14'
+
+          # macOS/Intel
+          - os: 'macos-15-intel'
+            python-version: '3.14'
+
+          # macOS/ARM
           - os: 'macos-latest'
             python-version: '3.14'
 

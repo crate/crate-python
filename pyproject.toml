@@ -42,6 +42,7 @@ dev = [
     "certifi>=2025.10.5",
     "coverage>=7.11.0",
     "mypy>=1.18.2",
+    "poethepoet<1",
     "pytest>=8.4.2",
     "pytz>=2025.2",
     "ruff>=0.14.2",

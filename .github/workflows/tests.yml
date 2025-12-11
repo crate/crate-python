@@ -74,10 +74,7 @@ jobs:
           poe lint
 
           # Run tests.
-          uv run coverage run -m pytest
-          
-          # Set the stage for uploading the coverage report.
-          uv run coverage xml
+          poe test
 
       # https://github.com/codecov/codecov-action
       - name: Upload coverage results to Codecov

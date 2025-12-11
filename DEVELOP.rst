@@ -25,10 +25,9 @@ Running tests
 =============
 
 All tests will be invoked using the Python interpreter that was used when
-creating the Python virtualenv. The test runner is `zope.testrunner`_.
+creating the Python virtualenv. The test runner is `pytest`_.
 
-Some examples are outlined below. In order to learn about more details,
-see, for example, `useful command-line options for zope-testrunner`_.
+Some examples are outlined below.
 
 Run all tests::
 
@@ -37,35 +36,25 @@ Run all tests::
 Run specific tests::
 
     # Select modules.
-    bin/test -t test_cursor
-    bin/test -t client
-    bin/test -t testing
+    pytest -k test_cursor
+    pytest -k client
+    pytest -k testing
 
     # Select doctests.
-    bin/test -t http.rst
-
-Ignore specific test directories::
-
-    bin/test --ignore_dir=testing
+    pytest -k http.rst
 
 The ``LayerTest`` test cases have quite some overhead. Omitting them will save
 a few cycles (~70 seconds runtime)::
 
-    bin/test -t '!LayerTest'
+    pytest -k 'not LayerTest'
 
-Invoke all tests without integration tests (~10 seconds runtime)::
+Yet ~75 test cases, but only ~2 seconds runtime::
 
-    bin/test --layer '!crate.testing.layer.crate' --test '!LayerTest'
-
-Yet ~60 test cases, but only ~1 second runtime::
-
-    bin/test --layer '!crate.testing.layer.crate' --test '!LayerTest' \
-        -t '!test_client_threaded' -t '!test_no_retry_on_read_timeout' \
-        -t '!test_wait_for_http' -t '!test_table_clustered_by'
+    pytest -k 'not (layer or multithreaded or read_timeout or wait_for or clustered_by or keep_alive)'
 
 To inspect the whole list of test cases, run::
 
-    bin/test --list-tests
+    pytest --collect-only
 
 The CI setup on GitHub Actions (GHA) provides a full test matrix covering
 relevant Python versions. You can invoke the software tests against a specific
@@ -163,14 +152,13 @@ nothing special you need to do to get the live docs to update.
 .. _@crate/docs: https://github.com/orgs/crate/teams/docs
 .. _buildout: https://pypi.python.org/pypi/zc.buildout
 .. _PyPI: https://pypi.python.org/pypi
+.. _pytest: https://pytest.org/
 .. _Python versions: https://docs.astral.sh/uv/concepts/python-versions/
 .. _Read the Docs: http://readthedocs.org
 .. _ReStructuredText: http://docutils.sourceforge.net/rst.html
 .. _Sphinx: http://sphinx-doc.org/
 .. _tests/assets/pki/*.pem: https://github.com/crate/crate-python/tree/main/tests/assets/pki
 .. _twine: https://pypi.python.org/pypi/twine
-.. _useful command-line options for zope-testrunner: https://pypi.org/project/zope.testrunner/#some-useful-command-line-options-to-get-you-started
 .. _uv: https://docs.astral.sh/uv/
 .. _UV_PYTHON: https://docs.astral.sh/uv/configuration/environment/#uv_python
 .. _versions hosted on ReadTheDocs: https://readthedocs.org/projects/crate-python/versions/
-.. _zope.testrunner: https://pypi.org/project/zope.testrunner/

@@ -74,7 +74,6 @@ setup(
             "pytz",
             "zc.customdoctests>=1.0.1,<2",
             "zope.testing>=4,<7",
-            "zope.testrunner>=5,<8",
         ],
     },
     python_requires=">=3.6",

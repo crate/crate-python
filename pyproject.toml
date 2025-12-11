@@ -35,19 +35,43 @@ classifiers = [
 dependencies = [
     "orjson>=3.11.3",
     "urllib3>=2.5.0",
+    "verlib2>=0.3.1",
 ]
 
 [dependency-groups]
 dev = [
     "certifi>=2025.10.5",
-    "coverage>=7.11.0",
     "mypy>=1.18.2",
+    "poethepoet<1",
     "pytest>=8.4.2",
+    "pytest-cov<8",
     "pytz>=2025.2",
     "ruff>=0.14.2",
     "setuptools>=80.9.0",
     "stopit>=1.1.2",
-    "verlib2>=0.3.1",
+]
+
+
+[tool.coverage.run]
+branch = false
+omit = [
+  "tests/*",
+]
+source = [ "src" ]
+
+[tool.coverage.report]
+fail_under = 0
+show_missing = true
+exclude_lines = [
+    "# pragma: no cover",
+    "raise NotImplemented",
+]
+omit = [
+    "*/.buildout/eggs/*",
+    "buildout-cache/eggs/*",
+    "eggs/*",
+    "parts/*",
+    "src/crate/client/_pep440.py",
 ]
 
 
@@ -65,6 +89,21 @@ implicit_optional = true
 install_types = true
 namespace_packages = true
 non_interactive = true
+
+
+[tool.pytest.ini_options]
+addopts = "-rA --verbosity=3 --cov --cov-report=term-missing --cov-report=xml"
+minversion = "2.0"
+log_level = "DEBUG"
+log_cli_level = "DEBUG"
+log_format = "%(asctime)-15s [%(name)-24s] %(levelname)-8s: %(message)s"
+testpaths = [
+  "src",
+  "tests",
+]
+xfail_strict = true
+markers = [
+]
 
 
 [tool.ruff]
@@ -160,5 +199,5 @@ lint = [
 ]
 
 test = [
-  { cmd = "bin/test" },
+  { cmd = "pytest" },
 ]

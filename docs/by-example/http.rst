@@ -118,7 +118,7 @@ Trying to get a non-existing blob throws an exception:
     >>> http_client.blob_get('myfiles', '041f06fd774092478d450774f5ba30c5da78acc8')
     Traceback (most recent call last):
     ...
-    crate.client.exceptions.DigestNotFoundException: myfiles/041f06fd774092478d450774f5ba30c5da78acc8
+    crate.client.exceptions.DigestNotFoundException: DigestNotFoundException('myfiles/041f06fd774092478d450774f5ba30c5da78acc8')
 
 Creating a new blob - this method returns ``True`` if the blob was newly created:
 
@@ -173,7 +173,7 @@ Uploading a blob to a table with disabled blob support throws an exception:
     ...     'locations', '040f06fd774092478d450774f5ba30c5da78acc8', f)
     Traceback (most recent call last):
     ...
-    crate.client.exceptions.BlobLocationNotFoundException: locations/040f06fd774092478d450774f5ba30c5da78acc8
+    crate.client.exceptions.BlobLocationNotFoundException: BlobLocationNotFoundException('locations/040f06fd774092478d450774f5ba30c5da78acc8')
 
     >>> http_client.close()
     >>> f.close()

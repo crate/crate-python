@@ -86,7 +86,7 @@ class BlobException(Exception):
         self.digest = digest
 
     def __str__(self):
-        return f"{self.__class__.__qualname__}('{self.table}/{self.digest})'"
+        return f"{self.__class__.__qualname__}('{self.table}/{self.digest}')"
 
 
 class DigestNotFoundException(BlobException):

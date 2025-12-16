@@ -11,6 +11,7 @@ Unreleased
     * Make `uv` the recommended tool for local development.
     * Simplify versioning when creating a new release.
     * Increase the number of tests and overall coverage.
+- Exceptions: Exceptions from the BLOB API now include their full names.
 
 2025/01/30 2.0.0
 ================

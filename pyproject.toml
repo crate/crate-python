@@ -41,14 +41,37 @@ dependencies = [
 [dependency-groups]
 dev = [
     "certifi>=2025.10.5",
+    "coverage<8",
     "mypy<1.19",
     "poethepoet<1",
     "pytest<9",
-    "pytest-cov<8",
     "pytz>=2025.2",
     "ruff<0.15",
     "setuptools>=80.9.0",
     "stopit<1.2",
+]
+
+
+[tool.coverage.run]
+branch = false
+omit = [
+  "tests/*",
+]
+source = [ "src" ]
+
+[tool.coverage.report]
+fail_under = 0
+show_missing = true
+exclude_lines = [
+    "# pragma: no cover",
+    "raise NotImplemented",
+]
+omit = [
+    "*/.buildout/eggs/*",
+    "buildout-cache/eggs/*",
+    "eggs/*",
+    "parts/*",
+    "src/crate/client/_pep440.py",
 ]
 
 
@@ -66,6 +89,20 @@ implicit_optional = true
 install_types = true
 namespace_packages = true
 non_interactive = true
+
+
+[tool.pytest.ini_options]
+addopts = "-rA --verbosity=3"
+minversion = "2.0"
+log_level = "DEBUG"
+log_cli_level = "DEBUG"
+testpaths = [
+  "src",
+  "tests",
+]
+xfail_strict = true
+markers = [
+]
 
 
 [tool.ruff]

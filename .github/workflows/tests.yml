@@ -62,19 +62,15 @@ jobs:
 
           # Bootstrap environment.
           source bootstrap.sh
-          
-          # Run linter.
-          uv run ruff check .
-          
-          # Run type testing
-          uv run mypy
-          
+
           # Report about the test matrix slot.
           echo "Invoking tests with CrateDB ${CRATEDB_VERSION}"
-          uv run coverage run -m pytest
-          
-          # Set the stage for uploading the coverage report.
-          uv run coverage xml
+
+          # Run linter.
+          poe lint
+
+          # Run tests.
+          poe test
 
       # https://github.com/codecov/codecov-action
       - name: Upload coverage results to Codecov

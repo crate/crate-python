@@ -58,6 +58,7 @@ branch = false
 omit = [
   "tests/*",
 ]
+parallel = true
 source = [ "src" ]
 
 [tool.coverage.report]
@@ -199,5 +200,10 @@ lint = [
 ]
 
 test = [
-  { cmd = "bin/test" },
+  { cmd = "coverage erase" },
+  { cmd = "coverage run -m pytest" },
+  { cmd = "coverage run bin/test" },
+  { cmd = "coverage combine" },
+  { cmd = "coverage xml" },
+  { cmd = "coverage report" },
 ]

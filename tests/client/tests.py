@@ -4,23 +4,9 @@ import unittest
 from .layer import (
     HttpsTestServerLayer,
     ensure_cratedb_layer,
-    makeSuite,
     setUpCrateLayerBaseline,
     setUpWithHttps,
     tearDownDropEntitiesBaseline,
-)
-from .test_connection import ConnectionTest
-from .test_cursor import CursorTest
-from .test_http import (
-    HttpClientTest,
-    KeepAliveClientTest,
-    ParamsTest,
-    RequestsCaBundleTest,
-    RetryOnTimeoutServerTest,
-    TestCrateJsonEncoder,
-    TestDefaultSchemaHeader,
-    TestUsernameSentAsHeader,
-    ThreadSafeHttpClientTest,
 )
 
 
@@ -29,17 +15,6 @@ def test_suite():
     flags = doctest.NORMALIZE_WHITESPACE | doctest.ELLIPSIS
 
     # Unit tests.
-    suite.addTest(makeSuite(CursorTest))
-    suite.addTest(makeSuite(HttpClientTest))
-    suite.addTest(makeSuite(KeepAliveClientTest))
-    suite.addTest(makeSuite(ThreadSafeHttpClientTest))
-    suite.addTest(makeSuite(ParamsTest))
-    suite.addTest(makeSuite(ConnectionTest))
-    suite.addTest(makeSuite(RetryOnTimeoutServerTest))
-    suite.addTest(makeSuite(RequestsCaBundleTest))
-    suite.addTest(makeSuite(TestUsernameSentAsHeader))
-    suite.addTest(makeSuite(TestCrateJsonEncoder))
-    suite.addTest(makeSuite(TestDefaultSchemaHeader))
     suite.addTest(doctest.DocTestSuite("crate.client.connection"))
     suite.addTest(doctest.DocTestSuite("crate.client.http"))
 

@@ -14,4 +14,4 @@ def test_error_with_error_trace():
 
 def test_blob_exception():
     err = BlobException(table="sometable", digest="somedigest")
-    assert str(err) == "BlobException('sometable/somedigest)'"
+    assert str(err) == "BlobException('sometable/somedigest')"

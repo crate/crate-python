@@ -49,7 +49,6 @@ dev = [
     "ruff<0.15",
     "setuptools>=80.9.0",
     "stopit<1.2",
-    "urllib3<2.4",
 ]
 
 

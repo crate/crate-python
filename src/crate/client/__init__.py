@@ -27,9 +27,21 @@ __all__ = [
     "Error",
 ]
 
-# version string read from setup.py using a regex. Take care not to break the
-# regex!
-__version__ = "2.0.0"
+# ruff: noqa: E402
+try:
+    from importlib.metadata import PackageNotFoundError, version
+except (ImportError, ModuleNotFoundError):  # pragma: no cover
+    from importlib_metadata import (  # type: ignore[assignment,no-redef,unused-ignore]
+        PackageNotFoundError,
+        version,
+    )
+
+__appname__ = "crate"
+
+try:
+    __version__ = version(__appname__)
+except PackageNotFoundError:  # pragma: no cover
+    __version__ = "unknown"
 
 # codeql[py/unused-global-variable]
 apilevel = "2.0"

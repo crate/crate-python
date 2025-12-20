@@ -33,6 +33,7 @@ classifiers = [
         "Topic :: Database",
 ]
 dependencies = [
+    "importlib-metadata; python_version<'3.8'",
     "orjson>=3.11.3",
     "urllib3",
     "verlib2>=0.3.1",

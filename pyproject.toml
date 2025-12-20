@@ -2,6 +2,18 @@
 requires = ["hatchling >= 1.26", "versioningit"]
 build-backend = "hatchling.build"
 
+[tool.hatch.build.targets.sdist]
+include = [
+  "/docs",
+  "/src/crate/*.py",
+  "/tests",
+  "*.rst",
+  "*.txt",
+]
+exclude = [
+  "/docs/.crate-docs",
+]
+
 [tool.hatch.build.targets.wheel]
 packages = ["src/crate"]
 

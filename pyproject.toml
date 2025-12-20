@@ -9,7 +9,7 @@ packages = ["src/crate"]
 path = "src/crate/client/__init__.py"
 
 [project]
-name = "crate-python"
+name = "crate"
 dynamic = ["version"]
 description = "CrateDB Python Client"
 authors = [{ name = "Crate.io", email = "office@crate.io" }]

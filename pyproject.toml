@@ -42,7 +42,11 @@ classifiers = [
         "Programming Language :: Python :: 3.14",
         "Programming Language :: Python :: Implementation :: CPython",
         "Programming Language :: Python :: Implementation :: PyPy",
+        "Programming Language :: SQL",
         "Topic :: Database",
+        "Topic :: Internet :: WWW/HTTP",
+        "Topic :: Scientific/Engineering :: Interface Engine/Protocol Translator",
+        "Topic :: System :: Networking",
 ]
 dependencies = [
     "importlib-metadata; python_version<'3.8'",

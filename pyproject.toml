@@ -26,7 +26,7 @@ name = "crate"
 dynamic = ["version"]
 description = "CrateDB Python Client"
 authors = [{ name = "Crate.io", email = "office@crate.io" }]
-requires-python = ">=3.10"
+requires-python = ">=3.6"
 readme = "README.rst"
 license = "Apache-2.0"
 classifiers = [
@@ -35,6 +35,10 @@ classifiers = [
         "Operating System :: OS Independent",
         "Programming Language :: Python",
         "Programming Language :: Python :: 3",
+        "Programming Language :: Python :: 3.6",
+        "Programming Language :: Python :: 3.7",
+        "Programming Language :: Python :: 3.8",
+        "Programming Language :: Python :: 3.9",
         "Programming Language :: Python :: 3.10",
         "Programming Language :: Python :: 3.11",
         "Programming Language :: Python :: 3.12",
@@ -59,7 +63,7 @@ dependencies = [
 dev = [
     "backports.zoneinfo<1; python_version<'3.9'",
     "certifi",
-    "coverage",
+    "coverage<8",
     "mypy<1.20",
     "pytest<10",
     "pytz",

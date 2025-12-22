@@ -55,7 +55,7 @@ dependencies = [
 dev = [
     "certifi>=2025.10.5",
     "coverage<8",
-    "mypy<1.19",
+    "mypy<1.20",
     "poethepoet<1",
     "pytest<10",
     "pytz>=2025.2",

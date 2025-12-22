@@ -57,7 +57,7 @@ dev = [
     "coverage<8",
     "mypy<1.19",
     "poethepoet<1",
-    "pytest<9",
+    "pytest<10",
     "pytz>=2025.2",
     "ruff<0.15",
     "setuptools>=80.9.0",

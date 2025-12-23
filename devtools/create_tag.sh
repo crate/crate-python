@@ -48,7 +48,7 @@ fi
 
 # check if tag to create has already been created
 WORKING_DIR=`dirname $0`
-VERSION=`python setup.py --version`
+VERSION=`hatch project metadata version`
 EXISTS=`git tag | grep $VERSION`
 
 if [ "$VERSION" == "$EXISTS" ]

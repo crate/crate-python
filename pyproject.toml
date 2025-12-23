@@ -1,5 +1,5 @@
 [build-system]
-requires = ["hatchling >= 1.26", "versioningit"]
+requires = ["hatchling", "versioningit"]
 build-backend = "hatchling.build"
 
 [tool.hatch.build.targets.sdist]
@@ -26,7 +26,7 @@ name = "crate"
 dynamic = ["version"]
 description = "CrateDB Python Client"
 authors = [{ name = "Crate.io", email = "office@crate.io" }]
-requires-python = ">=3.10"
+requires-python = ">=3.6"
 readme = "README.rst"
 license = "Apache-2.0"
 classifiers = [
@@ -42,25 +42,29 @@ classifiers = [
         "Programming Language :: Python :: 3.14",
         "Programming Language :: Python :: Implementation :: CPython",
         "Programming Language :: Python :: Implementation :: PyPy",
+        "Programming Language :: SQL",
         "Topic :: Database",
+        "Topic :: Internet :: WWW/HTTP",
+        "Topic :: Scientific/Engineering :: Interface Engine/Protocol Translator",
+        "Topic :: System :: Networking",
 ]
 dependencies = [
     "importlib-metadata; python_version<'3.8'",
-    "orjson>=3.11.3",
+    "orjson",
     "urllib3",
     "verlib2>=0.3.1",
 ]
 
 [dependency-groups]
 dev = [
-    "certifi>=2025.10.5",
+    "backports.zoneinfo<1; python_version<'3.9'",
+    "certifi",
     "coverage<8",
     "mypy<1.20",
     "poethepoet<1",
     "pytest<10",
-    "pytz>=2025.2",
+    "pytz",
     "ruff<0.15",
-    "setuptools>=80.9.0",
     "stopit<1.2",
 ]
 

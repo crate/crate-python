@@ -3,6 +3,11 @@ name: release
 
 on: push
 
+permissions:
+  contents: read
+  checks: write
+  statuses: write
+
 jobs:
   pypi:
     name: Build & publish package to pypi
@@ -15,11 +20,8 @@ jobs:
     if: startsWith(github.event.ref, 'refs/tags')
     steps:
       - uses: actions/checkout@v6
-
-      - name: Set up Python
-        uses: actions/setup-python@v6
         with:
-          python-version: ${{ matrix.python-version }}
+          persist-credentials: false
 
       - name: Set up uv
         uses: astral-sh/setup-uv@v7
@@ -31,10 +33,7 @@ jobs:
           version: "latest"
 
       - name: Build package
-        run: |
-          uv pip install --system build twine wheel
-          python -m build
-          twine check dist/*
+        run: uv build
 
       - name: Publish package to PyPI
         uses: pypa/gh-action-pypi-publish@release/v1

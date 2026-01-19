@@ -1,14 +1,23 @@
+---
 name: Tests
 
 on:
   push:
-    branches: [ main ]
+    branches:
+      - main
   pull_request: ~
   workflow_dispatch:
+  schedule:
+    - cron: '0 2 * * *'
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
+
+permissions:
+  contents: read
+  checks: write
+  statuses: write
 
 jobs:
   test:
@@ -18,33 +27,23 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: ['ubuntu-22.04']
-        python-version: ['3.9', '3.10', '3.11', '3.12', '3.13', '3.14']
-        cratedb-version: ['nightly']
+        os: ["ubuntu-24.04"]
+        python-version: ['3.10', '3.11', '3.12', '3.13', '3.14']
 
-        # To save resources, only verify the most recent Python versions on macOS.
+        # Save resources - only verify the most recent Python versions on macOS.
         include:
           - os: 'macos-latest'
-            cratedb-version: '5.9.2'
-            python-version: '3.11'
-          - os: 'macos-latest'
-            cratedb-version: '5.9.2'
-            python-version: '3.12'
-          - os: 'macos-latest'
-            cratedb-version: '5.9.2'
             python-version: '3.13'
+          - os: 'macos-latest'
+            python-version: '3.14'
 
     env:
-      CRATEDB_VERSION: ${{ matrix.cratedb-version }}
       CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
 
     steps:
       - uses: actions/checkout@v6
-
-      - name: Set up Python
-        uses: actions/setup-python@v6
         with:
-          python-version: ${{ matrix.python-version }}
+          persist-credentials: false
 
       - name: Set up uv
         uses: astral-sh/setup-uv@v7
@@ -53,30 +52,23 @@ jobs:
             pyproject.toml
           cache-suffix: ${{ matrix.python-version }}
           enable-cache: true
+          activate-environment: true
           version: "latest"
 
       - name: Setup env
-        run: uv sync
+        run: uv pip install --group dev -e .
 
-      - name: Invoke tests
+      - name: Run Linters
         run: |
-        
-          # Propagate build matrix information.
-          ./devtools/setup_ci.sh
+          ruff check .
+          mypy
 
-          # Bootstrap environment.
-          source bootstrap.sh
+      - name: Run tests
+        run: |
+          coverage run -m pytest
+          coverage combine
+          coverage xml
 
-          # Report about the test matrix slot.
-          echo "Invoking tests with CrateDB ${CRATEDB_VERSION}"
-
-          # Run linter.
-          poe lint
-
-          # Run tests.
-          poe test
-
-      # https://github.com/codecov/codecov-action
       - name: Upload coverage results to Codecov
         uses: codecov/codecov-action@v5
         env:

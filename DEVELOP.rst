@@ -5,95 +5,49 @@ CrateDB Python developer guide
 Setup
 =====
 
-Optionally install Python package and project manager `uv`_,
-in order to significantly speed up the package installation::
-
-    {apt,brew,pip,zypper} install uv
-    alias pip="uv pip"
-
-To start things off, bootstrap the sandbox environment::
+Clone the repository::
 
     git clone https://github.com/crate/crate-python
     cd crate-python
-    source bootstrap.sh
 
-This command should automatically install all prerequisites for the development
-sandbox and drop you into the virtualenv, ready for invoking further commands.
+Setup a virtualenv and install the package::
+
+    python -m venv .venv
+    source .venv/bin/activate
+    python -m pip install --group dev --group docs -e .
+
+Or if using `uv`_::
+
+    uv venv .venv
+    source .venv/bin/activate
+    uv pip install --group dev --group docs -e .
 
 
 Running tests
 =============
 
-All tests will be invoked using the Python interpreter that was used when
-creating the Python virtualenv. The test runner is `zope.testrunner`_.
+Ensure the virtualenv is active and run tests using `pytest`_::
 
-Some examples are outlined below. In order to learn about more details,
-see, for example, `useful command-line options for zope-testrunner`_.
+    python -m pytest
 
-Run all tests::
 
-    poe test
+See also:
 
-Run specific tests::
-
-    # Select modules.
-    bin/test -t test_cursor
-    bin/test -t client
-    bin/test -t testing
-
-    # Select doctests.
-    bin/test -t http.rst
-
-Ignore specific test directories::
-
-    bin/test --ignore_dir=testing
-
-The ``LayerTest`` test cases have quite some overhead. Omitting them will save
-a few cycles (~70 seconds runtime)::
-
-    bin/test -t '!LayerTest'
-
-Invoke all tests without integration tests (~10 seconds runtime)::
-
-    bin/test --layer '!crate.testing.layer.crate' --test '!LayerTest'
-
-Yet ~60 test cases, but only ~1 second runtime::
-
-    bin/test --layer '!crate.testing.layer.crate' --test '!LayerTest' \
-        -t '!test_client_threaded' -t '!test_no_retry_on_read_timeout' \
-        -t '!test_wait_for_http' -t '!test_table_clustered_by'
-
-To inspect the whole list of test cases, run::
-
-    bin/test --list-tests
-
-The CI setup on GitHub Actions (GHA) provides a full test matrix covering
-relevant Python versions. You can invoke the software tests against a specific
-Python interpreter or multiple `Python versions`_ on your workstation using
-`uv`_, by supplying the ``--python`` command-line option, or by defining the
-`UV_PYTHON`_ environment variable prior to invoking ``source bootstrap.sh``.
-
-*Note*: Before running the tests, make sure to stop all CrateDB instances which
-are listening on the default CrateDB transport port to avoid side effects with
-the test layer.
+- `How to invoke pytest <https://docs.pytest.org/en/stable/how-to/usage.html>` for more information.
 
 
 Formatting and linting code
 ===========================
 
-To use Ruff for code formatting, according to the standards configured in
-``pyproject.toml``, use::
+Use `ruff`_ for code formatting and linting::
 
-    poe format
+    ruff format --check .
+    ruff check .
 
-To lint the code base using Ruff and mypy, use::
 
-    poe lint
+Use ``mypy`` for type checking::
 
-Linting and software testing, all together now::
-
-    poe check
-
+    mypy
 
 Renew certificates
 ==================
@@ -120,8 +74,8 @@ In the release branch:
 
 - Push to origin/<release_branch>
 
-- Create a tag by running ``./devtools/create_tag.sh``. This will trigger a
-  Github action which releases the new version to PyPi.
+- Create a tag by running ``git tag -s <version>`` and push it ``git push --tags``.
+  This will trigger a Github action which releases the new version to PyPi.
 
 On branch ``main``:
 
@@ -147,7 +101,7 @@ Writing documentation
 
 The docs live under the ``docs`` directory.
 
-The docs are written written with ReStructuredText_ and processed with Sphinx_.
+The docs are written with ReStructuredText_ and processed with Sphinx_.
 
 Build the docs by running::
 
@@ -171,4 +125,4 @@ nothing special you need to do to get the live docs to update.
 .. _uv: https://docs.astral.sh/uv/
 .. _UV_PYTHON: https://docs.astral.sh/uv/configuration/environment/#uv_python
 .. _versions hosted on ReadTheDocs: https://readthedocs.org/projects/crate-python/versions/
-.. _zope.testrunner: https://pypi.org/project/zope.testrunner/
+.. _pytest: https://docs.pytest.org/en/stable/

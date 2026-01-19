@@ -1,5 +1,5 @@
+---
 name: docs
-
 on:
   workflow_dispatch:
   pull_request: ~
@@ -13,6 +13,11 @@ concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
+permissions:
+  contents: read
+  checks: write
+  statuses: write
+
 jobs:
   documentation:
 
@@ -22,13 +27,20 @@ jobs:
     steps:
       - name: Acquire sources
         uses: actions/checkout@v6
-
-      - name: Set up Python
-        uses: actions/setup-python@v6
         with:
-          python-version: '3.12'
-          cache: 'pip'
-          cache-dependency-path: 'setup.py'
+          persist-credentials: false
+
+      - name: Set up uv
+        uses: astral-sh/setup-uv@v7
+        with:
+          cache-dependency-glob: |
+            pyproject.toml
+          enable-cache: true
+          activate-environment: true
+          version: "latest"
+
+      - name: Setup env
+        run: uv pip install --group docs
 
       - name: Build docs
         run: |

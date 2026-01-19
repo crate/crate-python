@@ -1,5 +1,5 @@
 [build-system]
-requires = ["hatchling >= 1.26", "versioningit"]
+requires = ["hatch", "versioningit"]
 build-backend = "hatchling.build"
 
 [tool.hatch.build.targets.sdist]
@@ -42,36 +42,40 @@ classifiers = [
         "Programming Language :: Python :: 3.14",
         "Programming Language :: Python :: Implementation :: CPython",
         "Programming Language :: Python :: Implementation :: PyPy",
+        "Programming Language :: SQL",
         "Topic :: Database",
+        "Topic :: Internet :: WWW/HTTP",
+        "Topic :: Scientific/Engineering :: Interface Engine/Protocol Translator",
+        "Topic :: System :: Networking",
 ]
 dependencies = [
     "importlib-metadata; python_version<'3.8'",
-    "orjson>=3.11.3",
+    "orjson",
     "urllib3",
     "verlib2>=0.3.1",
 ]
 
 [dependency-groups]
 dev = [
-    "certifi>=2025.10.5",
-    "coverage<8",
+    "backports.zoneinfo<1; python_version<'3.9'",
+    "certifi",
+    "coverage",
     "mypy<1.20",
-    "poethepoet<1",
     "pytest<10",
-    "pytz>=2025.2",
+    "pytz",
     "ruff<0.15",
-    "setuptools>=80.9.0",
     "stopit<1.2",
+]
+docs = [
+    "sphinx",
+    "crate-docs-theme",
 ]
 
 
 [tool.coverage.run]
 branch = false
-omit = [
-  "tests/*",
-]
 parallel = true
-source = [ "src" ]
+source = ["src"]
 
 [tool.coverage.report]
 fail_under = 0
@@ -81,9 +85,6 @@ exclude_lines = [
     "raise NotImplemented",
 ]
 omit = [
-    "*/.buildout/eggs/*",
-    "buildout-cache/eggs/*",
-    "eggs/*",
     "parts/*",
     "src/crate/client/_pep440.py",
 ]
@@ -108,15 +109,10 @@ non_interactive = true
 [tool.pytest.ini_options]
 addopts = "-rA --verbosity=3"
 minversion = "2.0"
-log_level = "DEBUG"
-log_cli_level = "DEBUG"
 testpaths = [
-  "src",
   "tests",
 ]
 xfail_strict = true
-markers = [
-]
 
 
 [tool.ruff]
@@ -176,6 +172,8 @@ lint.per-file-ignores."tests/*" = [
     "S101", # Asserts.
     "S105", # Possible hardcoded password assigned to: "password"
     "S106", # Possible hardcoded password assigned to argument: "password"
+    "S202", # CrateDB tarballs are trusted
+    "S310", # False positive; it's a https url
     "S311", # Standard pseudo-random generators are not suitable for cryptographic purposes
 ]
 lint.per-file-ignores."src/crate/client/{connection.py,http.py}" = [
@@ -184,38 +182,4 @@ lint.per-file-ignores."src/crate/client/{connection.py,http.py}" = [
 ]
 lint.per-file-ignores."tests/client/test_http.py" = [
     "A004", # Import `ConnectionError` is shadowing a Python builtin
-]
-
-
-# ===================
-# Tasks configuration
-# ===================
-
-[tool.poe.tasks]
-
-check = [
-  "lint",
-  "test",
-]
-
-format = [
-  { cmd = "ruff format ." },
-  # Configure Ruff not to auto-fix (remove!):
-  # unused imports (F401), unused variables (F841), `print` statements (T201), and commented-out code (ERA001).
-  { cmd = "ruff check --fix --ignore=ERA --ignore=F401 --ignore=F841 --ignore=T20 --ignore=ERA001 ." },
-]
-
-lint = [
-  { cmd = "ruff format --check ." },
-  { cmd = "ruff check ." },
-  { cmd = "mypy" },
-]
-
-test = [
-  { cmd = "coverage erase" },
-  { cmd = "coverage run -m pytest" },
-  { cmd = "coverage run bin/test" },
-  { cmd = "coverage combine" },
-  { cmd = "coverage xml" },
-  { cmd = "coverage report" },
 ]

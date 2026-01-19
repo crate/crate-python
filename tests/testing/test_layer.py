@@ -18,11 +18,17 @@
 # However, if you have executed another commercial license agreement
 # with Crate these terms will supersede the license and you may use the
 # software solely pursuant to the terms of the relevant commercial agreement.
+
 import json
 import os
+import platform
+import sys
+import tarfile
 import tempfile
 import urllib
+import zipfile
 from io import BytesIO
+from pathlib import Path
 from unittest import TestCase, mock
 
 import urllib3
@@ -37,6 +43,34 @@ from crate.testing.layer import (
 )
 
 from .settings import crate_path
+
+URL_TMPL = "https://cdn.crate.io/downloads/releases/cratedb/{arch}_{os}/crate-6.1.2.{ext}"
+
+
+def get_crate_url() -> str:
+    extension = "tar.gz"
+
+    machine = platform.machine()
+    if machine.startswith("arm") or machine == "aarch64":
+        arch = "aarch64"
+    else:
+        arch = "x64"
+
+    if sys.platform.startswith("linux"):
+        os = "linux"
+    elif sys.platform.startswith("win32"):
+        os = "windows"
+        extension = "zip"
+    elif sys.platform.startswith("darwin"):
+        os = "mac"
+
+        # there are no aarch64/arm64 distributions available
+        # x64 should work via emulation layer
+        arch = "x64"
+    else:
+        raise ValueError(f"Unsupported platform: {sys.platform}")
+
+    return URL_TMPL.format(arch=arch, os=os, ext=extension)
 
 
 class LayerUtilsTest(TestCase):
@@ -127,6 +161,28 @@ class LayerUtilsTest(TestCase):
 
 
 class LayerTest(TestCase):
+    @classmethod
+    def setup_class(cls):
+        url = get_crate_url()
+        target_path = Path(crate_path())
+        if target_path.exists():
+            return
+        if not url.startswith("https:"):
+            raise ValueError("Invalid url")
+        filename, _msg = urllib.request.urlretrieve(url)
+        if sys.platform.startswith("win32"):
+            with zipfile.ZipFile(filename) as z:
+                first_file = z.namelist()[0]
+                folder_name = os.path.dirname(first_file)
+                z.extractall(target_path.parent)
+                (target_path.parent / folder_name).rename(target_path)
+        else:
+            with tarfile.open(filename) as t:
+                first_file = t.getnames()[0]
+                folder_name = os.path.dirname(first_file)
+                t.extractall(target_path.parent, filter="data")
+                (target_path.parent / folder_name).rename(target_path)
+
     def test_basic(self):
         """
         This layer starts and stops a ``Crate`` instance on a given host, port,

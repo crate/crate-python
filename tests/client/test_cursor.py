@@ -20,6 +20,7 @@
 # software solely pursuant to the terms of the relevant commercial agreement.
 
 import datetime
+import sys
 from ipaddress import IPv4Address
 from unittest import mock
 
@@ -58,6 +59,9 @@ def test_cursor_fetch(mocked_connection):
         ]
 
 
+@pytest.mark.skipif(
+    sys.version_info < (3, 10), reason="Test needs Python >= 3.10"
+)
 def test_cursor_description(mocked_connection):
     cursor = mocked_connection.cursor()
     response = {
@@ -249,6 +253,9 @@ def test_execute_with_bulk_args(mocked_connection):
     mocked_connection.client.sql.assert_called_once_with(statement, None, [[1]])
 
 
+@pytest.mark.skipif(
+    sys.version_info < (3, 10), reason="Converter needs Python >= 3.10"
+)
 def test_execute_custom_converter(mocked_connection):
     """
     Verify that a custom converter is correctly applied when passed to a cursor.
@@ -299,6 +306,9 @@ def test_execute_custom_converter(mocked_connection):
         ]
 
 
+@pytest.mark.skipif(
+    sys.version_info < (3, 10), reason="Converter needs Python >= 3.10"
+)
 def test_execute_with_converter_and_invalid_data_type(mocked_connection):
     converter = DefaultTypeConverter()
 
@@ -323,6 +333,9 @@ def test_execute_with_converter_and_invalid_data_type(mocked_connection):
             assert e.exception.args == "999 is not a valid DataType"
 
 
+@pytest.mark.skipif(
+    sys.version_info < (3, 10), reason="Converter needs Python >= 3.10"
+)
 def test_execute_array_with_converter(mocked_connection):
     converter = DefaultTypeConverter()
     cursor = mocked_connection.cursor(converter=converter)
@@ -345,6 +358,9 @@ def test_execute_array_with_converter(mocked_connection):
         ]
 
 
+@pytest.mark.skipif(
+    sys.version_info < (3, 10), reason="Converter needs Python >= 3.10"
+)
 def test_execute_array_with_converter_invalid(mocked_connection):
     converter = DefaultTypeConverter()
     cursor = mocked_connection.cursor(converter=converter)
@@ -368,6 +384,9 @@ def test_execute_array_with_converter_invalid(mocked_connection):
             )
 
 
+@pytest.mark.skipif(
+    sys.version_info < (3, 10), reason="Converter needs Python >= 3.10"
+)
 def test_execute_nested_array_with_converter(mocked_connection):
     converter = DefaultTypeConverter()
     cursor = mocked_connection.cursor(converter=converter)
@@ -405,6 +424,9 @@ def test_execute_nested_array_with_converter(mocked_connection):
         ]
 
 
+@pytest.mark.skipif(
+    sys.version_info < (3, 10), reason="Converter needs Python >= 3.10"
+)
 def test_executemany_with_converter(mocked_connection):
     converter = DefaultTypeConverter()
     cursor = mocked_connection.cursor(converter=converter)
@@ -426,6 +448,9 @@ def test_executemany_with_converter(mocked_connection):
         assert result == []
 
 
+@pytest.mark.skipif(
+    sys.version_info < (3, 10), reason="Converter needs Python >= 3.10"
+)
 def test_execute_with_timezone(mocked_connection):
     # Create a `Cursor` object with `time_zone`.
     tz_mst = datetime.timezone(datetime.timedelta(hours=7), name="MST")

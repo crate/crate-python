@@ -221,6 +221,8 @@ class Cursor:
     def _convert_rows(self):
         """
         Iterate rows, apply type converters, and generate converted rows.
+
+        The converter is only supported on Python >= 3.10.
         """
         if not ("col_types" in self._result and self._result["col_types"]):
             raise ValueError(
@@ -238,7 +240,7 @@ class Cursor:
         for row in self._result["rows"]:
             yield [
                 convert(value)
-                for convert, value in zip(converters, row, strict=False)
+                for convert, value in zip(converters, row, strict=False)  # type: ignore[call-overload]
             ]
 
     @property

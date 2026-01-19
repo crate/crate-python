@@ -1,4 +1,5 @@
 import doctest
+import sys
 import unittest
 
 from .layer import (
@@ -18,14 +19,17 @@ def test_suite():
     suite.addTest(doctest.DocTestSuite("crate.client.connection"))
     suite.addTest(doctest.DocTestSuite("crate.client.http"))
 
-    s = doctest.DocFileSuite(
-        "docs/by-example/connection.rst",
-        "docs/by-example/cursor.rst",
-        module_relative=False,
-        optionflags=flags,
-        encoding="utf-8",
-    )
-    suite.addTest(s)
+    if sys.version_info >= (3, 10):
+        # This suite includes converter tests,
+        # which are only available with Python 3.10 and newer.
+        s = doctest.DocFileSuite(
+            "docs/by-example/connection.rst",
+            "docs/by-example/cursor.rst",
+            module_relative=False,
+            optionflags=flags,
+            encoding="utf-8",
+        )
+        suite.addTest(s)
 
     s = doctest.DocFileSuite(
         "docs/by-example/https.rst",

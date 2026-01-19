@@ -64,7 +64,6 @@ dev = [
     "pytest<10",
     "pytz",
     "ruff<0.15",
-    "stopit<1.2",
 ]
 docs = [
     "sphinx",
@@ -107,7 +106,8 @@ non_interactive = true
 
 
 [tool.pytest.ini_options]
-addopts = "-rA --verbosity=3"
+addopts = "-rA --verbosity=3 --doctest-modules"
+doctest_optionflags = "NORMALIZE_WHITESPACE ELLIPSIS"
 minversion = "2.0"
 testpaths = [
   "tests",

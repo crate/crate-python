@@ -34,6 +34,7 @@ import tarfile
 import tempfile
 import threading
 import time
+from typing import Optional
 
 import urllib3
 
@@ -242,7 +243,7 @@ class CrateLayer:
         else:
             self.http_url = http_url_from_host_port(host, port)
 
-        self.process = None
+        self.process: Optional[subprocess.Popen] = None
         self.verbose = verbose
         self.env = env or {}
         self.env.setdefault("CRATE_USE_IPV4", "true")
@@ -364,7 +365,9 @@ class CrateLayer:
         if self.process:
             self.process.terminate()
             self.process.communicate(timeout=10)
-            self.process.stdout.close()
+            stdout = self.process.stdout
+            if stdout:
+                stdout.close()
             self.process = None
         self.monitor.stop()
         self._clean()

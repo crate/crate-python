@@ -36,22 +36,22 @@ With certificate verification
 
 When using a valid CA certificate, the connection will be successful:
 
-    >>> client = HttpClient([crate_host], ca_cert=cacert_valid)
+    >>> client = HttpClient([https_host], ca_cert=cacert_valid)
     >>> client.server_infos(client._get_server())
     ('https://localhost:65534', 'test', '0.0.0')
 
 When not providing a ``ca_cert`` file, the connection will fail:
 
-    >>> client = HttpClient([crate_host])
-    >>> client.server_infos(crate_host)
+    >>> client = HttpClient([https_host])
+    >>> client.server_infos(https_host)
     Traceback (most recent call last):
     ...
     crate.client.exceptions.ConnectionError: Server not available, ...certificate verify failed...
 
 Also, when providing an invalid ``ca_cert``, an error is raised:
 
-    >>> client = HttpClient([crate_host], ca_cert=cacert_invalid)
-    >>> client.server_infos(crate_host)
+    >>> client = HttpClient([https_host], ca_cert=cacert_invalid)
+    >>> client.server_infos(https_host)
     Traceback (most recent call last):
     ...
     crate.client.exceptions.ConnectionError: Server not available, ...certificate verify failed...
@@ -63,15 +63,15 @@ Without certificate verification
 When turning off certificate verification, calling the server will succeed,
 even when not providing a valid CA certificate:
 
-    >>> client = HttpClient([crate_host], verify_ssl_cert=False)
-    >>> client.server_infos(crate_host)
+    >>> client = HttpClient([https_host], verify_ssl_cert=False)
+    >>> client.server_infos(https_host)
     ('https://localhost:65534', 'test', '0.0.0')
 
 Without verification, calling the server will even work when using an invalid
 ``ca_cert``:
 
-    >>> client = HttpClient([crate_host], verify_ssl_cert=False, ca_cert=cacert_invalid)
-    >>> client.server_infos(crate_host)
+    >>> client = HttpClient([https_host], verify_ssl_cert=False, ca_cert=cacert_invalid)
+    >>> client.server_infos(https_host)
     ('https://localhost:65534', 'test', '0.0.0')
 
 
@@ -85,22 +85,22 @@ The ``HttpClient`` constructor takes two keyword arguments: ``cert_file`` and
 ``key_file``. Both should be strings pointing to the path of the client
 certificate and key file:
 
-    >>> client = HttpClient([crate_host], ca_cert=cacert_valid, cert_file=clientcert_valid, key_file=clientcert_valid)
-    >>> client.server_infos(crate_host)
+    >>> client = HttpClient([https_host], ca_cert=cacert_valid, cert_file=clientcert_valid, key_file=clientcert_valid)
+    >>> client.server_infos(https_host)
     ('https://localhost:65534', 'test', '0.0.0')
 
 When using an invalid client certificate, the connection will fail:
 
-    >>> client = HttpClient([crate_host], ca_cert=cacert_valid, cert_file=clientcert_invalid, key_file=clientcert_invalid)
-    >>> client.server_infos(crate_host)
+    >>> client = HttpClient([https_host], ca_cert=cacert_valid, cert_file=clientcert_invalid, key_file=clientcert_invalid)
+    >>> client.server_infos(https_host)
     Traceback (most recent call last):
     ...
     crate.client.exceptions.ConnectionError: Server not available, exception: HTTPSConnectionPool...
 
 The connection will also fail when providing an invalid CA certificate:
 
-    >>> client = HttpClient([crate_host], ca_cert=cacert_invalid, cert_file=clientcert_valid, key_file=clientcert_valid)
-    >>> client.server_infos(crate_host)
+    >>> client = HttpClient([https_host], ca_cert=cacert_invalid, cert_file=clientcert_valid, key_file=clientcert_valid)
+    >>> client.server_infos(https_host)
     Traceback (most recent call last):
     ...
     crate.client.exceptions.ConnectionError: Server not available, exception: HTTPSConnectionPool...
@@ -113,8 +113,8 @@ urrlib3 v2 dropped support for TLS 1.0 and TLS 1.1 by default, see `Modern secur
 HTTPS requires TLS 1.2+`_. If you need to re-enable it, use the ``ssl_relax_minimum_version`` flag,
 which will configure ``kwargs["ssl_minimum_version"] = ssl.TLSVersion.MINIMUM_SUPPORTED``.
 
-    >>> client = HttpClient([crate_host], ssl_relax_minimum_version=True, verify_ssl_cert=False)
-    >>> client.server_infos(crate_host)
+    >>> client = HttpClient([https_host], ssl_relax_minimum_version=True, verify_ssl_cert=False)
+    >>> client.server_infos(https_host)
     ('https://localhost:65534', 'test', '0.0.0')
 
 

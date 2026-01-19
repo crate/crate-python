@@ -34,23 +34,23 @@ If no ``server`` argument (or no argument at all) is passed, the default one
 
 When using a list of servers, the servers are selected by round-robin:
 
-    >>> invalid_host = "invalid_host:9999"
-    >>> even_more_invalid_host = "even_more_invalid_host:9999"
-    >>> http_client = HttpClient([crate_host, invalid_host, even_more_invalid_host], timeout=0.3)
+    >>> invalid_host1 = "192.0.2.1:9999"
+    >>> invalid_host2 = "192.0.2.2:9999"
+    >>> http_client = HttpClient([crate_host, invalid_host1, invalid_host2], timeout=0.3)
     >>> http_client._get_server()
     'http://127.0.0.1:44209'
 
     >>> http_client._get_server()
-    'http://invalid_host:9999'
+    'http://192.0.2.1:9999'
 
     >>> http_client._get_server()
-    'http://even_more_invalid_host:9999'
+    'http://192.0.2.2:9999'
 
     >>> http_client.close()
 
 Servers with connection errors will be removed from the active server list:
 
-    >>> http_client = HttpClient([invalid_host, even_more_invalid_host, crate_host], timeout=0.3)
+    >>> http_client = HttpClient([invalid_host1, invalid_host2, crate_host], timeout=0.3)
     >>> result = http_client.sql('select name from locations')
     >>> http_client._active_servers
     ['http://127.0.0.1:44209']
@@ -64,19 +64,17 @@ sleep after the first request::
     >>> import time; time.sleep(1)
     >>> server = http_client._get_server()
     >>> http_client._active_servers
-    ['http://invalid_host:9999',
-     'http://even_more_invalid_host:9999',
-     'http://127.0.0.1:44209']
+    ['http://127.0.0.1:44209', 'http://192.0.2.2:9999', 'http://192.0.2.1:9999']
     >>> http_client.close()
 
 If no active servers are available and the retry interval is not reached, just use the oldest
 inactive one:
 
-    >>> http_client = HttpClient([invalid_host, even_more_invalid_host, crate_host], timeout=0.3)
+    >>> http_client = HttpClient([invalid_host1, invalid_host2, crate_host], timeout=0.3)
     >>> result = http_client.sql('select name from locations')
     >>> http_client._active_servers = []
     >>> http_client._get_server()
-    'http://invalid_host:9999'
+    'http://192.0.2.1:9999'
     >>> http_client.close()
 
 SQL Statements

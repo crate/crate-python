@@ -25,7 +25,7 @@ replication. In order for clients to make use of this property it is
 recommended to specify all hosts of the cluster. This way if a server does not
 respond, the request is automatically routed to the next server:
 
-    >>> invalid_host = 'http://not_responding_host:4200'
+    >>> invalid_host = 'http://127.0.0.1:4201'
     >>> connection = client.connect([invalid_host, crate_host])
     >>> connection.close()
 
@@ -49,7 +49,7 @@ It's possible to define a default timeout value in seconds for all servers
 using the optional parameter ``timeout``. In this case, it will serve as a
 total timeout (connect and read):
 
-    >>> connection = client.connect([crate_host, invalid_host], timeout=5)
+    >>> connection = client.connect([crate_host, invalid_host], timeout=1)
     >>> connection.close()
 
 If you want to adjust the connect- vs. read-timeout values individually,
@@ -58,7 +58,7 @@ please use the ``urllib3.Timeout`` object like:
     >>> import urllib3
     >>> connection = client.connect(
     ...     [crate_host, invalid_host],
-    ...     timeout=urllib3.Timeout(connect=5, read=None))
+    ...     timeout=urllib3.Timeout(connect=1, read=None))
     >>> connection.close()
 
 Authentication

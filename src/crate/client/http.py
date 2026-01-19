@@ -34,7 +34,7 @@ import typing as t
 from base64 import b64encode
 from decimal import Decimal
 from time import time
-from urllib.parse import urlparse
+from urllib.parse import SplitResult, urlparse
 
 import orjson
 import urllib3
@@ -143,6 +143,18 @@ class Server:
             pool_kw.pop("socket_tcp_keepintvl", None),
             pool_kw.pop("socket_tcp_keepcnt", None),
         )
+        self.path_prefix = ""
+        try:
+            parsed_url = urlparse(server)
+        except Exception as e:
+            parsed_url = SplitResult("", "", "", "", "")
+            logger.warning(
+                "Unable to extract path prefix from server url: {ex}".format(
+                    ex=e
+                )
+            )
+        if parsed_url.path:
+            self.path_prefix = parsed_url.path
         self.pool = connection_from_url(
             server,
             socket_options=socket_options,
@@ -166,6 +178,10 @@ class Server:
 
         Always set the Content-Length and the Content-Type header.
         """
+        if self.path_prefix:
+            path = "/{path_prefix}/{path}".format(
+                path_prefix=self.path_prefix.strip("/"), path=path.strip("/")
+            )
         if headers is None:
             headers = {}
         if "Content-Length" not in headers:
@@ -276,20 +292,27 @@ def _server_url(server):
 
     >>> print(_server_url('a'))
     http://a
+    >>> print(_server_url('a/path'))
+    http://a/path
     >>> print(_server_url('a:9345'))
     http://a:9345
+    >>> print(_server_url('a:9345/path'))
+    http://a:9345/path
     >>> print(_server_url('https://a:9345'))
     https://a:9345
+    >>> print(_server_url('https://a:9345/path'))
+    https://a:9345/path
     >>> print(_server_url('https://a'))
     https://a
+    >>> print(_server_url('https://a/path'))
+    https://a/path
     >>> print(_server_url('demo.crate.io'))
     http://demo.crate.io
     """
     if not _HTTP_PAT.match(server):
         server = "http://%s" % server
     parsed = urlparse(server)
-    url = "%s://%s" % (parsed.scheme, parsed.netloc)
-    return url
+    return parsed.geturl()
 
 
 def _to_server_list(servers):

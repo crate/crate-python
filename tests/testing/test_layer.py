@@ -37,9 +37,8 @@ from crate.testing.layer import (
     prepend_http,
     wait_for_http_url,
 )
+from tests.client.settings import crate_path
 from tests.conftest import download_cratedb
-
-from .settings import crate_path
 
 
 class LayerUtilsTest(TestCase):

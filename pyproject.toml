@@ -49,7 +49,6 @@ classifiers = [
         "Topic :: System :: Networking",
 ]
 dependencies = [
-    "importlib-metadata; python_version<'3.8'",
     "orjson",
     "urllib3",
     "verlib2>=0.3.1",
@@ -57,7 +56,6 @@ dependencies = [
 
 [dependency-groups]
 dev = [
-    "backports.zoneinfo<1; python_version<'3.9'",
     "certifi",
     "coverage",
     "mypy<1.20",

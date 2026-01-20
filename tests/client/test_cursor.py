@@ -20,22 +20,16 @@
 # software solely pursuant to the terms of the relevant commercial agreement.
 
 import datetime
+import zoneinfo
 from ipaddress import IPv4Address
 from unittest import mock
 
 import pytest
-
-from crate.client.exceptions import ProgrammingError
-
-try:
-    import zoneinfo
-except ImportError:
-    from backports import zoneinfo
-
 import pytz
 
 from crate.client import connect
 from crate.client.converter import DataType, DefaultTypeConverter
+from crate.client.exceptions import ProgrammingError
 
 
 def test_cursor_fetch(mocked_connection):

@@ -241,6 +241,12 @@ and password.
     authenticate as the CrateDB superuser, which is ``crate``. The superuser
     does not have a password, so you can omit the ``password`` argument.
 
+Alternatively, authenticate using a JWT token:
+
+    >>> connection = client.connect(..., jwt_token="<JWT_TOKEN>")
+
+Here, replace ``<JWT_TOKEN>`` with the appropriate JWT token.
+
 .. _schema-selection:
 
 Schema selection

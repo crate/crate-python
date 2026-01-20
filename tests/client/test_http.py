@@ -632,14 +632,22 @@ class SharedStateRequestHandler(BaseHTTPRequestHandler):
         self.server.SHARED["schema"] = self.headers.get("Default-Schema")
 
         if self.headers.get("Authorization") is not None:
-            auth_header = self.headers["Authorization"].replace("Basic ", "")
-            credentials = b64decode(auth_header).decode("utf-8").split(":", 1)
-            self.server.SHARED["username"] = credentials[0]
-            if len(credentials) > 1 and credentials[1]:
-                self.server.SHARED["password"] = credentials[1]
-            else:
-                self.server.SHARED["password"] = None
+            auth_header = self.headers["Authorization"]
+            if "Basic" in auth_header:
+                auth_header = auth_header.replace("Basic ", "")
+                credentials = (
+                    b64decode(auth_header).decode("utf-8").split(":", 1)
+                )
+                self.server.SHARED["username"] = credentials[0]
+                if len(credentials) > 1 and credentials[1]:
+                    self.server.SHARED["password"] = credentials[1]
+                else:
+                    self.server.SHARED["password"] = None
+            elif "Bearer" in auth_header:
+                jwt_token = auth_header.replace("Bearer ", "")
+                self.server.SHARED["jwt_token"] = jwt_token
         else:
+            self.server.SHARED["jwt_token"] = None
             self.server.SHARED["username"] = None
 
         if self.headers.get("X-User") is not None:
@@ -705,3 +713,10 @@ def test_credentials(serve_http):
             assert server.SHARED["usernameFromXUser"] == username
             assert server.SHARED["username"] == username
             assert server.SHARED["password"] == password
+
+        # Just a single token, most convenient.
+        jwt_token = "testJwtToken"
+        with connect(url, jwt_token=jwt_token) as conn:
+            assert conn.client.jwt_token == jwt_token
+            conn.client.sql("select 3;")
+            assert server.SHARED["jwt_token"] == jwt_token

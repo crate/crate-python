@@ -158,6 +158,7 @@ class Server:
         headers=None,
         username=None,
         password=None,
+        jwt_token=None,
         schema=None,
         backoff_factor=0,
         **kwargs,
@@ -172,6 +173,10 @@ class Server:
             length = super_len(data)
             if length is not None:
                 headers["Content-Length"] = length
+
+        # Authentication token
+        if jwt_token is not None and "Authorization" not in headers:
+            headers["Authorization"] = "Bearer %s" % jwt_token
 
         # Authentication credentials
         if username is not None:
@@ -421,6 +426,7 @@ class Client:
         ssl_relax_minimum_version=False,
         username=None,
         password=None,
+        jwt_token=None,
         schema=None,
         pool_size=None,
         socket_keepalive=True,
@@ -477,6 +483,7 @@ class Client:
         self._local = threading.local()
         self.username = username
         self.password = password
+        self.jwt_token = jwt_token
         self.schema = schema
 
         self.path = self.SQL_PATH
@@ -593,6 +600,7 @@ class Client:
                     path,
                     username=self.username,
                     password=self.password,
+                    jwt_token=self.jwt_token,
                     backoff_factor=self.backoff_factor,
                     schema=self.schema,
                     **kwargs,

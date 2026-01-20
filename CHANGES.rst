@@ -4,8 +4,11 @@ Changes for crate
 
 Unreleased
 ==========
-- Modernize project definition to latest Python best practices. Thanks, @surister.
-- Exceptions: Exceptions from the BLOB API now include their full names.
+
+- Exceptions from the BLOB API now include their full names.
+
+- Dropped support for Python versions earlier than 3.10 as they've reached
+  their end of life.
 
 2025/01/30 2.0.0
 ================

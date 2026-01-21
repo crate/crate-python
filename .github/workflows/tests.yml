@@ -28,7 +28,13 @@ jobs:
       fail-fast: false
       matrix:
         os: ["ubuntu-24.04"]
-        python-version: ['3.10', '3.11', '3.12', '3.13', '3.14']
+        python-version: [
+          '3.10',
+          '3.11',
+          '3.12',
+          '3.13',
+          '3.14',
+        ]
 
         # Save resources - only verify the most recent Python versions on macOS.
         include:

@@ -53,8 +53,8 @@ class Connection:
     ):
         """
         :param servers:
-            either a string in the form of '<hostname>:<port>'
-            or a list of servers in the form of ['<hostname>:<port>', '...']
+            either a string in the form of '<hostname>:<port>/<path>'
+            or a list of servers in the form of ['<hostname>:<port>/<path>', '...']
         :param timeout:
             (optional)
             define the retry timeout for unreachable servers in seconds

@@ -154,7 +154,7 @@ class Server:
                 )
             )
         if parsed_url.path:
-            self.path_prefix = parsed_url.path
+            self.path_prefix = parsed_url.path.strip("/")
         self.pool = connection_from_url(
             server,
             socket_options=socket_options,
@@ -180,7 +180,7 @@ class Server:
         """
         if self.path_prefix:
             path = "/{path_prefix}/{path}".format(
-                path_prefix=self.path_prefix.strip("/"), path=path.strip("/")
+                path_prefix=self.path_prefix, path=path.strip("/")
             )
         if headers is None:
             headers = {}

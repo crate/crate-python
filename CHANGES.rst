@@ -10,6 +10,8 @@ Unreleased
 - Dropped support for Python versions earlier than 3.10 as they've reached
   their end of life.
 
+- Parse path prefixes from server URLs and propagate them to all requests.
+
 2025/01/30 2.0.0
 ================
 

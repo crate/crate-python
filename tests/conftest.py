@@ -227,7 +227,6 @@ def doctest_node():
 
 
 class HttpsServer(HTTPServer):
-
     PORT = 65534
     HOST = "localhost"
     CERT_FILE = assets_path("pki/server_valid.pem")

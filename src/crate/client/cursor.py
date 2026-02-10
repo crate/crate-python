@@ -193,7 +193,8 @@ class Cursor:
         else:
             raise ProgrammingError("Cursor closed")
 
-    __next__ = next
+    def __next__(self):
+        return self.next()
 
     @property
     def description(self):

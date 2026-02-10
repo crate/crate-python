@@ -10,13 +10,8 @@ permissions:
 
 jobs:
   pypi:
-    name: Build & publish package to pypi
-    runs-on: ${{ matrix.os }}
-    strategy:
-      fail-fast: false
-      matrix:
-        os: ['ubuntu-latest']
-        python-version: ['3.11']
+    name: 'Build & publish package to PyPI'
+    runs-on: 'ubuntu-latest'
     if: startsWith(github.event.ref, 'refs/tags')
     steps:
       - uses: actions/checkout@v6
@@ -25,12 +20,6 @@ jobs:
 
       - name: Set up uv
         uses: astral-sh/setup-uv@v7
-        with:
-          cache-dependency-glob: |
-            setup.py
-          cache-suffix: ${{ matrix.python-version }}
-          enable-cache: true
-          version: "latest"
 
       - name: Build package
         run: uv build

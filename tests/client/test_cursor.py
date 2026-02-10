@@ -250,9 +250,9 @@ def test_execute_custom_converter(mocked_connection):
     # Extends the DefaultTypeConverter
     converter = DefaultTypeConverter(
         {
-            DataType.BIT: lambda value: value is not None
-            and int(value[2:-1], 2)
-            or None
+            DataType.BIT: lambda value: (
+                value is not None and int(value[2:-1], 2) or None
+            )
         }
     )
     cursor = mocked_connection.cursor(converter=converter)

@@ -12,7 +12,6 @@ jobs:
   pypi:
     name: 'Build & publish package to PyPI'
     runs-on: 'ubuntu-latest'
-    if: startsWith(github.event.ref, 'refs/tags')
     steps:
       - uses: actions/checkout@v6
         with:
@@ -25,6 +24,7 @@ jobs:
         run: uv build
 
       - name: Publish package to PyPI
+        if: startsWith(github.event.ref, 'refs/tags')
         uses: pypa/gh-action-pypi-publish@release/v1
         with:
           user: __token__

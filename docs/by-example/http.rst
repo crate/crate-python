@@ -216,11 +216,12 @@ please use the ``urllib3.Timeout`` object like:
 
 When connecting to non-CrateDB servers, the HttpClient will raise a ConnectionError like this:
 
-    >>> http_client = HttpClient(["https://httpbin.org/html"])
+    >>> http_client = HttpClient(["https://example.org/"])
     >>> http_client.server_infos(http_client._get_server())
     Traceback (most recent call last):
     ...
-    crate.client.exceptions.ProgrammingError: 404 Client Error: NOT FOUND
+    crate.client.exceptions.ProgrammingError: Invalid server response of content-type 'text/html':
+    ...
     >>> http_client.close()
 
 When using the ``error_trace`` kwarg a full traceback of the server exception

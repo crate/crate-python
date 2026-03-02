@@ -192,7 +192,12 @@ def test_redirect_handling():
     # - https://github.com/crate/crate-python/issues/179
     # - https://github.com/crate/crate-python/issues/180
 
-    assert client.server_pool["http://localhost:4201"].pool.conn_kw == {
+    # Remove some optional server pool parameters added by `urllib3-future`.
+    conn_kw = client.server_pool["http://localhost:4201"].pool.conn_kw
+    conn_kw.pop("keepalive_delay", None)
+    conn_kw.pop("resolver", None)
+
+    assert conn_kw == {
         "socket_options": _get_socket_opts(keepalive=True)
     }
 

@@ -12,6 +12,8 @@ Unreleased
 
 - Parse path prefixes from server URLs and propagate them to all requests.
 
+- Fixed compatibility with ``urllib3-future``.
+
 2025/01/30 2.0.0
 ================
 

@@ -187,7 +187,7 @@ class Server:
         if "Content-Length" not in headers:
             length = super_len(data)
             if length is not None:
-                headers["Content-Length"] = length
+                headers["Content-Length"] = str(length)
 
         # Authentication credentials
         if username is not None:

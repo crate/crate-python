@@ -725,3 +725,15 @@ def test_credentials(serve_http):
             assert conn.client.jwt_token == jwt_token
             conn.client.sql("select 3;")
             assert server.SHARED["jwt_token"] == jwt_token
+
+
+def test_credentials_and_token(serve_http):
+    """
+    Verify exception when user provides both credentials and token.
+    """
+    with serve_http(SharedStateRequestHandler) as (server, url):
+        with pytest.raises(ProgrammingError) as excinfo:
+            connect(url, username="foo", jwt_token="bar")
+        assert excinfo.match(
+            "Either JWT tokens are accepted, or user credentials, but not both"
+        )

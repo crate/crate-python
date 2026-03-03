@@ -70,12 +70,14 @@ In the release branch:
 
 - Add a section for the new version in the ``CHANGES.rst`` file
 
-- Commit your changes with a message like "prepare release x.y.z"
+- Commit your changes with a message like "Release x.y.z"
 
 - Push to origin/<release_branch>
 
 - Create a tag by running ``git tag -s <version>`` and push it ``git push --tags``.
-  This will trigger a Github action which releases the new version to PyPi.
+  This will trigger a Github action which releases the new version to PyPI.
+
+- Announce the new release on the `GitHub Releases`_ page.
 
 On branch ``main``:
 
@@ -113,7 +115,7 @@ The docs are automatically built from Git by `Read the Docs`_ and there is
 nothing special you need to do to get the live docs to update.
 
 .. _@crate/docs: https://github.com/orgs/crate/teams/docs
-.. _buildout: https://pypi.python.org/pypi/zc.buildout
+.. _GitHub Releases: https://github.com/crate/crate-python/releases
 .. _PyPI: https://pypi.python.org/pypi
 .. _Python versions: https://docs.astral.sh/uv/concepts/python-versions/
 .. _Read the Docs: http://readthedocs.org

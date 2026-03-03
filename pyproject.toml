@@ -1,5 +1,5 @@
 [build-system]
-requires = ["hatch", "versioningit"]
+requires = ["hatchling", "versioningit"]
 build-backend = "hatchling.build"
 
 [tool.hatch.build.targets.sdist]

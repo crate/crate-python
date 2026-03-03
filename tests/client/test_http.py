@@ -197,9 +197,7 @@ def test_redirect_handling():
     conn_kw.pop("keepalive_delay", None)
     conn_kw.pop("resolver", None)
 
-    assert conn_kw == {
-        "socket_options": _get_socket_opts(keepalive=True)
-    }
+    assert conn_kw == {"socket_options": _get_socket_opts(keepalive=True)}
 
 
 def test_server_infos():

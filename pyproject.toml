@@ -51,7 +51,7 @@ classifiers = [
 dependencies = [
     "orjson",
     "urllib3",
-    "verlib2>=0.3.1",
+    "verlib2",
 ]
 
 [dependency-groups]

@@ -190,6 +190,13 @@ class Server:
             if length is not None:
                 headers["Content-Length"] = str(length)
 
+        # Sanity checks.
+        if jwt_token is not None and username is not None:
+            raise ValueError(
+                "Either JWT tokens are accepted, "
+                "or user credentials, but not both"
+            )
+
         # Authentication token
         if jwt_token is not None and "Authorization" not in headers:
             headers["Authorization"] = "Bearer %s" % jwt_token

@@ -5,6 +5,9 @@ Changes for crate
 Unreleased
 ==========
 
+2026/03/04 2.1.0
+================
+
 - Exceptions from the BLOB API now include their full names.
 
 - Dropped support for Python versions earlier than 3.10 as they've reached

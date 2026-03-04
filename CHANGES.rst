@@ -5,6 +5,9 @@ Changes for crate
 Unreleased
 ==========
 
+2026/03/04 2.1.1
+================
+
 - Fixed JWT token positional argument order.
 
 2026/03/04 2.1.0

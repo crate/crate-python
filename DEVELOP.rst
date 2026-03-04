@@ -57,8 +57,8 @@ For conducting TLS connectivity tests, there are a few X.509 certificates at
 within the README file in this folder.
 
 
-Preparing a release
-===================
+Preparing a GA release
+======================
 
 To create a new release, you must:
 
@@ -98,6 +98,23 @@ patch versions for the last two minor releases.
 To make changes to the RTD configuration (e.g., to activate or deactivate a
 release version), please contact the `@crate/docs`_ team.
 
+Preparing a pre-release
+=======================
+
+To give users a chance to validate new releases with significant changes on
+their downstream projects like `validate crate 2.1.0.dev3`_, it is recommended
+to publish pre-release packages, which is a manual procedure.
+
+First, in ``pyproject.toml``, temporarily swap out the dynamic versioning
+``dynamic = ["version"]`` and use a fixed version number, for example
+``version = "2.1.0.dev3"``.
+
+Build, validate, and upload the package to PyPI manually::
+
+    hatch build
+    twine check dist/crate-2.1.0.dev3*
+    hatch publish dist/crate-2.1.0.dev3*
+
 Writing documentation
 =====================
 
@@ -126,5 +143,6 @@ nothing special you need to do to get the live docs to update.
 .. _useful command-line options for zope-testrunner: https://pypi.org/project/zope.testrunner/#some-useful-command-line-options-to-get-you-started
 .. _uv: https://docs.astral.sh/uv/
 .. _UV_PYTHON: https://docs.astral.sh/uv/configuration/environment/#uv_python
+.. _validate crate 2.1.0.dev3: https://github.com/crate/crate-python/issues/787
 .. _versions hosted on ReadTheDocs: https://readthedocs.org/projects/crate-python/versions/
 .. _pytest: https://docs.pytest.org/en/stable/

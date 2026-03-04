@@ -26,6 +26,7 @@ name = "crate"
 dynamic = ["version"]
 description = "CrateDB Python Client"
 authors = [{ name = "Crate.io", email = "office@crate.io" }]
+requires-python = ">=3.10"
 readme = "README.rst"
 license = "Apache-2.0"
 classifiers = [

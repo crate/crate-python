@@ -170,9 +170,9 @@ class Server:
         headers=None,
         username=None,
         password=None,
-        jwt_token=None,
         schema=None,
         backoff_factor=0,
+        jwt_token=None,
         **kwargs,
     ):
         """Send a request
@@ -456,13 +456,13 @@ class Client:
         ssl_relax_minimum_version=False,
         username=None,
         password=None,
-        jwt_token=None,
         schema=None,
         pool_size=None,
         socket_keepalive=True,
         socket_tcp_keepidle=None,
         socket_tcp_keepintvl=None,
         socket_tcp_keepcnt=None,
+        jwt_token=None,
     ):
         if not servers:
             servers = [self.default_server]
@@ -630,9 +630,9 @@ class Client:
                     path,
                     username=self.username,
                     password=self.password,
-                    jwt_token=self.jwt_token,
                     backoff_factor=self.backoff_factor,
                     schema=self.schema,
+                    jwt_token=self.jwt_token,
                     **kwargs,
                 )
                 redirect_location = response.get_redirect_location()

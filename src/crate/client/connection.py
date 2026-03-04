@@ -42,7 +42,6 @@ class Connection:
         ssl_relax_minimum_version=False,
         username=None,
         password=None,
-        jwt_token=None,
         schema=None,
         pool_size=None,
         socket_keepalive=True,
@@ -51,6 +50,7 @@ class Connection:
         socket_tcp_keepcnt=None,
         converter=None,
         time_zone=None,
+        jwt_token=None,
     ):
         """
         :param servers:
@@ -82,8 +82,6 @@ class Connection:
             the username in the database.
         :param password:
             the password of the user in the database.
-        :param jwt_token:
-            the JWT token to authenticate with the server.
         :param pool_size:
             (optional)
             Number of connections to save that can be reused.
@@ -131,6 +129,8 @@ class Connection:
 
             When `time_zone` is given, the timestamp values will be transparently
             converted from UTC to use the given time zone.
+        :param jwt_token:
+            the JWT token to authenticate with the server.
         """  # noqa: E501
 
         self._converter = converter
@@ -151,13 +151,13 @@ class Connection:
                 ssl_relax_minimum_version=ssl_relax_minimum_version,
                 username=username,
                 password=password,
-                jwt_token=jwt_token,
                 schema=schema,
                 pool_size=pool_size,
                 socket_keepalive=socket_keepalive,
                 socket_tcp_keepidle=socket_tcp_keepidle,
                 socket_tcp_keepintvl=socket_tcp_keepintvl,
                 socket_tcp_keepcnt=socket_tcp_keepcnt,
+                jwt_token=jwt_token,
             )
         self.lowest_server_version = self._lowest_server_version()
         self._closed = False

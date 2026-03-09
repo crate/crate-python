@@ -637,7 +637,8 @@ class Client:
                 )
                 redirect_location = response.get_redirect_location()
                 if redirect_location and 300 <= response.status <= 308:
-                    redirect_server = _server_url(redirect_location)
+                    redirect_url = urlparse(redirect_location)
+                    redirect_server = f"{redirect_url.scheme}://{redirect_url.netloc}"
                     self._add_server(redirect_server)
                     return self._request(
                         method, path, server=redirect_server, **kwargs

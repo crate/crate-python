@@ -5,6 +5,9 @@ Changes for crate
 Unreleased
 ==========
 
+- Fixed a regression introduced in 2.1.0 that caused fetching blobs to fail
+  with a ``DigestNotFoundException`` if it required following a redirect.
+
 2026/03/04 2.1.1
 ================
 

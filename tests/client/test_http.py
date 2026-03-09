@@ -170,7 +170,7 @@ def test_redirect_handling():
     gets added to the server pool.
     """
     with patch(
-        REQUEST_PATH, return_value=fake_redirect("http://localhost:4201")
+        REQUEST_PATH, return_value=fake_redirect("http://localhost:4201/_blobs/blobs/fake_digest")
     ):
         client = Client(servers="localhost:4200")
 

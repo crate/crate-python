@@ -24,6 +24,7 @@ from datetime import datetime, timedelta, timezone
 
 from .converter import Converter, DataType
 from .exceptions import ProgrammingError
+from .params import convert_named_to_positional
 
 
 class Cursor:
@@ -53,6 +54,9 @@ class Cursor:
 
         if self._closed:
             raise ProgrammingError("Cursor closed")
+
+        if isinstance(parameters, dict):
+            sql, parameters = convert_named_to_positional(sql, parameters)
 
         self._result = self.connection.client.sql(
             sql, parameters, bulk_parameters

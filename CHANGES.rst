@@ -5,6 +5,11 @@ Changes for crate
 Unreleased
 ==========
 
+- Added named parameter support (``pyformat`` paramstyle). Passing a
+  :class:`py:dict` as ``parameters`` to ``cursor.execute()`` now accepts
+  ``%(name)s`` placeholders and converts them to positional ``?`` markers
+  client-side. Positional parameters using ``?`` continue to work unchanged.
+
 2026/03/09 2.1.2
 ================
 

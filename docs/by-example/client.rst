@@ -29,12 +29,8 @@ respond, the request is automatically routed to the next server:
     >>> connection = client.connect([invalid_host, crate_host])
     >>> connection.close()
 
-If no ``servers`` are given, the default one ``http://127.0.0.1:4200`` is used:
-
-    >>> connection = client.connect()
-    >>> connection.client._active_servers
-    ['http://127.0.0.1:4200']
-    >>> connection.close()
+If no ``servers`` are supplied to the ``connect`` method, the default address
+``http://127.0.0.1:4200`` is used.
 
 If the option ``error_trace`` is set to ``True``, the client will print a whole
 traceback if a server error occurs:

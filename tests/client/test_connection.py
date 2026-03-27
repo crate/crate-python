@@ -4,12 +4,20 @@ from unittest.mock import MagicMock, patch
 import pytest
 from urllib3 import Timeout
 
+import crate.client.exceptions
 from crate.client import connect
 from crate.client.connection import Connection
 from crate.client.exceptions import ProgrammingError
 from crate.client.http import Client
 
 from .settings import crate_host
+
+
+def test_invalid_server_address():
+    client = Client(servers="localhost:4202")
+    with pytest.raises(crate.client.exceptions.ConnectionError) as excinfo:
+        connect(client=client)
+    assert excinfo.match("Server not available")
 
 
 def test_lowest_server_version():

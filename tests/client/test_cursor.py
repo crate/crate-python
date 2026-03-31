@@ -503,7 +503,7 @@ def test_execute_with_named_params(mocked_connection):
         {"a": 1, "b": 2},
     )
     mocked_connection.client.sql.assert_called_once_with(
-        "SELECT * FROM t WHERE a = ? AND b = ?", [1, 2], None
+        "SELECT * FROM t WHERE a = $1 AND b = $2", [1, 2], None
     )
 
 
@@ -515,7 +515,7 @@ def test_execute_with_named_params_repeated(mocked_connection):
     cursor = mocked_connection.cursor()
     cursor.execute("SELECT %(x)s, %(x)s", {"x": 42})
     mocked_connection.client.sql.assert_called_once_with(
-        "SELECT ?, ?", [42, 42], None
+        "SELECT $1, $1", [42], None
     )
 
 

@@ -49,7 +49,13 @@ def _convert_named_to_positional(
         params = {"a": 1, "b": 2}
         # returns: ("SELECT * FROM t WHERE a = ? AND b = ?", [1, 2])
     """
-    positional: t.List[t.Any] = []
+    positions = {}
+    idx = 1
+    new_params = []
+    for k, v in params.items():
+        positions[k] = idx
+        new_params.append(v)
+        idx += 1
 
     def _replace(match: "re.Match[str]") -> str:
         name = match.group(1)
@@ -57,11 +63,11 @@ def _convert_named_to_positional(
             raise ProgrammingError(
                 f"Named parameter '{name}' not found in the parameters dict"
             )
-        positional.append(params[name])
-        return "?"
+        position = positions[name]
+        return f"${position}"
 
     converted_sql = _NAMED_PARAM_RE.sub(_replace, sql)
-    return converted_sql, positional
+    return converted_sql, new_params
 
 
 class Cursor:

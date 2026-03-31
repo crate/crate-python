@@ -492,6 +492,44 @@ def test_execute_with_timezone(mocked_connection):
         assert result[0][1].tzname() == "UTC"
 
 
+def test_execute_with_named_params(mocked_connection):
+    """
+    Verify that named %(name)s parameters are converted to positional ? markers
+    and the values are passed as an ordered list.
+    """
+    cursor = mocked_connection.cursor()
+    cursor.execute(
+        "SELECT * FROM t WHERE a = %(a)s AND b = %(b)s",
+        {"a": 1, "b": 2},
+    )
+    mocked_connection.client.sql.assert_called_once_with(
+        "SELECT * FROM t WHERE a = ? AND b = ?", [1, 2], None
+    )
+
+
+def test_execute_with_named_params_repeated(mocked_connection):
+    """
+    Verify that a parameter name used multiple times in the SQL is resolved
+    correctly each time it appears.
+    """
+    cursor = mocked_connection.cursor()
+    cursor.execute("SELECT %(x)s, %(x)s", {"x": 42})
+    mocked_connection.client.sql.assert_called_once_with(
+        "SELECT ?, ?", [42, 42], None
+    )
+
+
+def test_execute_with_named_params_missing(mocked_connection):
+    """
+    Verify that a ProgrammingError is raised when a placeholder name is absent
+    from the parameters dict, and that the client is never called.
+    """
+    cursor = mocked_connection.cursor()
+    with pytest.raises(ProgrammingError, match="Named parameter 'z' not found"):
+        cursor.execute("SELECT %(z)s", {"a": 1})
+    mocked_connection.client.sql.assert_not_called()
+
+
 def test_cursor_close(mocked_connection):
     """
     Verify that a cursor is not closed if not specifically closed.

@@ -18,12 +18,50 @@
 # However, if you have executed another commercial license agreement
 # with Crate these terms will supersede the license and you may use the
 # software solely pursuant to the terms of the relevant commercial agreement.
+import re
 import typing as t
 import warnings
 from datetime import datetime, timedelta, timezone
 
 from .converter import Converter, DataType
 from .exceptions import ProgrammingError
+
+_NAMED_PARAM_RE = re.compile(r"%\((\w+)\)s")
+
+
+def _convert_named_to_positional(
+    sql: str, params: t.Dict[str, t.Any]
+) -> t.Tuple[str, t.List[t.Any]]:
+    """Convert pyformat-style named parameters to positional qmark parameters.
+
+    Converts ``%(name)s`` placeholders to ``?`` and returns an ordered list
+    of corresponding values extracted from ``params``.
+
+    The same name may appear multiple times; each occurrence appends the
+    value to the positional list independently.
+
+    Raises ``ProgrammingError`` if a placeholder name is absent from ``params``.
+    Extra keys in ``params`` are silently ignored.
+
+    Example::
+
+        sql = "SELECT * FROM t WHERE a = %(a)s AND b = %(b)s"
+        params = {"a": 1, "b": 2}
+        # returns: ("SELECT * FROM t WHERE a = ? AND b = ?", [1, 2])
+    """
+    positional: t.List[t.Any] = []
+
+    def _replace(match: "re.Match[str]") -> str:
+        name = match.group(1)
+        if name not in params:
+            raise ProgrammingError(
+                f"Named parameter '{name}' not found in the parameters dict"
+            )
+        positional.append(params[name])
+        return "?"
+
+    converted_sql = _NAMED_PARAM_RE.sub(_replace, sql)
+    return converted_sql, positional
 
 
 class Cursor:
@@ -53,6 +91,9 @@ class Cursor:
 
         if self._closed:
             raise ProgrammingError("Cursor closed")
+
+        if isinstance(parameters, dict):
+            sql, parameters = _convert_named_to_positional(sql, parameters)
 
         self._result = self.connection.client.sql(
             sql, parameters, bulk_parameters

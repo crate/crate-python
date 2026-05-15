@@ -706,7 +706,9 @@ class Client:
             data = gzip.compress(data, compresslevel=6)
             headers["Content-Encoding"] = "gzip"
 
-        response = self._request(method, path, data=data, headers=headers or None)
+        response = self._request(
+            method, path, data=data, headers=headers or None
+        )
         _raise_for_status(response)
         if len(response.data) > 0:
             return _json_from_response(response)

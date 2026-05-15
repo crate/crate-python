@@ -748,7 +748,11 @@ def test_compress_client_disabled():
         return fake_response(200)
 
     with patch(REQUEST_PATH, side_effect=capturing):
-        client = Client(servers="localhost:4200", compress_client=False, compress_server=False)
+        client = Client(
+            servers="localhost:4200",
+            compress_client=False,
+            compress_server=False,
+        )
         client.sql("SELECT 1")
     assert "Content-Encoding" not in captured["headers"]
 
@@ -794,7 +798,7 @@ def test_compress_client_below_threshold():
 
 
 def test_compress_server_sends_accept_encoding():
-    """Accept-Encoding: gzip, deflate header is sent when server compression is on."""
+    """Accept-Encoding: gzip, deflate is sent when server compression is on."""
     captured = {}
 
     def capturing(method, path, **kwargs):
@@ -802,7 +806,11 @@ def test_compress_server_sends_accept_encoding():
         return fake_response(200)
 
     with patch(REQUEST_PATH, side_effect=capturing):
-        client = Client(servers="localhost:4200", compress_client=False, compress_server=True)
+        client = Client(
+            servers="localhost:4200",
+            compress_client=False,
+            compress_server=True,
+        )
         client.sql("SELECT 1")
     assert captured["headers"].get("Accept-Encoding") == "gzip, deflate"
 
@@ -816,13 +824,17 @@ def test_compress_server_disabled():
         return fake_response(200)
 
     with patch(REQUEST_PATH, side_effect=capturing):
-        client = Client(servers="localhost:4200", compress_client=False, compress_server=False)
+        client = Client(
+            servers="localhost:4200",
+            compress_client=False,
+            compress_server=False,
+        )
         client.sql("SELECT 1")
     assert "Accept-Encoding" not in captured["headers"]
 
 
 def test_compress_server_default_disabled():
-    """No Accept-Encoding header when Client is instantiated with default args."""
+    """No Accept-Encoding header with Client instantiated by default args."""
     captured = {}
 
     def capturing(method, path, **kwargs):

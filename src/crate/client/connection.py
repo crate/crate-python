@@ -51,6 +51,10 @@ class Connection:
         converter=None,
         time_zone=None,
         jwt_token=None,
+        compress_client=True,
+        compress_threshold=8192,
+        compress_algorithm="gzip",
+        compress_server=False,
     ):
         """
         :param servers:
@@ -131,6 +135,21 @@ class Connection:
             converted from UTC to use the given time zone.
         :param jwt_token:
             the JWT token to authenticate with the server.
+        :param compress_client:
+            (optional, defaults to ``True``)
+            Compress outgoing request bodies with gzip. Payloads smaller than
+            ``compress_threshold`` bytes are sent uncompressed.
+        :param compress_threshold:
+            (optional, defaults to ``8192``)
+            Minimum request body size in bytes to trigger client-side compression.
+        :param compress_algorithm:
+            (optional, defaults to ``"gzip"``)
+            Compression algorithm. Only ``"gzip"`` is supported in this version.
+        :param compress_server:
+            (optional, defaults to ``False``)
+            Send ``Accept-Encoding: gzip`` so the server may return compressed
+            responses. Disabled by default to avoid BREACH-class oracle attacks
+            on compressed TLS responses.
         """  # noqa: E501
 
         self._converter = converter
@@ -158,6 +177,10 @@ class Connection:
                 socket_tcp_keepintvl=socket_tcp_keepintvl,
                 socket_tcp_keepcnt=socket_tcp_keepcnt,
                 jwt_token=jwt_token,
+                compress_client=compress_client,
+                compress_threshold=compress_threshold,
+                compress_algorithm=compress_algorithm,
+                compress_server=compress_server,
             )
         self.lowest_server_version = self._lowest_server_version()
         self._closed = False

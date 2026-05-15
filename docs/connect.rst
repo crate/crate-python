@@ -266,6 +266,47 @@ with the rest of your arguments.
 
    However, you can query any schema you like by specifying it in the query.
 
+.. _compression:
+
+Request and response compression
+=================================
+
+By default, ``crate-python`` compresses outgoing request bodies with gzip
+(``compress_client=True``). Response compression is opt-in (``compress_server``
+defaults to ``False``; see the security note below)::
+
+    >>> connection = client.connect('localhost:4200')
+    # compress_client=True, compress_server=False are the defaults
+
+To disable client-side request compression::
+
+    >>> connection = client.connect('localhost:4200', compress_client=False)
+
+Compression is skipped for request bodies smaller than ``compress_threshold``
+bytes (default ``8192``). This avoids CPU overhead on tiny payloads where
+bandwidth savings are negligible::
+
+    >>> connection = client.connect('localhost:4200', compress_threshold=16384)
+
+To enable server-side response compression, set ``compress_server=True``. The
+server must also have ``http.compression=true``. The client
+sends ``Accept-Encoding: gzip, deflate`` and urllib3 decompresses responses
+transparently::
+
+    >>> connection = client.connect('localhost:4200', compress_server=True)
+
+.. NOTE::
+
+   ``compress_server`` defaults to ``False`` as a precaution against
+   `BREACH`_-class attacks. BREACH allows an attacker who can both observe
+   TLS traffic *and* inject content into requests to gradually recover secrets
+   from compressed HTTP responses. CrateDB SQL responses do not contain
+   credentials, so the practical risk is low for most deployments. Enable
+   ``compress_server=True`` explicitly if your deployment benefits from
+   response compression and you have assessed the risk.
+
+.. _BREACH: https://en.wikipedia.org/wiki/BREACH
+
 Next steps
 ==========
 

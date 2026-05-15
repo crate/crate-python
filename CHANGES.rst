@@ -5,6 +5,14 @@ Changes for crate
 Unreleased
 ==========
 
+- Added gzip compression for outgoing request bodies (``compress_client=True``,
+  default enabled). Use ``compress_threshold`` (default: ``8192`` bytes) to
+  skip compression on small payloads. Server-side response compression
+  (``compress_server``) is available but defaults to ``False`` to avoid
+  BREACH-class oracle attacks on TLS-compressed responses; opt in explicitly
+  with ``compress_server=True``. Server-side response compression requires
+  ``http.compression=true`` in server configuration.
+
 - Added named parameter support (``pyformat`` paramstyle). Passing a
   :class:`py:dict` as ``parameters`` to ``cursor.execute()`` now accepts
   ``%(name)s`` placeholders and converts them to positional ``?`` markers

@@ -200,6 +200,48 @@ def test_redirect_handling():
     assert conn_kw == {"socket_options": _get_socket_opts(keepalive=True)}
 
 
+@pytest.mark.parametrize("method,args,success_status", [
+    ("blob_exists", ("blobs", "fake_digest"), 200),
+    ("blob_put",    ("blobs", "fake_digest", b"data"), 201),
+    ("blob_del",    ("blobs", "fake_digest"), 204),
+    ("blob_get",    ("blobs", "fake_digest"), 200),
+])
+def test_redirect_blob_preserves_basic_auth(method, args, success_status):
+    """
+    Verify Basic HTTP auth credentials are forwarded when following blob
+    endpoint redirects.
+    """
+    redirect = fake_redirect("http://localhost:4201/_blobs/blobs/fake_digest")
+    success = fake_response(success_status)
+
+    with patch(REQUEST_PATH, side_effect=[redirect, success]) as mock_req:
+        client = Client(
+            servers="localhost:4200", username="admin", password="secret"
+        )
+        getattr(client, method)(*args)
+
+    assert mock_req.call_count == 2
+    for call in mock_req.call_args_list:
+        assert call.kwargs.get("username") == "admin"
+        assert call.kwargs.get("password") == "secret"
+
+
+def test_redirect_blob_preserves_jwt_auth():
+    """
+    Verify JWT bearer token is forwarded when following blob endpoint redirects.
+    """
+    redirect = fake_redirect("http://localhost:4201/_blobs/blobs/fake_digest")
+    success = fake_response(200)
+
+    with patch(REQUEST_PATH, side_effect=[redirect, success]) as mock_req:
+        client = Client(servers="localhost:4200", jwt_token="my.jwt.token")
+        client.blob_exists("blobs", "fake_digest")
+
+    assert mock_req.call_count == 2
+    for call in mock_req.call_args_list:
+        assert call.kwargs.get("jwt_token") == "my.jwt.token"
+
+
 def test_server_infos():
     """
     Verify that when a `MaxRetryError` is raised, a `ConnectionError` is raised.

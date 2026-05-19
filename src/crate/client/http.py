@@ -464,10 +464,7 @@ class Client:
         socket_tcp_keepintvl=None,
         socket_tcp_keepcnt=None,
         jwt_token=None,
-        compress_client=True,
-        compress_threshold=8192,
-        compress_algorithm="gzip",
-        compress_server=False,
+        compress=8192,
     ):
         if not servers:
             servers = [self.default_server]
@@ -520,16 +517,7 @@ class Client:
         self.password = password
         self.jwt_token = jwt_token
         self.schema = schema
-
-        if compress_algorithm != "gzip":
-            raise ValueError(
-                f"Unsupported compress_algorithm: {compress_algorithm!r}. "
-                "Only 'gzip' is supported."
-            )
-        self.compress_client = compress_client
-        self.compress_threshold = compress_threshold
-        self.compress_algorithm = compress_algorithm
-        self.compress_server = compress_server
+        self.compress = compress
 
         self.path = self.SQL_PATH
         if error_trace:
@@ -693,22 +681,16 @@ class Client:
         """
         Issue request against the crate HTTP API.
         """
-        headers = {}
+        headers = {"Accept-Encoding": "gzip, deflate"}
 
-        if self.compress_server:
-            headers["Accept-Encoding"] = "gzip, deflate"
-
-        if (
-            self.compress_client
-            and self.compress_algorithm == "gzip"
-            and len(data) >= self.compress_threshold
-        ):
+        compress_enabled = self.compress is True or (
+            not isinstance(self.compress, bool) and len(data) >= self.compress
+        )
+        if compress_enabled:
             data = gzip.compress(data, compresslevel=6)
             headers["Content-Encoding"] = "gzip"
 
-        response = self._request(
-            method, path, data=data, headers=headers or None
-        )
+        response = self._request(method, path, data=data, headers=headers)
         _raise_for_status(response)
         if len(response.data) > 0:
             return _json_from_response(response)

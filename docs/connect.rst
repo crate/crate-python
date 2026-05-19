@@ -271,41 +271,26 @@ with the rest of your arguments.
 Request and response compression
 =================================
 
-By default, ``crate-python`` compresses outgoing request bodies with gzip
-(``compress_client=True``). Response compression is opt-in (``compress_server``
-defaults to ``False``; see the security note below)::
+The ``compress`` parameter controls gzip compression of outgoing request
+bodies. The default ``8192`` compresses payloads larger than 8 KB::
 
     >>> connection = client.connect('localhost:4200')
-    # compress_client=True, compress_server=False are the defaults
+    # compress=8192 is the default — payloads > 8 KB are gzip-compressed
 
-To disable client-side request compression::
+To always compress, regardless of payload size::
 
-    >>> connection = client.connect('localhost:4200', compress_client=False)
+    >>> connection = client.connect('localhost:4200', compress=True)
 
-Compression is skipped for request bodies smaller than ``compress_threshold``
-bytes (default ``8192``). This avoids CPU overhead on tiny payloads where
-bandwidth savings are negligible::
+To disable compression entirely::
 
-    >>> connection = client.connect('localhost:4200', compress_threshold=16384)
+    >>> connection = client.connect('localhost:4200', compress=False)
 
-To enable server-side response compression, set ``compress_server=True``. The
-server must also have ``http.compression=true``. The client
-sends ``Accept-Encoding: gzip, deflate`` and urllib3 decompresses responses
-transparently::
+To use a custom threshold (bytes)::
 
-    >>> connection = client.connect('localhost:4200', compress_server=True)
+    >>> connection = client.connect('localhost:4200', compress=4096)
 
-.. NOTE::
-
-   ``compress_server`` defaults to ``False`` as a precaution against
-   `BREACH`_-class attacks. BREACH allows an attacker who can both observe
-   TLS traffic *and* inject content into requests to gradually recover secrets
-   from compressed HTTP responses. CrateDB SQL responses do not contain
-   credentials, so the practical risk is low for most deployments. Enable
-   ``compress_server=True`` explicitly if your deployment benefits from
-   response compression and you have assessed the risk.
-
-.. _BREACH: https://en.wikipedia.org/wiki/BREACH
+The driver always sends ``Accept-Encoding: gzip, deflate`` so the server
+may return compressed responses if compression is enabled. 
 
 Next steps
 ==========

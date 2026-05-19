@@ -737,111 +737,82 @@ def test_credentials_and_token(serve_http):
             "Either JWT tokens are accepted, or user credentials, but not both"
         )
 
-def test_compress_client_disabled():
-    """
-    No Content-Encoding header when client compression is off.
-    """
+def test_compress_accept_encoding_always_sent():
+    """Accept-Encoding is sent even when compression is disabled."""
     captured = {}
 
-    def capturing(method, path, **kwargs):
+    def capturing(*_, **kwargs):
         captured["headers"] = kwargs.get("headers") or {}
         return fake_response(200)
 
     with patch(REQUEST_PATH, side_effect=capturing):
-        client = Client(
-            servers="localhost:4200",
-            compress_client=False,
-            compress_server=False,
-        )
-        client.sql("SELECT 1")
+        Client(servers="localhost:4200", compress=False).sql("SELECT 1")
+    assert captured["headers"].get("Accept-Encoding") == "gzip, deflate"
+
+
+def test_compress_false_no_content_encoding():
+    """No Content-Encoding header when compress=False."""
+    captured = {}
+
+    def capturing(*_, **kwargs):
+        captured["headers"] = kwargs.get("headers") or {}
+        return fake_response(200)
+
+    with patch(REQUEST_PATH, side_effect=capturing):
+        Client(servers="localhost:4200", compress=False).sql("SELECT 1")
     assert "Content-Encoding" not in captured["headers"]
 
 
-def test_compress_client_enabled():
-    """Request body is gzip-compressed and Content-Encoding header is set."""
+def test_compress_true_always_compresses():
+    """compress=True compresses regardless of payload size."""
     captured = {}
 
-    def capturing(method, path, **kwargs):
+    def capturing(*_, **kwargs):
         captured["data"] = kwargs.get("data", b"")
         captured["headers"] = kwargs.get("headers") or {}
         return fake_response(200)
 
     with patch(REQUEST_PATH, side_effect=capturing):
-        client = Client(
-            servers="localhost:4200",
-            compress_client=True,
-            compress_threshold=0,
-            compress_server=False,
-        )
-        client.sql("SELECT 1")
+        Client(servers="localhost:4200", compress=True).sql("SELECT 1")
     assert captured["headers"].get("Content-Encoding") == "gzip"
     assert b'"stmt"' in gzip.decompress(captured["data"])
 
 
-def test_compress_client_below_threshold():
-    """No Content-Encoding header when payload is below the threshold."""
+def test_compress_threshold_above():
+    """Payload above threshold is compressed."""
     captured = {}
 
-    def capturing(method, path, **kwargs):
+    def capturing(*_, **kwargs):
         captured["headers"] = kwargs.get("headers") or {}
         return fake_response(200)
 
     with patch(REQUEST_PATH, side_effect=capturing):
-        client = Client(
-            servers="localhost:4200",
-            compress_client=True,
-            compress_threshold=999_999,
-            compress_server=False,
-        )
-        client.sql("SELECT 1")
+        Client(servers="localhost:4200", compress=0).sql("SELECT 1")
+    assert captured["headers"].get("Content-Encoding") == "gzip"
+
+
+def test_compress_threshold_below():
+    """Payload below threshold is not compressed."""
+    captured = {}
+
+    def capturing(*_, **kwargs):
+        captured["headers"] = kwargs.get("headers") or {}
+        return fake_response(200)
+
+    with patch(REQUEST_PATH, side_effect=capturing):
+        Client(servers="localhost:4200", compress=999_999).sql("SELECT 1")
     assert "Content-Encoding" not in captured["headers"]
 
 
-def test_compress_server_sends_accept_encoding():
-    """Accept-Encoding: gzip, deflate is sent when server compression is on."""
+def test_compress_default():
+    """Default args: Accept-Encoding sent, small payload not compressed."""
     captured = {}
 
-    def capturing(method, path, **kwargs):
+    def capturing(*_, **kwargs):
         captured["headers"] = kwargs.get("headers") or {}
         return fake_response(200)
 
     with patch(REQUEST_PATH, side_effect=capturing):
-        client = Client(
-            servers="localhost:4200",
-            compress_client=False,
-            compress_server=True,
-        )
-        client.sql("SELECT 1")
+        Client(servers="localhost:4200").sql("SELECT 1")
     assert captured["headers"].get("Accept-Encoding") == "gzip, deflate"
-
-
-def test_compress_server_disabled():
-    """No Accept-Encoding header when server compression is off."""
-    captured = {}
-
-    def capturing(method, path, **kwargs):
-        captured["headers"] = kwargs.get("headers") or {}
-        return fake_response(200)
-
-    with patch(REQUEST_PATH, side_effect=capturing):
-        client = Client(
-            servers="localhost:4200",
-            compress_client=False,
-            compress_server=False,
-        )
-        client.sql("SELECT 1")
-    assert "Accept-Encoding" not in captured["headers"]
-
-
-def test_compress_server_default_disabled():
-    """No Accept-Encoding header with Client instantiated by default args."""
-    captured = {}
-
-    def capturing(method, path, **kwargs):
-        captured["headers"] = kwargs.get("headers") or {}
-        return fake_response(200)
-
-    with patch(REQUEST_PATH, side_effect=capturing):
-        client = Client(servers="localhost:4200")
-        client.sql("SELECT 1")
-    assert "Accept-Encoding" not in captured["headers"]
+    assert "Content-Encoding" not in captured["headers"]

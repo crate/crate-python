@@ -266,6 +266,32 @@ with the rest of your arguments.
 
    However, you can query any schema you like by specifying it in the query.
 
+.. _compression:
+
+Request and response compression
+=================================
+
+The ``compress`` parameter controls gzip compression of outgoing request
+bodies. The default ``8192`` compresses payloads larger than 8 KB::
+
+    >>> connection = client.connect('localhost:4200')
+    # compress=8192 is the default — payloads > 8 KB are gzip-compressed
+
+To always compress, regardless of payload size::
+
+    >>> connection = client.connect('localhost:4200', compress=True)
+
+To disable compression entirely::
+
+    >>> connection = client.connect('localhost:4200', compress=False)
+
+To use a custom threshold (bytes)::
+
+    >>> connection = client.connect('localhost:4200', compress=4096)
+
+The driver always sends ``Accept-Encoding: gzip, deflate`` so the server
+may return compressed responses if compression is enabled. 
+
 Next steps
 ==========
 

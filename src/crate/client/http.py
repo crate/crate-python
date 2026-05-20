@@ -464,7 +464,7 @@ class Client:
         socket_tcp_keepintvl=None,
         socket_tcp_keepcnt=None,
         jwt_token=None,
-        compress=8192,
+        compress: t.Union[int, bool] = 8192,
     ):
         if not servers:
             servers = [self.default_server]
@@ -489,7 +489,7 @@ class Client:
                 )
 
         self._active_servers = servers
-        self._inactive_servers = []
+        self._inactive_servers: t.List[t.Tuple[float, str, str]] = []
         pool_kw = _pool_kw_args(
             verify_ssl_cert,
             ca_cert,
@@ -508,7 +508,7 @@ class Client:
         )
         self.ssl_relax_minimum_version = ssl_relax_minimum_version
         self.backoff_factor = backoff_factor
-        self.server_pool = {}
+        self.server_pool: t.Dict[str, Server] = {}
         self._update_server_pool(servers, **pool_kw)
         self._pool_kw = pool_kw
         self._lock = threading.RLock()
@@ -517,6 +517,11 @@ class Client:
         self.password = password
         self.jwt_token = jwt_token
         self.schema = schema
+
+        if not isinstance(compress, (bool, int)):
+            raise TypeError(
+                f"compress must be bool or int, got {type(compress).__name__!r}"
+            )
         self.compress = compress
 
         self.path = self.SQL_PATH

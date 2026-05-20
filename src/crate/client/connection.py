@@ -19,6 +19,8 @@
 # with Crate these terms will supersede the license and you may use the
 # software solely pursuant to the terms of the relevant commercial agreement.
 
+from typing import Union
+
 from verlib2 import Version
 
 from .blob import BlobContainer
@@ -51,7 +53,7 @@ class Connection:
         converter=None,
         time_zone=None,
         jwt_token=None,
-        compress=8192,
+        compress: Union[int, bool] = 8192,
     ):
         """
         :param servers:

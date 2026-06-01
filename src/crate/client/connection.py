@@ -19,6 +19,8 @@
 # with Crate these terms will supersede the license and you may use the
 # software solely pursuant to the terms of the relevant commercial agreement.
 
+from typing import Union
+
 from verlib2 import Version
 
 from .blob import BlobContainer
@@ -50,11 +52,13 @@ class Connection:
         socket_tcp_keepcnt=None,
         converter=None,
         time_zone=None,
+        jwt_token=None,
+        compress: Union[int, bool] = 8192,
     ):
         """
         :param servers:
-            either a string in the form of '<hostname>:<port>'
-            or a list of servers in the form of ['<hostname>:<port>', '...']
+            either a string in the form of '<hostname>:<port>/<path>'
+            or a list of servers in the form of ['<hostname>:<port>/<path>', '...']
         :param timeout:
             (optional)
             define the retry timeout for unreachable servers in seconds
@@ -128,6 +132,14 @@ class Connection:
 
             When `time_zone` is given, the timestamp values will be transparently
             converted from UTC to use the given time zone.
+        :param jwt_token:
+            the JWT token to authenticate with the server.
+        :param compress:
+            (optional, defaults to ``8192``)
+            Controls gzip compression of outgoing request bodies.
+            ``False`` disables compression entirely.
+            ``True`` compresses every request regardless of size.
+            An integer compresses only when the payload exceeds that many bytes.
         """  # noqa: E501
 
         self._converter = converter
@@ -154,6 +166,8 @@ class Connection:
                 socket_tcp_keepidle=socket_tcp_keepidle,
                 socket_tcp_keepintvl=socket_tcp_keepintvl,
                 socket_tcp_keepcnt=socket_tcp_keepcnt,
+                jwt_token=jwt_token,
+                compress=compress,
             )
         self.lowest_server_version = self._lowest_server_version()
         self._closed = False
@@ -208,7 +222,7 @@ class Connection:
         return lowest or Version("0.0.0")
 
     def __repr__(self):
-        return "<Connection {0}>".format(repr(self.client))
+        return f"<{self.__class__.__qualname__} {self.client!r}>"
 
     def __enter__(self):
         return self

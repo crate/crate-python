@@ -22,6 +22,7 @@
 
 import calendar
 import datetime as dt
+import gzip
 import heapq
 import io
 import logging
@@ -34,7 +35,7 @@ import typing as t
 from base64 import b64encode
 from decimal import Decimal
 from time import time
-from urllib.parse import urlparse
+from urllib.parse import SplitResult, urlparse
 
 import orjson
 import urllib3
@@ -147,6 +148,18 @@ class Server:
             pool_kw.pop("socket_tcp_keepintvl", None),
             pool_kw.pop("socket_tcp_keepcnt", None),
         )
+        self.path_prefix = ""
+        try:
+            parsed_url = urlparse(server)
+        except Exception as e:
+            parsed_url = SplitResult("", "", "", "", "")
+            logger.warning(
+                "Unable to extract path prefix from server url: {ex}".format(
+                    ex=e
+                )
+            )
+        if parsed_url.path:
+            self.path_prefix = parsed_url.path.strip("/")
         self.pool = connection_from_url(
             server,
             socket_options=socket_options,
@@ -164,18 +177,34 @@ class Server:
         password=None,
         schema=None,
         backoff_factor=0,
+        jwt_token=None,
         **kwargs,
     ):
         """Send a request
 
         Always set the Content-Length and the Content-Type header.
         """
+        if self.path_prefix:
+            path = "/{path_prefix}/{path}".format(
+                path_prefix=self.path_prefix, path=path.strip("/")
+            )
         if headers is None:
             headers = {}
         if "Content-Length" not in headers:
             length = super_len(data)
             if length is not None:
-                headers["Content-Length"] = length
+                headers["Content-Length"] = str(length)
+
+        # Sanity checks.
+        if jwt_token is not None and username is not None:
+            raise ValueError(
+                "Either JWT tokens are accepted, "
+                "or user credentials, but not both"
+            )
+
+        # Authentication token
+        if jwt_token is not None and "Authorization" not in headers:
+            headers["Authorization"] = "Bearer %s" % jwt_token
 
         # Authentication credentials
         if username is not None:
@@ -280,20 +309,27 @@ def _server_url(server):
 
     >>> print(_server_url('a'))
     http://a
+    >>> print(_server_url('a/path'))
+    http://a/path
     >>> print(_server_url('a:9345'))
     http://a:9345
+    >>> print(_server_url('a:9345/path'))
+    http://a:9345/path
     >>> print(_server_url('https://a:9345'))
     https://a:9345
+    >>> print(_server_url('https://a:9345/path'))
+    https://a:9345/path
     >>> print(_server_url('https://a'))
     https://a
+    >>> print(_server_url('https://a/path'))
+    https://a/path
     >>> print(_server_url('demo.crate.io'))
     http://demo.crate.io
     """
     if not _HTTP_PAT.match(server):
         server = "http://%s" % server
     parsed = urlparse(server)
-    url = "%s://%s" % (parsed.scheme, parsed.netloc)
-    return url
+    return parsed.geturl()
 
 
 def _to_server_list(servers):
@@ -330,7 +366,10 @@ def _pool_kw_args(
     return kw
 
 
-def _remove_certs_for_non_https(server, kwargs):
+def _remove_certs_for_non_https(server: str, kwargs: dict) -> dict:
+    """
+    Removes certificates for http requests.
+    """
     if server.lower().startswith("https"):
         return kwargs
     used_ssl_args = SSL_ONLY_ARGS & set(kwargs.keys())
@@ -428,6 +467,8 @@ class Client:
         socket_tcp_keepidle=None,
         socket_tcp_keepintvl=None,
         socket_tcp_keepcnt=None,
+        jwt_token=None,
+        compress: t.Union[int, bool] = 8192,
     ):
         if not servers:
             servers = [self.default_server]
@@ -439,6 +480,7 @@ class Client:
         if servers and not username:
             try:
                 url = urlparse(servers[0])
+
                 if url.username is not None:
                     username = url.username
                 if url.password is not None:
@@ -451,7 +493,7 @@ class Client:
                 )
 
         self._active_servers = servers
-        self._inactive_servers = []
+        self._inactive_servers: t.List[t.Tuple[float, str, str]] = []
         pool_kw = _pool_kw_args(
             verify_ssl_cert,
             ca_cert,
@@ -470,14 +512,21 @@ class Client:
         )
         self.ssl_relax_minimum_version = ssl_relax_minimum_version
         self.backoff_factor = backoff_factor
-        self.server_pool = {}
+        self.server_pool: t.Dict[str, Server] = {}
         self._update_server_pool(servers, **pool_kw)
         self._pool_kw = pool_kw
         self._lock = threading.RLock()
         self._local = threading.local()
         self.username = username
         self.password = password
+        self.jwt_token = jwt_token
         self.schema = schema
+
+        if not isinstance(compress, (bool, int)):
+            raise TypeError(
+                f"compress must be bool or int, got {type(compress).__name__!r}"
+            )
+        self.compress = compress
 
         self.path = self.SQL_PATH
         if error_trace:
@@ -595,11 +644,13 @@ class Client:
                     password=self.password,
                     backoff_factor=self.backoff_factor,
                     schema=self.schema,
+                    jwt_token=self.jwt_token,
                     **kwargs,
                 )
                 redirect_location = response.get_redirect_location()
                 if redirect_location and 300 <= response.status <= 308:
-                    redirect_server = _server_url(redirect_location)
+                    redirect_url = urlparse(redirect_location)
+                    redirect_server = f"{redirect_url.scheme}://{redirect_url.netloc}"
                     self._add_server(redirect_server)
                     return self._request(
                         method, path, server=redirect_server, **kwargs
@@ -639,8 +690,16 @@ class Client:
         """
         Issue request against the crate HTTP API.
         """
+        headers = {"Accept-Encoding": "gzip, deflate"}
 
-        response = self._request(method, path, data=data)
+        compress_enabled = self.compress is True or (
+            not isinstance(self.compress, bool) and len(data) >= self.compress
+        )
+        if compress_enabled:
+            data = gzip.compress(data, compresslevel=6)
+            headers["Content-Encoding"] = "gzip"
+
+        response = self._request(method, path, data=data, headers=headers)
         _raise_for_status(response)
         if len(response.data) > 0:
             return _json_from_response(response)

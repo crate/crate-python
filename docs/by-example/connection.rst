@@ -9,12 +9,6 @@ The examples use an instance of ``ClientMocked`` instead of a real ``Client``
 instance. This allows us to verify the examples without needing a real database
 connection.
 
-.. rubric:: Table of Contents
-
-.. contents::
-   :local:
-
-
 connect()
 =========
 

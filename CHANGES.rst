@@ -6,6 +6,43 @@ Unreleased
 ==========
 - Make ``datetime.time`` json serializable.
 
+- Added gzip compression for outgoing request bodies via the ``compress``
+  parameter (default: ``8192`` bytes).
+  Pass ``True`` to always compress, ``False`` to disable, or an integer
+  as a byte threshold. The driver always sends ``Accept-Encoding: gzip,
+  deflate`` to negotiate compressed responses from the server when
+  compression is enabled.
+
+- Added named parameter support (``pyformat`` paramstyle). Passing a
+  :class:`py:dict` as ``parameters`` to ``cursor.execute()`` now accepts
+  ``%(name)s`` placeholders and converts them to positional ``?`` markers
+  client-side. Positional parameters using ``?`` continue to work unchanged.
+
+2026/03/09 2.1.2
+================
+
+- Fixed a regression introduced in 2.1.0 that caused fetching blobs to fail
+  with a ``DigestNotFoundException`` if it required following a redirect.
+
+2026/03/04 2.1.1
+================
+
+- Fixed JWT token positional argument order.
+
+2026/03/04 2.1.0
+================
+
+- Exceptions from the BLOB API now include their full names.
+
+- Dropped support for Python versions earlier than 3.10 as they've reached
+  their end of life.
+
+- Parse path prefixes from server URLs and propagate them to all requests.
+
+- Fixed compatibility with ``urllib3-future``.
+
+- Added JWT token authentication.
+
 2025/01/30 2.0.0
 ================
 

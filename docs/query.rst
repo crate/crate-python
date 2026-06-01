@@ -10,17 +10,12 @@ Query CrateDB
     `Python Database API Specification v2.0`_ (PEP 249).
 
     For help using the `SQLAlchemy`_ dialect, consult
-    :ref:`the SQLAlchemy dialect documentation <using-sqlalchemy>`.
+    :ref:`the SQLAlchemy dialect documentation <sqlalchemy-cratedb:index>`.
 
 .. SEEALSO::
 
     Supplementary information about the CrateDB Database API client can be found
     in the :ref:`data types appendix <data-types-db-api>`.
-
-.. rubric:: Table of contents
-
-.. contents::
-   :local:
 
 .. _cursor:
 
@@ -58,6 +53,33 @@ characters appear, in the order they appear.
 
     Always use the parameter interpolation feature of the client library to
     guard against malicious input, as demonstrated in the example above.
+
+Named parameters
+----------------
+
+For queries with many parameters or repeated values, named parameters improve
+readability. Pass a :class:`py:dict` as the second argument using
+``%(name)s`` placeholders:
+
+    >>> cursor.execute(
+    ...     "INSERT INTO locations (name, date, kind, position) "
+    ...     "VALUES (%(name)s, %(date)s, %(kind)s, %(pos)s)",
+    ...     {"name": "Einstein Cross", "date": "2007-03-11", "kind": "Quasar", "pos": 7})
+
+The same parameter name may appear multiple times in the query:
+
+    >>> cursor.execute(
+    ...     "SELECT * FROM locations WHERE name = %(q)s OR kind = %(q)s",
+    ...     {"q": "Quasar"})
+
+The client converts the ``%(name)s`` placeholders to positional ``?`` markers
+before sending the query to CrateDB, so no server-side changes are required.
+
+.. NOTE::
+
+    Named parameters are not yet supported by ``executemany()``. Use
+    positional ``?`` placeholders with a :class:`py:list` of tuples for bulk
+    operations.
 
 Bulk inserts
 ------------

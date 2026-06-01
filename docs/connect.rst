@@ -10,17 +10,12 @@ Connect to CrateDB
     `Python Database API Specification v2.0`_ (PEP 249).
 
     For help using the `SQLAlchemy`_ dialect, consult the
-    :ref:`SQLAlchemy dialect documentation <using-sqlalchemy>`.
+    :ref:`SQLAlchemy dialect documentation <sqlalchemy-cratedb:index>`.
 
 .. SEEALSO::
 
     Supplementary information about the CrateDB Database API client can be found
     in the :ref:`data types appendix <data-types-db-api>`.
-
-.. rubric:: Table of contents
-
-.. contents::
-    :local:
 
 .. _single-node:
 
@@ -246,6 +241,12 @@ and password.
     authenticate as the CrateDB superuser, which is ``crate``. The superuser
     does not have a password, so you can omit the ``password`` argument.
 
+Alternatively, authenticate using a JWT token:
+
+    >>> connection = client.connect(..., jwt_token="<JWT_TOKEN>")
+
+Here, replace ``<JWT_TOKEN>`` with the appropriate JWT token.
+
 .. _schema-selection:
 
 Schema selection
@@ -264,6 +265,32 @@ with the rest of your arguments.
    this is what will be used.
 
    However, you can query any schema you like by specifying it in the query.
+
+.. _compression:
+
+Request and response compression
+=================================
+
+The ``compress`` parameter controls gzip compression of outgoing request
+bodies. The default ``8192`` compresses payloads larger than 8 KB::
+
+    >>> connection = client.connect('localhost:4200')
+    # compress=8192 is the default — payloads > 8 KB are gzip-compressed
+
+To always compress, regardless of payload size::
+
+    >>> connection = client.connect('localhost:4200', compress=True)
+
+To disable compression entirely::
+
+    >>> connection = client.connect('localhost:4200', compress=False)
+
+To use a custom threshold (bytes)::
+
+    >>> connection = client.connect('localhost:4200', compress=4096)
+
+The driver always sends ``Accept-Encoding: gzip, deflate`` so the server
+may return compressed responses if compression is enabled. 
 
 Next steps
 ==========

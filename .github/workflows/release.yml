@@ -3,40 +3,40 @@ name: release
 
 on: push
 
+permissions:
+  contents: read
+  checks: write
+  statuses: write
+
 jobs:
   pypi:
-    name: Build & publish package to pypi
-    runs-on: ${{ matrix.os }}
-    strategy:
-      fail-fast: false
-      matrix:
-        os: ['ubuntu-latest']
-        python-version: ['3.11']
-    if: startsWith(github.event.ref, 'refs/tags')
+    name: 'Build & publish package to PyPI'
+    runs-on: 'ubuntu-latest'
     steps:
-      - uses: actions/checkout@v4
-
-      - name: Set up Python
-        uses: actions/setup-python@v5
+      - uses: actions/checkout@v6
         with:
-          python-version: ${{ matrix.python-version }}
+          fetch-depth: 0
+          fetch-tags: true
+          persist-credentials: false
 
       - name: Set up uv
-        uses: astral-sh/setup-uv@v5
+        uses: astral-sh/setup-uv@v7
         with:
-          cache-dependency-glob: |
-            setup.py
-          cache-suffix: ${{ matrix.python-version }}
+          activate-environment: true
           enable-cache: true
-          version: "latest"
+          python-version: "3.14"
+
+      - name: Set up Hatch and Twine
+        run: uv pip install hatch twine
 
       - name: Build package
-        run: |
-          uv pip install --system build twine wheel
-          python -m build
-          twine check dist/*
+        run: hatch build
+
+      - name: Validate package
+        run: twine check dist/*
 
       - name: Publish package to PyPI
+        if: startsWith(github.event.ref, 'refs/tags')
         uses: pypa/gh-action-pypi-publish@release/v1
         with:
           user: __token__

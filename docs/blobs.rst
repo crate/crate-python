@@ -8,11 +8,6 @@ The CrateDB Python client library provides full access to the powerful
 :ref:`blob storage capabilities <crate-reference:blob_support>` of your
 CrateDB cluster.
 
-.. rubric:: Table of contents
-
-.. contents::
-   :local:
-
 Get a blob container
 ====================
 

@@ -18,11 +18,13 @@
 # However, if you have executed another commercial license agreement
 # with Crate these terms will supersede the license and you may use the
 # software solely pursuant to the terms of the relevant commercial agreement.
+
 import json
 import os
 import tempfile
 import urllib
 from io import BytesIO
+from pathlib import Path
 from unittest import TestCase, mock
 
 import urllib3
@@ -35,8 +37,8 @@ from crate.testing.layer import (
     prepend_http,
     wait_for_http_url,
 )
-
-from .settings import crate_path
+from tests.client.settings import crate_path
+from tests.conftest import download_cratedb
 
 
 class LayerUtilsTest(TestCase):
@@ -127,6 +129,10 @@ class LayerUtilsTest(TestCase):
 
 
 class LayerTest(TestCase):
+    @classmethod
+    def setup_class(cls):
+        download_cratedb(Path(crate_path()))
+
     def test_basic(self):
         """
         This layer starts and stops a ``Crate`` instance on a given host, port,

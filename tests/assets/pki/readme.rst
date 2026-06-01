@@ -23,69 +23,56 @@ Details
 ``*_valid.pem``
 ===============
 
-By example, this will renew the ``client_valid.pem`` X.509 certificate. The
-``server_valid.pem`` certificate can be generated in the same manner.
+By example, this will renew the ``server_valid.pem`` and ``client_valid.pem``
+X.509 certificates.
 
-Create RSA private key and certificate request::
+Create keys and certificates for certificate authority and one application/user::
 
-    openssl req -nodes \
-        -newkey rsa:2048 -keyout key.pem -out request.csr \
-        -subj "/C=AT/ST=Vorarlberg/L=Dornbirn/O=Crate.io/CN=localhost/emailAddress=nobody@crate.io"
-
-Display the certificate request::
-
-    openssl req -in request.csr -text
-
-Sign certificate request::
-
-    openssl x509 -req -in request.csr \
-        -CA cacert_valid.pem -CAkey cacert_valid.pem -CAcreateserial -sha256 \
-        -days 358000 -extfile <(printf "subjectAltName=DNS:localhost") -out client.pem
-
-Display the certificate::
-
-    openssl x509 -in client.pem -text
+    brew install minica
+    minica -ca-alg rsa -domains localhost
 
 Combine private key and certificate into single PEM file::
 
-    cat key.pem > client_valid.pem
-    cat client.pem >> client_valid.pem
+    cat minica-key.pem > cacert_valid.pem; cat minica.pem >> cacert_valid.pem
+    cat localhost/key.pem > server_valid.pem; cat localhost/cert.pem >> server_valid.pem
+    cp server_valid.pem client_valid.pem
+
+Display the certificates::
+
+    openssl x509 -in cacert_valid.pem -text
+    openssl x509 -in server_valid.pem -text
+    openssl x509 -in client_valid.pem -text
 
 
-``client_invalid.pem``
-======================
+``*_invalid.pem``
+=================
 
-This will renew the ``client_invalid.pem`` X.509 certificate. Please note that,
-in order to create an invalid certificate, two attributes are used:
+This will renew the ``client_invalid.pem`` X.509 certificate.
+In order to create an invalid certificate, it is using a wrong hostname.
 
 - ``CN=horst`` and ``subjectAltName=DNS:horst`` do not match ``localhost``.
-- The validity end date will be adjusted a few years into the past, by using
-  ``-days -36500``.
 
 Create RSA private key and certificate request::
 
     openssl req -nodes \
-        -newkey rsa:2048 -keyout invalid_key.pem -out invalid.csr \
+        -newkey rsa:2048 -keyout invalid-key.pem -out invalid.csr \
         -subj "/C=AT/ST=Vorarlberg/L=Dornbirn/O=Crate.io/CN=horst/emailAddress=nobody@crate.io"
 
-Display the certificate request::
-
-    openssl req -in invalid.csr -text
-
-Sign certificate request::
+Create certificate::
 
     openssl x509 -req -in invalid.csr \
-        -CA cacert_valid.pem -CAkey cacert_valid.pem -CAcreateserial -sha256 \
-        -days -36500 -extfile <(printf "subjectAltName=DNS:horst") -out invalid_cert.pem
-
-Display the certificate::
-
-    openssl x509 -in invalid_cert.pem -text
+        -CA cacert_invalid.pem -CAkey cacert_invalid.pem -CAcreateserial -sha256 \
+        -days 358000 \
+        -out invalid.pem \
+        -extfile - <<EOF
+authorityKeyIdentifier=keyid,issuer
+basicConstraints=CA:FALSE
+subjectAltName=DNS:horst
+EOF
 
 Combine private key and certificate into single PEM file::
 
-    cat invalid_key.pem > client_invalid.pem
-    cat invalid_cert.pem >> client_invalid.pem
+    cat invalid-key.pem > client_invalid.pem; cat invalid.pem >> client_invalid.pem
 
 
 .. _tests/assets/pki/*.pem: https://github.com/crate/crate-python/tree/main/tests/assets/pki

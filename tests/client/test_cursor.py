@@ -293,6 +293,41 @@ def test_execute_custom_converter(mocked_connection):
         ]
 
 
+def test_execute_time_converter(mocked_connection):
+    """
+    Verify that CrateDB's TIMETZ wire format
+    ``[microseconds, tz_offset_seconds]`` is decoded to a ``datetime.time``
+    object by ``DefaultTypeConverter``.
+    """
+    converter = DefaultTypeConverter()
+    cursor = mocked_connection.cursor(converter=converter)
+    response = {
+        "col_types": [20],
+        "cols": ["t"],
+        "rows": [
+            [[45045000000, 0]],       # 12:30:45 UTC
+            [[45045123456, 7200]],    # 12:30:45.123456 +02:00
+            [None],
+        ],
+        "rowcount": 3,
+        "duration": 1,
+    }
+
+    with mock.patch.object(
+        mocked_connection.client, "sql", return_value=response
+    ):
+        cursor.execute("")
+        result = cursor.fetchall()
+
+    assert result == [
+        [datetime.time(12, 30, 45, 0,
+                       tzinfo=datetime.timezone.utc)],
+        [datetime.time(12, 30, 45, 123456,
+                       tzinfo=datetime.timezone(datetime.timedelta(hours=2)))],
+        [None],
+    ]
+
+
 def test_execute_with_converter_and_invalid_data_type(mocked_connection):
     converter = DefaultTypeConverter()
 

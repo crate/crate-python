@@ -4,6 +4,9 @@ Changes for crate
 
 Unreleased
 ==========
+- Added JSON serialization support for Python's ``datetime.time`` type,
+  encoding it as an ISO 8601 string compatible with CrateDB's ``TIMETZ``
+  column type.
 
 - Added gzip compression for outgoing request bodies via the ``compress``
   parameter (default: ``8192`` bytes).

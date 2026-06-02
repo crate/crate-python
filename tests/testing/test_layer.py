@@ -86,9 +86,11 @@ class LayerUtilsTest(TestCase):
         The CrateLayer can also be created by providing an URI that points to
         a CrateDB tarball.
         """
-        with urllib.request.urlopen(
-            "https://crate.io/versions.json"
-        ) as response:
+        req = urllib.request.Request(
+            "https://crate.io/versions.json",
+            headers={"Accept": "application/json"},
+        )
+        with urllib.request.urlopen(req) as response:
             versions = json.loads(response.read().decode())
             version = versions["crate_testing"]
 

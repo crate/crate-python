@@ -54,6 +54,24 @@ def _to_datetime(value: Optional[float]) -> Optional[dt.datetime]:
     return dt.datetime.fromtimestamp(value / 1e3, tz=dt.timezone.utc)
 
 
+def _to_time(value: Optional[list]) -> Optional[dt.time]:
+    """
+    Convert a CrateDB TIMETZ wire value to a Python ``datetime.time``.
+
+    CrateDB returns TIMETZ as
+    ``[microseconds_since_midnight, tz_offset_seconds]``
+    via the HTTP interface.
+
+    https://docs.python.org/3/library/datetime.html#datetime.time
+    """
+    if value is None:
+        return None
+    microseconds, tz_offset_seconds = value
+    tz = dt.timezone(dt.timedelta(seconds=int(tz_offset_seconds)))
+    t = (dt.datetime.min + dt.timedelta(microseconds=int(microseconds))).time()
+    return t.replace(tzinfo=tz)
+
+
 def _to_default(value: Optional[Any]) -> Optional[Any]:
     return value
 
@@ -98,6 +116,7 @@ _DEFAULT_CONVERTERS: ConverterMapping = {
     DataType.IP: _to_ipaddress,
     DataType.TIMESTAMP_WITH_TZ: _to_datetime,
     DataType.TIMESTAMP_WITHOUT_TZ: _to_datetime,
+    DataType.TIME: _to_time,
 }
 
 

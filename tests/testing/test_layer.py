@@ -22,13 +22,11 @@
 import json
 import os
 import tempfile
-import urllib
 from io import BytesIO
 from pathlib import Path
 from unittest import TestCase, mock
 
 import urllib3
-from verlib2 import Version
 
 import crate
 from crate.testing.layer import (
@@ -38,7 +36,7 @@ from crate.testing.layer import (
     wait_for_http_url,
 )
 from tests.client.settings import crate_path
-from tests.conftest import download_cratedb
+from tests.conftest import download_cratedb, get_crate_url
 
 
 class LayerUtilsTest(TestCase):
@@ -86,20 +84,10 @@ class LayerUtilsTest(TestCase):
         The CrateLayer can also be created by providing an URI that points to
         a CrateDB tarball.
         """
-        req = urllib.request.Request(
-            "https://crate.io/versions.json",
-            headers={"Accept": "application/json"},
-        )
-        with urllib.request.urlopen(req) as response:
-            versions = json.loads(response.read().decode())
-            version = versions["crate_testing"]
-
-        self.assertGreaterEqual(Version(version), Version("4.5.0"))
-
-        uri = "https://cdn.crate.io/downloads/releases/crate-{}.tar.gz".format(
-            version
-        )
-        layer = CrateLayer.from_uri(uri, name="crate-by-uri", http_port=42203)
+        layer = CrateLayer.from_uri(get_crate_url(),
+                                    name="crate-by-uri",
+                                    http_port=42203
+                                    )
         self.assertIsInstance(layer, CrateLayer)
 
     @mock.patch.dict("os.environ", {}, clear=True)

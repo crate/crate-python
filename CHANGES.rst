@@ -2,7 +2,7 @@
 Changes for crate
 =================
 
-Unreleased
+2026/06/04 2.2.0
 ==========
 - Added JSON serialization support for Python's ``datetime.time`` type,
   encoding it as an ISO 8601 string compatible with CrateDB's ``TIMETZ``

@@ -565,6 +565,24 @@ def test_execute_with_named_params_missing(mocked_connection):
     mocked_connection.client.sql.assert_not_called()
 
 
+def test_execute_with_named_params_non_identifier_keys(mocked_connection):
+    """
+    Verify that %(name)s placeholders whose name contains characters outside
+    [a-zA-Z0-9_] are still converted to positional $N markers.
+
+    """
+    cursor = mocked_connection.cursor()
+
+    cursor.execute(
+        "UPDATE characters SET data['x'] = %(data['x'])s WHERE name = %(name)s",
+        {"data['x']": 42, "name": "Berlin"},
+    )
+    sql, args, _ = mocked_connection.client.sql.call_args[0]
+    assert "%" not in sql
+    assert sql == "UPDATE characters SET data['x'] = $1 WHERE name = $2"
+    assert args == [42, "Berlin"]
+
+
 def test_cursor_close(mocked_connection):
     """
     Verify that a cursor is not closed if not specifically closed.

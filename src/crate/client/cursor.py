@@ -70,6 +70,37 @@ def _convert_named_to_positional(
     return converted_sql, new_params
 
 
+def _convert_named_bulk_params(
+    sql: str, seq_of_dicts: t.Sequence[t.Dict[str, t.Any]]
+) -> t.Tuple[str, t.List[t.List[t.Any]]]:
+    """Convert pyformat SQL and a sequence of dicts to positional bulk args.
+
+    Uses the first row to determine the SQL template and position map, then
+    builds a positional argument list for every row.
+
+    Raises ``ProgrammingError`` if a placeholder name is absent from any row.
+    Extra keys in each row are silently ignored (consistent with
+    ``_convert_named_to_positional``).
+    """
+    first = seq_of_dicts[0]
+    converted_sql, _ = _convert_named_to_positional(sql, first)
+    positions = {k: i + 1 for i, k in enumerate(first)}
+    n = len(positions)
+
+    bulk_args: t.List[t.List[t.Any]] = []
+    for row in seq_of_dicts:
+        positional: t.List[t.Any] = [None] * n
+        for name, pos in positions.items():
+            if name not in row:
+                raise ProgrammingError(
+                    f"Named parameter '{name}' not found in the parameters dict"
+                )
+            positional[pos - 1] = row[name]
+        bulk_args.append(positional)
+
+    return converted_sql, bulk_args
+
+
 class Cursor:
     """
     not thread-safe by intention
@@ -118,7 +149,16 @@ class Cursor:
         """
         row_counts = []
         durations = []
-        self.execute(sql, bulk_parameters=seq_of_parameters)
+        bulk_parameters = seq_of_parameters
+        if (
+            bulk_parameters
+            and isinstance(bulk_parameters[0], dict)
+            and _NAMED_PARAM_RE.search(sql)
+        ):
+            sql, bulk_parameters = _convert_named_bulk_params(
+                sql, bulk_parameters
+            )
+        self.execute(sql, bulk_parameters=bulk_parameters)
 
         for result in self._result.get("results", []):
             if result.get("rowcount") > -1:

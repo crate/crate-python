@@ -125,6 +125,53 @@ def test_cursor_executemany(mocked_connection):
         assert response["results"] == result
 
 
+def test_executemany_with_named_params(mocked_connection):
+    """
+    Verify that executemany() translates pyformat %(name)s placeholders to
+    positional $N markers and converts each dict row to a positional list.
+
+    """
+    response = {
+        "col_types": [],
+        "cols": [],
+        "duration": 123,
+        "results": [{"rowcount": 1}, {"rowcount": 1}],
+    }
+    with mock.patch.object(
+        mocked_connection.client, "sql", return_value=response
+    ):
+        cursor = mocked_connection.cursor()
+        cursor.executemany(
+            "INSERT INTO characters (name, age) VALUES (%(name)s, %(age)s)",
+            [
+                {"name": "Arthur", "age": 42},
+                {"name": "Bill", "age": 35},
+            ],
+        )
+        sql, _params, bulk_args = mocked_connection.client.sql.call_args[0]
+        assert sql == "INSERT INTO characters (name, age) VALUES ($1, $2)"
+        assert bulk_args == [["Arthur", 42], ["Bill", 35]]
+
+
+def test_executemany_with_named_params_missing_key(mocked_connection):
+    """
+    Verify that executemany() raises ProgrammingError when a row is missing a
+    key that appears as a placeholder in the SQL.
+    """
+    cursor = mocked_connection.cursor()
+    with pytest.raises(
+        ProgrammingError, match="Named parameter 'age' not found"
+    ):
+        cursor.executemany(
+            "INSERT INTO characters (name, age) VALUES (%(name)s, %(age)s)",
+            [
+                {"name": "Arthur", "age": 42},
+                {"name": "Bill"},  # missing 'age'
+            ],
+        )
+    mocked_connection.client.sql.assert_not_called()
+
+
 def test_create_with_timezone_as_datetime_object(mocked_connection):
     """
     The cursor can return timezone-aware `datetime` objects when requested.

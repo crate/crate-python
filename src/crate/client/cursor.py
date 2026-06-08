@@ -26,7 +26,7 @@ from datetime import datetime, timedelta, timezone
 from .converter import Converter, DataType
 from .exceptions import ProgrammingError
 
-_NAMED_PARAM_RE = re.compile(r"%\((\w+)\)s")
+_NAMED_PARAM_RE = re.compile(r"%\(([^)]+)\)s")
 
 
 def _convert_named_to_positional(

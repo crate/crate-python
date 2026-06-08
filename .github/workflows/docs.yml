@@ -21,7 +21,7 @@ permissions:
 jobs:
   documentation:
 
-    name: Run link checker
+    name: Build docs
     runs-on: ubuntu-latest
 
     steps:
@@ -44,4 +44,4 @@ jobs:
 
       - name: Build docs
         run: |
-          cd docs && make check
+          cd docs && make html

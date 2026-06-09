@@ -89,6 +89,11 @@ def _convert_named_bulk_params(
 
     bulk_args: t.List[t.List[t.Any]] = []
     for row in seq_of_dicts:
+        if not isinstance(row, dict):
+            raise ProgrammingError(
+                "executemany() requires all parameter rows to be dicts "
+                "when the SQL uses pyformat (%(name)s) placeholders"
+            )
         positional: t.List[t.Any] = [None] * n
         for name, pos in positions.items():
             if name not in row:

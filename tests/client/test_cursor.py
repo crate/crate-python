@@ -172,6 +172,45 @@ def test_executemany_with_named_params_missing_key(mocked_connection):
     mocked_connection.client.sql.assert_not_called()
 
 
+def test_executemany_with_named_params_repeated(mocked_connection):
+    """
+    Verify that a placeholder name used multiple times in the SQL maps to the
+    same $N position in every occurrence, and the value appears only once in
+    each row's positional list.
+    """
+    response = {
+        "col_types": [],
+        "cols": [],
+        "duration": 123,
+        "results": [{"rowcount": 1}, {"rowcount": 1}],
+    }
+    with mock.patch.object(
+        mocked_connection.client, "sql", return_value=response
+    ):
+        cursor = mocked_connection.cursor()
+        cursor.executemany(
+            "INSERT INTO t (a, b) VALUES (%(x)s, %(x)s)",
+            [{"x": 1}, {"x": 2}],
+        )
+        sql, _params, bulk_args = mocked_connection.client.sql.call_args[0]
+        assert sql == "INSERT INTO t (a, b) VALUES ($1, $1)"
+        assert bulk_args == [[1], [2]]
+
+
+def test_executemany_with_mixed_param_types(mocked_connection):
+    """
+    Verify that executemany() raises a clear ProgrammingError when the
+    parameter sequence mixes dicts and non-dicts while the SQL uses pyformat.
+    """
+    cursor = mocked_connection.cursor()
+    with pytest.raises(ProgrammingError, match="requires all parameter rows"):
+        cursor.executemany(
+            "INSERT INTO characters (name) VALUES (%(name)s)",
+            [{"name": "Arthur"}, ["Trillian"]],  # second row is a list
+        )
+    mocked_connection.client.sql.assert_not_called()
+
+
 def test_create_with_timezone_as_datetime_object(mocked_connection):
     """
     The cursor can return timezone-aware `datetime` objects when requested.

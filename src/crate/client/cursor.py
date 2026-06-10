@@ -22,6 +22,7 @@ import re
 import typing as t
 import warnings
 from datetime import datetime, timedelta, timezone
+from itertools import count
 
 from .converter import Converter, DataType
 from .exceptions import ProgrammingError
@@ -29,13 +30,19 @@ from .exceptions import ProgrammingError
 _NAMED_PARAM_RE = re.compile(r"%\(([^)]+)\)s")
 
 
+def _rewrite_pyformat_sql(sql: str) -> str:
+    """Replace %(name)s placeholders with $N positional markers (1-indexed)."""
+    counter = count(1)
+    return _NAMED_PARAM_RE.sub(lambda _: f"${next(counter)}", sql)
+
+
 def _convert_named_to_positional(
     sql: str, params: t.Dict[str, t.Any]
 ) -> t.Tuple[str, t.List[t.Any]]:
-    """Convert pyformat-style named parameters to positional qmark parameters.
+    """Convert pyformat-style named parameters to positional parameters.
 
-    Converts ``%(name)s`` placeholders to ``?`` and returns an ordered list
-    of corresponding values extracted from ``params``.
+    Converts ``%(name)s`` placeholders to ``$N`` (1-indexed) and returns an
+    ordered list of corresponding values extracted from ``params``.
 
     The same name may appear multiple times; each occurrence appends the
     value to the positional list independently.
@@ -47,7 +54,7 @@ def _convert_named_to_positional(
 
         sql = "SELECT * FROM t WHERE a = %(a)s AND b = %(b)s"
         params = {"a": 1, "b": 2}
-        # returns: ("SELECT * FROM t WHERE a = ? AND b = ?", [1, 2])
+        # returns: ("SELECT * FROM t WHERE a = $1 AND b = $2", [1, 2])
     """
     positions = {}
     idx = 1
@@ -136,6 +143,8 @@ class Cursor:
 
         if isinstance(parameters, dict):
             sql, parameters = _convert_named_to_positional(sql, parameters)
+        elif bulk_parameters is not None and _NAMED_PARAM_RE.search(sql):
+            sql = _rewrite_pyformat_sql(sql)
 
         self._result = self.connection.client.sql(
             sql, parameters, bulk_parameters

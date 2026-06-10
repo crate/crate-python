@@ -329,6 +329,34 @@ def test_execute_with_bulk_args(mocked_connection):
     mocked_connection.client.sql.assert_called_once_with(statement, None, [[1]])
 
 
+def test_execute_with_pyformat_sql_and_bulk_parameters(mocked_connection):
+    """
+    cursor.execute() converts %(name)s SQL to $N when bulk_parameters is
+    provided. Rows are already positional; only the SQL needs conversion.
+    """
+    cursor = mocked_connection.cursor()
+    sql = "INSERT INTO t (id, val) VALUES (%(id)s, %(val)s)"
+    bulk = [[1, "hello"], [2, "world"]]
+    cursor.execute(sql, bulk_parameters=bulk)
+    mocked_connection.client.sql.assert_called_once_with(
+        "INSERT INTO t (id, val) VALUES ($1, $2)", None, bulk
+    )
+
+
+def test_execute_with_pyformat_sql_and_bulk_parameters_no_placeholders(
+    mocked_connection,
+):
+    """
+    SQL without %(name)s placeholders is passed through unchanged
+    even when bulk_parameters is provided.
+    """
+    cursor = mocked_connection.cursor()
+    sql = "INSERT INTO t (id, val) VALUES (?, ?)"
+    bulk = [[1, "hello"], [2, "world"]]
+    cursor.execute(sql, bulk_parameters=bulk)
+    mocked_connection.client.sql.assert_called_once_with(sql, None, bulk)
+
+
 def test_execute_custom_converter(mocked_connection):
     """
     Verify that a custom converter is correctly applied when passed to a cursor.

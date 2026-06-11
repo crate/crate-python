@@ -266,6 +266,35 @@ For completeness' sake the cursor description is updated nonetheless:
     >>> [ desc[0] for desc in cursor.description ]
     ['name', 'position']
 
+executemany() with named parameters
+====================================
+
+``executemany()`` also accepts a :class:`py:list` of :class:`py:dict` when
+the SQL uses ``%(name)s`` placeholders. The client converts both the SQL
+template and all rows to positional format before sending to CrateDB:
+
+    >>> connection.client.set_next_response({
+    ...     "results": [
+    ...         {"rowcount": 1},
+    ...         {"rowcount": 1}
+    ...     ],
+    ...     "duration": 123,
+    ...     "cols": [],
+    ... })
+
+    >>> cursor = connection.cursor()
+
+    >>> cursor.executemany(
+    ...     "INSERT INTO t (id, val) VALUES (%(id)s, %(val)s)",
+    ...     [{"id": 1, "val": "foo"}, {"id": 2, "val": "bar"}])
+    [{'rowcount': 1}, {'rowcount': 1}]
+
+    >>> cursor.rowcount
+    2
+
+    >>> cursor.duration
+    123
+
     >>> connection.client.set_next_response({
     ...     "rows":[ [ "North West Ripple", 1 ], [ "Arkintoofle Minor", 3 ], [ "Alpha Centauri", 3 ] ],
     ...     "cols":[ "name", "position" ],

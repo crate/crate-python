@@ -98,8 +98,8 @@ def _convert_named_bulk_params(
     for row in seq_of_dicts:
         if not isinstance(row, dict):
             raise ProgrammingError(
-                "executemany() requires all parameter rows to be dicts "
-                "when the SQL uses pyformat (%(name)s) placeholders"
+                "All bulk parameter rows must be dicts when SQL uses "
+                "pyformat (%(name)s) placeholders; got a non-dict row"
             )
         positional: t.List[t.Any] = [None] * n
         for name, pos in positions.items():
@@ -144,7 +144,12 @@ class Cursor:
         if isinstance(parameters, dict):
             sql, parameters = _convert_named_to_positional(sql, parameters)
         elif bulk_parameters is not None and _NAMED_PARAM_RE.search(sql):
-            sql = _rewrite_pyformat_sql(sql)
+            if bulk_parameters and isinstance(bulk_parameters[0], dict):
+                sql, bulk_parameters = _convert_named_bulk_params(
+                    sql, bulk_parameters
+                )
+            else:
+                sql = _rewrite_pyformat_sql(sql)
 
         self._result = self.connection.client.sql(
             sql, parameters, bulk_parameters

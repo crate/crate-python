@@ -270,8 +270,8 @@ executemany() with named parameters
 ====================================
 
 ``executemany()`` also accepts a :class:`py:list` of :class:`py:dict` when
-the SQL uses ``%(name)s`` placeholders. The client converts both the SQL
-template and all rows to positional format before sending to CrateDB:
+the SQL statement contains ``%(name)s`` placeholders. The client converts both the SQL
+template and all rows to positional format before sending them to CrateDB:
 
     >>> connection.client.set_next_response({
     ...     "results": [

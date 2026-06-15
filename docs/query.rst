@@ -84,7 +84,7 @@ Bulk inserts
 Positional parameters
 .....................
 
-Pass a :class:`py:list` of tuples using ``?`` placeholders:
+Pass a :class:`py:list` of sequences using ``?`` placeholders:
 
     >>> cursor.executemany(
     ...     "INSERT INTO locations (name, date, kind, position) VALUES (?, ?, ?, ?)",

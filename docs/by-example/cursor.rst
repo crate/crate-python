@@ -273,6 +273,8 @@ executemany() with named parameters
 the SQL statement contains ``%(name)s`` placeholders. The client converts both the SQL
 template and all rows to positional format before sending them to CrateDB:
 
+.. Hidden: set up mocked response
+
     >>> connection.client.set_next_response({
     ...     "results": [
     ...         {"rowcount": 1},

@@ -203,7 +203,9 @@ def test_executemany_with_mixed_param_types(mocked_connection):
     parameter sequence mixes dicts and non-dicts while the SQL uses pyformat.
     """
     cursor = mocked_connection.cursor()
-    with pytest.raises(ProgrammingError, match="requires all parameter rows"):
+    with pytest.raises(
+        ProgrammingError, match="All bulk parameter rows must be dicts"
+    ):
         cursor.executemany(
             "INSERT INTO characters (name) VALUES (%(name)s)",
             [{"name": "Arthur"}, ["Trillian"]],  # second row is a list
@@ -327,6 +329,68 @@ def test_execute_with_bulk_args(mocked_connection):
     statement = "select * from locations where position = ?"
     cursor.execute(statement, bulk_parameters=[[1]])
     mocked_connection.client.sql.assert_called_once_with(statement, None, [[1]])
+
+
+def test_execute_with_pyformat_sql_and_bulk_parameters(mocked_connection):
+    """
+    cursor.execute() converts %(name)s SQL to $N when bulk_parameters is
+    provided. Rows are already positional; only the SQL needs conversion.
+    """
+    cursor = mocked_connection.cursor()
+    sql = "INSERT INTO t (id, val) VALUES (%(id)s, %(val)s)"
+    bulk = [[1, "hello"], [2, "world"]]
+    cursor.execute(sql, bulk_parameters=bulk)
+    mocked_connection.client.sql.assert_called_once_with(
+        "INSERT INTO t (id, val) VALUES ($1, $2)", None, bulk
+    )
+
+
+def test_execute_with_pyformat_sql_and_dict_bulk_parameters(mocked_connection):
+    """
+    cursor.execute() with pyformat SQL and dict-format bulk_parameters converts
+    both the SQL template (%(x)s → $N) and the rows (dicts → positional lists).
+    """
+    cursor = mocked_connection.cursor()
+    sql = "INSERT INTO t (id, val) VALUES (%(id)s, %(val)s)"
+    bulk = [{"id": 1, "val": "hello"}, {"id": 2, "val": "world"}]
+    cursor.execute(sql, bulk_parameters=bulk)
+    mocked_connection.client.sql.assert_called_once_with(
+        "INSERT INTO t (id, val) VALUES ($1, $2)",
+        None,
+        [[1, "hello"], [2, "world"]],
+    )
+
+
+def test_execute_with_dict_bulk_parameters_mixed_types_raises(
+    mocked_connection,
+):
+    """
+    cursor.execute() raises ProgrammingError when bulk_parameters mixes
+    dict and non-dict rows with pyformat SQL.
+    """
+    cursor = mocked_connection.cursor()
+    with pytest.raises(
+        ProgrammingError, match="All bulk parameter rows must be dicts"
+    ):
+        cursor.execute(
+            "INSERT INTO t (id) VALUES (%(id)s)",
+            bulk_parameters=[{"id": 1}, [2]],
+        )
+    mocked_connection.client.sql.assert_not_called()
+
+
+def test_execute_with_pyformat_sql_and_bulk_parameters_no_placeholders(
+    mocked_connection,
+):
+    """
+    SQL without %(name)s placeholders is passed through unchanged
+    even when bulk_parameters is provided.
+    """
+    cursor = mocked_connection.cursor()
+    sql = "INSERT INTO t (id, val) VALUES (?, ?)"
+    bulk = [[1, "hello"], [2, "world"]]
+    cursor.execute(sql, bulk_parameters=bulk)
+    mocked_connection.client.sql.assert_called_once_with(sql, None, bulk)
 
 
 def test_execute_custom_converter(mocked_connection):

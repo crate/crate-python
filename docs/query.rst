@@ -72,20 +72,19 @@ The same parameter name may appear multiple times in the query:
     ...     "SELECT * FROM locations WHERE name = %(q)s OR kind = %(q)s",
     ...     {"q": "Quasar"})
 
-The client converts the ``%(name)s`` placeholders to positional ``?`` markers
-before sending the query to CrateDB, so no server-side changes are required.
-
-.. NOTE::
-
-    Named parameters are not yet supported by ``executemany()``. Use
-    positional ``?`` placeholders with a :class:`py:list` of tuples for bulk
-    operations.
+The client converts the ``%(name)s`` placeholders to ``$N`` positional
+markers before sending the query to CrateDB.
 
 Bulk inserts
 ------------
 
 :ref:`Bulk inserts <crate-reference:http-bulk-ops>` are possible with the
-``executemany()`` method, which takes a :class:`py:list` of tuples to insert:
+``executemany()`` method.
+
+Positional parameters
+.....................
+
+Pass a :class:`py:list` of sequences using ``?`` placeholders:
 
     >>> cursor.executemany(
     ...     "INSERT INTO locations (name, date, kind, position) VALUES (?, ?, ?, ?)",
@@ -94,9 +93,57 @@ Bulk inserts
     [{'rowcount': 1}, {'rowcount': 1}]
 
 The ``executemany()`` method returns a result :class:`dictionary <py:dict>`
-for every tuple. This dictionary always has a ``rowcount`` key, indicating
+for every row. This dictionary always has a ``rowcount`` key, indicating
 how many rows were inserted. If an error occurs, the ``rowcount`` value is
 ``-2``, and the dictionary may additionally have an ``error_message`` key.
+
+Named parameters
+................
+
+``executemany()`` also accepts a :class:`py:list` of :class:`py:dict` using
+``%(name)s`` placeholders. The client converts both the SQL template and all
+rows to positional format before sending to CrateDB:
+
+    >>> cursor.executemany(
+    ...     "INSERT INTO locations (name, date, kind, position) "
+    ...     "VALUES (%(name)s, %(date)s, %(kind)s, %(pos)s)",
+    ...     [{"name": "Cloverleaf", "date": "2007-03-11", "kind": "Quasar", "pos": 7},
+    ...      {"name": "Old Faithful", "date": "2007-03-11", "kind": "Quasar", "pos": 8}])
+    [{'rowcount': 1}, {'rowcount': 1}]
+
+Using ``bulk_parameters`` directly
+...................................
+
+``execute()``  accepts a ``bulk_parameters`` keyword argument directly:
+
+.. NOTE::
+    Please prefer ``executemany()`` for bulk inserts, it is the standard DB-API 2.0
+    interface. The ``bulk_parameters`` argument is a lower-level alternative.
+
+    >>> cursor.execute(
+    ...     "INSERT INTO locations (name, kind, position) VALUES (?, ?, ?)",
+    ...     bulk_parameters=[('Cloverleaf', 'Quasar', 7),
+    ...                      ('Old Faithful', 'Quasar', 8)])
+
+Named ``%(name)s`` placeholders are also supported. When the rows are
+:class:`py:dict` objects the SQL template and rows are fully converted,
+identical to the ``executemany()`` path:
+
+    >>> cursor.execute(
+    ...     "INSERT INTO locations (name, kind, position) "
+    ...     "VALUES (%(name)s, %(kind)s, %(pos)s)",
+    ...     bulk_parameters=[{"name": "Cloverleaf", "kind": "Quasar", "pos": 7},
+    ...                      {"name": "Old Faithful", "kind": "Quasar", "pos": 8}])
+
+When the rows are already positional lists (e.g. data coming from a
+DataFrame), only the SQL template is rewritten. In this case the caller must
+ensure the value order in each row matches the placeholder order in the SQL:
+
+    >>> cursor.execute(
+    ...     "INSERT INTO locations (name, kind, position) "
+    ...     "VALUES (%(name)s, %(kind)s, %(pos)s)",
+    ...     bulk_parameters=[['Cloverleaf', 'Quasar', 7],
+    ...                      ['Old Faithful', 'Quasar', 8]])
 
 .. _selects:
 

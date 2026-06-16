@@ -114,9 +114,11 @@ rows to positional format before sending to CrateDB:
 Using ``bulk_parameters`` directly
 ...................................
 
-For advanced use cases (such as SQLAlchemy integrations) you can call
-``execute()`` directly with the ``bulk_parameters`` keyword argument,
-bypassing ``executemany()``:
+``execute()``  accepts a ``bulk_parameters`` keyword argument directly:
+
+.. NOTE::
+    Please prefer ``executemany()`` for bulk inserts, it is the standard DB-API 2.0
+    interface. The ``bulk_parameters`` argument is a lower-level alternative.
 
     >>> cursor.execute(
     ...     "INSERT INTO locations (name, kind, position) VALUES (?, ?, ?)",

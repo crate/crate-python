@@ -2,12 +2,12 @@
 Changes for crate
 =================
 
-Unreleased
+2026/06/17 2.2.1
 ================
 
 - Fixed ``cursor.execute()`` with ``bulk_parameters`` and pyformat SQL: when
   rows are dicts, both the SQL template and the rows are now converted to
-  positional format before sending to CrateDB. Positional-list rows 
+  positional format before sending to CrateDB. Positional-list rows
   continue to work as before.
 
 2026/06/04 2.2.0

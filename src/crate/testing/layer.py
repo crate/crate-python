@@ -390,7 +390,7 @@ class CrateLayer:
                 self.stop()
                 raise e
 
-            if wait_time > 60:
+            if wait_time > 90:
                 for line in line_buf.lines:
                     log.error(line)
                 self.stop()

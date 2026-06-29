@@ -46,4 +46,4 @@ except PackageNotFoundError:  # pragma: no cover
 # codeql[py/unused-global-variable]
 apilevel = "2.0"
 threadsafety = 1
-paramstyle = "qmark"
+paramstyle = "pyformat"

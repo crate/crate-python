@@ -125,6 +125,44 @@ def test_date_serialization():
     assert result == b"1461196800000"
 
 
+def test_naive_time_serialization():
+    """
+    Verify that a naive `datetime.time` serializes to an ISO 8601 string.
+    """
+    data = dt.time(12, 30, 45)
+    result = json_dumps(data)
+    assert result == b'"12:30:45"'
+
+
+def test_time_with_microseconds_serialization():
+    """
+    Verify that `datetime.time` with microseconds serializes correctly.
+    """
+    data = dt.time(12, 30, 45, 123456)
+    result = json_dumps(data)
+    assert result == b'"12:30:45.123456"'
+
+
+def test_aware_time_serialization():
+    """
+    Verify that a timezone-aware `datetime.time` serializes to ISO 8601 format,
+    including the UTC offset.
+    """
+    data = dt.time(12, 30, 45, tzinfo=dt.timezone.utc)
+    result = json_dumps(data)
+    assert result == b'"12:30:45+00:00"'
+
+
+def test_aware_time_with_offset_serialization():
+    """
+    Verify that a `datetime.time` with a non-UTC offset serializes correctly.
+    """
+    tz = dt.timezone(dt.timedelta(hours=2))
+    data = dt.time(12, 30, 45, tzinfo=tz)
+    result = json_dumps(data)
+    assert result == b'"12:30:45+02:00"'
+
+
 def test_uuid_serialization():
     """
     Verify that a `uuid.UUID` can be serialized.

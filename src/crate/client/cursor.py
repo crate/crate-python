@@ -18,12 +18,99 @@
 # However, if you have executed another commercial license agreement
 # with Crate these terms will supersede the license and you may use the
 # software solely pursuant to the terms of the relevant commercial agreement.
+import re
 import typing as t
 import warnings
 from datetime import datetime, timedelta, timezone
+from itertools import count
 
 from .converter import Converter, DataType
 from .exceptions import ProgrammingError
+
+_NAMED_PARAM_RE = re.compile(r"%\(([^)]+)\)s")
+
+
+def _rewrite_pyformat_sql(sql: str) -> str:
+    """Replace %(name)s placeholders with $N positional markers (1-indexed)."""
+    counter = count(1)
+    return _NAMED_PARAM_RE.sub(lambda _: f"${next(counter)}", sql)
+
+
+def _convert_named_to_positional(
+    sql: str, params: t.Dict[str, t.Any]
+) -> t.Tuple[str, t.List[t.Any]]:
+    """Convert pyformat-style named parameters to positional parameters.
+
+    Converts ``%(name)s`` placeholders to ``$N`` (1-indexed) and returns an
+    ordered list of corresponding values extracted from ``params``.
+
+    The same name may appear multiple times; each occurrence appends the
+    value to the positional list independently.
+
+    Raises ``ProgrammingError`` if a placeholder name is absent from ``params``.
+    Extra keys in ``params`` are silently ignored.
+
+    Example::
+
+        sql = "SELECT * FROM t WHERE a = %(a)s AND b = %(b)s"
+        params = {"a": 1, "b": 2}
+        # returns: ("SELECT * FROM t WHERE a = $1 AND b = $2", [1, 2])
+    """
+    positions = {}
+    idx = 1
+    new_params = []
+    for k, v in params.items():
+        positions[k] = idx
+        new_params.append(v)
+        idx += 1
+
+    def _replace(match: "re.Match[str]") -> str:
+        name = match.group(1)
+        if name not in params:
+            raise ProgrammingError(
+                f"Named parameter '{name}' not found in the parameters dict"
+            )
+        position = positions[name]
+        return f"${position}"
+
+    converted_sql = _NAMED_PARAM_RE.sub(_replace, sql)
+    return converted_sql, new_params
+
+
+def _convert_named_bulk_params(
+    sql: str, seq_of_dicts: t.Sequence[t.Dict[str, t.Any]]
+) -> t.Tuple[str, t.List[t.List[t.Any]]]:
+    """Convert pyformat SQL and a sequence of dicts to positional bulk args.
+
+    Uses the first row to determine the SQL template and position map, then
+    builds a positional argument list for every row.
+
+    Raises ``ProgrammingError`` if a placeholder name is absent from any row.
+    Extra keys in each row are silently ignored (consistent with
+    ``_convert_named_to_positional``).
+    """
+    first = seq_of_dicts[0]
+    converted_sql, _ = _convert_named_to_positional(sql, first)
+    positions = {k: i + 1 for i, k in enumerate(first)}
+    n = len(positions)
+
+    bulk_args: t.List[t.List[t.Any]] = []
+    for row in seq_of_dicts:
+        if not isinstance(row, dict):
+            raise ProgrammingError(
+                "All bulk parameter rows must be dicts when SQL uses "
+                "pyformat (%(name)s) placeholders; got a non-dict row"
+            )
+        positional: t.List[t.Any] = [None] * n
+        for name, pos in positions.items():
+            if name not in row:
+                raise ProgrammingError(
+                    f"Named parameter '{name}' not found in the parameters dict"
+                )
+            positional[pos - 1] = row[name]
+        bulk_args.append(positional)
+
+    return converted_sql, bulk_args
 
 
 class Cursor:
@@ -54,6 +141,16 @@ class Cursor:
         if self._closed:
             raise ProgrammingError("Cursor closed")
 
+        if isinstance(parameters, dict):
+            sql, parameters = _convert_named_to_positional(sql, parameters)
+        elif bulk_parameters is not None and _NAMED_PARAM_RE.search(sql):
+            if bulk_parameters and isinstance(bulk_parameters[0], dict):
+                sql, bulk_parameters = _convert_named_bulk_params(
+                    sql, bulk_parameters
+                )
+            else:
+                sql = _rewrite_pyformat_sql(sql)
+
         self._result = self.connection.client.sql(
             sql, parameters, bulk_parameters
         )
@@ -71,7 +168,16 @@ class Cursor:
         """
         row_counts = []
         durations = []
-        self.execute(sql, bulk_parameters=seq_of_parameters)
+        bulk_parameters = seq_of_parameters
+        if (
+            bulk_parameters
+            and isinstance(bulk_parameters[0], dict)
+            and _NAMED_PARAM_RE.search(sql)
+        ):
+            sql, bulk_parameters = _convert_named_bulk_params(
+                sql, bulk_parameters
+            )
+        self.execute(sql, bulk_parameters=bulk_parameters)
 
         for result in self._result.get("results", []):
             if result.get("rowcount") > -1:

@@ -266,6 +266,37 @@ For completeness' sake the cursor description is updated nonetheless:
     >>> [ desc[0] for desc in cursor.description ]
     ['name', 'position']
 
+executemany() with named parameters
+====================================
+
+``executemany()`` also accepts a :class:`py:list` of :class:`py:dict` when
+the SQL statement contains ``%(name)s`` placeholders. The client converts both the SQL
+template and all rows to positional format before sending them to CrateDB:
+
+.. Hidden: set up mocked response
+
+    >>> connection.client.set_next_response({
+    ...     "results": [
+    ...         {"rowcount": 1},
+    ...         {"rowcount": 1}
+    ...     ],
+    ...     "duration": 123,
+    ...     "cols": [],
+    ... })
+
+    >>> cursor = connection.cursor()
+
+    >>> cursor.executemany(
+    ...     "INSERT INTO t (id, val) VALUES (%(id)s, %(val)s)",
+    ...     [{"id": 1, "val": "foo"}, {"id": 2, "val": "bar"}])
+    [{'rowcount': 1}, {'rowcount': 1}]
+
+    >>> cursor.rowcount
+    2
+
+    >>> cursor.duration
+    123
+
     >>> connection.client.set_next_response({
     ...     "rows":[ [ "North West Ripple", 1 ], [ "Arkintoofle Minor", 3 ], [ "Alpha Centauri", 3 ] ],
     ...     "cols":[ "name", "position" ],
@@ -311,8 +342,8 @@ Python data type conversion
 ===========================
 
 The cursor object can optionally convert database types to native Python data
-types. Currently, this is implemented for the CrateDB data types ``IP`` and
-``TIMESTAMP`` on behalf of the ``DefaultTypeConverter``.
+types. Currently, this is implemented for the CrateDB data types ``IP``,
+``TIMESTAMP``, and ``TIMETZ`` on behalf of the ``DefaultTypeConverter``.
 
     >>> cursor = connection.cursor(converter=DefaultTypeConverter())
 
@@ -328,6 +359,24 @@ types. Currently, this is implemented for the CrateDB data types ``IP`` and
 
     >>> cursor.fetchone()
     ['foo', IPv4Address('10.10.10.1'), datetime.datetime(2022, 7, 18, 18, 10, 36, 758000, tzinfo=datetime.timezone.utc)]
+
+CrateDB's ``TIMETZ`` type is returned over HTTP as ``[microseconds_since_midnight, tz_offset_seconds]`` 
+and decoded to a ``datetime.time`` object with the appropriate timezone:
+
+    >>> cursor = connection.cursor(converter=DefaultTypeConverter())
+
+    >>> connection.client.set_next_response({
+    ...     "col_types": [20],
+    ...     "rows":[ [ [45045000000, 0] ] ],
+    ...     "cols":[ "t" ],
+    ...     "rowcount":1,
+    ...     "duration":1
+    ... })
+
+    >>> cursor.execute('')
+
+    >>> cursor.fetchone()
+    [datetime.time(12, 30, 45, tzinfo=datetime.timezone.utc)]
 
 
 Custom data type conversion

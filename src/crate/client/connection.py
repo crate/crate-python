@@ -20,6 +20,8 @@
 # software solely pursuant to the terms of the relevant commercial agreement.
 import json
 
+from typing import Union
+
 from verlib2 import Version
 from verlib2.packaging.version import InvalidVersion
 
@@ -53,6 +55,7 @@ class Connection:
         converter=None,
         time_zone=None,
         jwt_token=None,
+        compress: Union[int, bool] = 8192,
     ):
         """
         :param servers:
@@ -133,6 +136,12 @@ class Connection:
             converted from UTC to use the given time zone.
         :param jwt_token:
             the JWT token to authenticate with the server.
+        :param compress:
+            (optional, defaults to ``8192``)
+            Controls gzip compression of outgoing request bodies.
+            ``False`` disables compression entirely.
+            ``True`` compresses every request regardless of size.
+            An integer compresses only when the payload exceeds that many bytes.
         """  # noqa: E501
 
         self._converter = converter
@@ -160,6 +169,7 @@ class Connection:
                 socket_tcp_keepintvl=socket_tcp_keepintvl,
                 socket_tcp_keepcnt=socket_tcp_keepcnt,
                 jwt_token=jwt_token,
+                compress=compress,
             )
         self.lowest_server_version = self._lowest_server_version()
         self._closed = False

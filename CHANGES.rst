@@ -2,8 +2,31 @@
 Changes for crate
 =================
 
-Unreleased
+2026/06/17 2.2.1
+================
+
+- Fixed ``cursor.execute()`` with ``bulk_parameters`` and pyformat SQL: when
+  rows are dicts, both the SQL template and the rows are now converted to
+  positional format before sending to CrateDB. Positional-list rows
+  continue to work as before.
+
+2026/06/04 2.2.0
 ==========
+- Added JSON serialization support for Python's ``datetime.time`` type,
+  encoding it as an ISO 8601 string compatible with CrateDB's ``TIMETZ``
+  column type.
+
+- Added gzip compression for outgoing request bodies via the ``compress``
+  parameter (default: ``8192`` bytes).
+  Pass ``True`` to always compress, ``False`` to disable, or an integer
+  as a byte threshold. The driver always sends ``Accept-Encoding: gzip,
+  deflate`` to negotiate compressed responses from the server when
+  compression is enabled.
+
+- Added named parameter support (``pyformat`` paramstyle). Passing a
+  :class:`py:dict` as ``parameters`` to ``cursor.execute()`` now accepts
+  ``%(name)s`` placeholders and converts them to positional ``?`` markers
+  client-side. Positional parameters using ``?`` continue to work unchanged.
 
 - Changed connection behaviour to fail early if the database cluster does not respond
 

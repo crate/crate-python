@@ -19,6 +19,7 @@
 # with Crate these terms will supersede the license and you may use the
 # software solely pursuant to the terms of the relevant commercial agreement.
 
+import gzip
 import json
 import os
 import queue
@@ -198,6 +199,48 @@ def test_redirect_handling():
     conn_kw.pop("resolver", None)
 
     assert conn_kw == {"socket_options": _get_socket_opts(keepalive=True)}
+
+
+@pytest.mark.parametrize("method,args,success_status", [
+    ("blob_exists", ("blobs", "fake_digest"), 200),
+    ("blob_put",    ("blobs", "fake_digest", b"data"), 201),
+    ("blob_del",    ("blobs", "fake_digest"), 204),
+    ("blob_get",    ("blobs", "fake_digest"), 200),
+])
+def test_redirect_blob_preserves_basic_auth(method, args, success_status):
+    """
+    Verify Basic HTTP auth credentials are forwarded when following blob
+    endpoint redirects.
+    """
+    redirect = fake_redirect("http://localhost:4201/_blobs/blobs/fake_digest")
+    success = fake_response(success_status)
+
+    with patch(REQUEST_PATH, side_effect=[redirect, success]) as mock_req:
+        client = Client(
+            servers="localhost:4200", username="admin", password="secret"
+        )
+        getattr(client, method)(*args)
+
+    assert mock_req.call_count == 2
+    for call in mock_req.call_args_list:
+        assert call.kwargs.get("username") == "admin"
+        assert call.kwargs.get("password") == "secret"
+
+
+def test_redirect_blob_preserves_jwt_auth():
+    """
+    Verify JWT bearer token is forwarded when following blob endpoint redirects.
+    """
+    redirect = fake_redirect("http://localhost:4201/_blobs/blobs/fake_digest")
+    success = fake_response(200)
+
+    with patch(REQUEST_PATH, side_effect=[redirect, success]) as mock_req:
+        client = Client(servers="localhost:4200", jwt_token="my.jwt.token")
+        client.blob_exists("blobs", "fake_digest")
+
+    assert mock_req.call_count == 2
+    for call in mock_req.call_args_list:
+        assert call.kwargs.get("jwt_token") == "my.jwt.token"
 
 
 def test_server_infos():
@@ -735,3 +778,83 @@ def test_credentials_and_token(serve_http):
         assert excinfo.match(
             "Either JWT tokens are accepted, or user credentials, but not both"
         )
+
+def test_compress_accept_encoding_always_sent():
+    """Accept-Encoding is sent even when compression is disabled."""
+    captured = {}
+
+    def capturing(*_, **kwargs):
+        captured["headers"] = kwargs.get("headers") or {}
+        return fake_response(200)
+
+    with patch(REQUEST_PATH, side_effect=capturing):
+        Client(servers="localhost:4200", compress=False).sql("SELECT 1")
+    assert captured["headers"].get("Accept-Encoding") == "gzip, deflate"
+
+
+def test_compress_false_no_content_encoding():
+    """No Content-Encoding header when compress=False."""
+    captured = {}
+
+    def capturing(*_, **kwargs):
+        captured["headers"] = kwargs.get("headers") or {}
+        return fake_response(200)
+
+    with patch(REQUEST_PATH, side_effect=capturing):
+        Client(servers="localhost:4200", compress=False).sql("SELECT 1")
+    assert "Content-Encoding" not in captured["headers"]
+
+
+def test_compress_true_always_compresses():
+    """compress=True compresses regardless of payload size."""
+    captured = {}
+
+    def capturing(*_, **kwargs):
+        captured["data"] = kwargs.get("data", b"")
+        captured["headers"] = kwargs.get("headers") or {}
+        return fake_response(200)
+
+    with patch(REQUEST_PATH, side_effect=capturing):
+        Client(servers="localhost:4200", compress=True).sql("SELECT 1")
+    assert captured["headers"].get("Content-Encoding") == "gzip"
+    assert b'"stmt"' in gzip.decompress(captured["data"])
+
+
+def test_compress_threshold_above():
+    """Payload above threshold is compressed."""
+    captured = {}
+
+    def capturing(*_, **kwargs):
+        captured["headers"] = kwargs.get("headers") or {}
+        return fake_response(200)
+
+    with patch(REQUEST_PATH, side_effect=capturing):
+        Client(servers="localhost:4200", compress=0).sql("SELECT 1")
+    assert captured["headers"].get("Content-Encoding") == "gzip"
+
+
+def test_compress_threshold_below():
+    """Payload below threshold is not compressed."""
+    captured = {}
+
+    def capturing(*_, **kwargs):
+        captured["headers"] = kwargs.get("headers") or {}
+        return fake_response(200)
+
+    with patch(REQUEST_PATH, side_effect=capturing):
+        Client(servers="localhost:4200", compress=999_999).sql("SELECT 1")
+    assert "Content-Encoding" not in captured["headers"]
+
+
+def test_compress_default():
+    """Default args: Accept-Encoding sent, small payload not compressed."""
+    captured = {}
+
+    def capturing(*_, **kwargs):
+        captured["headers"] = kwargs.get("headers") or {}
+        return fake_response(200)
+
+    with patch(REQUEST_PATH, side_effect=capturing):
+        Client(servers="localhost:4200").sql("SELECT 1")
+    assert captured["headers"].get("Accept-Encoding") == "gzip, deflate"
+    assert "Content-Encoding" not in captured["headers"]

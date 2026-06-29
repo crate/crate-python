@@ -125,6 +125,94 @@ def test_cursor_executemany(mocked_connection):
         assert response["results"] == result
 
 
+def test_executemany_with_named_params(mocked_connection):
+    """
+    Verify that executemany() translates pyformat %(name)s placeholders to
+    positional $N markers and converts each dict row to a positional list.
+
+    """
+    response = {
+        "col_types": [],
+        "cols": [],
+        "duration": 123,
+        "results": [{"rowcount": 1}, {"rowcount": 1}],
+    }
+    with mock.patch.object(
+        mocked_connection.client, "sql", return_value=response
+    ):
+        cursor = mocked_connection.cursor()
+        cursor.executemany(
+            "INSERT INTO characters (name, age) VALUES (%(name)s, %(age)s)",
+            [
+                {"name": "Arthur", "age": 42},
+                {"name": "Bill", "age": 35},
+            ],
+        )
+        sql, _params, bulk_args = mocked_connection.client.sql.call_args[0]
+        assert sql == "INSERT INTO characters (name, age) VALUES ($1, $2)"
+        assert bulk_args == [["Arthur", 42], ["Bill", 35]]
+
+
+def test_executemany_with_named_params_missing_key(mocked_connection):
+    """
+    Verify that executemany() raises ProgrammingError when a row is missing a
+    key that appears as a placeholder in the SQL.
+    """
+    cursor = mocked_connection.cursor()
+    with pytest.raises(
+        ProgrammingError, match="Named parameter 'age' not found"
+    ):
+        cursor.executemany(
+            "INSERT INTO characters (name, age) VALUES (%(name)s, %(age)s)",
+            [
+                {"name": "Arthur", "age": 42},
+                {"name": "Bill"},  # missing 'age'
+            ],
+        )
+    mocked_connection.client.sql.assert_not_called()
+
+
+def test_executemany_with_named_params_repeated(mocked_connection):
+    """
+    Verify that a placeholder name used multiple times in the SQL maps to the
+    same $N position in every occurrence, and the value appears only once in
+    each row's positional list.
+    """
+    response = {
+        "col_types": [],
+        "cols": [],
+        "duration": 123,
+        "results": [{"rowcount": 1}, {"rowcount": 1}],
+    }
+    with mock.patch.object(
+        mocked_connection.client, "sql", return_value=response
+    ):
+        cursor = mocked_connection.cursor()
+        cursor.executemany(
+            "INSERT INTO t (a, b) VALUES (%(x)s, %(x)s)",
+            [{"x": 1}, {"x": 2}],
+        )
+        sql, _params, bulk_args = mocked_connection.client.sql.call_args[0]
+        assert sql == "INSERT INTO t (a, b) VALUES ($1, $1)"
+        assert bulk_args == [[1], [2]]
+
+
+def test_executemany_with_mixed_param_types(mocked_connection):
+    """
+    Verify that executemany() raises a clear ProgrammingError when the
+    parameter sequence mixes dicts and non-dicts while the SQL uses pyformat.
+    """
+    cursor = mocked_connection.cursor()
+    with pytest.raises(
+        ProgrammingError, match="All bulk parameter rows must be dicts"
+    ):
+        cursor.executemany(
+            "INSERT INTO characters (name) VALUES (%(name)s)",
+            [{"name": "Arthur"}, ["Trillian"]],  # second row is a list
+        )
+    mocked_connection.client.sql.assert_not_called()
+
+
 def test_create_with_timezone_as_datetime_object(mocked_connection):
     """
     The cursor can return timezone-aware `datetime` objects when requested.
@@ -243,6 +331,68 @@ def test_execute_with_bulk_args(mocked_connection):
     mocked_connection.client.sql.assert_called_once_with(statement, None, [[1]])
 
 
+def test_execute_with_pyformat_sql_and_bulk_parameters(mocked_connection):
+    """
+    cursor.execute() converts %(name)s SQL to $N when bulk_parameters is
+    provided. Rows are already positional; only the SQL needs conversion.
+    """
+    cursor = mocked_connection.cursor()
+    sql = "INSERT INTO t (id, val) VALUES (%(id)s, %(val)s)"
+    bulk = [[1, "hello"], [2, "world"]]
+    cursor.execute(sql, bulk_parameters=bulk)
+    mocked_connection.client.sql.assert_called_once_with(
+        "INSERT INTO t (id, val) VALUES ($1, $2)", None, bulk
+    )
+
+
+def test_execute_with_pyformat_sql_and_dict_bulk_parameters(mocked_connection):
+    """
+    cursor.execute() with pyformat SQL and dict-format bulk_parameters converts
+    both the SQL template (%(x)s → $N) and the rows (dicts → positional lists).
+    """
+    cursor = mocked_connection.cursor()
+    sql = "INSERT INTO t (id, val) VALUES (%(id)s, %(val)s)"
+    bulk = [{"id": 1, "val": "hello"}, {"id": 2, "val": "world"}]
+    cursor.execute(sql, bulk_parameters=bulk)
+    mocked_connection.client.sql.assert_called_once_with(
+        "INSERT INTO t (id, val) VALUES ($1, $2)",
+        None,
+        [[1, "hello"], [2, "world"]],
+    )
+
+
+def test_execute_with_dict_bulk_parameters_mixed_types_raises(
+    mocked_connection,
+):
+    """
+    cursor.execute() raises ProgrammingError when bulk_parameters mixes
+    dict and non-dict rows with pyformat SQL.
+    """
+    cursor = mocked_connection.cursor()
+    with pytest.raises(
+        ProgrammingError, match="All bulk parameter rows must be dicts"
+    ):
+        cursor.execute(
+            "INSERT INTO t (id) VALUES (%(id)s)",
+            bulk_parameters=[{"id": 1}, [2]],
+        )
+    mocked_connection.client.sql.assert_not_called()
+
+
+def test_execute_with_pyformat_sql_and_bulk_parameters_no_placeholders(
+    mocked_connection,
+):
+    """
+    SQL without %(name)s placeholders is passed through unchanged
+    even when bulk_parameters is provided.
+    """
+    cursor = mocked_connection.cursor()
+    sql = "INSERT INTO t (id, val) VALUES (?, ?)"
+    bulk = [[1, "hello"], [2, "world"]]
+    cursor.execute(sql, bulk_parameters=bulk)
+    mocked_connection.client.sql.assert_called_once_with(sql, None, bulk)
+
+
 def test_execute_custom_converter(mocked_connection):
     """
     Verify that a custom converter is correctly applied when passed to a cursor.
@@ -291,6 +441,41 @@ def test_execute_custom_converter(mocked_connection):
             ],
             [None, None, None, None],
         ]
+
+
+def test_execute_time_converter(mocked_connection):
+    """
+    Verify that CrateDB's TIMETZ wire format
+    ``[microseconds, tz_offset_seconds]`` is decoded to a ``datetime.time``
+    object by ``DefaultTypeConverter``.
+    """
+    converter = DefaultTypeConverter()
+    cursor = mocked_connection.cursor(converter=converter)
+    response = {
+        "col_types": [20],
+        "cols": ["t"],
+        "rows": [
+            [[45045000000, 0]],       # 12:30:45 UTC
+            [[45045123456, 7200]],    # 12:30:45.123456 +02:00
+            [None],
+        ],
+        "rowcount": 3,
+        "duration": 1,
+    }
+
+    with mock.patch.object(
+        mocked_connection.client, "sql", return_value=response
+    ):
+        cursor.execute("")
+        result = cursor.fetchall()
+
+    assert result == [
+        [datetime.time(12, 30, 45, 0,
+                       tzinfo=datetime.timezone.utc)],
+        [datetime.time(12, 30, 45, 123456,
+                       tzinfo=datetime.timezone(datetime.timedelta(hours=2)))],
+        [None],
+    ]
 
 
 def test_execute_with_converter_and_invalid_data_type(mocked_connection):
@@ -490,6 +675,62 @@ def test_execute_with_timezone(mocked_connection):
         ]
 
         assert result[0][1].tzname() == "UTC"
+
+
+def test_execute_with_named_params(mocked_connection):
+    """
+    Verify that named %(name)s parameters are converted to positional ? markers
+    and the values are passed as an ordered list.
+    """
+    cursor = mocked_connection.cursor()
+    cursor.execute(
+        "SELECT * FROM t WHERE a = %(a)s AND b = %(b)s",
+        {"a": 1, "b": 2},
+    )
+    mocked_connection.client.sql.assert_called_once_with(
+        "SELECT * FROM t WHERE a = $1 AND b = $2", [1, 2], None
+    )
+
+
+def test_execute_with_named_params_repeated(mocked_connection):
+    """
+    Verify that a parameter name used multiple times in the SQL is resolved
+    correctly each time it appears.
+    """
+    cursor = mocked_connection.cursor()
+    cursor.execute("SELECT %(x)s, %(x)s", {"x": 42})
+    mocked_connection.client.sql.assert_called_once_with(
+        "SELECT $1, $1", [42], None
+    )
+
+
+def test_execute_with_named_params_missing(mocked_connection):
+    """
+    Verify that a ProgrammingError is raised when a placeholder name is absent
+    from the parameters dict, and that the client is never called.
+    """
+    cursor = mocked_connection.cursor()
+    with pytest.raises(ProgrammingError, match="Named parameter 'z' not found"):
+        cursor.execute("SELECT %(z)s", {"a": 1})
+    mocked_connection.client.sql.assert_not_called()
+
+
+def test_execute_with_named_params_non_identifier_keys(mocked_connection):
+    """
+    Verify that %(name)s placeholders whose name contains characters outside
+    [a-zA-Z0-9_] are still converted to positional $N markers.
+
+    """
+    cursor = mocked_connection.cursor()
+
+    cursor.execute(
+        "UPDATE characters SET data['x'] = %(data['x'])s WHERE name = %(name)s",
+        {"data['x']": 42, "name": "Berlin"},
+    )
+    sql, args, _ = mocked_connection.client.sql.call_args[0]
+    assert "%" not in sql
+    assert sql == "UPDATE characters SET data['x'] = $1 WHERE name = $2"
+    assert args == [42, "Berlin"]
 
 
 def test_cursor_close(mocked_connection):

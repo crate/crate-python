@@ -22,6 +22,7 @@
 
 import calendar
 import datetime as dt
+import gzip
 import heapq
 import io
 import logging
@@ -98,6 +99,8 @@ def json_encoder(obj: t.Any) -> t.Union[int, str]:
     - Python's `dt.datetime` and `dt.date` types will be
       serialized to `int` after converting to milliseconds
       since epoch.
+    - Python's `dt.time` will be serialized to `str`, following
+    the ISO format.
 
     https://github.com/ijl/orjson#default
     https://cratedb.com/docs/crate/reference/en/latest/general/ddl/data-types.html#type-timestamp
@@ -113,6 +116,8 @@ def json_encoder(obj: t.Any) -> t.Union[int, str]:
             delta.microseconds / 1000.0
             + (delta.seconds + delta.days * 24 * 3600) * 1000.0
         )
+    if isinstance(obj, dt.time):
+        return obj.isoformat()
     if isinstance(obj, dt.date):
         return calendar.timegm(obj.timetuple()) * 1000
     raise TypeError
@@ -463,6 +468,7 @@ class Client:
         socket_tcp_keepintvl=None,
         socket_tcp_keepcnt=None,
         jwt_token=None,
+        compress: t.Union[int, bool] = 8192,
     ):
         if not servers:
             servers = [self.default_server]
@@ -487,7 +493,7 @@ class Client:
                 )
 
         self._active_servers = servers
-        self._inactive_servers = []
+        self._inactive_servers: t.List[t.Tuple[float, str, str]] = []
         pool_kw = _pool_kw_args(
             verify_ssl_cert,
             ca_cert,
@@ -506,7 +512,7 @@ class Client:
         )
         self.ssl_relax_minimum_version = ssl_relax_minimum_version
         self.backoff_factor = backoff_factor
-        self.server_pool = {}
+        self.server_pool: t.Dict[str, Server] = {}
         self._update_server_pool(servers, **pool_kw)
         self._pool_kw = pool_kw
         self._lock = threading.RLock()
@@ -515,6 +521,12 @@ class Client:
         self.password = password
         self.jwt_token = jwt_token
         self.schema = schema
+
+        if not isinstance(compress, (bool, int)):
+            raise TypeError(
+                f"compress must be bool or int, got {type(compress).__name__!r}"
+            )
+        self.compress = compress
 
         self.path = self.SQL_PATH
         if error_trace:
@@ -678,8 +690,16 @@ class Client:
         """
         Issue request against the crate HTTP API.
         """
+        headers = {"Accept-Encoding": "gzip, deflate"}
 
-        response = self._request(method, path, data=data)
+        compress_enabled = self.compress is True or (
+            not isinstance(self.compress, bool) and len(data) >= self.compress
+        )
+        if compress_enabled:
+            data = gzip.compress(data, compresslevel=6)
+            headers["Content-Encoding"] = "gzip"
+
+        response = self._request(method, path, data=data, headers=headers)
         _raise_for_status(response)
         if len(response.data) > 0:
             return _json_from_response(response)

@@ -19,7 +19,6 @@
 # with Crate these terms will supersede the license and you may use the
 # software solely pursuant to the terms of the relevant commercial agreement.
 import json
-
 from typing import Union
 
 from verlib2 import Version

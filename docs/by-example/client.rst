@@ -73,7 +73,7 @@ connect:
 
 The username for trusted users can also be provided in the URL:
 
-    >>> connection = client.connect(['http://trusted_me@' + crate_host])
+    >>> connection = client.connect([crate_host.replace('://', '://trusted_me@')])
     >>> connection.client.username
     'trusted_me'
     >>> connection.client.password
@@ -93,7 +93,7 @@ also need to provide ``password`` as argument for the ``connect()`` call:
 
 The authentication credentials can also be provided in the URL:
 
-    >>> connection = client.connect(['http://me:my_secret_pw@' + crate_host])
+    >>> connection = client.connect([crate_host.replace('://', '://me:my_secret_pw@')])
     >>> connection.client.username
     'me'
     >>> connection.client.password

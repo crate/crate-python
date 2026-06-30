@@ -63,10 +63,13 @@ def test_connection_closes_access():
 
 def test_connection_closes_context_manager():
     """Verify that the context manager of the client closes the connection"""
-    with patch.object(connect, "close", autospec=True) as close_fn:
-        with connect():
-            pass
-        close_fn.assert_called_once()
+    with patch.object(
+        Client, "server_infos", return_value=(None, None, "0.0.0")
+    ):
+        with patch.object(connect, "close", autospec=True) as close_fn:
+            with connect():
+                pass
+            close_fn.assert_called_once()
 
 
 def test_invalid_server_version():
@@ -86,8 +89,11 @@ def test_context_manager():
     """
     close_method = "crate.client.http.Client.close"
     with patch(close_method, return_value=MagicMock()) as close_func:
-        with connect("localhost:4200") as conn:
-            assert not conn._closed
+        with patch.object(
+            Client, "server_infos", return_value=(None, None, "0.0.0")
+        ):
+            with connect("localhost:4200") as conn:
+                assert not conn._closed
 
         assert conn._closed
         # Checks that the close method of the client
@@ -123,7 +129,10 @@ def test_default_repr():
     """
     Verify default repr dunder method.
     """
-    conn = connect()
+    with patch.object(
+        Client, "server_infos", return_value=(None, None, "0.0.0")
+    ):
+        conn = connect()
     assert repr(conn) == "<Connection <Client ['http://127.0.0.1:4200']>>"
 
 
@@ -140,7 +149,10 @@ def test_with_timezone():
     """
 
     tz_mst = datetime.timezone(datetime.timedelta(hours=7), name="MST")
-    connection = connect("localhost:4200", time_zone=tz_mst)
+    with patch.object(
+        Client, "server_infos", return_value=(None, None, "0.0.0")
+    ):
+        connection = connect("localhost:4200", time_zone=tz_mst)
     cursor = connection.cursor()
 
     assert cursor.time_zone.tzname(None) == "MST"
@@ -156,16 +168,22 @@ def test_timeout_float():
     """
     Verify setting the timeout value as a scalar (float) works.
     """
-    with connect("localhost:4200", timeout=2.42) as conn:
-        assert conn.client._pool_kw["timeout"] == 2.42
+    with patch.object(
+        Client, "server_infos", return_value=(None, None, "0.0.0")
+    ):
+        with connect("localhost:4200", timeout=2.42) as conn:
+            assert conn.client._pool_kw["timeout"] == 2.42
 
 
 def test_timeout_string():
     """
     Verify setting the timeout value as a scalar (string) works.
     """
-    with connect("localhost:4200", timeout="2.42") as conn:
-        assert conn.client._pool_kw["timeout"] == 2.42
+    with patch.object(
+        Client, "server_infos", return_value=(None, None, "0.0.0")
+    ):
+        with connect("localhost:4200", timeout="2.42") as conn:
+            assert conn.client._pool_kw["timeout"] == 2.42
 
 
 def test_timeout_object():
@@ -173,5 +191,8 @@ def test_timeout_object():
     Verify setting the timeout value as a Timeout object works.
     """
     timeout = Timeout(connect=2.42, read=0.01)
-    with connect("localhost:4200", timeout=timeout) as conn:
-        assert conn.client._pool_kw["timeout"] == timeout
+    with patch.object(
+        Client, "server_infos", return_value=(None, None, "0.0.0")
+    ):
+        with connect("localhost:4200", timeout=timeout) as conn:
+            assert conn.client._pool_kw["timeout"] == timeout

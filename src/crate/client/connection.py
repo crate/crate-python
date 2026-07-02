@@ -18,7 +18,6 @@
 # However, if you have executed another commercial license agreement
 # with Crate these terms will supersede the license and you may use the
 # software solely pursuant to the terms of the relevant commercial agreement.
-
 from typing import Union
 
 from verlib2 import Version
@@ -211,14 +210,21 @@ class Connection:
 
     def _lowest_server_version(self):
         lowest = None
-        for server in self.client.active_servers:
+        servers = self.client.active_servers
+        connection_errors = []
+        for server in servers:
             try:
                 _, _, version = self.client.server_infos(server)
                 version = Version(version)
-            except (ValueError, ConnectionError):
+            except ConnectionError as ex:
+                connection_errors.append(ex)
+                continue
+            except ValueError:
                 continue
             if not lowest or version < lowest:
                 lowest = version
+        if connection_errors and not lowest:
+            raise ConnectionError("; ".join(str(e) for e in connection_errors))
         return lowest or Version("0.0.0")
 
     def __repr__(self):

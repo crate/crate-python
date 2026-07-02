@@ -73,12 +73,31 @@ You can pass in as many node URLs as you like.
 
 .. TIP::
 
-    For every query, the client will attempt to connect to each node in sequence
+    When ``connect()`` is called, the client contacts each node to check
+    availability and determine the lowest server version. If no node responds,
+    a ``ConnectionError`` is raised immediately.
+
+    For every subsequent query, the client will attempt each node in sequence
     until a successful connection is made. Nodes are moved to the end of the
     list each time they are tried.
 
     Over multiple query executions, this behaviour functions as client-side
     *round-robin* load balancing. (This is analogous to `round-robin DNS`_.)
+
+.. NOTE::
+
+    Wrap ``connect()`` in a ``try/except`` block to handle an unreachable
+    cluster gracefully:
+
+    .. code-block:: python
+
+        from crate import client
+        from crate.client.exceptions import ConnectionError
+
+        try:
+            connection = client.connect(["node-1:4200", "node-2:4200"])
+        except ConnectionError as e:
+            print(f"Could not reach CrateDB cluster: {e}")
 
 .. _connection-options:
 

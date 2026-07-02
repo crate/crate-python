@@ -29,12 +29,8 @@ respond, the request is automatically routed to the next server:
     >>> connection = client.connect([invalid_host, crate_host])
     >>> connection.close()
 
-If no ``servers`` are given, the default one ``http://127.0.0.1:4200`` is used:
-
-    >>> connection = client.connect()
-    >>> connection.client._active_servers
-    ['http://127.0.0.1:4200']
-    >>> connection.close()
+If no ``servers`` are supplied to the ``connect`` method, the default address
+``http://127.0.0.1:4200`` is used.
 
 If the option ``error_trace`` is set to ``True``, the client will print a whole
 traceback if a server error occurs:
@@ -77,7 +73,7 @@ connect:
 
 The username for trusted users can also be provided in the URL:
 
-    >>> connection = client.connect(['http://trusted_me@' + crate_host])
+    >>> connection = client.connect([crate_host.replace('://', '://trusted_me@')])
     >>> connection.client.username
     'trusted_me'
     >>> connection.client.password
@@ -97,7 +93,7 @@ also need to provide ``password`` as argument for the ``connect()`` call:
 
 The authentication credentials can also be provided in the URL:
 
-    >>> connection = client.connect(['http://me:my_secret_pw@' + crate_host])
+    >>> connection = client.connect([crate_host.replace('://', '://me:my_secret_pw@')])
     >>> connection.client.username
     'me'
     >>> connection.client.password

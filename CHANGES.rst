@@ -2,6 +2,13 @@
 Changes for crate
 =================
 
+Unreleased
+================
+
+- Breaking change: ``connect()`` now raises ``ConnectionError`` immediately if
+no configured server node responds. Changed connection behaviour to fail early 
+if the database cluster does not respond.
+
 2026/06/17 2.2.1
 ================
 

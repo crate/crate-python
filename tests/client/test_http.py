@@ -655,7 +655,14 @@ def test_no_retry_on_read_timeout(serve_http):
             time.sleep(timeout + 0.1)
 
         def do_GET(self):
-            pass
+            body = json.dumps(
+                {"name": "test", "version": {"number": "0.0.0"}}
+            ).encode()
+            self.send_response(200)
+            self.send_header("Content-Type", "application/json")
+            self.send_header("Content-Length", str(len(body)))
+            self.end_headers()
+            self.wfile.write(body)
 
     # Start the http server.
     with serve_http(TimeoutRequestHandler) as (server, url):
@@ -710,7 +717,14 @@ class SharedStateRequestHandler(BaseHTTPRequestHandler):
         self.wfile.write(response.encode("utf-8"))
 
     def do_GET(self):
-        pass
+        body = json.dumps(
+            {"name": "test", "version": {"number": "0.0.0"}}
+        ).encode()
+        self.send_response(200)
+        self.send_header("Content-Type", "application/json")
+        self.send_header("Content-Length", str(len(body)))
+        self.end_headers()
+        self.wfile.write(body)
 
 
 def test_default_schema(serve_http):

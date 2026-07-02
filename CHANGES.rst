@@ -2,6 +2,13 @@
 Changes for crate
 =================
 
+Unreleased
+================
+
+- Breaking change: ``connect()`` now raises ``ConnectionError`` immediately if
+no configured server node responds. Changed connection behaviour to fail early 
+if the database cluster does not respond.
+
 2026/06/17 2.2.1
 ================
 
@@ -27,8 +34,6 @@ Changes for crate
   :class:`py:dict` as ``parameters`` to ``cursor.execute()`` now accepts
   ``%(name)s`` placeholders and converts them to positional ``?`` markers
   client-side. Positional parameters using ``?`` continue to work unchanged.
-
-- Changed connection behaviour to fail early if the database cluster does not respond
 
 2026/03/09 2.1.2
 ================

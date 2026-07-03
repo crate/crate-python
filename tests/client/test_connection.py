@@ -41,7 +41,7 @@ def _bare_conn(client):
 
 
 def test_invalid_server_address():
-    client = Client(servers="localhost:4202")
+    client = Client(servers="localhost:1234")
     with pytest.raises(crate.client.exceptions.ConnectionError) as excinfo:
         connect(client=client)
     assert excinfo.match("Server not available")

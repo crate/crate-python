@@ -58,7 +58,7 @@ dependencies = [
 dev = [
     "certifi",
     "coverage",
-    "mypy<2.2",
+    "mypy<2.4",
     "pytest<10",
     "pytz",
     "ruff<0.16",

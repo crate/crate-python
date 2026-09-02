@@ -34,7 +34,7 @@ from typing import Any, Callable, Dict, List, Optional, Union
 ConverterFunction = Callable[[Optional[Any]], Optional[Any]]
 ColTypesDefinition = Union[int, List[Union[int, "ColTypesDefinition"]]]
 
-_BIT_LITERAL = re.compile(r"^B'([01]*)'$")
+_BIT_LITERAL = re.compile(r"B'([01]*)'")
 
 
 def _to_ipaddress(
@@ -83,7 +83,7 @@ def _to_bit_string(value: Optional[str]) -> Optional[str]:
     """
     if value is None:
         return None
-    match = _BIT_LITERAL.match(value)
+    match = _BIT_LITERAL.fullmatch(value)
     if match is None:
         return value
     return match.group(1)

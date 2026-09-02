@@ -527,6 +527,7 @@ def test_execute_bit_converter(mocked_connection):
         ("B'0notbits1'", "B'0notbits1'"),
         ("B'0110' OR 1=1", "B'0110' OR 1=1"),
         ("B'01\n10'", "B'01\n10'"),
+        ("B'0110'\n", "B'0110'\n"),
     ],
 )
 def test_bit_converter_values(wire_value, expected):

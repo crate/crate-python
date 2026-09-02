@@ -343,7 +343,8 @@ Python data type conversion
 
 The cursor object can optionally convert database types to native Python data
 types. Currently, this is implemented for the CrateDB data types ``IP``,
-``TIMESTAMP``, and ``TIMETZ`` on behalf of the ``DefaultTypeConverter``.
+``TIMESTAMP``, ``TIMETZ``, and ``BIT`` on behalf of the
+``DefaultTypeConverter``.
 
     >>> cursor = connection.cursor(converter=DefaultTypeConverter())
 
@@ -377,6 +378,25 @@ and decoded to a ``datetime.time`` object with the appropriate timezone:
 
     >>> cursor.fetchone()
     [datetime.time(12, 30, 45, tzinfo=datetime.timezone.utc)]
+
+
+CrateDB's ``BIT`` type is returned over HTTP in its SQL literal form,
+``B'0110'``. It is decoded to a plain string of ``0``/``1`` digits.
+
+    >>> cursor = connection.cursor(converter=DefaultTypeConverter())
+
+    >>> connection.client.set_next_response({
+    ...     "col_types": [25],
+    ...     "rows":[ [ "B'0110'" ] ],
+    ...     "cols":[ "flags" ],
+    ...     "rowcount":1,
+    ...     "duration":1
+    ... })
+
+    >>> cursor.execute('')
+
+    >>> cursor.fetchone()
+    ['0110']
 
 
 Custom data type conversion

@@ -8,6 +8,9 @@ Unreleased
 - Breaking change: ``connect()`` now raises ``ConnectionError`` immediately if
 no configured server node responds.
 
+- Added a converter for ``DataType.BIT``, decoding CrateDB's ``B'0110'`` wire
+  format to a plain string of ``0``/``1`` digits.
+
 2026/06/17 2.2.1
 ================
 

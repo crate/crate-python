@@ -26,12 +26,15 @@ https://crate.io/docs/crate/reference/en/latest/interfaces/http.html#column-type
 
 import datetime as dt
 import ipaddress
+import re
 from copy import deepcopy
 from enum import Enum
 from typing import Any, Callable, Dict, List, Optional, Union
 
 ConverterFunction = Callable[[Optional[Any]], Optional[Any]]
 ColTypesDefinition = Union[int, List[Union[int, "ColTypesDefinition"]]]
+
+_BIT_LITERAL = re.compile(r"^B'([01]*)'$")
 
 
 def _to_ipaddress(
@@ -70,6 +73,20 @@ def _to_time(value: Optional[list]) -> Optional[dt.time]:
     tz = dt.timezone(dt.timedelta(seconds=int(tz_offset_seconds)))
     t = (dt.datetime.min + dt.timedelta(microseconds=int(microseconds))).time()
     return t.replace(tzinfo=tz)
+
+
+def _to_bit_string(value: Optional[str]) -> Optional[str]:
+    """
+    Convert a CrateDB BIT wire value to a plain string of ``0``/``1`` digits.
+
+    https://cratedb.com/docs/crate/reference/en/latest/general/ddl/data-types.html#bit-strings
+    """
+    if value is None:
+        return None
+    match = _BIT_LITERAL.match(value)
+    if match is None:
+        return value
+    return match.group(1)
 
 
 def _to_default(value: Optional[Any]) -> Optional[Any]:
@@ -117,6 +134,7 @@ _DEFAULT_CONVERTERS: ConverterMapping = {
     DataType.TIMESTAMP_WITH_TZ: _to_datetime,
     DataType.TIMESTAMP_WITHOUT_TZ: _to_datetime,
     DataType.TIME: _to_time,
+    DataType.BIT: _to_bit_string,
 }
 
 

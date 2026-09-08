@@ -393,7 +393,7 @@ CrateDB's ``BIT`` type is returned over HTTP in its SQL literal form,
     ...     "duration":1
     ... })
 
-    >>> cursor.execute('')
+    >>> cursor.execute("select b'0110'")
 
     >>> cursor.fetchone()
     ['0110']

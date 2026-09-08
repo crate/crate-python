@@ -385,6 +385,8 @@ CrateDB's ``BIT`` type is returned over HTTP in its SQL literal form,
 
     >>> cursor = connection.cursor(converter=DefaultTypeConverter())
 
+.. hide: set up the mocked response::
+
     >>> connection.client.set_next_response({
     ...     "col_types": [25],
     ...     "rows":[ [ "B'0110'" ] ],
@@ -392,6 +394,8 @@ CrateDB's ``BIT`` type is returned over HTTP in its SQL literal form,
     ...     "rowcount":1,
     ...     "duration":1
     ... })
+
+Executing the query and fetching the decoded result:
 
     >>> cursor.execute("select b'0110'")
 

@@ -8,6 +8,12 @@ Unreleased
 - Breaking change: ``connect()`` now raises ``ConnectionError`` immediately if
 no configured server node responds.
 
+- Breaking change: ``DefaultTypeConverter`` now decodes ``DataType.BIT``
+  columns, converting CrateDB's ``B'0110'`` wire format to a plain string of
+  ``0``/``1`` digits. Code that stripped the wrapper itself needs to be
+  adjusted, or can restore the previous behaviour by mapping
+  ``DataType.BIT`` to a converter of its own.
+
 2026/06/17 2.2.1
 ================
 

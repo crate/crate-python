@@ -28,7 +28,11 @@ import pytest
 import pytz
 
 from crate.client import connect
-from crate.client.converter import DataType, DefaultTypeConverter
+from crate.client.converter import (
+    DataType,
+    DefaultTypeConverter,
+    _to_bit_string,
+)
 from crate.client.exceptions import ProgrammingError
 
 
@@ -476,6 +480,130 @@ def test_execute_time_converter(mocked_connection):
                        tzinfo=datetime.timezone(datetime.timedelta(hours=2)))],
         [None],
     ]
+
+
+def test_execute_bit_converter(mocked_connection):
+    """
+    Verify that CrateDB's BIT wire format B'0110' is decoded to a plain
+    string of 0/1 digits by DefaultTypeConverter.
+    """
+    converter = DefaultTypeConverter()
+    cursor = mocked_connection.cursor(converter=converter)
+    response = {
+        "col_types": [25, 25, 25],
+        "cols": ["b1", "b8", "b64"],
+        "rows": [
+            ["B'0'", "B'00000001'", "B'{}'".format("1" * 64)],
+            [None, None, None],
+        ],
+        "rowcount": 2,
+        "duration": 1,
+    }
+
+    with mock.patch.object(
+        mocked_connection.client, "sql", return_value=response
+    ):
+        cursor.execute("")
+        result = cursor.fetchall()
+
+    assert result == [
+        ["0", "00000001", "1" * 64],
+        [None, None, None],
+    ]
+
+
+@pytest.mark.parametrize(
+    ("wire_value", "expected"),
+    [
+        ("B'0'", "0"),
+        ("B'0110'", "0110"),
+        ("B'" + "1" * 64 + "'", "1" * 64),
+        (None, None),
+        ("", ""),
+        ("0110", "0110"),
+        ("B''", ""),
+        ("B'0110", "B'0110"),
+        ("b'0110'", "b'0110'"),
+        ("B'0notbits1'", "B'0notbits1'"),
+        ("B'0110' OR 1=1", "B'0110' OR 1=1"),
+        ("B'01\n10'", "B'01\n10'"),
+        ("B'0110'\n", "B'0110'\n"),
+    ],
+)
+def test_bit_converter_values(wire_value, expected):
+    """Verify _to_bit_string edge cases directly."""
+    assert _to_bit_string(wire_value) == expected
+
+
+def test_bit_converter_registered_by_default():
+    """Verify DataType.BIT resolves to the BIT converter"""
+    converter = DefaultTypeConverter()
+    assert converter.get(DataType.BIT.value) is _to_bit_string
+
+
+def test_bit_converter_can_be_overridden(mocked_connection):
+    """
+    Verify a user-supplied mapping still wins over the registered default
+    """
+    converter = DefaultTypeConverter({DataType.BIT: lambda value: "custom"})
+    cursor = mocked_connection.cursor(converter=converter)
+    response = {
+        "col_types": [25],
+        "cols": ["b"],
+        "rows": [["B'0110'"]],
+        "rowcount": 1,
+        "duration": 1,
+    }
+
+    with mock.patch.object(
+        mocked_connection.client, "sql", return_value=response
+    ):
+        cursor.execute("")
+        assert cursor.fetchone() == ["custom"]
+
+
+def test_bit_array_with_converter(mocked_connection):
+    """Verify ARRAY(BIT) is handled through the generic collection path."""
+    converter = DefaultTypeConverter()
+    cursor = mocked_connection.cursor(converter=converter)
+    response = {
+        "col_types": [[100, 25]],
+        "cols": ["flags"],
+        "rows": [
+            [["B'0001'", "B'1000'", None]],
+            [None],
+        ],
+        "rowcount": 2,
+        "duration": 1,
+    }
+
+    with mock.patch.object(
+        mocked_connection.client, "sql", return_value=response
+    ):
+        cursor.execute("")
+        result = cursor.fetchall()
+
+    assert result == [[["0001", "1000", None]], [None]]
+
+
+def test_bit_without_converter(mocked_connection):
+    """
+    Verify that without an explicit converter, values stay untouched.
+    """
+    cursor = mocked_connection.cursor()
+    response = {
+        "col_types": [25],
+        "cols": ["b"],
+        "rows": [["B'0110'"]],
+        "rowcount": 1,
+        "duration": 1,
+    }
+
+    with mock.patch.object(
+        mocked_connection.client, "sql", return_value=response
+    ):
+        cursor.execute("")
+        assert cursor.fetchone() == ["B'0110'"]
 
 
 def test_execute_with_converter_and_invalid_data_type(mocked_connection):

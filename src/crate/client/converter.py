@@ -113,6 +113,8 @@ class DataType(Enum):
     GEOSHAPE = 14
     TIMESTAMP_WITHOUT_TZ = 15
     UNCHECKED_OBJECT = 16
+    INTERVAL = 17
+    ROW = 18
     REGPROC = 19
     TIME = 20
     OIDVECTOR = 21
@@ -122,10 +124,23 @@ class DataType(Enum):
     BIT = 25
     JSON = 26
     CHARACTER = 27
+    FLOAT_VECTOR = 28
+    UUID = 29
+    REGTYPE = 30
     ARRAY = 100
 
 
 ConverterMapping = Dict[DataType, ConverterFunction]
+
+
+def _resolve(type_: Any) -> Optional[DataType]:
+    """
+    Map a wire type identifier to a `DataType`.
+    """
+    try:
+        return DataType(type_)
+    except ValueError:
+        return None
 
 
 # Map data type identifier to converter function.
@@ -149,9 +164,12 @@ class Converter:
 
     def get(self, type_: ColTypesDefinition) -> ConverterFunction:
         if isinstance(type_, int):
-            return self._mappings.get(DataType(type_), self._default)
+            data_type = _resolve(type_)
+            if data_type is None:
+                return self._default
+            return self._mappings.get(data_type, self._default)
         type_, inner_type = type_
-        if DataType(type_) is not DataType.ARRAY:
+        if _resolve(type_) is not DataType.ARRAY:
             raise ValueError(
                 f"Data type {type_} is not implemented as collection type"
             )

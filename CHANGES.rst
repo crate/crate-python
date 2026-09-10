@@ -5,6 +5,11 @@ Changes for crate
 Unreleased
 ================
 
+- Added CrateDB column type identifiers to ``DataType``: ``INTERVAL`` (17), 
+  ``ROW`` (18), ``FLOAT_VECTOR`` (28), ``UUID`` (29), and ``REGTYPE`` (30).
+  Fixed ``Converter.get()`` raising ``ValueError`` for column type identifiers
+  it does not know. Unknown identifiers now fall back to the default converter.
+
 - Breaking change: ``connect()`` now raises ``ConnectionError`` immediately if
 no configured server node responds.
 

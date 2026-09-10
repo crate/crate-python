@@ -459,8 +459,8 @@ def test_execute_time_converter(mocked_connection):
         "col_types": [20],
         "cols": ["t"],
         "rows": [
-            [[45045000000, 0]],       # 12:30:45 UTC
-            [[45045123456, 7200]],    # 12:30:45.123456 +02:00
+            [[45045000000, 0]],  # 12:30:45 UTC
+            [[45045123456, 7200]],  # 12:30:45.123456 +02:00
             [None],
         ],
         "rowcount": 3,
@@ -474,10 +474,16 @@ def test_execute_time_converter(mocked_connection):
         result = cursor.fetchall()
 
     assert result == [
-        [datetime.time(12, 30, 45, 0,
-                       tzinfo=datetime.timezone.utc)],
-        [datetime.time(12, 30, 45, 123456,
-                       tzinfo=datetime.timezone(datetime.timedelta(hours=2)))],
+        [datetime.time(12, 30, 45, 0, tzinfo=datetime.timezone.utc)],
+        [
+            datetime.time(
+                12,
+                30,
+                45,
+                123456,
+                tzinfo=datetime.timezone(datetime.timedelta(hours=2)),
+            )
+        ],
         [None],
     ]
 
@@ -606,7 +612,71 @@ def test_bit_without_converter(mocked_connection):
         assert cursor.fetchone() == ["B'0110'"]
 
 
-def test_execute_with_converter_and_invalid_data_type(mocked_connection):
+@pytest.mark.parametrize(
+    ("type_id", "wire_value"),
+    [
+        (17, "1 day 00:00:00"),
+        (18, ["over", "U", "unreserved"]),
+        (28, [0.1, 0.2]),
+        (29, "a5b3c1e0-1b7f-4f3e-9a2d-6c4e8f0a1b2c"),
+        (30, "int4"),
+    ],
+    ids=["interval", "row", "float_vector", "uuid", "regtype"],
+)
+def test_pass_through_data_types(mocked_connection, type_id, wire_value):
+    """
+    Verify that types without a dedicated converter are passed through
+    unchanged instead of raising.
+    """
+    converter = DefaultTypeConverter()
+    cursor = mocked_connection.cursor(converter=converter)
+    response = {
+        "col_types": [type_id],
+        "cols": ["foo"],
+        "rows": [[wire_value]],
+        "rowcount": 1,
+        "duration": 123,
+    }
+    with mock.patch.object(
+        mocked_connection.client, "sql", return_value=response
+    ):
+        cursor.execute("")
+        assert cursor.fetchone() == [wire_value]
+
+
+def test_pass_through_data_types_registered_in_enum():
+    """Verify the enum stays in sync with the documented type identifiers."""
+    assert DataType(17) is DataType.INTERVAL
+    assert DataType(18) is DataType.ROW
+    assert DataType(28) is DataType.FLOAT_VECTOR
+    assert DataType(29) is DataType.UUID
+    assert DataType(30) is DataType.REGTYPE
+
+
+def test_float_vector_with_time_zone(mocked_connection):
+    """
+    Verify a `FLOAT_VECTOR` column on a timezone-aware cursor.
+    """
+    cursor = mocked_connection.cursor(time_zone="+0000")
+    response = {
+        "col_types": [28],
+        "cols": ["embedding"],
+        "rows": [[[0.1, 0.2]]],
+        "rowcount": 1,
+        "duration": 123,
+    }
+    with mock.patch.object(
+        mocked_connection.client, "sql", return_value=response
+    ):
+        cursor.execute("")
+        assert cursor.fetchone() == [[0.1, 0.2]]
+
+
+def test_execute_with_converter_and_unknown_data_type(mocked_connection):
+    """
+    Verify that a type identifier unknown to this client degrades to the
+    default converter.
+    """
     converter = DefaultTypeConverter()
 
     # Create a `Cursor` object with converter.
@@ -625,9 +695,7 @@ def test_execute_with_converter_and_invalid_data_type(mocked_connection):
         mocked_connection.client, "sql", return_value=response
     ):
         cursor.execute("")
-        with pytest.raises(ValueError) as e:
-            cursor.fetchone()
-            assert e.exception.args == "999 is not a valid DataType"
+        assert cursor.fetchone() == ["n/a"]
 
 
 def test_execute_array_with_converter(mocked_connection):
@@ -673,6 +741,30 @@ def test_execute_array_with_converter_invalid(mocked_connection):
             assert e.exception.args == (
                 "Data type 6 is not implemented as collection type"
             )
+
+
+def test_execute_array_with_converter_unknown_outer_type(mocked_connection):
+    """
+    Verify an unknown outer type in a collection definition still raises.
+    """
+    converter = DefaultTypeConverter()
+    cursor = mocked_connection.cursor(converter=converter)
+    response = {
+        "col_types": [[999, 5]],
+        "cols": ["address"],
+        "rows": [[["10.10.10.1"]]],
+        "rowcount": 1,
+        "duration": 123,
+    }
+    with mock.patch.object(
+        mocked_connection.client, "sql", return_value=response
+    ):
+        cursor.execute("")
+        with pytest.raises(
+            ValueError,
+            match="Data type 999 is not implemented as collection type",
+        ):
+            cursor.fetchone()
 
 
 def test_execute_nested_array_with_converter(mocked_connection):

@@ -20,6 +20,7 @@
 # software solely pursuant to the terms of the relevant commercial agreement.
 
 import datetime
+import uuid
 import zoneinfo
 from ipaddress import IPv4Address
 from unittest import mock
@@ -32,6 +33,7 @@ from crate.client.converter import (
     DataType,
     DefaultTypeConverter,
     _to_bit_string,
+    _to_uuid,
 )
 from crate.client.exceptions import ProgrammingError
 
@@ -618,10 +620,9 @@ def test_bit_without_converter(mocked_connection):
         (17, "1 day 00:00:00"),
         (18, ["over", "U", "unreserved"]),
         (28, [0.1, 0.2]),
-        (29, "a5b3c1e0-1b7f-4f3e-9a2d-6c4e8f0a1b2c"),
         (30, "int4"),
     ],
-    ids=["interval", "row", "float_vector", "uuid", "regtype"],
+    ids=["interval", "row", "float_vector", "regtype"],
 )
 def test_pass_through_data_types(mocked_connection, type_id, wire_value):
     """
@@ -670,6 +671,112 @@ def test_float_vector_with_time_zone(mocked_connection):
     ):
         cursor.execute("")
         assert cursor.fetchone() == [[0.1, 0.2]]
+
+
+UUID_STR = "a5b3c1e0-1b7f-4f3e-9a2d-6c4e8f0a1b2c"
+
+
+def test_execute_uuid_converter(mocked_connection):
+    """
+    Verify that CrateDB's UUID wire format is decoded to `uuid.UUID`.
+    """
+    converter = DefaultTypeConverter()
+    cursor = mocked_connection.cursor(converter=converter)
+    response = {
+        "col_types": [29],
+        "cols": ["id"],
+        "rows": [[UUID_STR], [None]],
+        "rowcount": 2,
+        "duration": 1,
+    }
+    with mock.patch.object(
+        mocked_connection.client, "sql", return_value=response
+    ):
+        cursor.execute("")
+        result = cursor.fetchall()
+
+    assert result == [[uuid.UUID(UUID_STR)], [None]]
+
+
+def test_uuid_converter_registered_by_default():
+    """Verify DataType.UUID resolves to the UUID converter"""
+    converter = DefaultTypeConverter()
+    assert converter.get(DataType.UUID.value) is _to_uuid
+
+
+def test_uuid_converter_can_be_overridden(mocked_connection):
+    """Verify a user-supplied UUID converter wins over the default."""
+    converter = DefaultTypeConverter({DataType.UUID: lambda value: "custom"})
+    cursor = mocked_connection.cursor(converter=converter)
+    response = {
+        "col_types": [29],
+        "cols": ["id"],
+        "rows": [[UUID_STR]],
+        "rowcount": 1,
+        "duration": 1,
+    }
+    with mock.patch.object(
+        mocked_connection.client, "sql", return_value=response
+    ):
+        cursor.execute("")
+        assert cursor.fetchone() == ["custom"]
+
+
+def test_uuid_array_with_converter(mocked_connection):
+    """Verify UUID decoding inside an ARRAY column."""
+    converter = DefaultTypeConverter()
+    cursor = mocked_connection.cursor(converter=converter)
+    response = {
+        "col_types": [[100, 29]],
+        "cols": ["ids"],
+        "rows": [[[UUID_STR, None]]],
+        "rowcount": 1,
+        "duration": 1,
+    }
+    with mock.patch.object(
+        mocked_connection.client, "sql", return_value=response
+    ):
+        cursor.execute("")
+        assert cursor.fetchone() == [[uuid.UUID(UUID_STR), None]]
+
+
+def test_uuid_without_converter(mocked_connection):
+    """Verify that without an explicit converter, values stay untouched."""
+    cursor = mocked_connection.cursor()
+    response = {
+        "col_types": [29],
+        "cols": ["id"],
+        "rows": [[UUID_STR]],
+        "rowcount": 1,
+        "duration": 1,
+    }
+    with mock.patch.object(
+        mocked_connection.client, "sql", return_value=response
+    ):
+        cursor.execute("")
+        assert cursor.fetchone() == [UUID_STR]
+
+
+def test_uuid_converter_invalid_value(mocked_connection):
+    """
+    Verify an unparseable value raises, matching the `IP` converter's
+    behaviour rather than passing malformed data through.
+    """
+    converter = DefaultTypeConverter()
+    cursor = mocked_connection.cursor(converter=converter)
+    response = {
+        "col_types": [29],
+        "cols": ["id"],
+        "rows": [["not-a-uuid"]],
+        "rowcount": 1,
+        "duration": 1,
+    }
+    with mock.patch.object(
+        mocked_connection.client, "sql", return_value=response
+    ):
+        cursor.execute("")
+        with pytest.raises(ValueError, match="badly formed hexadecimal"):
+            cursor.fetchone()
 
 
 def test_execute_with_converter_and_unknown_data_type(mocked_connection):

@@ -343,7 +343,7 @@ Python data type conversion
 
 The cursor object can optionally convert database types to native Python data
 types. Currently, this is implemented for the CrateDB data types ``IP``,
-``TIMESTAMP``, ``TIMETZ``, and ``BIT`` on behalf of the
+``TIMESTAMP``, ``TIMETZ``, ``BIT``, and ``UUID`` on behalf of the
 ``DefaultTypeConverter``.
 
     >>> cursor = connection.cursor(converter=DefaultTypeConverter())
@@ -401,6 +401,29 @@ Executing the query and fetching the decoded result:
 
     >>> cursor.fetchone()
     ['0110']
+
+
+CrateDB's ``UUID`` type is returned over HTTP as a string. It is decoded to a
+Python ``uuid.UUID`` object.
+
+    >>> cursor = connection.cursor(converter=DefaultTypeConverter())
+
+.. hide: set up the mocked response::
+
+    >>> connection.client.set_next_response({
+    ...     "col_types": [29],
+    ...     "rows":[ [ "a5b3c1e0-1b7f-4f3e-9a2d-6c4e8f0a1b2c" ] ],
+    ...     "cols":[ "id" ],
+    ...     "rowcount":1,
+    ...     "duration":1
+    ... })
+
+Executing the query and fetching the decoded result:
+
+    >>> cursor.execute("select 'a5b3c1e0-1b7f-4f3e-9a2d-6c4e8f0a1b2c'::uuid")
+
+    >>> cursor.fetchone()
+    [UUID('a5b3c1e0-1b7f-4f3e-9a2d-6c4e8f0a1b2c')]
 
 
 Custom data type conversion

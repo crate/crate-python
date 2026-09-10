@@ -27,6 +27,7 @@ https://crate.io/docs/crate/reference/en/latest/interfaces/http.html#column-type
 import datetime as dt
 import ipaddress
 import re
+import uuid
 from copy import deepcopy
 from enum import Enum
 from typing import Any, Callable, Dict, List, Optional, Union
@@ -87,6 +88,17 @@ def _to_bit_string(value: Optional[str]) -> Optional[str]:
     if match is None:
         return value
     return match.group(1)
+
+
+def _to_uuid(value: Optional[str]) -> Optional[uuid.UUID]:
+    """
+    Convert a CrateDB UUID wire value to a Python ``uuid.UUID``.
+
+    https://docs.python.org/3/library/uuid.html
+    """
+    if value is None:
+        return None
+    return uuid.UUID(value)
 
 
 def _to_default(value: Optional[Any]) -> Optional[Any]:
@@ -150,6 +162,7 @@ _DEFAULT_CONVERTERS: ConverterMapping = {
     DataType.TIMESTAMP_WITHOUT_TZ: _to_datetime,
     DataType.TIME: _to_time,
     DataType.BIT: _to_bit_string,
+    DataType.UUID: _to_uuid,
 }
 
 

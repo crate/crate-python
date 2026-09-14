@@ -27,6 +27,7 @@ https://crate.io/docs/crate/reference/en/latest/interfaces/http.html#column-type
 import datetime as dt
 import ipaddress
 import re
+import uuid
 from copy import deepcopy
 from enum import Enum
 from typing import Any, Callable, Dict, List, Optional, Union
@@ -89,6 +90,17 @@ def _to_bit_string(value: Optional[str]) -> Optional[str]:
     return match.group(1)
 
 
+def _to_uuid(value: Optional[str]) -> Optional[uuid.UUID]:
+    """
+    Convert a CrateDB UUID wire value to a Python ``uuid.UUID``.
+
+    https://docs.python.org/3/library/uuid.html
+    """
+    if value is None:
+        return None
+    return uuid.UUID(value)
+
+
 def _to_default(value: Optional[Any]) -> Optional[Any]:
     return value
 
@@ -113,6 +125,8 @@ class DataType(Enum):
     GEOSHAPE = 14
     TIMESTAMP_WITHOUT_TZ = 15
     UNCHECKED_OBJECT = 16
+    INTERVAL = 17
+    ROW = 18
     REGPROC = 19
     TIME = 20
     OIDVECTOR = 21
@@ -122,10 +136,23 @@ class DataType(Enum):
     BIT = 25
     JSON = 26
     CHARACTER = 27
+    FLOAT_VECTOR = 28
+    UUID = 29
+    REGTYPE = 30
     ARRAY = 100
 
 
 ConverterMapping = Dict[DataType, ConverterFunction]
+
+
+def _resolve(type_: int) -> Optional[DataType]:
+    """
+    Map a wire type identifier to a `DataType`.
+    """
+    try:
+        return DataType(type_)
+    except ValueError:
+        return None
 
 
 # Map data type identifier to converter function.
@@ -135,6 +162,7 @@ _DEFAULT_CONVERTERS: ConverterMapping = {
     DataType.TIMESTAMP_WITHOUT_TZ: _to_datetime,
     DataType.TIME: _to_time,
     DataType.BIT: _to_bit_string,
+    DataType.UUID: _to_uuid,
 }
 
 
@@ -149,9 +177,12 @@ class Converter:
 
     def get(self, type_: ColTypesDefinition) -> ConverterFunction:
         if isinstance(type_, int):
-            return self._mappings.get(DataType(type_), self._default)
+            data_type = _resolve(type_)
+            if data_type is None:
+                return self._default
+            return self._mappings.get(data_type, self._default)
         type_, inner_type = type_
-        if DataType(type_) is not DataType.ARRAY:
+        if not isinstance(type_, int) or _resolve(type_) is not DataType.ARRAY:
             raise ValueError(
                 f"Data type {type_} is not implemented as collection type"
             )

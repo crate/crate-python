@@ -145,7 +145,7 @@ class DataType(Enum):
 ConverterMapping = Dict[DataType, ConverterFunction]
 
 
-def _resolve(type_: Any) -> Optional[DataType]:
+def _resolve(type_: int) -> Optional[DataType]:
     """
     Map a wire type identifier to a `DataType`.
     """
@@ -182,7 +182,7 @@ class Converter:
                 return self._default
             return self._mappings.get(data_type, self._default)
         type_, inner_type = type_
-        if _resolve(type_) is not DataType.ARRAY:
+        if not isinstance(type_, int) or _resolve(type_) is not DataType.ARRAY:
             raise ValueError(
                 f"Data type {type_} is not implemented as collection type"
             )

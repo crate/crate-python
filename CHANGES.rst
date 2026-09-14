@@ -4,11 +4,9 @@ Changes for crate
 
 Unreleased
 ================
-
-- Breaking change: ``DefaultTypeConverter`` now decodes ``DataType.UUID``
+- Added ``DefaultTypeConverter`` support that decodes ``DataType.UUID``
   columns to Python ``uuid.UUID`` objects instead of returning the raw string.
-
-- Added CrateDB column type identifiers to ``DataType``: ``INTERVAL`` (17), 
+- Added CrateDB column type identifiers to ``DataType``: ``INTERVAL`` (17),
   ``ROW`` (18), ``FLOAT_VECTOR`` (28), ``UUID`` (29), and ``REGTYPE`` (30).
   Fixed ``Converter.get()`` raising ``ValueError`` for column type identifiers
   it does not know. Unknown identifiers now fall back to the default converter.

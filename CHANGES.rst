@@ -11,8 +11,9 @@ Changes for crate
   Fixed ``Converter.get()`` raising ``ValueError`` for column type identifiers
   it does not know. Unknown identifiers now fall back to the default converter.
 
-- Breaking change: ``connect()`` now raises ``ConnectionError`` immediately if
-  no configured server node responds.
+- Breaking change: ``connect()`` now raises
+  ``crate.client.exceptions.ConnectionError`` immediately if no configured
+  server node responds.
 
 - Breaking change: ``DefaultTypeConverter`` now decodes ``DataType.BIT``
   columns, converting CrateDB's ``B'0110'`` wire format to a plain string of

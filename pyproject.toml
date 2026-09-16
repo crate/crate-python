@@ -5,10 +5,10 @@ build-backend = "hatchling.build"
 [tool.hatch.build.targets.sdist]
 include = [
   "/docs",
-  "/src/crate/*.py",
+  "/src/crate",
   "/tests",
-  "*.rst",
-  "*.txt",
+  "/*.rst",
+  "/*.txt",
 ]
 exclude = [
   "/docs/.crate-docs",

@@ -2,7 +2,7 @@
 Changes for crate
 =================
 
-Unreleased
+2026/09/16 2.3.0
 ================
 - Added ``DefaultTypeConverter`` support that decodes ``DataType.UUID``
   columns to Python ``uuid.UUID`` objects instead of returning the raw string.
@@ -12,7 +12,7 @@ Unreleased
   it does not know. Unknown identifiers now fall back to the default converter.
 
 - Breaking change: ``connect()`` now raises ``ConnectionError`` immediately if
-no configured server node responds.
+  no configured server node responds.
 
 - Breaking change: ``DefaultTypeConverter`` now decodes ``DataType.BIT``
   columns, converting CrateDB's ``B'0110'`` wire format to a plain string of

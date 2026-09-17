@@ -2,7 +2,7 @@
 Changes for crate
 =================
 
-2026/09/16 2.3.0
+2026/09/17 2.3.0
 ================
 - Added ``DefaultTypeConverter`` support that decodes ``DataType.UUID``
   columns to Python ``uuid.UUID`` objects instead of returning the raw string.

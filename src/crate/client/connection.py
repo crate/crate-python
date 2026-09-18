@@ -53,6 +53,7 @@ class Connection:
         time_zone=None,
         jwt_token=None,
         compress: Union[int, bool] = 8192,
+        probe: bool = True,
     ):
         """
         :param servers:
@@ -139,6 +140,13 @@ class Connection:
             ``False`` disables compression entirely.
             ``True`` compresses every request regardless of size.
             An integer compresses only when the payload exceeds that many bytes.
+        :param probe:
+            (optional, defaults to ``True``)
+            Contact the servers while the connection is created, and raise
+            ``ConnectionError`` when none of them responds.
+            With ``False``, creating the connection performs no request. The
+            server version is resolved when it is first read, and reading it
+            raises ``ConnectionError`` while no server responds.
         """  # noqa: E501
 
         self._converter = converter
@@ -168,8 +176,26 @@ class Connection:
                 jwt_token=jwt_token,
                 compress=compress,
             )
-        self.lowest_server_version = self._lowest_server_version()
+        self._version_cache: Union[Version, None] = None
+        if probe:
+            self._version_cache = self._lowest_server_version()
         self._closed = False
+
+    @property
+    def lowest_server_version(self) -> Version:
+        """
+        The lowest CrateDB version among the servers of this connection.
+
+        With ``probe=False``, the servers are contacted on the first read, so
+        this raises ``ConnectionError`` when none of them responds.
+        """
+        if self._version_cache is None:
+            self._version_cache = self._lowest_server_version()
+        return self._version_cache
+
+    @lowest_server_version.setter
+    def lowest_server_version(self, version: Version) -> None:
+        self._version_cache = version
 
     def cursor(self, **kwargs) -> Cursor:
         """
@@ -208,7 +234,7 @@ class Connection:
         """
         return BlobContainer(container_name, self)
 
-    def _lowest_server_version(self):
+    def _lowest_server_version(self) -> Version:
         lowest = None
         servers = self.client.active_servers
         connection_errors = []

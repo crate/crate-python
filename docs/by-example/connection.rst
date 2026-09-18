@@ -21,6 +21,13 @@ This section sets up a connection object, and inspects some of its attributes.
     >>> connection.lowest_server_version.version
     (2, 0, 0)
 
+With ``probe=False``, the connection is created without contacting any server.
+The lowest server version is then resolved when it is first read::
+
+    >>> connection = connect(client=ClientMocked(), probe=False)
+    >>> connection.lowest_server_version.version
+    (2, 0, 0)
+
 cursor()
 ========
 

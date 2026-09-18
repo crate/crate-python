@@ -2,6 +2,15 @@
 Changes for crate
 =================
 
+Unreleased
+==========
+
+- Added ``connect(..., probe=False)``, which creates a connection without
+  contacting the servers. The lowest server version is then resolved when it
+  is first read, and reading it raises ``ConnectionError`` while no server
+  responds. Use it when the cluster may not respond yet, for example in tests
+  and during startup.
+
 2026/09/17 2.3.0
 ================
 - Added ``DefaultTypeConverter`` support that decodes ``DataType.UUID``

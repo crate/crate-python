@@ -65,6 +65,31 @@ def test_lowest_server_version():
     assert (1, 0, 3) == connection.lowest_server_version.version
 
 
+def test_connect_without_probe_does_not_need_a_server():
+    """
+    Verify `probe=False` creates a connection without contacting any server.
+    """
+    client = Client(servers="localhost:1234")
+    connection = connect(client=client, probe=False)
+
+    with pytest.raises(crate.client.exceptions.ConnectionError) as excinfo:
+        connection.lowest_server_version  # noqa: B018
+    assert excinfo.match("Server not available")
+
+
+def test_lowest_server_version_resolved_on_first_read():
+    """
+    Verify the server version is resolved when read, not when connecting.
+    """
+    client = Client(servers="localhost:4200")
+    client.server_infos = lambda server: (None, None, "5.5.2")
+
+    connection = connect(client=client, probe=False)
+    assert connection._version_cache is None
+    assert (5, 5, 2) == connection.lowest_server_version.version
+    assert (5, 5, 2) == connection._version_cache.version
+
+
 def test_connection_closes_access():
     """
     Verify that a connection closes on exit and that it also closes

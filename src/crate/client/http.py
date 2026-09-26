@@ -25,6 +25,7 @@ import datetime as dt
 import gzip
 import heapq
 import io
+import json
 import logging
 import os
 import re
@@ -52,6 +53,7 @@ from urllib3.exceptions import (
 from urllib3.util.retry import Retry
 from verlib2 import Version
 
+from crate.client.converter import DataType
 from crate.client.exceptions import (
     BlobLocationNotFoundException,
     ConnectionError,
@@ -241,7 +243,7 @@ class Server:
 
 def _json_from_response(response):
     try:
-        return orjson.loads(response.data)
+        data = orjson.loads(response.data)
     except ValueError as ex:
         raise ProgrammingError(
             "Invalid server response of content-type '{}':\n{}".format(
@@ -249,6 +251,51 @@ def _json_from_response(response):
                 response.data.decode("utf-8"),
             )
         ) from ex
+    return _exact_numeric_columns(data, response.data)
+
+
+def _is_numeric_type(col_type) -> bool:
+    if isinstance(col_type, list):
+        return (
+            len(col_type) == 2
+            and col_type[0] == DataType.ARRAY.value
+            and _is_numeric_type(col_type[1])
+        )
+    return col_type == DataType.NUMERIC.value
+
+
+def _to_decimal(value):
+    if isinstance(value, list):
+        return [_to_decimal(item) for item in value]
+    if isinstance(value, (int, Decimal)) and not isinstance(value, bool):
+        return Decimal(value)
+    return value
+
+
+def _exact_numeric_columns(data, raw: bytes):
+    """
+    Decode ``NUMERIC`` column values as ``Decimal``, without precision loss.
+
+    CrateDB sends every digit of a ``NUMERIC`` value, but ``orjson`` decodes
+    each JSON number to a 64-bit float. Only when the response declares a
+    ``NUMERIC`` column (or an array of them), the body is decoded a second
+    time with ``Decimal`` floats, and only those columns are replaced. Other
+    columns, including ``DOUBLE``, keep their ``float`` values.
+    """
+    if not isinstance(data, dict) or not data.get("rows"):
+        return data
+    columns = [
+        index
+        for index, col_type in enumerate(data.get("col_types") or [])
+        if _is_numeric_type(col_type)
+    ]
+    if not columns:
+        return data
+    exact_rows = json.loads(raw, parse_float=Decimal)["rows"]
+    for row, exact_row in zip(data["rows"], exact_rows, strict=True):
+        for index in columns:
+            row[index] = _to_decimal(exact_row[index])
+    return data
 
 
 def _blob_path(table, digest):

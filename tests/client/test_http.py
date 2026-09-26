@@ -27,6 +27,7 @@ import random
 import socket
 import time
 from base64 import b64decode
+from decimal import Decimal
 from http.server import BaseHTTPRequestHandler
 from threading import Event, Thread
 from unittest.mock import MagicMock, patch
@@ -872,3 +873,40 @@ def test_compress_default():
         Client(servers="localhost:4200").sql("SELECT 1")
     assert captured["headers"].get("Accept-Encoding") == "gzip, deflate"
     assert "Content-Encoding" not in captured["headers"]
+
+
+def test_numeric_columns_decode_without_precision_loss():
+    """
+    NUMERIC values keep every digit; other columns keep their float values.
+    """
+    response = fake_response(200)
+    response.data = (
+        b'{"cols":["n","d","na","t"],"col_types":[22,6,[100,22],4],'
+        b'"rows":[[12345678901234567890.123456789012345678,0.1,[1.5,2,null],"x"],'
+        b'[null,1.0E300,null,"y"],[7,2,[],"z"]],"rowcount":3,"duration":1.0}'
+    )
+    with patch(REQUEST_PATH, return_value=response):
+        client = Client(servers="localhost:4200")
+        rows = client.sql("SELECT n, d, na, t FROM t")["rows"]
+    assert rows[0] == [
+        Decimal("12345678901234567890.123456789012345678"),
+        0.1,
+        [Decimal("1.5"), Decimal(2), None],
+        "x",
+    ]
+    assert type(rows[0][0]) is Decimal
+    assert type(rows[0][1]) is float
+    assert rows[1] == [None, 1.0e300, None, "y"]
+    assert type(rows[1][1]) is float
+    assert rows[2] == [Decimal(7), 2, [], "z"]
+    assert type(rows[2][0]) is Decimal
+    assert type(rows[2][1]) is int
+
+
+def test_responses_without_numeric_columns_unchanged():
+    response = fake_response(200)
+    response.data = b'{"cols":["d"],"col_types":[6],"rows":[[0.5]]}'
+    with patch(REQUEST_PATH, return_value=response):
+        result = Client(servers="localhost:4200").sql("SELECT d FROM t")
+    assert result["rows"] == [[0.5]]
+    assert type(result["rows"][0][0]) is float

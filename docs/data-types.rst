@@ -64,6 +64,13 @@ __ https://docs.python.org/3/library/stdtypes.html#dict
 __ https://crate.io/docs/crate/reference/en/latest/general/ddl/data-types.html#array
 __ https://docs.python.org/3/library/stdtypes.html#list
 
+.. NOTE::
+
+    ``numeric`` values are returned as `Decimal`_, with every digit CrateDB
+    sends. Other numeric types use the mapping above.
+
+.. _Decimal: https://docs.python.org/3/library/decimal.html
+
 When writing to CrateDB, the following conversions take place:
 
 ============= ====================================

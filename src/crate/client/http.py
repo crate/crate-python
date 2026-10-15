@@ -20,8 +20,6 @@
 # software solely pursuant to the terms of the relevant commercial agreement.
 
 
-import calendar
-import datetime as dt
 import gzip
 import heapq
 import io
@@ -33,7 +31,6 @@ import ssl
 import threading
 import typing as t
 from base64 import b64encode
-from decimal import Decimal
 from time import time
 from urllib.parse import SplitResult, urlparse
 
@@ -52,6 +49,12 @@ from urllib3.exceptions import (
 from urllib3.util.retry import Retry
 from verlib2 import Version
 
+from crate.client._codec import (  # noqa: F401
+    epoch_aware,
+    epoch_naive,
+    json_dumps,
+    json_encoder,
+)
 from crate.client.exceptions import (
     BlobLocationNotFoundException,
     ConnectionError,
@@ -85,59 +88,6 @@ def super_len(o):
         # e.g. BytesIO, cStringIO.StringI
         return len(o.getvalue())
     return None
-
-
-epoch_aware = dt.datetime(1970, 1, 1, tzinfo=dt.timezone.utc)
-epoch_naive = dt.datetime(1970, 1, 1)
-
-
-def json_encoder(obj: t.Any) -> t.Union[int, str]:
-    """
-    Encoder function for orjson, with additional type support.
-
-    - Python's `Decimal` type will be serialized to `str`.
-    - Python's `dt.datetime` and `dt.date` types will be
-      serialized to `int` after converting to milliseconds
-      since epoch.
-    - Python's `dt.time` will be serialized to `str`, following
-    the ISO format.
-
-    https://github.com/ijl/orjson#default
-    https://cratedb.com/docs/crate/reference/en/latest/general/ddl/data-types.html#type-timestamp
-    """
-    if isinstance(obj, Decimal):
-        return str(obj)
-    if isinstance(obj, dt.datetime):
-        if obj.tzinfo is not None:
-            delta = obj - epoch_aware
-        else:
-            delta = obj - epoch_naive
-        return int(
-            delta.microseconds / 1000.0
-            + (delta.seconds + delta.days * 24 * 3600) * 1000.0
-        )
-    if isinstance(obj, dt.time):
-        return obj.isoformat()
-    if isinstance(obj, dt.date):
-        return calendar.timegm(obj.timetuple()) * 1000
-    raise TypeError
-
-
-def json_dumps(obj: t.Any) -> bytes:
-    """
-    Serialize to JSON format, using `orjson`, with additional type support.
-
-    https://github.com/ijl/orjson
-    """
-    return orjson.dumps(
-        obj,
-        default=json_encoder,
-        option=(
-            orjson.OPT_PASSTHROUGH_DATETIME
-            | orjson.OPT_NON_STR_KEYS
-            | orjson.OPT_SERIALIZE_NUMPY
-        ),
-    )
 
 
 class Server:

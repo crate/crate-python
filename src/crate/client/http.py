@@ -23,8 +23,6 @@
 import heapq
 import logging
 import os
-import re
-import socket
 import ssl
 import threading
 import typing as t
@@ -52,14 +50,21 @@ from crate.client._codec import (  # noqa: F401
     json_dumps,
     json_encoder,
 )
+from crate.client._options import (  # noqa: F401
+    _HTTP_PAT,
+    SQL_PATH,
+    credentials_from_url,
+    keepalive_socket_options,
+    server_url,
+    sql_path,
+    to_server_list,
+    validate_compress,
+)
 from crate.client._request import (  # noqa: F401
     build_headers,
     compress_body,
     create_sql_payload,
     super_len,
-)
-from crate.client._request import (  # noqa: F401
-    create_sql_payload as _create_sql_payload,
 )
 from crate.client._response import (  # noqa: F401
     PRESERVE_ACTIVE_SERVER_EXCEPTIONS,
@@ -80,8 +85,12 @@ from crate.client.exceptions import (
 
 logger = logging.getLogger(__name__)
 
+# Private names that other code imports from this module.
+_create_sql_payload = create_sql_payload
+_server_url = server_url
+_to_server_list = to_server_list
+pat = _HTTP_PAT
 
-_HTTP_PAT = pat = re.compile("https?://.+", re.I)
 SSL_ONLY_ARGS = {"ca_certs", "cert_reqs", "cert_file", "key_file"}
 
 
@@ -186,41 +195,6 @@ def _raise_for_status(response):
         )
 
 
-def _server_url(server):
-    """
-    Normalizes a given server string to an url
-
-    >>> print(_server_url('a'))
-    http://a
-    >>> print(_server_url('a/path'))
-    http://a/path
-    >>> print(_server_url('a:9345'))
-    http://a:9345
-    >>> print(_server_url('a:9345/path'))
-    http://a:9345/path
-    >>> print(_server_url('https://a:9345'))
-    https://a:9345
-    >>> print(_server_url('https://a:9345/path'))
-    https://a:9345/path
-    >>> print(_server_url('https://a'))
-    https://a
-    >>> print(_server_url('https://a/path'))
-    https://a/path
-    >>> print(_server_url('demo.crate.io'))
-    http://demo.crate.io
-    """
-    if not _HTTP_PAT.match(server):
-        server = "http://%s" % server
-    parsed = urlparse(server)
-    return parsed.geturl()
-
-
-def _to_server_list(servers):
-    if isinstance(servers, str):
-        servers = servers.split()
-    return [_server_url(s) for s in servers]
-
-
 def _pool_kw_args(
     verify_ssl_cert,
     ca_cert,
@@ -287,20 +261,12 @@ def _get_socket_opts(
     if not keepalive:
         return None
 
-    # always use TCP keepalive
-    opts = [(socket.SOL_SOCKET, socket.SO_KEEPALIVE, 1)]
-
-    # hasattr check because some options depend on system capabilities
-    # see https://docs.python.org/3/library/socket.html#socket.SOMAXCONN
-    if hasattr(socket, "TCP_KEEPIDLE") and tcp_keepidle is not None:
-        opts.append((socket.IPPROTO_TCP, socket.TCP_KEEPIDLE, tcp_keepidle))
-    if hasattr(socket, "TCP_KEEPINTVL") and tcp_keepintvl is not None:
-        opts.append((socket.IPPROTO_TCP, socket.TCP_KEEPINTVL, tcp_keepintvl))
-    if hasattr(socket, "TCP_KEEPCNT") and tcp_keepcnt is not None:
-        opts.append((socket.IPPROTO_TCP, socket.TCP_KEEPCNT, tcp_keepcnt))
-
     # additionally use urllib3's default socket options
-    return list(HTTPConnection.default_socket_options) + opts
+    return list(HTTPConnection.default_socket_options) + (
+        keepalive_socket_options(
+            keepalive, tcp_keepidle, tcp_keepintvl, tcp_keepcnt
+        )
+    )
 
 
 class Client:
@@ -308,7 +274,7 @@ class Client:
     Crate connection client using CrateDB's HTTP API.
     """
 
-    SQL_PATH = "/_sql?types=true"
+    SQL_PATH = SQL_PATH
     """Crate URI path for issuing SQL statements."""
 
     retry_interval = 30
@@ -342,18 +308,15 @@ class Client:
         if not servers:
             servers = [self.default_server]
         else:
-            servers = _to_server_list(servers)
+            servers = to_server_list(servers)
 
         # Try to derive credentials from first server argument if not
         # explicitly given.
         if servers and not username:
             try:
-                url = urlparse(servers[0])
-
-                if url.username is not None:
-                    username = url.username
-                if url.password is not None:
-                    password = url.password
+                username, password = credentials_from_url(
+                    servers[0], username, password
+                )
             except Exception as ex:
                 logger.warning(
                     "Unable to decode credentials from database "
@@ -391,15 +354,9 @@ class Client:
         self.jwt_token = jwt_token
         self.schema = schema
 
-        if not isinstance(compress, (bool, int)):
-            raise TypeError(
-                f"compress must be bool or int, got {type(compress).__name__!r}"
-            )
-        self.compress = compress
+        self.compress = validate_compress(compress)
 
-        self.path = self.SQL_PATH
-        if error_trace:
-            self.path += "&error_trace=true"
+        self.path = sql_path(error_trace, self.SQL_PATH)
 
     def close(self):
         for server in self.server_pool.values():

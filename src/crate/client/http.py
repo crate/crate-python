@@ -48,12 +48,10 @@ from crate.client._codec import (  # noqa: F401
     json_dumps,
     json_encoder,
 )
-from crate.client._options import (  # noqa: F401
-    _HTTP_PAT,
+from crate.client._options import (
     SQL_PATH,
     credentials_from_url,
     keepalive_socket_options,
-    server_url,
     sql_path,
     to_server_list,
     validate_compress,
@@ -83,12 +81,6 @@ from crate.client.exceptions import (
 )
 
 logger = logging.getLogger(__name__)
-
-# Private names that other code imports from this module.
-_create_sql_payload = create_sql_payload
-_server_url = server_url
-_to_server_list = to_server_list
-pat = _HTTP_PAT
 
 SSL_ONLY_ARGS = {"ca_certs", "cert_reqs", "cert_file", "key_file"}
 

@@ -61,11 +61,20 @@ from crate.client._request import (  # noqa: F401
 from crate.client._request import (  # noqa: F401
     create_sql_payload as _create_sql_payload,
 )
+from crate.client._response import (  # noqa: F401
+    PRESERVE_ACTIVE_SERVER_EXCEPTIONS,
+    SRV_UNAVAILABLE_STATUSES,
+    blob_del_result,
+    blob_exists_result,
+    blob_put_result,
+    parse_server_infos,
+    raise_for_status,
+    redirect_target,
+    should_preserve_server,
+)
 from crate.client.exceptions import (
-    BlobLocationNotFoundException,
     ConnectionError,
     DigestNotFoundException,
-    IntegrityError,
     ProgrammingError,
 )
 
@@ -73,8 +82,6 @@ logger = logging.getLogger(__name__)
 
 
 _HTTP_PAT = pat = re.compile("https?://.+", re.I)
-SRV_UNAVAILABLE_STATUSES = {502, 503, 504, 509}
-PRESERVE_ACTIVE_SERVER_EXCEPTIONS = {ConnectionResetError, BrokenPipeError}
 SSL_ONLY_ARGS = {"ca_certs", "cert_reqs", "cert_file", "key_file"}
 
 
@@ -171,47 +178,12 @@ def _ex_to_message(ex):
 
 
 def _raise_for_status(response):
-    """
-    Raise `IntegrityError` exceptions for `DuplicateKeyException` errors.
-    """
-    try:
-        return _raise_for_status_real(response)
-    except ProgrammingError as ex:
-        if "DuplicateKeyException" in ex.message:
-            raise IntegrityError(ex.message, error_trace=ex.error_trace) from ex
-        raise
-
-
-def _raise_for_status_real(response):
-    """make sure that only crate.exceptions are raised that are defined in
-    the DB-API specification"""
-    message = ""
-    if 400 <= response.status < 500:
-        message = "%s Client Error: %s" % (response.status, response.reason)
-    elif 500 <= response.status < 600:
-        message = "%s Server Error: %s" % (response.status, response.reason)
-    else:
-        return
-    if response.status == 503:
-        raise ConnectionError(message)
-    if response.headers.get("content-type", "").startswith("application/json"):
-        data = orjson.loads(response.data)
-        error = data.get("error", {})
-        error_trace = data.get("error_trace", None)
-        if "results" in data:
-            errors = [
-                res["error_message"]
-                for res in data["results"]
-                if res.get("error_message")
-            ]
-            if errors:
-                raise ProgrammingError("\n".join(errors))
-        if isinstance(error, dict):
-            raise ProgrammingError(
-                error.get("message", ""), error_trace=error_trace
-            )
-        raise ProgrammingError(error, error_trace=error_trace)
-    raise ProgrammingError(message)
+    # Read the body of error responses only, so that a successful streamed
+    # response is not loaded into memory.
+    if 400 <= response.status < 600:
+        raise_for_status(
+            response.status, response.reason, response.headers, response.data
+        )
 
 
 def _server_url(server):
@@ -463,10 +435,7 @@ class Client:
     def server_infos(self, server):
         response = self._request("GET", "/", server=server)
         _raise_for_status(response)
-        content = _json_from_response(response)
-        node_name = content.get("name")
-        node_version = content.get("version", {}).get("number", "0.0.0")
-        return server, node_name, node_version
+        return parse_server_infos(server, _json_from_response(response))
 
     def blob_put(self, table, digest, data) -> bool:
         """
@@ -474,28 +443,23 @@ class Client:
         given table and digest.
         """
         response = self._request("PUT", _blob_path(table, digest), data=data)
-        if response.status == 201:
-            # blob created
-            return True
-        if response.status == 409:
-            # blob exists
-            return False
-        if response.status in (400, 404):
-            raise BlobLocationNotFoundException(table, digest)
-        _raise_for_status(response)
-        return False
+        return blob_put_result(
+            response.status,
+            response.reason,
+            response.headers,
+            response.data,
+            table,
+            digest,
+        )
 
     def blob_del(self, table, digest) -> bool:
         """
         Deletes the blob with given digest under the given table.
         """
         response = self._request("DELETE", _blob_path(table, digest))
-        if response.status == 204:
-            return True
-        if response.status == 404:
-            return False
-        _raise_for_status(response)
-        return False
+        return blob_del_result(
+            response.status, response.reason, response.headers, response.data
+        )
 
     def blob_get(self, table, digest, chunk_size=1024 * 128):
         """
@@ -514,12 +478,9 @@ class Client:
         under the given table.
         """
         response = self._request("HEAD", _blob_path(table, digest))
-        if response.status == 200:
-            return True
-        elif response.status == 404:
-            return False
-        _raise_for_status(response)
-        return False
+        return blob_exists_result(
+            response.status, response.reason, response.headers, response.data
+        )
 
     def _add_server(self, server):
         with self._lock:
@@ -544,10 +505,10 @@ class Client:
                     jwt_token=self.jwt_token,
                     **kwargs,
                 )
-                redirect_location = response.get_redirect_location()
-                if redirect_location and 300 <= response.status <= 308:
-                    redirect_url = urlparse(redirect_location)
-                    redirect_server = f"{redirect_url.scheme}://{redirect_url.netloc}"
+                redirect_server = redirect_target(
+                    response.status, response.get_redirect_location()
+                )
+                if redirect_server is not None:
                     self._add_server(redirect_server)
                     return self._request(
                         method, path, server=redirect_server, **kwargs
@@ -572,10 +533,7 @@ class Client:
                     ) from ex
                 preserve_server = False
                 if isinstance(ex, ProtocolError):
-                    preserve_server = any(
-                        t in [type(arg) for arg in ex.args]
-                        for t in PRESERVE_ACTIVE_SERVER_EXCEPTIONS
-                    )
+                    preserve_server = should_preserve_server(ex)
                 if not preserve_server:
                     with self._lock:
                         # drop server from active ones

@@ -20,9 +20,7 @@
 # software solely pursuant to the terms of the relevant commercial agreement.
 
 
-import gzip
 import heapq
-import io
 import logging
 import os
 import re
@@ -30,7 +28,6 @@ import socket
 import ssl
 import threading
 import typing as t
-from base64 import b64encode
 from time import time
 from urllib.parse import SplitResult, urlparse
 
@@ -55,6 +52,15 @@ from crate.client._codec import (  # noqa: F401
     json_dumps,
     json_encoder,
 )
+from crate.client._request import (  # noqa: F401
+    build_headers,
+    compress_body,
+    create_sql_payload,
+    super_len,
+)
+from crate.client._request import (  # noqa: F401
+    create_sql_payload as _create_sql_payload,
+)
 from crate.client.exceptions import (
     BlobLocationNotFoundException,
     ConnectionError,
@@ -70,24 +76,6 @@ _HTTP_PAT = pat = re.compile("https?://.+", re.I)
 SRV_UNAVAILABLE_STATUSES = {502, 503, 504, 509}
 PRESERVE_ACTIVE_SERVER_EXCEPTIONS = {ConnectionResetError, BrokenPipeError}
 SSL_ONLY_ARGS = {"ca_certs", "cert_reqs", "cert_file", "key_file"}
-
-
-def super_len(o):
-    if hasattr(o, "__len__"):
-        return len(o)
-    if hasattr(o, "len"):
-        return o.len
-    if hasattr(o, "fileno"):
-        try:
-            fileno = o.fileno()
-        except io.UnsupportedOperation:
-            pass
-        else:
-            return os.fstat(fileno).st_size
-    if hasattr(o, "getvalue"):
-        # e.g. BytesIO, cStringIO.StringI
-        return len(o.getvalue())
-    return None
 
 
 class Server:
@@ -138,41 +126,14 @@ class Server:
             path = "/{path_prefix}/{path}".format(
                 path_prefix=self.path_prefix, path=path.strip("/")
             )
-        if headers is None:
-            headers = {}
-        if "Content-Length" not in headers:
-            length = super_len(data)
-            if length is not None:
-                headers["Content-Length"] = str(length)
-
-        # Sanity checks.
-        if jwt_token is not None and username is not None:
-            raise ValueError(
-                "Either JWT tokens are accepted, "
-                "or user credentials, but not both"
-            )
-
-        # Authentication token
-        if jwt_token is not None and "Authorization" not in headers:
-            headers["Authorization"] = "Bearer %s" % jwt_token
-
-        # Authentication credentials
-        if username is not None:
-            if "Authorization" not in headers and username is not None:
-                credentials = username + ":"
-                if password is not None:
-                    credentials += password
-                headers["Authorization"] = "Basic %s" % b64encode(
-                    credentials.encode("utf-8")
-                ).decode("utf-8")
-            # For backwards compatibility with Crate <= 2.2
-            if "X-User" not in headers:
-                headers["X-User"] = username
-
-        if schema is not None:
-            headers["Default-Schema"] = schema
-        headers["Accept"] = "application/json"
-        headers["Content-Type"] = "application/json"
+        headers = build_headers(
+            headers,
+            data,
+            username=username,
+            password=password,
+            schema=schema,
+            jwt_token=jwt_token,
+        )
         kwargs["assert_same_host"] = False
         kwargs["redirect"] = False
         kwargs["retries"] = Retry(read=0, backoff_factor=backoff_factor)
@@ -344,20 +305,6 @@ def _update_pool_kwargs_for_ssl_minimum_version(server, kwargs):
             kwargs["ssl_minimum_version"] = ssl.TLSVersion.MINIMUM_SUPPORTED
 
 
-def _create_sql_payload(stmt, args, bulk_args) -> bytes:
-    if not isinstance(stmt, str):
-        raise ValueError("stmt is not a string")
-    if args and bulk_args:
-        raise ValueError("Cannot provide both: args and bulk_args")
-
-    data = {"stmt": stmt}
-    if args:
-        data["args"] = args
-    if bulk_args:
-        data["bulk_args"] = bulk_args
-    return json_dumps(data)
-
-
 def _get_socket_opts(
     keepalive=True, tcp_keepidle=None, tcp_keepintvl=None, tcp_keepcnt=None
 ):
@@ -506,7 +453,7 @@ class Client:
         if stmt is None:
             return None
 
-        data = _create_sql_payload(stmt, parameters, bulk_parameters)
+        data = create_sql_payload(stmt, parameters, bulk_parameters)
         logger.debug("Sending request to %s with payload: %s", self.path, data)
         content = self._json_request("POST", self.path, data=data)
         logger.debug("JSON response for stmt(%s): %s", stmt, content)
@@ -642,11 +589,8 @@ class Client:
         """
         headers = {"Accept-Encoding": "gzip, deflate"}
 
-        compress_enabled = self.compress is True or (
-            not isinstance(self.compress, bool) and len(data) >= self.compress
-        )
-        if compress_enabled:
-            data = gzip.compress(data, compresslevel=6)
+        data, compressed = compress_body(data, self.compress)
+        if compressed:
             headers["Content-Encoding"] = "gzip"
 
         response = self._request(method, path, data=data, headers=headers)

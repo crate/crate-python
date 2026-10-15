@@ -20,13 +20,11 @@
 # software solely pursuant to the terms of the relevant commercial agreement.
 
 
-import heapq
 import logging
 import os
 import ssl
 import threading
 import typing as t
-from time import time
 from urllib.parse import SplitResult, urlparse
 
 import orjson
@@ -60,6 +58,7 @@ from crate.client._options import (  # noqa: F401
     to_server_list,
     validate_compress,
 )
+from crate.client._pool import _ServerPool
 from crate.client._request import (  # noqa: F401
     build_headers,
     compress_body,
@@ -269,7 +268,7 @@ def _get_socket_opts(
     )
 
 
-class Client:
+class Client(_ServerPool):
     """
     Crate connection client using CrateDB's HTTP API.
     """
@@ -277,11 +276,10 @@ class Client:
     SQL_PATH = SQL_PATH
     """Crate URI path for issuing SQL statements."""
 
-    retry_interval = 30
-    """Retry interval for failed servers in seconds."""
-
     default_server = "http://127.0.0.1:4200"
     """Default server to use if no servers are given on instantiation."""
+
+    _logger = logger
 
     def __init__(
         self,
@@ -324,8 +322,7 @@ class Client:
                     "authentication: {ex}".format(ex=ex)
                 )
 
-        self._active_servers = servers
-        self._inactive_servers: t.List[t.Tuple[float, str, str]] = []
+        super().__init__(servers)
         pool_kw = _pool_kw_args(
             verify_ssl_cert,
             ca_cert,
@@ -347,7 +344,6 @@ class Client:
         self.server_pool: t.Dict[str, Server] = {}
         self._update_server_pool(servers, **pool_kw)
         self._pool_kw = pool_kw
-        self._lock = threading.RLock()
         self._local = threading.local()
         self.username = username
         self.password = password
@@ -513,72 +509,6 @@ class Client:
         if len(response.data) > 0:
             return _json_from_response(response)
         return response.data
-
-    def _get_server(self):
-        """
-        Get server to use for request.
-        Also process inactive server list, re-add them after given interval.
-        """
-        with self._lock:
-            inactive_server_count = len(self._inactive_servers)
-            for _ in range(inactive_server_count):
-                try:
-                    ts, server, message = heapq.heappop(self._inactive_servers)
-                except IndexError:
-                    pass
-                else:
-                    if (ts + self.retry_interval) > time():
-                        # Not yet, put it back
-                        heapq.heappush(
-                            self._inactive_servers, (ts, server, message)
-                        )
-                    else:
-                        self._active_servers.append(server)
-                        logger.warning(
-                            "Restored server %s into active pool", server
-                        )
-
-            # if none is old enough, use oldest
-            if not self._active_servers:
-                ts, server, message = heapq.heappop(self._inactive_servers)
-                self._active_servers.append(server)
-                logger.info("Restored server %s into active pool", server)
-
-            server = self._active_servers[0]
-            self._roundrobin()
-
-            return server
-
-    @property
-    def active_servers(self):
-        """get the active servers for this client"""
-        with self._lock:
-            return list(self._active_servers)
-
-    def _drop_server(self, server, message):
-        """
-        Drop server from active list and adds it to the inactive ones.
-        """
-        try:
-            self._active_servers.remove(server)
-        except ValueError:
-            pass
-        else:
-            heapq.heappush(self._inactive_servers, (time(), server, message))
-            logger.warning("Removed server %s from active pool", server)
-
-        # if this is the last server raise exception, otherwise try next
-        if not self._active_servers:
-            raise ConnectionError(
-                ("No more Servers available, exception from last server: %s")
-                % message
-            )
-
-    def _roundrobin(self):
-        """
-        Very simple round-robin implementation
-        """
-        self._active_servers.append(self._active_servers.pop(0))
 
     def __repr__(self):
         return "<Client {0}>".format(str(self._active_servers))

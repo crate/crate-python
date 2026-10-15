@@ -2,6 +2,14 @@
 Changes for crate
 =================
 
+Unreleased
+==========
+- Fixed ``NUMERIC`` column values losing digits beyond double precision when
+  reading. They are now decoded as ``Decimal``, including ``NUMERIC`` arrays.
+  Other columns keep their ``float`` values. See `#826`_.
+
+.. _#826: https://github.com/crate/crate-python/issues/826
+
 2026/09/17 2.3.0
 ================
 - Added ``DefaultTypeConverter`` support that decodes ``DataType.UUID``

@@ -220,7 +220,7 @@ When connecting to non-CrateDB servers, the HttpClient will raise a ConnectionEr
     >>> http_client.server_infos(http_client._get_server())
     Traceback (most recent call last):
     ...
-    crate.client.exceptions.ProgrammingError: Invalid server response of content-type 'text/html':
+    crate.client.exceptions.ProgrammingError: Invalid server response of content-type 'text/html...':
     ...
     >>> http_client.close()
 

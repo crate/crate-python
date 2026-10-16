@@ -281,7 +281,10 @@ def test_credentials_derived():
     assert client.username == expected_user
     assert client.password == expected_password
 
-    with patch("crate.client.http.urlparse", side_effect=Exception):
+    with (
+        patch("crate.client._options.urlparse", side_effect=Exception),
+        patch("crate.client.http.urlparse", side_effect=Exception),
+    ):
         Client("")
 
     actual_username = "actual_username"

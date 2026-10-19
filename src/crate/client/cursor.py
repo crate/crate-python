@@ -113,10 +113,12 @@ def _convert_named_bulk_params(
     return converted_sql, bulk_args
 
 
-class Cursor:
+class CursorBase:
     """
-    not thread-safe by intention
-    should not be shared between different threads
+    Cursor state and result handling shared by the sync and async cursors.
+
+    Public methods that do IO, or that are coroutines on the async cursor,
+    live on the subclasses and call the private helpers here.
     """
 
     lastrowid = None  # currently not supported
@@ -131,9 +133,11 @@ class Cursor:
         self._time_zone = None
         self.time_zone = kwargs.get("time_zone")
 
-    def execute(self, sql, parameters=None, bulk_parameters=None):
+    def _prepare(self, sql, parameters=None, bulk_parameters=None):
         """
-        Prepare and execute a database operation (query or command).
+        Check that the cursor can execute, and rewrite named parameters
+        to positional ones. Return the `sql`, `parameters` and
+        `bulk_parameters` to send.
         """
         if self.connection._closed:
             raise ProgrammingError("Connection closed")
@@ -150,24 +154,24 @@ class Cursor:
                 )
             else:
                 sql = _rewrite_pyformat_sql(sql)
+        return sql, parameters, bulk_parameters
 
-        self._result = self.connection.client.sql(
-            sql, parameters, bulk_parameters
-        )
+    def _set_result(self, result):
+        """
+        Store the response of a request and make its rows available.
+        """
+        self._result = result
         if "rows" in self._result:
             if self._converter is None:
                 self.rows = iter(self._result["rows"])
             else:
                 self.rows = iter(self._convert_rows())
 
-    def executemany(self, sql, seq_of_parameters):
+    def _prepare_many(self, sql, seq_of_parameters):
         """
-        Prepare a database operation (query or command) and then execute it
-        against all parameter sequences or mappings found in the sequence
-        ``seq_of_parameters``.
+        Rewrite a sequence of named parameter dicts to positional bulk
+        parameters. Return the `sql` and `bulk_parameters` to send.
         """
-        row_counts = []
-        durations = []
         bulk_parameters = seq_of_parameters
         if (
             bulk_parameters
@@ -177,87 +181,78 @@ class Cursor:
             sql, bulk_parameters = _convert_named_bulk_params(
                 sql, bulk_parameters
             )
-        self.execute(sql, bulk_parameters=bulk_parameters)
+        return sql, bulk_parameters
 
+    def _bulk_result(self):
+        """
+        Replace the result of a bulk request with the aggregated row count
+        and duration, and return the per-statement results.
+        """
+        row_counts = []
+        durations = []
         for result in self._result.get("results", []):
             if result.get("rowcount") > -1:
                 row_counts.append(result.get("rowcount"))
         if self.duration > -1:
             durations.append(self.duration)
 
-        self._result = {
-            "rowcount": sum(row_counts) if row_counts else -1,
-            "duration": sum(durations) if durations else -1,
-            "rows": [],
-            "cols": self._result.get("cols", []),
-            "col_types": self._result.get("col_types", []),
-            "results": self._result.get("results"),
-        }
-        if self._converter is None:
-            self.rows = iter(self._result["rows"])
-        else:
-            self.rows = iter(self._convert_rows())
+        self._set_result(
+            {
+                "rowcount": sum(row_counts) if row_counts else -1,
+                "duration": sum(durations) if durations else -1,
+                "rows": [],
+                "cols": self._result.get("cols", []),
+                "col_types": self._result.get("col_types", []),
+                "results": self._result.get("results"),
+            }
+        )
         return self._result["results"]
 
-    def fetchone(self):
+    def _next_row(self):
         """
-        Fetch the next row of a query result set, returning a single sequence,
-        or None when no more data is available.
-        Alias for ``next()``.
+        Return the next row of a query result set, respecting if cursor was
+        closed.
         """
+        if self.rows is None:
+            raise ProgrammingError(
+                "No result available. "
+                + "execute() or executemany() must be called first."
+            )
+        if not self._closed:
+            return next(self.rows)
+        else:
+            raise ProgrammingError("Cursor closed")
+
+    def _fetchone(self):
         try:
-            return self.next()
+            return self._next_row()
         except StopIteration:
             return None
 
-    def __iter__(self):
-        """
-        support iterator interface:
-        http://legacy.python.org/dev/peps/pep-0249/#iter
-
-        This iterator is shared. Advancing this iterator will advance other
-        iterators created from this cursor.
-        """
-        warnings.warn("DB-API extension cursor.__iter__() used", stacklevel=2)
-        return self
-
-    def fetchmany(self, count=None):
-        """
-        Fetch the next set of rows of a query result, returning a sequence of
-        sequences (e.g. a list of tuples). An empty sequence is returned when
-        no more rows are available.
-        """
-        if count is None:
-            count = self.arraysize
-        if count == 0:
-            return self.fetchall()
+    def _fetchmany(self, size=None):
+        if size is None:
+            size = self.arraysize
+        if size == 0:
+            return self._fetchall()
         result = []
-        for _ in range(count):
+        for _ in range(size):
             try:
-                result.append(self.next())
+                result.append(self._next_row())
             except StopIteration:
                 pass
         return result
 
-    def fetchall(self):
-        """
-        Fetch all (remaining) rows of a query result, returning them as a
-        sequence of sequences (e.g. a list of tuples). Note that the cursor's
-        arraysize attribute can affect the performance of this operation.
-        """
+    def _fetchall(self):
         result = []
         iterate = True
         while iterate:
             try:
-                result.append(self.next())
+                result.append(self._next_row())
             except StopIteration:
                 iterate = False
         return result
 
-    def close(self):
-        """
-        Close the cursor now
-        """
+    def _close(self):
         self._closed = True
         self._result = {}
 
@@ -283,24 +278,6 @@ class Cursor:
         if self._closed or not self._result or "rows" not in self._result:
             return -1
         return self._result.get("rowcount", -1)
-
-    def next(self):
-        """
-        Return the next row of a query result set, respecting if cursor was
-        closed.
-        """
-        if self.rows is None:
-            raise ProgrammingError(
-                "No result available. "
-                + "execute() or executemany() must be called first."
-            )
-        if not self._closed:
-            return next(self.rows)
-        else:
-            raise ProgrammingError("Cursor closed")
-
-    def __next__(self):
-        return self.next()
 
     @property
     def description(self):
@@ -429,3 +406,81 @@ class Cursor:
             raise ValueError(
                 f"Time zone '{tz}' is given in invalid UTC offset format: {ex}"
             ) from ex
+
+
+class Cursor(CursorBase):
+    """
+    not thread-safe by intention
+    should not be shared between different threads
+    """
+
+    def execute(self, sql, parameters=None, bulk_parameters=None):
+        """
+        Prepare and execute a database operation (query or command).
+        """
+        self._set_result(
+            self.connection.client.sql(
+                *self._prepare(sql, parameters, bulk_parameters)
+            )
+        )
+
+    def executemany(self, sql, seq_of_parameters):
+        """
+        Prepare a database operation (query or command) and then execute it
+        against all parameter sequences or mappings found in the sequence
+        ``seq_of_parameters``.
+        """
+        sql, bulk_parameters = self._prepare_many(sql, seq_of_parameters)
+        self.execute(sql, bulk_parameters=bulk_parameters)
+        return self._bulk_result()
+
+    def fetchone(self):
+        """
+        Fetch the next row of a query result set, returning a single sequence,
+        or None when no more data is available.
+        Alias for ``next()``.
+        """
+        return self._fetchone()
+
+    def __iter__(self):
+        """
+        support iterator interface:
+        http://legacy.python.org/dev/peps/pep-0249/#iter
+
+        This iterator is shared. Advancing this iterator will advance other
+        iterators created from this cursor.
+        """
+        warnings.warn("DB-API extension cursor.__iter__() used", stacklevel=2)
+        return self
+
+    def fetchmany(self, count=None):
+        """
+        Fetch the next set of rows of a query result, returning a sequence of
+        sequences (e.g. a list of tuples). An empty sequence is returned when
+        no more rows are available.
+        """
+        return self._fetchmany(count)
+
+    def fetchall(self):
+        """
+        Fetch all (remaining) rows of a query result, returning them as a
+        sequence of sequences (e.g. a list of tuples). Note that the cursor's
+        arraysize attribute can affect the performance of this operation.
+        """
+        return self._fetchall()
+
+    def close(self):
+        """
+        Close the cursor now
+        """
+        self._close()
+
+    def next(self):
+        """
+        Return the next row of a query result set, respecting if cursor was
+        closed.
+        """
+        return self._next_row()
+
+    def __next__(self):
+        return self.next()

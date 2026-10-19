@@ -46,7 +46,7 @@ def test_data_is_serialized():
     """
     mock = MagicMock(spec=bytes)
 
-    with patch("crate.client.http.json_dumps", return_value=mock) as f:
+    with patch("crate.client._request.json_dumps", return_value=mock) as f:
         with patch(REQUEST_PATH, return_value=fake_response(200)) as request:
             client = Client(servers="localhost:4200")
             client.sql(

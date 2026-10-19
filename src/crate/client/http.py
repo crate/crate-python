@@ -20,21 +20,11 @@
 # software solely pursuant to the terms of the relevant commercial agreement.
 
 
-import calendar
-import datetime as dt
-import gzip
-import heapq
-import io
 import logging
 import os
-import re
-import socket
 import ssl
 import threading
 import typing as t
-from base64 import b64encode
-from decimal import Decimal
-from time import time
 from urllib.parse import SplitResult, urlparse
 
 import orjson
@@ -52,92 +42,47 @@ from urllib3.exceptions import (
 from urllib3.util.retry import Retry
 from verlib2 import Version
 
+from crate.client._codec import (  # noqa: F401
+    epoch_aware,
+    epoch_naive,
+    json_dumps,
+    json_encoder,
+)
+from crate.client._options import (
+    SQL_PATH,
+    credentials_from_url,
+    keepalive_socket_options,
+    sql_path,
+    to_server_list,
+    validate_compress,
+)
+from crate.client._pool import _ServerPool
+from crate.client._request import (  # noqa: F401
+    build_headers,
+    compress_body,
+    create_sql_payload,
+    super_len,
+)
+from crate.client._response import (  # noqa: F401
+    PRESERVE_ACTIVE_SERVER_EXCEPTIONS,
+    SRV_UNAVAILABLE_STATUSES,
+    blob_del_result,
+    blob_exists_result,
+    blob_put_result,
+    parse_server_infos,
+    raise_for_status,
+    redirect_target,
+    should_preserve_server,
+)
 from crate.client.exceptions import (
-    BlobLocationNotFoundException,
     ConnectionError,
     DigestNotFoundException,
-    IntegrityError,
     ProgrammingError,
 )
 
 logger = logging.getLogger(__name__)
 
-
-_HTTP_PAT = pat = re.compile("https?://.+", re.I)
-SRV_UNAVAILABLE_STATUSES = {502, 503, 504, 509}
-PRESERVE_ACTIVE_SERVER_EXCEPTIONS = {ConnectionResetError, BrokenPipeError}
 SSL_ONLY_ARGS = {"ca_certs", "cert_reqs", "cert_file", "key_file"}
-
-
-def super_len(o):
-    if hasattr(o, "__len__"):
-        return len(o)
-    if hasattr(o, "len"):
-        return o.len
-    if hasattr(o, "fileno"):
-        try:
-            fileno = o.fileno()
-        except io.UnsupportedOperation:
-            pass
-        else:
-            return os.fstat(fileno).st_size
-    if hasattr(o, "getvalue"):
-        # e.g. BytesIO, cStringIO.StringI
-        return len(o.getvalue())
-    return None
-
-
-epoch_aware = dt.datetime(1970, 1, 1, tzinfo=dt.timezone.utc)
-epoch_naive = dt.datetime(1970, 1, 1)
-
-
-def json_encoder(obj: t.Any) -> t.Union[int, str]:
-    """
-    Encoder function for orjson, with additional type support.
-
-    - Python's `Decimal` type will be serialized to `str`.
-    - Python's `dt.datetime` and `dt.date` types will be
-      serialized to `int` after converting to milliseconds
-      since epoch.
-    - Python's `dt.time` will be serialized to `str`, following
-    the ISO format.
-
-    https://github.com/ijl/orjson#default
-    https://cratedb.com/docs/crate/reference/en/latest/general/ddl/data-types.html#type-timestamp
-    """
-    if isinstance(obj, Decimal):
-        return str(obj)
-    if isinstance(obj, dt.datetime):
-        if obj.tzinfo is not None:
-            delta = obj - epoch_aware
-        else:
-            delta = obj - epoch_naive
-        return int(
-            delta.microseconds / 1000.0
-            + (delta.seconds + delta.days * 24 * 3600) * 1000.0
-        )
-    if isinstance(obj, dt.time):
-        return obj.isoformat()
-    if isinstance(obj, dt.date):
-        return calendar.timegm(obj.timetuple()) * 1000
-    raise TypeError
-
-
-def json_dumps(obj: t.Any) -> bytes:
-    """
-    Serialize to JSON format, using `orjson`, with additional type support.
-
-    https://github.com/ijl/orjson
-    """
-    return orjson.dumps(
-        obj,
-        default=json_encoder,
-        option=(
-            orjson.OPT_PASSTHROUGH_DATETIME
-            | orjson.OPT_NON_STR_KEYS
-            | orjson.OPT_SERIALIZE_NUMPY
-        ),
-    )
 
 
 class Server:
@@ -188,41 +133,14 @@ class Server:
             path = "/{path_prefix}/{path}".format(
                 path_prefix=self.path_prefix, path=path.strip("/")
             )
-        if headers is None:
-            headers = {}
-        if "Content-Length" not in headers:
-            length = super_len(data)
-            if length is not None:
-                headers["Content-Length"] = str(length)
-
-        # Sanity checks.
-        if jwt_token is not None and username is not None:
-            raise ValueError(
-                "Either JWT tokens are accepted, "
-                "or user credentials, but not both"
-            )
-
-        # Authentication token
-        if jwt_token is not None and "Authorization" not in headers:
-            headers["Authorization"] = "Bearer %s" % jwt_token
-
-        # Authentication credentials
-        if username is not None:
-            if "Authorization" not in headers and username is not None:
-                credentials = username + ":"
-                if password is not None:
-                    credentials += password
-                headers["Authorization"] = "Basic %s" % b64encode(
-                    credentials.encode("utf-8")
-                ).decode("utf-8")
-            # For backwards compatibility with Crate <= 2.2
-            if "X-User" not in headers:
-                headers["X-User"] = username
-
-        if schema is not None:
-            headers["Default-Schema"] = schema
-        headers["Accept"] = "application/json"
-        headers["Content-Type"] = "application/json"
+        headers = build_headers(
+            headers,
+            data,
+            username=username,
+            password=password,
+            schema=schema,
+            jwt_token=jwt_token,
+        )
         kwargs["assert_same_host"] = False
         kwargs["redirect"] = False
         kwargs["retries"] = Retry(read=0, backoff_factor=backoff_factor)
@@ -260,82 +178,12 @@ def _ex_to_message(ex):
 
 
 def _raise_for_status(response):
-    """
-    Raise `IntegrityError` exceptions for `DuplicateKeyException` errors.
-    """
-    try:
-        return _raise_for_status_real(response)
-    except ProgrammingError as ex:
-        if "DuplicateKeyException" in ex.message:
-            raise IntegrityError(ex.message, error_trace=ex.error_trace) from ex
-        raise
-
-
-def _raise_for_status_real(response):
-    """make sure that only crate.exceptions are raised that are defined in
-    the DB-API specification"""
-    message = ""
-    if 400 <= response.status < 500:
-        message = "%s Client Error: %s" % (response.status, response.reason)
-    elif 500 <= response.status < 600:
-        message = "%s Server Error: %s" % (response.status, response.reason)
-    else:
-        return
-    if response.status == 503:
-        raise ConnectionError(message)
-    if response.headers.get("content-type", "").startswith("application/json"):
-        data = orjson.loads(response.data)
-        error = data.get("error", {})
-        error_trace = data.get("error_trace", None)
-        if "results" in data:
-            errors = [
-                res["error_message"]
-                for res in data["results"]
-                if res.get("error_message")
-            ]
-            if errors:
-                raise ProgrammingError("\n".join(errors))
-        if isinstance(error, dict):
-            raise ProgrammingError(
-                error.get("message", ""), error_trace=error_trace
-            )
-        raise ProgrammingError(error, error_trace=error_trace)
-    raise ProgrammingError(message)
-
-
-def _server_url(server):
-    """
-    Normalizes a given server string to an url
-
-    >>> print(_server_url('a'))
-    http://a
-    >>> print(_server_url('a/path'))
-    http://a/path
-    >>> print(_server_url('a:9345'))
-    http://a:9345
-    >>> print(_server_url('a:9345/path'))
-    http://a:9345/path
-    >>> print(_server_url('https://a:9345'))
-    https://a:9345
-    >>> print(_server_url('https://a:9345/path'))
-    https://a:9345/path
-    >>> print(_server_url('https://a'))
-    https://a
-    >>> print(_server_url('https://a/path'))
-    https://a/path
-    >>> print(_server_url('demo.crate.io'))
-    http://demo.crate.io
-    """
-    if not _HTTP_PAT.match(server):
-        server = "http://%s" % server
-    parsed = urlparse(server)
-    return parsed.geturl()
-
-
-def _to_server_list(servers):
-    if isinstance(servers, str):
-        servers = servers.split()
-    return [_server_url(s) for s in servers]
+    # Read the body of error responses only, so that a successful streamed
+    # response is not loaded into memory.
+    if 400 <= response.status < 600:
+        raise_for_status(
+            response.status, response.reason, response.headers, response.data
+        )
 
 
 def _pool_kw_args(
@@ -394,20 +242,6 @@ def _update_pool_kwargs_for_ssl_minimum_version(server, kwargs):
             kwargs["ssl_minimum_version"] = ssl.TLSVersion.MINIMUM_SUPPORTED
 
 
-def _create_sql_payload(stmt, args, bulk_args) -> bytes:
-    if not isinstance(stmt, str):
-        raise ValueError("stmt is not a string")
-    if args and bulk_args:
-        raise ValueError("Cannot provide both: args and bulk_args")
-
-    data = {"stmt": stmt}
-    if args:
-        data["args"] = args
-    if bulk_args:
-        data["bulk_args"] = bulk_args
-    return json_dumps(data)
-
-
 def _get_socket_opts(
     keepalive=True, tcp_keepidle=None, tcp_keepintvl=None, tcp_keepcnt=None
 ):
@@ -418,35 +252,26 @@ def _get_socket_opts(
     if not keepalive:
         return None
 
-    # always use TCP keepalive
-    opts = [(socket.SOL_SOCKET, socket.SO_KEEPALIVE, 1)]
-
-    # hasattr check because some options depend on system capabilities
-    # see https://docs.python.org/3/library/socket.html#socket.SOMAXCONN
-    if hasattr(socket, "TCP_KEEPIDLE") and tcp_keepidle is not None:
-        opts.append((socket.IPPROTO_TCP, socket.TCP_KEEPIDLE, tcp_keepidle))
-    if hasattr(socket, "TCP_KEEPINTVL") and tcp_keepintvl is not None:
-        opts.append((socket.IPPROTO_TCP, socket.TCP_KEEPINTVL, tcp_keepintvl))
-    if hasattr(socket, "TCP_KEEPCNT") and tcp_keepcnt is not None:
-        opts.append((socket.IPPROTO_TCP, socket.TCP_KEEPCNT, tcp_keepcnt))
-
     # additionally use urllib3's default socket options
-    return list(HTTPConnection.default_socket_options) + opts
+    return list(HTTPConnection.default_socket_options) + (
+        keepalive_socket_options(
+            keepalive, tcp_keepidle, tcp_keepintvl, tcp_keepcnt
+        )
+    )
 
 
-class Client:
+class Client(_ServerPool):
     """
     Crate connection client using CrateDB's HTTP API.
     """
 
-    SQL_PATH = "/_sql?types=true"
+    SQL_PATH = SQL_PATH
     """Crate URI path for issuing SQL statements."""
-
-    retry_interval = 30
-    """Retry interval for failed servers in seconds."""
 
     default_server = "http://127.0.0.1:4200"
     """Default server to use if no servers are given on instantiation."""
+
+    _logger = logger
 
     def __init__(
         self,
@@ -473,18 +298,15 @@ class Client:
         if not servers:
             servers = [self.default_server]
         else:
-            servers = _to_server_list(servers)
+            servers = to_server_list(servers)
 
         # Try to derive credentials from first server argument if not
         # explicitly given.
         if servers and not username:
             try:
-                url = urlparse(servers[0])
-
-                if url.username is not None:
-                    username = url.username
-                if url.password is not None:
-                    password = url.password
+                username, password = credentials_from_url(
+                    servers[0], username, password
+                )
             except Exception as ex:
                 logger.warning(
                     "Unable to decode credentials from database "
@@ -492,8 +314,7 @@ class Client:
                     "authentication: {ex}".format(ex=ex)
                 )
 
-        self._active_servers = servers
-        self._inactive_servers: t.List[t.Tuple[float, str, str]] = []
+        super().__init__(servers)
         pool_kw = _pool_kw_args(
             verify_ssl_cert,
             ca_cert,
@@ -515,22 +336,15 @@ class Client:
         self.server_pool: t.Dict[str, Server] = {}
         self._update_server_pool(servers, **pool_kw)
         self._pool_kw = pool_kw
-        self._lock = threading.RLock()
         self._local = threading.local()
         self.username = username
         self.password = password
         self.jwt_token = jwt_token
         self.schema = schema
 
-        if not isinstance(compress, (bool, int)):
-            raise TypeError(
-                f"compress must be bool or int, got {type(compress).__name__!r}"
-            )
-        self.compress = compress
+        self.compress = validate_compress(compress)
 
-        self.path = self.SQL_PATH
-        if error_trace:
-            self.path += "&error_trace=true"
+        self.path = sql_path(error_trace, self.SQL_PATH)
 
     def close(self):
         for server in self.server_pool.values():
@@ -556,7 +370,7 @@ class Client:
         if stmt is None:
             return None
 
-        data = _create_sql_payload(stmt, parameters, bulk_parameters)
+        data = create_sql_payload(stmt, parameters, bulk_parameters)
         logger.debug("Sending request to %s with payload: %s", self.path, data)
         content = self._json_request("POST", self.path, data=data)
         logger.debug("JSON response for stmt(%s): %s", stmt, content)
@@ -566,10 +380,7 @@ class Client:
     def server_infos(self, server):
         response = self._request("GET", "/", server=server)
         _raise_for_status(response)
-        content = _json_from_response(response)
-        node_name = content.get("name")
-        node_version = content.get("version", {}).get("number", "0.0.0")
-        return server, node_name, node_version
+        return parse_server_infos(server, _json_from_response(response))
 
     def blob_put(self, table, digest, data) -> bool:
         """
@@ -577,28 +388,23 @@ class Client:
         given table and digest.
         """
         response = self._request("PUT", _blob_path(table, digest), data=data)
-        if response.status == 201:
-            # blob created
-            return True
-        if response.status == 409:
-            # blob exists
-            return False
-        if response.status in (400, 404):
-            raise BlobLocationNotFoundException(table, digest)
-        _raise_for_status(response)
-        return False
+        return blob_put_result(
+            response.status,
+            response.reason,
+            response.headers,
+            response.data,
+            table,
+            digest,
+        )
 
     def blob_del(self, table, digest) -> bool:
         """
         Deletes the blob with given digest under the given table.
         """
         response = self._request("DELETE", _blob_path(table, digest))
-        if response.status == 204:
-            return True
-        if response.status == 404:
-            return False
-        _raise_for_status(response)
-        return False
+        return blob_del_result(
+            response.status, response.reason, response.headers, response.data
+        )
 
     def blob_get(self, table, digest, chunk_size=1024 * 128):
         """
@@ -617,12 +423,9 @@ class Client:
         under the given table.
         """
         response = self._request("HEAD", _blob_path(table, digest))
-        if response.status == 200:
-            return True
-        elif response.status == 404:
-            return False
-        _raise_for_status(response)
-        return False
+        return blob_exists_result(
+            response.status, response.reason, response.headers, response.data
+        )
 
     def _add_server(self, server):
         with self._lock:
@@ -647,10 +450,10 @@ class Client:
                     jwt_token=self.jwt_token,
                     **kwargs,
                 )
-                redirect_location = response.get_redirect_location()
-                if redirect_location and 300 <= response.status <= 308:
-                    redirect_url = urlparse(redirect_location)
-                    redirect_server = f"{redirect_url.scheme}://{redirect_url.netloc}"
+                redirect_server = redirect_target(
+                    response.status, response.get_redirect_location()
+                )
+                if redirect_server is not None:
                     self._add_server(redirect_server)
                     return self._request(
                         method, path, server=redirect_server, **kwargs
@@ -675,10 +478,7 @@ class Client:
                     ) from ex
                 preserve_server = False
                 if isinstance(ex, ProtocolError):
-                    preserve_server = any(
-                        t in [type(arg) for arg in ex.args]
-                        for t in PRESERVE_ACTIVE_SERVER_EXCEPTIONS
-                    )
+                    preserve_server = should_preserve_server(ex)
                 if not preserve_server:
                     with self._lock:
                         # drop server from active ones
@@ -692,11 +492,8 @@ class Client:
         """
         headers = {"Accept-Encoding": "gzip, deflate"}
 
-        compress_enabled = self.compress is True or (
-            not isinstance(self.compress, bool) and len(data) >= self.compress
-        )
-        if compress_enabled:
-            data = gzip.compress(data, compresslevel=6)
+        data, compressed = compress_body(data, self.compress)
+        if compressed:
             headers["Content-Encoding"] = "gzip"
 
         response = self._request(method, path, data=data, headers=headers)
@@ -704,72 +501,6 @@ class Client:
         if len(response.data) > 0:
             return _json_from_response(response)
         return response.data
-
-    def _get_server(self):
-        """
-        Get server to use for request.
-        Also process inactive server list, re-add them after given interval.
-        """
-        with self._lock:
-            inactive_server_count = len(self._inactive_servers)
-            for _ in range(inactive_server_count):
-                try:
-                    ts, server, message = heapq.heappop(self._inactive_servers)
-                except IndexError:
-                    pass
-                else:
-                    if (ts + self.retry_interval) > time():
-                        # Not yet, put it back
-                        heapq.heappush(
-                            self._inactive_servers, (ts, server, message)
-                        )
-                    else:
-                        self._active_servers.append(server)
-                        logger.warning(
-                            "Restored server %s into active pool", server
-                        )
-
-            # if none is old enough, use oldest
-            if not self._active_servers:
-                ts, server, message = heapq.heappop(self._inactive_servers)
-                self._active_servers.append(server)
-                logger.info("Restored server %s into active pool", server)
-
-            server = self._active_servers[0]
-            self._roundrobin()
-
-            return server
-
-    @property
-    def active_servers(self):
-        """get the active servers for this client"""
-        with self._lock:
-            return list(self._active_servers)
-
-    def _drop_server(self, server, message):
-        """
-        Drop server from active list and adds it to the inactive ones.
-        """
-        try:
-            self._active_servers.remove(server)
-        except ValueError:
-            pass
-        else:
-            heapq.heappush(self._inactive_servers, (time(), server, message))
-            logger.warning("Removed server %s from active pool", server)
-
-        # if this is the last server raise exception, otherwise try next
-        if not self._active_servers:
-            raise ConnectionError(
-                ("No more Servers available, exception from last server: %s")
-                % message
-            )
-
-    def _roundrobin(self):
-        """
-        Very simple round-robin implementation
-        """
-        self._active_servers.append(self._active_servers.pop(0))
 
     def __repr__(self):
         return "<Client {0}>".format(str(self._active_servers))

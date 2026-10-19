@@ -319,6 +319,51 @@ def test_active_servers_double_evaluation():
         conn._lowest_server_version()
 
 
+def test_lowest_version_picks_lowest():
+    versions = ["5.5.2", "1.0.3", "6.0.0"]
+    assert (1, 0, 3) == Connection._lowest_version(versions).version
+
+
+def test_lowest_version_skips_invalid_versions():
+    versions = ["not a version", ValueError("bad"), "5.5.2"]
+    assert (5, 5, 2) == Connection._lowest_version(versions).version
+
+
+def test_lowest_version_defaults_without_versions():
+    assert (0, 0, 0) == Connection._lowest_version([]).version
+    assert (0, 0, 0) == Connection._lowest_version(["invalid"]).version
+
+
+def test_lowest_version_ignores_unreachable_servers():
+    versions = [
+        crate.client.exceptions.ConnectionError("node-A down"),
+        "5.5.2",
+    ]
+    assert (5, 5, 2) == Connection._lowest_version(versions).version
+
+
+def test_lowest_version_raises_when_no_server_answered():
+    versions = [
+        crate.client.exceptions.ConnectionError("node-A down"),
+        crate.client.exceptions.ConnectionError("node-B down"),
+        "invalid",
+    ]
+    with pytest.raises(crate.client.exceptions.ConnectionError) as excinfo:
+        Connection._lowest_version(versions)
+    assert "node-A down; node-B down" == str(excinfo.value)
+
+
+def test_lowest_version_raises_other_exceptions():
+    """
+    An exception that is neither a ConnectionError nor a ValueError,
+    for example a failed authentication, is raised as is.
+    """
+    error = ProgrammingError("authentication failed")
+    with pytest.raises(ProgrammingError) as excinfo:
+        Connection._lowest_version(["5.5.2", error])
+    assert excinfo.value is error
+
+
 def test_patched_cursor_and_blob_container_classes_are_used():
     """
     `Connection` looks up `Cursor` and `BlobContainer` in its module on

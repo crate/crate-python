@@ -18,6 +18,7 @@
 # However, if you have executed another commercial license agreement
 # with Crate these terms will supersede the license and you may use the
 # software solely pursuant to the terms of the relevant commercial agreement.
+import typing as t
 from typing import Union
 
 from verlib2 import Version
@@ -28,7 +29,99 @@ from .exceptions import ConnectionError, ProgrammingError
 from .http import Client
 
 
-class Connection:
+class ConnectionBase:
+    """
+    Connection state shared by the sync and async connections.
+
+    Public methods that do IO, or that are coroutines on the async
+    connection, live on the subclasses.
+    """
+
+    client: t.Any
+
+    @property
+    def _cursor_class(self) -> t.Type[t.Any]:
+        """The class `cursor()` creates."""
+        raise NotImplementedError
+
+    @property
+    def _blob_container_class(self) -> t.Type[t.Any]:
+        """The class `get_blob_container()` creates."""
+        raise NotImplementedError
+
+    def __init__(self, converter=None, time_zone=None):
+        self._converter = converter
+        self.time_zone = time_zone
+        self._closed = False
+
+    def cursor(self, **kwargs):
+        """
+        Return a new Cursor Object using the connection.
+        """
+        converter = kwargs.pop("converter", self._converter)
+        time_zone = kwargs.pop("time_zone", self.time_zone)
+        self._check_open()
+        return self._cursor_class(
+            connection=self,
+            converter=converter,
+            time_zone=time_zone,
+        )
+
+    def get_blob_container(self, container_name):
+        """Retrieve a BlobContainer for `container_name`
+
+        :param container_name: the name of the BLOB container.
+        :returns: a :class:ContainerObject
+        """
+        return self._blob_container_class(container_name, self)
+
+    def _check_open(self):
+        if self._closed:
+            raise ProgrammingError("Connection closed")
+
+    @staticmethod
+    def _lowest_version(
+        versions: t.Iterable[t.Union[str, BaseException]],
+    ) -> Version:
+        """
+        Return the lowest of the versions reported by the servers.
+        """
+        lowest = None
+        connection_errors = []
+        for version in versions:
+            if isinstance(version, ConnectionError):
+                connection_errors.append(version)
+                continue
+            if isinstance(version, ValueError):
+                continue
+            if isinstance(version, BaseException):
+                raise version
+            try:
+                parsed = Version(version)
+            except ValueError:
+                continue
+            if not lowest or parsed < lowest:
+                lowest = parsed
+        if connection_errors and not lowest:
+            raise ConnectionError("; ".join(str(e) for e in connection_errors))
+        return lowest or Version("0.0.0")
+
+    def __repr__(self):
+        return f"<{self.__class__.__qualname__} {self.client!r}>"
+
+
+class Connection(ConnectionBase):
+    # Look up the module globals on each call, as before the base class
+    # existed: tests, e.g. in sqlalchemy-cratedb, patch
+    # `crate.client.connection.Cursor`.
+    @property
+    def _cursor_class(self) -> t.Type[Cursor]:
+        return Cursor
+
+    @property
+    def _blob_container_class(self) -> t.Type[BlobContainer]:
+        return BlobContainer
+
     def __init__(
         self,
         servers=None,
@@ -141,8 +234,7 @@ class Connection:
             An integer compresses only when the payload exceeds that many bytes.
         """  # noqa: E501
 
-        self._converter = converter
-        self.time_zone = time_zone
+        super().__init__(converter=converter, time_zone=time_zone)
 
         if client:
             self.client = client
@@ -169,22 +261,12 @@ class Connection:
                 compress=compress,
             )
         self.lowest_server_version = self._lowest_server_version()
-        self._closed = False
 
     def cursor(self, **kwargs) -> Cursor:
         """
         Return a new Cursor Object using the connection.
         """
-        converter = kwargs.pop("converter", self._converter)
-        time_zone = kwargs.pop("time_zone", self.time_zone)
-        if not self._closed:
-            return Cursor(
-                connection=self,
-                converter=converter,
-                time_zone=time_zone,
-            )
-        else:
-            raise ProgrammingError("Connection closed")
+        return super().cursor(**kwargs)
 
     def close(self):
         """
@@ -197,38 +279,17 @@ class Connection:
         """
         Transactions are not supported, so ``commit`` is not implemented.
         """
-        if self._closed:
-            raise ProgrammingError("Connection closed")
-
-    def get_blob_container(self, container_name):
-        """Retrieve a BlobContainer for `container_name`
-
-        :param container_name: the name of the BLOB container.
-        :returns: a :class:ContainerObject
-        """
-        return BlobContainer(container_name, self)
+        self._check_open()
 
     def _lowest_server_version(self):
-        lowest = None
-        servers = self.client.active_servers
-        connection_errors = []
-        for server in servers:
+        versions: t.List[t.Union[str, BaseException]] = []
+        for server in self.client.active_servers:
             try:
                 _, _, version = self.client.server_infos(server)
-                version = Version(version)
-            except ConnectionError as ex:
-                connection_errors.append(ex)
-                continue
-            except ValueError:
-                continue
-            if not lowest or version < lowest:
-                lowest = version
-        if connection_errors and not lowest:
-            raise ConnectionError("; ".join(str(e) for e in connection_errors))
-        return lowest or Version("0.0.0")
-
-    def __repr__(self):
-        return f"<{self.__class__.__qualname__} {self.client!r}>"
+                versions.append(version)
+            except (ConnectionError, ValueError) as ex:
+                versions.append(ex)
+        return self._lowest_version(versions)
 
     def __enter__(self):
         return self

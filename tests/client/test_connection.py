@@ -317,3 +317,19 @@ def test_active_servers_double_evaluation():
     # 3 != 2 → guard never fires → silently returns Version("0.0.0").
     with pytest.raises(crate.client.exceptions.ConnectionError):
         conn._lowest_server_version()
+
+
+def test_patched_cursor_and_blob_container_classes_are_used():
+    """
+    `Connection` looks up `Cursor` and `BlobContainer` in its module on
+    each call, so patching them there takes effect. sqlalchemy-cratedb's
+    tests patch `crate.client.connection.Cursor`.
+    """
+    client = _FakeClient(["http://localhost:4200"], lambda _: (0, 0, "6.0.0"))
+    conn = connect(client=client)
+    with (
+        patch("crate.client.connection.Cursor") as cursor_class,
+        patch("crate.client.connection.BlobContainer") as container_class,
+    ):
+        assert conn.cursor() is cursor_class.return_value
+        assert conn.get_blob_container("blobs") is container_class.return_value

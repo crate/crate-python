@@ -32,6 +32,7 @@ from crate.client.exceptions import (
 )
 
 SRV_UNAVAILABLE_STATUSES = {502, 503, 504, 509}
+MAX_REDIRECTS = 10
 PRESERVE_ACTIVE_SERVER_EXCEPTIONS = {ConnectionResetError, BrokenPipeError}
 
 

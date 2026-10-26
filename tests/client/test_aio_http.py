@@ -668,6 +668,14 @@ async def test_fair_queuing(fake_crate):
     assert max(waits) < run_for / 2
 
 
+async def _cancel_after(coro, delay):
+    task = asyncio.ensure_future(coro)
+    await asyncio.sleep(delay)
+    task.cancel()
+    with pytest.raises(asyncio.CancelledError):
+        await task
+
+
 @pytest.mark.asyncio
 async def test_cancelled_waiter_frees_its_place(fake_crate):
     release = asyncio.Event()
@@ -681,11 +689,7 @@ async def test_cancelled_waiter_frees_its_place(fake_crate):
     try:
         busy = asyncio.ensure_future(client.sql("SELECT 1"))
         await asyncio.sleep(0.05)
-        waiter = asyncio.ensure_future(client.sql("SELECT 2"))
-        await asyncio.sleep(0.05)
-        waiter.cancel()
-        with pytest.raises(asyncio.CancelledError):
-            await waiter
+        await _cancel_after(client.sql("SELECT 2"), 0.05)
         release.set()
         assert await busy == SQL_RESULT
         assert await asyncio.wait_for(client.sql("SELECT 3"), 5) == SQL_RESULT
@@ -694,14 +698,6 @@ async def test_cancelled_waiter_frees_its_place(fake_crate):
     finally:
         await client.close()
     assert len(crate.requests) == 2
-
-
-async def _cancel_after(coro, delay):
-    task = asyncio.ensure_future(coro)
-    await asyncio.sleep(delay)
-    task.cancel()
-    with pytest.raises(asyncio.CancelledError):
-        await task
 
 
 @pytest.mark.asyncio

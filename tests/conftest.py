@@ -4,6 +4,7 @@ import multiprocessing
 import os
 import platform
 import socket
+import socketserver
 import ssl
 import sys
 import tarfile
@@ -231,6 +232,12 @@ class HttpsServer(HTTPServer):
     HOST = "localhost"
     CERT_FILE = assets_path("pki/server_valid.pem")
     CACERT_FILE = assets_path("pki/cacert_valid.pem")
+
+    def server_bind(self):
+        socketserver.TCPServer.server_bind(self)
+        host, port = self.server_address[:2]
+        self.server_name = host
+        self.server_port = port
 
     def get_request(self):
         # Prepare SSL context.

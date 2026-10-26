@@ -56,10 +56,13 @@ dependencies = [
 
 [dependency-groups]
 dev = [
+    "aiohttp>=3.12,<4",
     "certifi",
     "coverage",
     "mypy<2.4",
     "pytest<10",
+    "pytest-asyncio<2",
+    "pytest-timeout<3",
     "pytz",
     "ruff<0.17",
 ]
@@ -102,9 +105,16 @@ install_types = true
 namespace_packages = true
 non_interactive = true
 
+[[tool.mypy.overrides]]
+module = ["crate.client.aio.*", "crate.client._tls"]
+disallow_untyped_defs = true
+disallow_incomplete_defs = true
+
 
 [tool.pytest.ini_options]
 addopts = "-rA --verbosity=3 --doctest-modules"
+asyncio_mode = "strict"
+asyncio_default_fixture_loop_scope = "function"
 doctest_optionflags = "NORMALIZE_WHITESPACE ELLIPSIS"
 minversion = "2.0"
 testpaths = [
@@ -148,6 +158,11 @@ lint.select = [
     "YTT",
 ]
 
+lint.extend-select = [
+    # flake8-async: blocking calls in async functions
+    "ASYNC",
+]
+
 lint.extend-ignore = [
     # Unnecessary variable assignment before `return` statement
     "RET504",
@@ -174,7 +189,7 @@ lint.per-file-ignores."tests/*" = [
     "S310", # False positive; it's a https url
     "S311", # Standard pseudo-random generators are not suitable for cryptographic purposes
 ]
-lint.per-file-ignores."src/crate/client/{connection.py,http.py,_pool.py,_response.py}" = [
+lint.per-file-ignores."src/crate/client/{connection.py,http.py,_pool.py,_response.py,aio/__init__.py,aio/_http.py}" = [
     "A004", # Import `ConnectionError` is shadowing a Python builtin
     "A005", # Import `ConnectionError` is shadowing a Python builtin
 ]

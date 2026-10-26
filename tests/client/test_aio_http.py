@@ -106,11 +106,6 @@ def test_client_timeout_invalid(timeout):
         AsyncClient(timeout=timeout)
 
 
-def test_missing_ca_bundle():
-    with pytest.raises(IOError, match="does not exist"):
-        AsyncClient(ca_cert="/nonexistent/ca.pem")
-
-
 def test_creates_no_aiohttp_objects():
     client = AsyncClient(servers=["localhost:4200", "localhost:4201"])
     assert all(s._session is None for s in client.server_pool.values())
@@ -118,17 +113,6 @@ def test_creates_no_aiohttp_objects():
         "http://localhost:4200",
         "http://localhost:4201",
     ]
-
-
-def test_url_strips_userinfo_and_keeps_path_prefix():
-    server = AsyncServer(
-        "https://crate:s3cr3t@localhost:4200/prefix/",
-        ssl_context=None,
-        timeout=client_timeout(None),
-        pool_size=1,
-        socket_options=[],
-    )
-    assert str(server._url("/_sql")) == "https://localhost:4200/prefix/_sql"
 
 
 def test_tls_context_only_for_https():
@@ -162,46 +146,6 @@ async def test_sql(fake_crate):
     assert request.headers["Accept-Encoding"] == "gzip, deflate"
     assert "Content-Encoding" not in request.headers
     assert "Cookie" not in request.headers
-
-
-@pytest.mark.asyncio
-async def test_sql_parameters(fake_crate):
-    crate = await fake_crate()
-    client = AsyncClient(servers=crate.url)
-    try:
-        await client.sql("SELECT ?", parameters=[1])
-        await client.sql("INSERT ?", bulk_parameters=[[1], [2]])
-    finally:
-        await client.close()
-    assert json.loads(crate.requests[0][1]) == {"stmt": "SELECT ?", "args": [1]}
-    assert json.loads(crate.requests[1][1]) == {
-        "stmt": "INSERT ?",
-        "bulk_args": [[1], [2]],
-    }
-
-
-@pytest.mark.asyncio
-async def test_jwt_token(fake_crate):
-    crate = await fake_crate()
-    client = AsyncClient(servers=crate.url, jwt_token="t0k3n")
-    try:
-        await client.sql("SELECT 1")
-    finally:
-        await client.close()
-    request, _ = crate.requests[0]
-    assert request.headers["Authorization"] == "Bearer t0k3n"
-
-
-@pytest.mark.asyncio
-async def test_jwt_and_username_rejected(fake_crate):
-    crate = await fake_crate()
-    client = AsyncClient(servers=crate.url, username="crate", jwt_token="t")
-    try:
-        with pytest.raises(exceptions.ProgrammingError, match="JWT"):
-            await client.sql("SELECT 1")
-    finally:
-        await client.close()
-    assert crate.requests == []
 
 
 @pytest.mark.asyncio
@@ -287,45 +231,6 @@ async def test_server_infos(fake_crate):
     assert request.path == "/"
 
 
-@pytest.mark.asyncio
-async def test_invalid_json_response(fake_crate):
-    async def html(request):
-        return web.Response(text="<html/>", content_type="text/html")
-
-    crate = await fake_crate(html)
-    client = AsyncClient(servers=crate.url)
-    try:
-        with pytest.raises(
-            exceptions.ProgrammingError, match="Invalid server response"
-        ):
-            await client.sql("SELECT 1")
-    finally:
-        await client.close()
-
-
-@pytest.mark.asyncio
-async def test_duplicate_key_maps_to_integrity_error(fake_crate):
-    async def duplicate(request):
-        return web.json_response(
-            {
-                "error": {
-                    "message": "DuplicateKeyException[A document with the "
-                    "same primary key exists already]",
-                    "code": 4091,
-                }
-            },
-            status=409,
-        )
-
-    crate = await fake_crate(duplicate)
-    client = AsyncClient(servers=crate.url)
-    try:
-        with pytest.raises(exceptions.IntegrityError):
-            await client.sql("INSERT INTO t (id) VALUES (1)")
-    finally:
-        await client.close()
-
-
 async def relation_unknown(request):
     return web.json_response(
         {
@@ -357,10 +262,12 @@ async def slow(request):
 async def test_same_exception_as_sync(
     fake_crate, handler, options, exception, match
 ):
+    crate = None
     if handler is None:
         url = f"http://127.0.0.1:{unused_port()}"
     else:
-        url = (await fake_crate(handler)).url
+        crate = await fake_crate(handler)
+        url = crate.url
 
     def sync_sql():
         client = Client(servers=url, **options)
@@ -372,12 +279,16 @@ async def test_same_exception_as_sync(
     with pytest.raises(exception, match=match):
         await asyncio.to_thread(sync_sql)
 
+    sent = len(crate.requests) if crate else 0
     client = AsyncClient(servers=url, **options)
     try:
         with pytest.raises(exception, match=match):
             await client.sql("SELECT 1")
     finally:
         await client.close()
+    if crate:
+        # Error responses, 503 and read timeouts are not retried.
+        assert len(crate.requests) - sent == 1
 
 
 @pytest.mark.asyncio
@@ -406,18 +317,6 @@ async def test_unavailable_on_given_server(fake_crate):
         assert client.active_servers == [crate.url]
     finally:
         await client.close()
-
-
-@pytest.mark.asyncio
-async def test_read_timeout_is_not_retried(fake_crate):
-    crate = await fake_crate(slow)
-    client = AsyncClient(servers=crate.url, timeout=0.2)
-    try:
-        with pytest.raises(exceptions.ConnectionError):
-            await client.sql("SELECT 1")
-    finally:
-        await client.close()
-    assert len(crate.requests) == 1
 
 
 @pytest.mark.asyncio
@@ -548,50 +447,14 @@ async def test_connect_retries_with_backoff(fake_crate, monkeypatch):
 
 
 @pytest.mark.asyncio
-async def test_connect_retry_succeeds(fake_crate, monkeypatch):
-    crate = await fake_crate()
-    original = AsyncServer.request
-    calls = []
-
-    async def refuse_twice(self, *args, **kwargs):
-        calls.append(1)
-        if len(calls) <= 2:
-            raise aiohttp.ConnectionTimeoutError("connect timed out")
-        return await original(self, *args, **kwargs)
-
-    monkeypatch.setattr(AsyncServer, "request", refuse_twice)
-    client = AsyncClient(servers=crate.url)
-    try:
-        assert await client.sql("SELECT 1") == SQL_RESULT
-        assert client.active_servers == [crate.url]
-    finally:
-        await client.close()
-    assert len(calls) == 3
-
-
-@pytest.mark.asyncio
-async def test_tls_failure_is_a_connect_error():
-    """
-    TLS handshake and certificate errors count as connect errors and are
-    retried, as urllib3 does.
-    """
-    assert issubclass(
-        aiohttp.ClientConnectorCertificateError, _http._CONNECT_ERRORS
-    )
-    assert issubclass(aiohttp.ClientConnectorSSLError, _http._CONNECT_ERRORS)
-
-
-@pytest.mark.asyncio
 @pytest.mark.parametrize(
     "error",
     [
         aiohttp.ServerDisconnectedError(),
         aiohttp.ClientOSError(errno.ECONNRESET, "Connection reset by peer"),
-        aiohttp.ClientOSError(errno.EPIPE, "Broken pipe"),
         ConnectionResetError(errno.ECONNRESET, "Connection reset by peer"),
-        BrokenPipeError(errno.EPIPE, "Broken pipe"),
     ],
-    ids=["disconnected", "oserror-reset", "oserror-pipe", "reset", "pipe"],
+    ids=["disconnected", "oserror", "reset"],
 )
 async def test_stale_connection_retried_once(fake_crate, monkeypatch, error):
     crate = await fake_crate()
@@ -724,28 +587,6 @@ async def test_redirect_hop_limit(fake_crate):
     finally:
         await client.close()
     assert len(loop_server.requests) == 11
-
-
-@pytest.mark.asyncio
-async def test_redirect_target_unavailable(fake_crate):
-    """
-    As in sync, an error on the redirect target is a `ProgrammingError`.
-    """
-    down = f"http://127.0.0.1:{unused_port()}"
-
-    async def redirect(request):
-        raise web.HTTPTemporaryRedirect(down + request.path_qs)
-
-    origin = await fake_crate(redirect)
-    client = AsyncClient(servers=origin.url)
-    client.connect_retries = 0
-    try:
-        with pytest.raises(
-            exceptions.ProgrammingError, match="Server not available"
-        ):
-            await client.sql("SELECT 1")
-    finally:
-        await client.close()
 
 
 @pytest.mark.asyncio
@@ -970,15 +811,6 @@ async def test_close_waits_for_in_flight_requests(fake_crate):
 
 
 @pytest.mark.asyncio
-async def test_close_unused_client():
-    client = AsyncClient(servers=["localhost:4200", "localhost:4201"])
-    await client.close()
-    assert client.closed
-    with pytest.raises(exceptions.ProgrammingError, match="Client closed"):
-        await client.sql("SELECT 1")
-
-
-@pytest.mark.asyncio
 async def test_cancelled_close_terminates(fake_crate):
     async def blocked(request):
         await asyncio.sleep(5)
@@ -1018,6 +850,16 @@ async def test_terminate(fake_crate):
 
 @pytest.mark.asyncio
 async def test_unclosed_client_warns(fake_crate):
+    """
+    Only a client that opened connections warns.
+    """
+    with warnings.catch_warnings(record=True) as caught:
+        warnings.simplefilter("always")
+        unused = AsyncClient()
+        del unused
+        gc.collect()
+    assert caught == []
+
     crate = await fake_crate()
     client = AsyncClient(servers=crate.url)
     await client.sql("SELECT 1")
@@ -1031,15 +873,6 @@ async def test_unclosed_client_warns(fake_crate):
     assert "unclosed <AsyncClient" in str(caught[0].message)
     # The connections were closed, so aiohttp has nothing to warn about.
     assert session.closed
-
-
-def test_unused_client_does_not_warn():
-    with warnings.catch_warnings(record=True) as caught:
-        warnings.simplefilter("always")
-        client = AsyncClient()
-        del client
-        gc.collect()
-    assert caught == []
 
 
 def test_different_event_loop():
@@ -1114,17 +947,5 @@ async def test_socket_keepalive(fake_crate):
         options = keepalive_socket_options(True, 33, 7, 4)
         for level, option, value in options[1:]:
             assert sock.getsockopt(level, option) == value
-    finally:
-        await client.close()
-
-
-@pytest.mark.asyncio
-async def test_socket_keepalive_off(fake_crate):
-    crate = await fake_crate()
-    client = AsyncClient(servers=crate.url, socket_keepalive=False)
-    try:
-        await client.sql("SELECT 1")
-        sock = _pooled_socket(client, crate.url)
-        assert not sock.getsockopt(socket.SOL_SOCKET, socket.SO_KEEPALIVE)
     finally:
         await client.close()

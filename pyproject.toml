@@ -189,7 +189,7 @@ lint.per-file-ignores."tests/*" = [
     "S310", # False positive; it's a https url
     "S311", # Standard pseudo-random generators are not suitable for cryptographic purposes
 ]
-lint.per-file-ignores."src/crate/client/{connection.py,http.py,_pool.py,_response.py,aio/__init__.py,aio/_http.py}" = [
+lint.per-file-ignores."src/crate/client/{connection.py,http.py,_connection_base.py,_pool.py,_response.py,aio/__init__.py,aio/_http.py}" = [
     "A004", # Import `ConnectionError` is shadowing a Python builtin
     "A005", # Import `ConnectionError` is shadowing a Python builtin
 ]

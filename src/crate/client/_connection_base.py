@@ -22,10 +22,13 @@ import typing as t
 
 from verlib2 import Version
 
+from ._cursor_base import CursorBase
 from .exceptions import ConnectionError, ProgrammingError
 
+CursorT = t.TypeVar("CursorT", bound=CursorBase)
 
-class ConnectionBase:
+
+class ConnectionBase(t.Generic[CursorT]):
     """
     Connection state shared by the sync and async connections.
 
@@ -36,7 +39,7 @@ class ConnectionBase:
     client: t.Any
 
     @property
-    def _cursor_class(self) -> t.Type[t.Any]:
+    def _cursor_class(self) -> t.Type[CursorT]:
         """The class `cursor()` creates."""
         raise NotImplementedError
 
@@ -50,7 +53,7 @@ class ConnectionBase:
         self.time_zone = time_zone
         self._closed = False
 
-    def cursor(self, **kwargs):
+    def cursor(self, **kwargs) -> CursorT:
         """
         Return a new Cursor Object using the connection.
         """

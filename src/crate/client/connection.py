@@ -28,7 +28,7 @@ from .exceptions import ConnectionError
 from .http import Client
 
 
-class Connection(ConnectionBase):
+class Connection(ConnectionBase[Cursor]):
     # Look up the module globals on each call, as before the base class
     # existed: tests, e.g. in sqlalchemy-cratedb, patch
     # `crate.client.connection.Cursor`.
@@ -179,12 +179,6 @@ class Connection(ConnectionBase):
                 compress=compress,
             )
         self.lowest_server_version = self._lowest_server_version()
-
-    def cursor(self, **kwargs) -> Cursor:
-        """
-        Return a new Cursor Object using the connection.
-        """
-        return super().cursor(**kwargs)
 
     def close(self):
         """

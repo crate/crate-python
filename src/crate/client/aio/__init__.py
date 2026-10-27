@@ -33,3 +33,45 @@ except ImportError as ex:  # pragma: no cover
         "crate.client.aio requires aiohttp. "
         'Install it with: pip install "aiohttp>=3.12,<4"'
     ) from ex
+
+from crate.client.aio._http import AsyncClient
+from crate.client.aio.connection import AsyncConnection, connect
+from crate.client.aio.cursor import AsyncCursor
+from crate.client.exceptions import (
+    BlobLocationNotFoundException,
+    ConnectionError,
+    DatabaseError,
+    DataError,
+    DigestNotFoundException,
+    Error,
+    IntegrityError,
+    InterfaceError,
+    InternalError,
+    NotSupportedError,
+    OperationalError,
+    ProgrammingError,
+    Warning,
+)
+
+paramstyle = "pyformat"
+
+__all__ = [
+    "AsyncClient",
+    "AsyncConnection",
+    "AsyncCursor",
+    "BlobLocationNotFoundException",
+    "ConnectionError",
+    "DataError",
+    "DatabaseError",
+    "DigestNotFoundException",
+    "Error",
+    "IntegrityError",
+    "InterfaceError",
+    "InternalError",
+    "NotSupportedError",
+    "OperationalError",
+    "ProgrammingError",
+    "Warning",
+    "connect",
+    "paramstyle",
+]

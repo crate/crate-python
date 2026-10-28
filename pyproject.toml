@@ -50,7 +50,7 @@ classifiers = [
 ]
 dependencies = [
     "orjson",
-    "urllib3",
+    "urllib3>=2.8.0",
     "verlib2",
 ]
 

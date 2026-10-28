@@ -2,6 +2,11 @@
 Changes for crate
 =================
 
+Unreleased
+==========
+- Raised the minimum ``orjson`` version to 3.11.6, that fixes
+  CVE-2025-67221: ``orjson.dumps`` crashing on deeply nested input.
+
 2026/09/17 2.3.0
 ================
 - Added ``DefaultTypeConverter`` support that decodes ``DataType.UUID``

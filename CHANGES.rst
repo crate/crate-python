@@ -2,8 +2,8 @@
 Changes for crate
 =================
 
-Unreleased
-==========
+2026/10/30 2.4.0
+================
 - Breaking change: Raised the minimum ``urllib3`` version to 2.8.0. This
   fixes CVE-2026-97687, CVE-2026-97688, and CVE-2026-97689. Support for
   urllib3 1.x has been removed.

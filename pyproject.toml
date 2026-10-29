@@ -49,7 +49,7 @@ classifiers = [
         "Topic :: System :: Networking",
 ]
 dependencies = [
-    "orjson",
+    "orjson>=3.11.6",
     "urllib3>=2.8.0",
     "verlib2",
 ]

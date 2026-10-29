@@ -11,6 +11,8 @@ Unreleased
   stops CrateDB.
 - Testing: Fixed ``CrateLayer`` using the parent of the ``crate_config``
   directory as ``path.conf``, instead of the directory itself.
+- Raised the minimum ``orjson`` version to 3.11.6, that fixes
+  CVE-2025-67221: ``orjson.dumps`` crashing on deeply nested input.
 
 2026/09/17 2.3.0
 ================

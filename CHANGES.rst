@@ -11,6 +11,9 @@ Unreleased
   stops CrateDB.
 - Testing: Fixed ``CrateLayer`` using the parent of the ``crate_config``
   directory as ``path.conf``, instead of the directory itself.
+- Breaking change: Raised the minimum ``urllib3`` version to 2.8.0. This
+  fixes CVE-2026-97687, CVE-2026-97688, and CVE-2026-97689. Support for
+  urllib3 1.x has been removed.
 - Raised the minimum ``orjson`` version to 3.11.6, that fixes
   CVE-2025-67221: ``orjson.dumps`` crashing on deeply nested input.
 

@@ -19,16 +19,17 @@
 # with Crate these terms will supersede the license and you may use the
 # software solely pursuant to the terms of the relevant commercial agreement.
 
-import json
 import os
-import tempfile
+import re
+import socket
+import time
 from io import BytesIO
 from pathlib import Path
-from unittest import TestCase, mock
 
-import urllib3
+import pytest
 
-import crate
+import crate.testing.layer
+from crate.client import connect
 from crate.testing.layer import (
     CrateLayer,
     http_url_from_host_port,
@@ -38,280 +39,306 @@ from crate.testing.layer import (
 from tests.client.settings import crate_path
 from tests.conftest import download_cratedb, get_crate_url
 
+HTTP_LOG_LINE = (
+    b"[i.c.p.h.CrateNettyHttpServerTransport] [crate] "
+    b"publish_address {127.0.0.1:4200}"
+)
 
-class LayerUtilsTest(TestCase):
-    def test_prepend_http(self):
-        host = prepend_http("localhost")
-        self.assertEqual("http://localhost", host)
-        host = prepend_http("http://localhost")
-        self.assertEqual("http://localhost", host)
-        host = prepend_http("https://localhost")
-        self.assertEqual("https://localhost", host)
-        host = prepend_http("http")
-        self.assertEqual("http://http", host)
 
-    def test_http_url(self):
-        url = http_url_from_host_port(None, None)
-        self.assertEqual(None, url)
-        url = http_url_from_host_port("localhost", None)
-        self.assertEqual(None, url)
-        url = http_url_from_host_port(None, 4200)
-        self.assertEqual(None, url)
-        url = http_url_from_host_port("localhost", 4200)
-        self.assertEqual("http://localhost:4200", url)
-        url = http_url_from_host_port("https://crate", 4200)
-        self.assertEqual("https://crate:4200", url)
+def free_port() -> int:
+    """
+    Returns a port the OS considers free
+    """
+    with socket.socket() as s:
+        s.bind(("127.0.0.1", 0))
+        return s.getsockname()[1]
 
-    def test_wait_for_http(self):
-        log = BytesIO(
-            b"[i.c.p.h.CrateNettyHttpServerTransport] [crate] publish_address {127.0.0.1:4200}"  # noqa: E501
-        )
-        addr = wait_for_http_url(log)
-        self.assertEqual("http://127.0.0.1:4200", addr)
-        log = BytesIO(
-            b"[i.c.p.h.CrateNettyHttpServerTransport] [crate] publish_address {}"  # noqa: E501
-        )
-        addr = wait_for_http_url(log=log, timeout=1)
-        self.assertEqual(None, addr)
 
-    @mock.patch.object(
+def wait_until(predicate, timeout=30, interval=0.5) -> bool:
+    deadline = time.monotonic() + timeout
+    while not predicate():
+        if time.monotonic() > deadline:
+            return False
+        time.sleep(interval)
+    return True
+
+
+def query(layer, stmt):
+    with connect(layer.crate_servers) as conn:
+        cursor = conn.cursor()
+        cursor.execute(stmt)
+        return cursor.fetchall()
+
+
+def fake_crate(tmp_path: Path, script: str) -> str:
+    """
+    Returns a stand-in for `bin/crate`
+    """
+    path = tmp_path / "fake-crate"
+    path.write_text("#!/bin/sh\n" + script)
+    path.chmod(0o755)
+    return str(path)
+
+
+@pytest.mark.parametrize(
+    "host, expected",
+    [
+        ("localhost", "http://localhost"),
+        ("http://localhost", "http://localhost"),
+        ("https://localhost", "https://localhost"),
+        ("http", "http://http"),
+    ],
+)
+def test_prepend_http(host, expected):
+    assert prepend_http(host) == expected
+
+
+@pytest.mark.parametrize(
+    "host, port, expected",
+    [
+        (None, None, None),
+        ("localhost", None, None),
+        (None, 4200, None),
+        ("localhost", 4200, "http://localhost:4200"),
+        ("localhost", "4200", "http://localhost:4200"),
+        ("https://crate", 4200, "https://crate:4200"),
+        ("localhost", "4200-4299", None),
+    ],
+)
+def test_http_url_from_host_port(host, port, expected):
+    assert http_url_from_host_port(host, port) == expected
+
+
+@pytest.mark.parametrize(
+    "log, expected",
+    [
+        (HTTP_LOG_LINE, "http://127.0.0.1:4200"),
+        (b"starting\n" + HTTP_LOG_LINE, "http://127.0.0.1:4200"),
+        (b"[i.c.p.h.CrateNettyHttpServerTransport] publish_address {}", None),
+        (b"", None),
+    ],
+)
+def test_wait_for_http_url(log, expected):
+    assert wait_for_http_url(BytesIO(log), timeout=1) == expected
+
+
+def test_wait_for_http_url_verbose(capsys):
+    wait_for_http_url(BytesIO(b"starting\n"), timeout=1, verbose=True)
+    assert "starting" in capsys.readouterr().err
+
+
+def test_default_settings(tmp_path):
+    layer = CrateLayer("crate", crate_home=str(tmp_path))
+    assert layer.start_cmd[0] == str(tmp_path / "bin" / "crate")
+    for flag in [
+        "-Chttp.port=4200-4299",
+        "-Ctransport.tcp.port=4300-4399",
+        "-Cnetwork.host=127.0.0.1",
+        "-Cnode.name=crate",
+        "-Ccluster.name=TestingDynamic",
+        "-Cpath.conf={}".format(tmp_path / "config"),
+    ]:
+        assert flag in layer.start_cmd
+    assert layer.crate_servers == []
+    assert layer.wdPath().endswith(os.path.join("crate_layer", "crate"))
+
+
+def test_static_ports(tmp_path):
+    layer = CrateLayer(
+        "crate",
+        crate_home=str(tmp_path),
+        port=44219,
+        transport_port=44319,
+        cluster_name="my_cluster",
+    )
+    assert layer.crate_servers == ["http://127.0.0.1:44219"]
+    for flag in [
+        "-Chttp.port=44219",
+        "-Ctransport.tcp.port=44319",
+        "-Ccluster.name=my_cluster",
+    ]:
+        assert flag in layer.start_cmd
+
+
+def test_additional_settings(tmp_path):
+    """
+    Additional settings are handed over to CrateDB using ``-C`` flags, and
+    take precedence over keyword arguments.
+    """
+    layer = CrateLayer(
+        "custom",
+        str(tmp_path),
+        port=44401,
+        settings={
+            "cluster.graceful_stop.min_availability": "none",
+            "http.port": 44402,
+            "lang.js.enabled": True,
+        },
+    )
+    assert layer.crate_servers == ["http://127.0.0.1:44402"]
+    for flag in [
+        "-Ccluster.graceful_stop.min_availability=none",
+        "-Chttp.port=44402",
+        "-Clang.js.enabled=true",
+    ]:
+        assert flag in layer.start_cmd
+
+
+def test_crate_config_directory(tmp_path):
+    config_dir = tmp_path / "conf"
+    config_dir.mkdir()
+    layer = CrateLayer("crate", str(tmp_path), crate_config=str(config_dir))
+    assert "-Cpath.conf={}".format(config_dir) in layer.start_cmd
+
+
+def test_crate_config_file(tmp_path):
+    config = tmp_path / "conf" / "crate.yml"
+    config.parent.mkdir()
+    config.touch()
+    layer = CrateLayer("crate", str(tmp_path), crate_config=str(config))
+    assert "-Cpath.conf={}".format(config.parent) in layer.start_cmd
+
+
+def test_crate_config_must_be_named_crate_yml(tmp_path):
+    config = tmp_path / "other.yml"
+    config.touch()
+    with pytest.raises(ValueError, match="crate.yml"):
+        CrateLayer("crate", str(tmp_path), crate_config=str(config))
+
+
+def test_environment_variables(tmp_path, monkeypatch):
+    monkeypatch.setenv("JAVA_HOME", "/opt/jdk")
+    layer = CrateLayer("crate", str(tmp_path), env={"CRATE_HEAP_SIZE": "300m"})
+    assert layer.env == {
+        "CRATE_HEAP_SIZE": "300m",
+        "CRATE_USE_IPV4": "true",
+        "JAVA_HOME": "/opt/jdk",
+    }
+
+
+@pytest.mark.parametrize(
+    "java_home, env, expected",
+    [
+        # JAVA_HOME must not be set to `None`: It would be literally
+        # interpreted as a string 'None', which is an invalid path.
+        (None, None, ""),
+        ("/opt/jdk-11", None, "/opt/jdk-11"),
+        ("/opt/jdk-11", {"JAVA_HOME": "/opt/jdk-12"}, "/opt/jdk-12"),
+    ],
+)
+def test_java_home(tmp_path, monkeypatch, java_home, env, expected):
+    if java_home is None:
+        monkeypatch.delenv("JAVA_HOME", raising=False)
+    else:
+        monkeypatch.setenv("JAVA_HOME", java_home)
+    layer = CrateLayer("crate", str(tmp_path), env=env)
+    assert layer.env["JAVA_HOME"] == expected
+
+
+def test_layer_from_uri(tmp_path, monkeypatch):
+    """
+    The layer can also be created from a URI pointing to a CrateDB tarball.
+    """
+    monkeypatch.setattr(
         crate.testing.layer,
         "_download_and_extract",
         lambda uri, directory: None,
     )
-    def test_layer_from_uri(self):
-        """
-        The CrateLayer can also be created by providing an URI that points to
-        a CrateDB tarball.
-        """
-        layer = CrateLayer.from_uri(get_crate_url(),
-                                    name="crate-by-uri",
-                                    http_port=42203
-                                    )
-        self.assertIsInstance(layer, CrateLayer)
-
-    @mock.patch.dict("os.environ", {}, clear=True)
-    def test_java_home_env_not_set(self):
-        with tempfile.TemporaryDirectory() as tmpdir:
-            layer = CrateLayer("java-home-test", tmpdir)
-            # JAVA_HOME must not be set to `None`: It would be literally
-            # interpreted as a string 'None', which is an invalid path.
-            self.assertEqual(layer.env["JAVA_HOME"], "")
-
-    @mock.patch.dict("os.environ", {}, clear=True)
-    def test_java_home_env_set(self):
-        java_home = "/usr/lib/jvm/java-11-openjdk-amd64"
-        with tempfile.TemporaryDirectory() as tmpdir:
-            os.environ["JAVA_HOME"] = java_home
-            layer = CrateLayer("java-home-test", tmpdir)
-            self.assertEqual(layer.env["JAVA_HOME"], java_home)
-
-    @mock.patch.dict("os.environ", {}, clear=True)
-    def test_java_home_env_override(self):
-        java_11_home = "/usr/lib/jvm/java-11-openjdk-amd64"
-        java_12_home = "/usr/lib/jvm/java-12-openjdk-amd64"
-        with tempfile.TemporaryDirectory() as tmpdir:
-            os.environ["JAVA_HOME"] = java_11_home
-            layer = CrateLayer(
-                "java-home-test", tmpdir, env={"JAVA_HOME": java_12_home}
-            )
-            self.assertEqual(layer.env["JAVA_HOME"], java_12_home)
+    layer = CrateLayer.from_uri(
+        get_crate_url(),
+        name="crate-by-uri",
+        http_port=42203,
+        directory=str(tmp_path),
+    )
+    assert layer.crate_servers == ["http://127.0.0.1:42203"]
 
 
-class LayerTest(TestCase):
-    @classmethod
-    def setup_class(cls):
-        download_cratedb(Path(crate_path()))
-
-    def test_basic(self):
-        """
-        This layer starts and stops a ``Crate`` instance on a given host, port,
-        a given crate node name and, optionally, a given cluster name::
-        """
-
-        port = 44219
-        transport_port = 44319
-
-        layer = CrateLayer(
-            "crate",
-            crate_home=crate_path(),
-            host="127.0.0.1",
-            port=port,
-            transport_port=transport_port,
-            cluster_name="my_cluster",
-        )
-
-        # The working directory is defined on layer instantiation.
-        # It is sometimes required to know it before starting the layer.
-        self.assertRegex(layer.wdPath(), r".+/crate_layer/crate")
-
-        # Start the layer.
+def test_start_fails_when_process_exits(tmp_path):
+    exe = fake_crate(tmp_path, "echo starting\nsleep 1\n")
+    layer = CrateLayer("crate", str(tmp_path), crate_exec=exe)
+    with pytest.raises(SystemError, match="HTTP address not found"):
         layer.start()
+    assert layer.process is None
 
-        # The urls of the crate servers to be instantiated can be obtained
-        # via `crate_servers`.
-        self.assertEqual(layer.crate_servers, ["http://127.0.0.1:44219"])
 
-        # Access the CrateDB instance on the HTTP interface.
+def test_start_fails_after_timeout(tmp_path):
+    exe = fake_crate(tmp_path, "while true; do echo waiting; sleep 0.1; done\n")
+    layer = CrateLayer("crate", str(tmp_path), crate_exec=exe)
+    layer.startup_timeout = 1
+    with pytest.raises(SystemError, match="within 1s"):
+        layer.start()
+    assert layer.process is None
 
-        http = urllib3.PoolManager()
 
-        stats_uri = "http://127.0.0.1:{0}/".format(port)
-        response = http.request("GET", stats_uri)
-        self.assertEqual(response.status, 200)
+def test_stop_without_start(tmp_path):
+    CrateLayer("crate", str(tmp_path)).stop()
 
-        # The layer can be shutdown using its `stop()` method.
+
+@pytest.fixture(scope="module")
+def crate_home():
+    download_cratedb(Path(crate_path()))
+    return crate_path()
+
+
+@pytest.fixture
+def start_layer(crate_home, tmp_path, monkeypatch):
+    """
+    Starts CrateDB layers, which are stopped after the test, also on failure.
+    """
+    monkeypatch.setattr(CrateLayer, "tmpdir", str(tmp_path))
+    layers = []
+
+    def start(name="crate", **kwargs):
+        layer = CrateLayer(name, crate_home=crate_home, **kwargs)
+        layer.start()
+        layers.append(layer)
+        return layer
+
+    yield start
+    for layer in layers:
         layer.stop()
 
-    def test_dynamic_http_port(self):
-        """
-        Verify defining a port range instead of a static HTTP port.
 
-        CrateDB will start with the first available port in the given range and
-        the test layer obtains the chosen port from the startup logs of the
-        CrateDB process.
+def test_start_and_stop(crate_home, tmp_path, monkeypatch):
+    """
+    The layer starts CrateDB on the first free port of the default range,
+    reads the chosen address from the startup logs, and stops it again.
+    """
+    monkeypatch.setattr(CrateLayer, "tmpdir", str(tmp_path))
+    with CrateLayer("crate", crate_home=crate_home) as layer:
+        assert re.match(r"http://127.0.0.1:42\d\d$", layer.crate_servers[0])
+        result = query(layer, "select name from sys.cluster")
+        assert result == [["TestingDynamic"]]
+        process = layer.process
 
-        Note that this feature requires a logging configuration with at least
-        loglevel ``INFO`` on ``http``.
-        """
-        port = "44200-44299"
-        layer = CrateLayer("crate", crate_home=crate_path(), port=port)
-        layer.start()
-        self.assertRegex(layer.crate_servers[0], r"http://127.0.0.1:442\d\d")
-        layer.stop()
+    assert layer.process is None
+    assert process.poll() is not None
+    assert not os.path.exists(layer.wdPath())
 
-    def test_default_settings(self):
-        """
-        Starting a CrateDB layer leaving out optional parameters will apply
-        the following defaults.
 
-        The default http port is the first free port in the range of
-        ``4200-4299``, the default transport port is the first free port in
-        the range of ``4300-4399``, the host defaults to ``127.0.0.1``.
+def test_static_ports_and_environment(start_layer):
+    port = free_port()
+    layer = start_layer(
+        port=port,
+        transport_port=free_port(),
+        env={"CRATE_HEAP_SIZE": "300m"},
+    )
+    assert layer.crate_servers == ["http://127.0.0.1:{}".format(port)]
+    result = query(layer, "select heap['max'] from sys.nodes")
+    assert result == [[314572800]]
 
-        The command to call is ``bin/crate`` inside the ``crate_home`` path.
-        The default config file is ``config/crate.yml`` inside ``crate_home``.
-        The default cluster name will be auto generated using the HTTP port.
-        """
-        layer = CrateLayer("crate_defaults", crate_home=crate_path())
-        layer.start()
-        self.assertEqual(layer.crate_servers[0], "http://127.0.0.1:4200")
-        layer.stop()
 
-    def test_additional_settings(self):
-        """
-        The CrateDB test layer can be started with additional settings as well.
-
-        Add a dictionary for keyword argument ``settings`` which contains your
-        settings. Those additional setting will override settings given as
-        keyword argument.
-
-        The settings will be handed over to the ``Crate`` process with the
-        ``-C`` flag. So, the setting ``threadpool.bulk.queue_size: 100``
-        becomes the command line flag: ``-Cthreadpool.bulk.queue_size=100``::
-        """
-        layer = CrateLayer(
-            "custom",
-            crate_path(),
-            port=44401,
-            settings={
-                "cluster.graceful_stop.min_availability": "none",
-                "http.port": 44402,
-            },
-        )
-        layer.start()
-        self.assertEqual(layer.crate_servers[0], "http://127.0.0.1:44402")
-        self.assertIn(
-            "-Ccluster.graceful_stop.min_availability=none", layer.start_cmd
-        )
-        layer.stop()
-
-    def test_verbosity(self):
-        """
-        The test layer hides the standard output of Crate per default.
-
-        To increase the verbosity level, the additional keyword argument
-        ``verbose`` needs to be set to ``True``::
-        """
-        layer = CrateLayer("crate", crate_home=crate_path(), verbose=True)
-        layer.start()
-        self.assertTrue(layer.verbose)
-        layer.stop()
-
-    def test_environment_variables(self):
-        """
-        Verify providing environment variables for the CrateDB testing layer.
-        """
-        layer = CrateLayer(
-            "crate", crate_home=crate_path(), env={"CRATE_HEAP_SIZE": "300m"}
-        )
-
-        layer.start()
-
-        sql_uri = layer.crate_servers[0] + "/_sql"
-
-        http = urllib3.PoolManager()
-        response = http.urlopen(
-            "POST",
-            sql_uri,
-            body='{"stmt": "select heap[\'max\'] from sys.nodes"}',
-        )
-        json_response = json.loads(response.data.decode("utf-8"))
-
-        self.assertEqual(json_response["rows"][0][0], 314572800)
-
-        layer.stop()
-
-    def test_cluster(self):
-        """
-        To start a cluster of ``Crate`` instances, give each instance the same
-        ``cluster_name``. If you want to start instances on the same machine,
-        use value ``_local_`` for ``host`` and give every node different ports::
-        """
-        cluster_layer1 = CrateLayer(
-            "crate1",
-            crate_path(),
-            host="_local_",
-            cluster_name="my_cluster",
-        )
-        cluster_layer2 = CrateLayer(
-            "crate2",
-            crate_path(),
-            host="_local_",
-            cluster_name="my_cluster",
-            settings={"discovery.initial_state_timeout": "10s"},
-        )
-
-        # If we start both layers, they will, after a small amount of time,
-        # find each other, and form a cluster.
-        cluster_layer1.start()
-        cluster_layer2.start()
-
-        # We can verify that by checking the number of nodes a node knows about.
-        http = urllib3.PoolManager()
-
-        def num_cluster_nodes(crate_layer):
-            sql_uri = crate_layer.crate_servers[0] + "/_sql"
-            response = http.urlopen(
-                "POST",
-                sql_uri,
-                body='{"stmt":"select count(*) from sys.nodes"}',
-            )
-            json_response = json.loads(response.data.decode("utf-8"))
-            return json_response["rows"][0][0]
-
-        # We might have to wait a moment before the cluster is finally created.
-        num_nodes = num_cluster_nodes(cluster_layer1)
-        import time
-
-        retries = 0
-        while num_nodes < 2:  # pragma: no cover
-            time.sleep(1)
-            num_nodes = num_cluster_nodes(cluster_layer1)
-            retries += 1
-            if retries == 30:
-                break
-        self.assertEqual(num_nodes, 2)
-
-        cluster_layer1.stop()
-        cluster_layer2.stop()
+def test_cluster(start_layer):
+    """
+    Layers with the same cluster name find each other and form a cluster.
+    """
+    layer1 = start_layer("crate1", host="_local_", cluster_name="my_cluster")
+    start_layer(
+        "crate2",
+        host="_local_",
+        cluster_name="my_cluster",
+        settings={"discovery.initial_state_timeout": "10s"},
+    )
+    assert wait_until(
+        lambda: query(layer1, "select count(*) from sys.nodes") == [[2]]
+    )

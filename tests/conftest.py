@@ -26,6 +26,8 @@ from tests.client.settings import assets_path
 
 log = logging.getLogger("tests.conftest")
 
+logging.getLogger("urllib3.connectionpool").setLevel(logging.ERROR)
+
 
 REQUEST_PATH = "crate.client.http.Server.request"
 URL_TMPL = "https://cdn.crate.io/downloads/releases/cratedb/{arch}_{os}/crate-6.1.2.{ext}"
@@ -146,12 +148,23 @@ def get_crate_url() -> str:
 
 
 def download_cratedb(path: Path):
+    if not path.exists():
+        _download_and_extract(path)
+
+
+def _download_and_extract(path: Path, attempts: int = 3):
     url = get_crate_url()
-    if path.exists():
-        return
     if not url.startswith("https:"):
         raise ValueError("Invalid url")
-    filename, _msg = urlretrieve(url)
+    for attempt in range(1, attempts + 1):
+        try:
+            filename, _msg = urlretrieve(url)
+            break
+        except OSError as ex:
+            if attempt == attempts:
+                raise
+            log.warning("Downloading %s failed, retrying: %s", url, ex)
+            time.sleep(5 * attempt)
     if sys.platform.startswith("win32"):
         with zipfile.ZipFile(filename) as z:
             first_file = z.namelist()[0]

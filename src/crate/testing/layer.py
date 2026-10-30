@@ -437,7 +437,9 @@ class CrateLayer:
         # after the layer starts don't result in 503
         def validator():
             try:
-                resp = self.conn_pool.request("HEAD", self.http_url)
+                resp = self.conn_pool.request(
+                    "HEAD", self.http_url, retries=False
+                )
                 return resp.status == 200
             except Exception:
                 return False

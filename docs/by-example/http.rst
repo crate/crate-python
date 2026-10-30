@@ -32,11 +32,17 @@ If no ``server`` argument (or no argument at all) is passed, the default one
     ['http://127.0.0.1:4200']
     >>> http_client.close()
 
-When using a list of servers, the servers are selected by round-robin:
+The following examples use unreachable servers. A short connect timeout makes
+them fail fast, while the read timeout leaves CrateDB enough time to respond:
 
+    >>> import urllib3
     >>> invalid_host1 = "192.0.2.1:9999"
     >>> invalid_host2 = "192.0.2.2:9999"
-    >>> http_client = HttpClient([crate_host, invalid_host1, invalid_host2], timeout=0.3)
+    >>> timeout = urllib3.Timeout(connect=0.3, read=10)
+
+When using a list of servers, the servers are selected by round-robin:
+
+    >>> http_client = HttpClient([crate_host, invalid_host1, invalid_host2], timeout=timeout)
     >>> http_client._get_server()
     'http://127.0.0.1:44209'
 
@@ -50,7 +56,7 @@ When using a list of servers, the servers are selected by round-robin:
 
 Servers with connection errors will be removed from the active server list:
 
-    >>> http_client = HttpClient([invalid_host1, invalid_host2, crate_host], timeout=0.3)
+    >>> http_client = HttpClient([invalid_host1, invalid_host2, crate_host], timeout=timeout)
     >>> result = http_client.sql('select name from locations')
     >>> http_client._active_servers
     ['http://127.0.0.1:44209']
@@ -70,7 +76,7 @@ sleep after the first request::
 If no active servers are available and the retry interval is not reached, just use the oldest
 inactive one:
 
-    >>> http_client = HttpClient([invalid_host1, invalid_host2, crate_host], timeout=0.3)
+    >>> http_client = HttpClient([invalid_host1, invalid_host2, crate_host], timeout=timeout)
     >>> result = http_client.sql('select name from locations')
     >>> http_client._active_servers = []
     >>> http_client._get_server()

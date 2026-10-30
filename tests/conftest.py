@@ -26,6 +26,8 @@ from tests.client.settings import assets_path
 
 log = logging.getLogger("tests.conftest")
 
+logging.getLogger("urllib3.connectionpool").setLevel(logging.ERROR)
+
 
 REQUEST_PATH = "crate.client.http.Server.request"
 URL_TMPL = "https://cdn.crate.io/downloads/releases/cratedb/{arch}_{os}/crate-6.1.2.{ext}"

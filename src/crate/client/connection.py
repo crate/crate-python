@@ -18,17 +18,28 @@
 # However, if you have executed another commercial license agreement
 # with Crate these terms will supersede the license and you may use the
 # software solely pursuant to the terms of the relevant commercial agreement.
+import typing as t
 from typing import Union
 
-from verlib2 import Version
-
+from ._connection_base import ConnectionBase
 from .blob import BlobContainer
 from .cursor import Cursor
-from .exceptions import ConnectionError, ProgrammingError
+from .exceptions import ConnectionError
 from .http import Client
 
 
-class Connection:
+class Connection(ConnectionBase[Cursor]):
+    # Look up the module globals on each call, as before the base class
+    # existed: tests, e.g. in sqlalchemy-cratedb, patch
+    # `crate.client.connection.Cursor`.
+    @property
+    def _cursor_class(self) -> t.Type[Cursor]:
+        return Cursor
+
+    @property
+    def _blob_container_class(self) -> t.Type[BlobContainer]:
+        return BlobContainer
+
     def __init__(
         self,
         servers=None,
@@ -141,8 +152,7 @@ class Connection:
             An integer compresses only when the payload exceeds that many bytes.
         """  # noqa: E501
 
-        self._converter = converter
-        self.time_zone = time_zone
+        super().__init__(converter=converter, time_zone=time_zone)
 
         if client:
             self.client = client
@@ -169,22 +179,6 @@ class Connection:
                 compress=compress,
             )
         self.lowest_server_version = self._lowest_server_version()
-        self._closed = False
-
-    def cursor(self, **kwargs) -> Cursor:
-        """
-        Return a new Cursor Object using the connection.
-        """
-        converter = kwargs.pop("converter", self._converter)
-        time_zone = kwargs.pop("time_zone", self.time_zone)
-        if not self._closed:
-            return Cursor(
-                connection=self,
-                converter=converter,
-                time_zone=time_zone,
-            )
-        else:
-            raise ProgrammingError("Connection closed")
 
     def close(self):
         """
@@ -197,38 +191,17 @@ class Connection:
         """
         Transactions are not supported, so ``commit`` is not implemented.
         """
-        if self._closed:
-            raise ProgrammingError("Connection closed")
-
-    def get_blob_container(self, container_name):
-        """Retrieve a BlobContainer for `container_name`
-
-        :param container_name: the name of the BLOB container.
-        :returns: a :class:ContainerObject
-        """
-        return BlobContainer(container_name, self)
+        self._check_open()
 
     def _lowest_server_version(self):
-        lowest = None
-        servers = self.client.active_servers
-        connection_errors = []
-        for server in servers:
+        versions: t.List[t.Union[str, BaseException]] = []
+        for server in self.client.active_servers:
             try:
                 _, _, version = self.client.server_infos(server)
-                version = Version(version)
-            except ConnectionError as ex:
-                connection_errors.append(ex)
-                continue
-            except ValueError:
-                continue
-            if not lowest or version < lowest:
-                lowest = version
-        if connection_errors and not lowest:
-            raise ConnectionError("; ".join(str(e) for e in connection_errors))
-        return lowest or Version("0.0.0")
-
-    def __repr__(self):
-        return f"<{self.__class__.__qualname__} {self.client!r}>"
+                versions.append(version)
+            except (ConnectionError, ValueError) as ex:
+                versions.append(ex)
+        return self._lowest_version(versions)
 
     def __enter__(self):
         return self

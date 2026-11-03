@@ -21,7 +21,6 @@
 
 
 import logging
-import os
 import ssl
 import threading
 import typing as t
@@ -74,6 +73,7 @@ from crate.client._response import (  # noqa: F401
     redirect_target,
     should_preserve_server,
 )
+from crate.client._tls import resolve_ca_cert
 from crate.client.exceptions import (
     ConnectionError,
     DigestNotFoundException,
@@ -194,10 +194,7 @@ def _pool_kw_args(
     timeout=None,
     pool_size=None,
 ):
-    ca_cert = ca_cert or os.environ.get("REQUESTS_CA_BUNDLE", None)
-    if ca_cert and not os.path.exists(ca_cert):
-        # Sanity check
-        raise IOError('CA bundle file "{}" does not exist.'.format(ca_cert))
+    ca_cert = resolve_ca_cert(ca_cert)
 
     kw = {
         "ca_certs": ca_cert,

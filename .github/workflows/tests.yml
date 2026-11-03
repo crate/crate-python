@@ -82,3 +82,33 @@ jobs:
           CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
         with:
           fail_ci_if_error: true
+
+  without-aiohttp:
+    name: "Without aiohttp"
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+
+      - name: Set up uv
+        uses: astral-sh/setup-uv@v7
+        with:
+          python-version: "3.14"
+          activate-environment: true
+          version: "latest"
+
+      - name: Setup env
+        run: uv pip install -e .
+
+      - name: Check that the async client is optional
+        run: |
+          python -c "import crate.client"
+          python - <<'PYTHON'
+          try:
+              import crate.client.aio
+          except ImportError as ex:
+              assert "requires aiohttp" in str(ex), ex
+          else:
+              raise AssertionError("crate.client.aio imported without aiohttp")
+          PYTHON

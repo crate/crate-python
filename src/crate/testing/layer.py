@@ -93,7 +93,11 @@ def _download_and_extract(uri, directory):
 def wait_for_http_url(log, timeout=30, verbose=False):
     start = time.monotonic()
     while True:
-        line = log.readline().decode("utf-8").strip()
+        raw = log.readline()
+        if not raw:
+            # EOF: the process exited before publishing its HTTP address.
+            return None
+        line = raw.decode("utf-8").strip()
         elapsed = time.monotonic() - start
         if verbose:
             sys.stderr.write("[{:>4.1f}s]{}\n".format(elapsed, line))
@@ -107,6 +111,7 @@ def wait_for_http_url(log, timeout=30, verbose=False):
 class OutputMonitor:
     def __init__(self):
         self.consumers = []
+        self._out_thread: Optional[threading.Thread] = None
 
     def consume(self, iterable):
         for line in iterable:
@@ -144,6 +149,7 @@ class CrateLayer:
 
     tmpdir = tempfile.gettempdir()
     wait_interval = 0.2
+    startup_timeout = 90
 
     @staticmethod
     def from_uri(
@@ -244,6 +250,7 @@ class CrateLayer:
             self.http_url = http_url_from_host_port(host, port)
 
         self.process: Optional[subprocess.Popen] = None
+        self.monitor = OutputMonitor()
         self.verbose = verbose
         self.env = env or {}
         self.env.setdefault("CRATE_USE_IPV4", "true")
@@ -299,6 +306,10 @@ class CrateLayer:
         transport_port,
         further_settings=None,
     ):
+        if os.path.isdir(crate_config):
+            conf_dir = crate_config
+        else:
+            conf_dir = os.path.dirname(crate_config)
         settings = {
             "discovery.type": "zen",
             "discovery.initial_state_timeout": 0,
@@ -306,7 +317,7 @@ class CrateLayer:
             "cluster.name": cluster_name,
             "network.host": host,
             "http.port": http_port,
-            "path.conf": os.path.dirname(crate_config),
+            "path.conf": conf_dir,
             "transport.tcp.port": transport_port,
         }
         if further_settings:
@@ -346,7 +357,9 @@ class CrateLayer:
             # try to read http_url from startup logs
             # this is necessary if no static port is assigned
             self.http_url = wait_for_http_url(
-                self.process.stdout, verbose=self.verbose
+                self.process.stdout,
+                timeout=self.startup_timeout,
+                verbose=self.verbose,
             )
 
         self.monitor = OutputMonitor()
@@ -354,17 +367,26 @@ class CrateLayer:
 
         if not self.http_url:
             self.stop()
-        else:
-            sys.stderr.write("HTTP: {}\n".format(self.http_url))
-            self._wait_for_start()
-            self._wait_for_master()
-            sys.stderr.write("\nCrate instance ready.\n")
+            raise SystemError(
+                "Failed to start Crate instance: HTTP address not found in "
+                "startup logs within {0}s. Use verbose=True to see the "
+                "logs.".format(self.startup_timeout)
+            )
+
+        sys.stderr.write("HTTP: {}\n".format(self.http_url))
+        self._wait_for_start()
+        self._wait_for_master()
+        sys.stderr.write("\nCrate instance ready.\n")
 
     def stop(self):
         self.conn_pool.clear()
         if self.process:
             self.process.terminate()
-            self.process.communicate(timeout=10)
+            try:
+                self.process.communicate(timeout=10)
+            except subprocess.TimeoutExpired:
+                self.process.kill()
+                self.process.communicate()
             stdout = self.process.stdout
             if stdout:
                 stdout.close()
@@ -373,6 +395,13 @@ class CrateLayer:
         self._clean()
 
     def tearDown(self):
+        self.stop()
+
+    def __enter__(self):
+        self.start()
+        return self
+
+    def __exit__(self, *exc_info):
         self.stop()
 
     def _wait_for(self, validator):
@@ -390,7 +419,7 @@ class CrateLayer:
                 self.stop()
                 raise e
 
-            if wait_time > 90:
+            if wait_time > self.startup_timeout:
                 for line in line_buf.lines:
                     log.error(line)
                 self.stop()
@@ -408,7 +437,9 @@ class CrateLayer:
         # after the layer starts don't result in 503
         def validator():
             try:
-                resp = self.conn_pool.request("HEAD", self.http_url)
+                resp = self.conn_pool.request(
+                    "HEAD", self.http_url, retries=False
+                )
                 return resp.status == 200
             except Exception:
                 return False

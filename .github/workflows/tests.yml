@@ -65,6 +65,12 @@ jobs:
       - name: Setup env
         run: uv pip install --group dev -e .
 
+      - name: Cache CrateDB
+        uses: actions/cache@v6
+        with:
+          path: parts/crate
+          key: cratedb-${{ runner.os }}-${{ runner.arch }}-${{ hashFiles('tests/conftest.py') }}
+
       - name: Run Linters
         run: |
           ruff check .

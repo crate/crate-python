@@ -2,6 +2,15 @@
 Changes for crate
 =================
 
+Unreleased
+================
+- Breaking change: ``CrateLayer.start()`` now raises ``SystemError`` when CrateDB does
+  not report its HTTP address. The startup timeout is raised from 30s to 90s.
+- Breaking change: ``CrateLayer`` can be used as a context manager, which starts and
+  stops CrateDB.
+- Testing: Fixed ``CrateLayer`` using the parent of the ``crate_config``
+  directory as ``path.conf``, instead of the directory itself.
+
 2026/10/30 2.4.0
 ================
 - Breaking change: Raised the minimum ``urllib3`` version to 2.8.0. This

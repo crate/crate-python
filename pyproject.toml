@@ -104,7 +104,7 @@ non_interactive = true
 
 
 [tool.pytest.ini_options]
-addopts = "-rA --verbosity=3 --doctest-modules"
+addopts = "-ra --verbosity=1 --durations=10 --doctest-modules"
 doctest_optionflags = "NORMALIZE_WHITESPACE ELLIPSIS"
 minversion = "2.0"
 testpaths = [

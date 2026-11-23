@@ -235,8 +235,10 @@ column names for keys. If you want to access column names, you must use
 ``cursor.description``.
 
 The `Python Database API Specification v2.0`_ `defines`_ seven description
-attributes per column, but only the first one (column name) is supported by
-this library. All other attributes are ``None``.
+attributes per column. This library supports the column name and the type
+code, the raw value as reported by CrateDB: an integer for scalar columns,
+a nested list for array columns, recursively. All other attributes are
+``None``.
 
 Let's say you have a query like this:
 
@@ -252,18 +254,37 @@ Let's say you have a query like this:
 The cursor ``description`` might look like this:
 
     >>> cursor.description
-    (('date', None, None, None, None, None, None),
-     ('datetime_tz', None, None, None, None, None, None),
-     ('datetime_notz', None, None, None, None, None, None),
-     ('description', None, None, None, None, None, None),
+    (('date', 15, None, None, None, None, None),
+     ('datetime_tz', 11, None, None, None, None, None),
+     ('datetime_notz', 15, None, None, None, None, None),
+     ('description', 4, None, None, None, None, None),
     ...
-     ('nullable_datetime', None, None, None, None, None, None),
-     ('position', None, None, None, None, None, None))
+     ('nullable_datetime', 15, None, None, None, None, None),
+     ('position', 9, None, None, None, None, None))
 
 You can turn this into something more manageable with :ref:`py:tut-listcomps`:
 
     >>> [column[0] for column in cursor.description]
     ['date', 'datetime_tz', 'datetime_notz', ..., 'nullable_datetime', 'position']
+
+
+Accessing column types
+======================
+
+The type code can be used to find columns of a certain data type, for example
+to process ``TIMESTAMP`` columns differently than numeric ones. Compare
+against the ``DataType`` enum, using ``.value`` to obtain its integer:
+
+    >>> from crate.client.converter import DataType
+    >>> tz_timestamp = DataType.TIMESTAMP_WITH_TZ.value
+    >>> for name, type_code, *_ in cursor.description:
+    ...     if type_code == tz_timestamp:
+    ...         print(name)
+    datetime_tz
+
+The type code is ``None`` when CrateDB does not report a type for the
+column; identifiers unknown to this client pass through unchanged, so codes
+without an enum member are possible.
 
 
 Data type conversion

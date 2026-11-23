@@ -305,14 +305,22 @@ class Cursor:
     @property
     def description(self):
         """
-        This read-only attribute is a sequence of 7-item sequences.
+        This read-only attribute is a sequence of 7-item sequences:
+        (name, type code, five unused fields). The type code is the raw
+        value CrateDB reports in ``col_types``, an integer for scalar
+        columns and a nested list for array columns, or ``None`` when
+        not reported.
         """
         if self._closed:
             return None
 
+        cols = self._result["cols"]
+        col_types = self._result.get("col_types") or []
+
         description = []
-        for col in self._result["cols"]:
-            description.append((col, None, None, None, None, None, None))
+        for i, name in enumerate(cols):
+            col_type = col_types[i] if i < len(col_types) else None
+            description.append((name, col_type, None, None, None, None, None))
         return tuple(description)
 
     @property

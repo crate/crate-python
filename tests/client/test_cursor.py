@@ -135,20 +135,18 @@ def test_cursor_description_extra_col_types(mocked_connection):
 
 
 def test_cursor_description_after_executemany(mocked_connection):
-    """Verify executemany keeps col_types for description."""
+    """Verify description is empty after executemany."""
     cursor = mocked_connection.cursor()
     response = {
-        "col_types": [4],
-        "cols": ["name"],
-        "rows": [["foo"]],
-        "rowcount": 1,
+        "cols": [],
         "duration": 123,
+        "results": [{"rowcount": 1}],
     }
     with mock.patch.object(
         mocked_connection.client, "sql", return_value=response
     ):
         cursor.executemany("", [["foo"]])
-        assert [column[1] for column in cursor.description] == [4]
+        assert cursor.description == ()
 
 
 @pytest.mark.parametrize(

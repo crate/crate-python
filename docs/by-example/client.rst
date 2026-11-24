@@ -240,7 +240,7 @@ Cursor Description
 The ``description`` property of the cursor returns a sequence of 7-item
 sequences containing the column name as first parameter, and the raw column
 type as reported by CrateDB as second: an integer for scalar columns, a
-nested list for array columns. All other fields are ``None``:
+nested tuple for array columns. All other fields are ``None``:
 
     >>> cursor.execute("SELECT * FROM locations order by name")
     >>> result = cursor.fetchone()
@@ -271,15 +271,15 @@ nested list for array columns. All other fields are ``None``:
      ('flag', 3, None, None, None, None, None),
      ('position', 9, None, None, None, None, None),
      ('description', 4, None, None, None, None, None),
-     ('details', [100, 12], None, None, None, None, None))
+     ('details', (100, 12), None, None, None, None, None))
 
 The type codes correspond to the ``DataType`` enumeration; identifiers the
 client does not know pass through unchanged. ``ARRAY`` columns report their
-element type as a nested list, recursively for nested arrays:
+element type as a nested tuple, recursively for nested arrays:
 
     >>> cursor.execute("select [[1, 2], [3]]")
     >>> cursor.description
-    (('[[1, 2], [3]]', [100, [100, 9]], None, None, None, None, None),)
+    (('[[1, 2], [3]]', (100, (100, 9)), None, None, None, None, None),)
 
 Closing the Cursor
 ==================

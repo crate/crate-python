@@ -6,7 +6,7 @@ Unreleased
 ================
 - Added type codes to ``Cursor.description``: The second item of each column
   is now the raw ``col_types`` value reported by CrateDB, an integer for
-  scalar columns and a nested list for array columns, instead of ``None``.
+  scalar columns and a nested tuple for array columns, instead of ``None``.
   It degrades to ``None`` for columns where CrateDB does not report a type.
 - Breaking change: ``CrateLayer.start()`` now raises ``SystemError`` when CrateDB does
   not report its HTTP address. The startup timeout is raised from 30s to 90s.

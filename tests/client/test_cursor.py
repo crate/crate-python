@@ -97,11 +97,11 @@ def test_cursor_description_type_codes(mocked_connection):
         mocked_connection.client, "sql", return_value=response
     ):
         cursor.execute("")
-        assert [column[1] for column in cursor.description] == [4, [100, 5]]
+        assert [column[1] for column in cursor.description] == [4, (100, 5)]
 
 
 def test_cursor_description_nested_array_type(mocked_connection):
-    """Verify nested arrays pass their type through unchanged."""
+    """Verify nested arrays pass through as nested tuples."""
     cursor = mocked_connection.cursor()
     response = {
         "col_types": [[100, [100, 9]]],
@@ -114,7 +114,7 @@ def test_cursor_description_nested_array_type(mocked_connection):
         mocked_connection.client, "sql", return_value=response
     ):
         cursor.execute("")
-        assert [column[1] for column in cursor.description] == [[100, [100, 9]]]
+        assert [column[1] for column in cursor.description] == [(100, (100, 9))]
 
 
 def test_cursor_description_extra_col_types(mocked_connection):
@@ -215,6 +215,24 @@ def test_cursor_description_unknown_type_code(mocked_connection):
     ):
         cursor.execute("")
         assert [column[1] for column in cursor.description] == [999, 4]
+
+
+def test_cursor_description_is_hashable(mocked_connection):
+    """Verify cursor description is hashable."""
+    cursor = mocked_connection.cursor()
+    response = {
+        "col_types": [4, [100, 5], [100, [100, 9]]],
+        "cols": ["name", "addresses", "matrix"],
+        "rows": [["foo", ["10.10.10.1"], [[1, 2], [3]]]],
+        "rowcount": 1,
+        "duration": 123,
+    }
+    with mock.patch.object(
+        mocked_connection.client, "sql", return_value=response
+    ):
+        cursor.execute("")
+        for column in cursor.description:
+            hash(column)
 
 
 def test_cursor_rowcount(mocked_connection):

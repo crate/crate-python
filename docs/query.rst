@@ -237,7 +237,7 @@ column names for keys. If you want to access column names, you must use
 The `Python Database API Specification v2.0`_ `defines`_ seven description
 attributes per column. This library supports the column name and the type
 code, the raw value as reported by CrateDB: an integer for scalar columns,
-a nested list for array columns, recursively. All other attributes are
+a nested tuple for array columns, recursively. All other attributes are
 ``None``.
 
 Let's say you have a query like this:

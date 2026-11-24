@@ -238,8 +238,9 @@ Cursor Description
 ==================
 
 The ``description`` property of the cursor returns a sequence of 7-item
-sequences containing the column name as first parameter. Just the name field is
-supported, all other fields are 'None':
+sequences containing the column name as first parameter, and the raw column
+type as reported by CrateDB as second: an integer for scalar columns, a
+nested tuple for array columns. All other fields are ``None``:
 
     >>> cursor.execute("SELECT * FROM locations order by name")
     >>> result = cursor.fetchone()
@@ -260,17 +261,25 @@ supported, all other fields are 'None':
 
     >>> result = cursor.description
     >>> pprint(result)
-    (('name', None, None, None, None, None, None),
-     ('date', None, None, None, None, None, None),
-     ('datetime_tz', None, None, None, None, None, None),
-     ('datetime_notz', None, None, None, None, None, None),
-     ('nullable_datetime', None, None, None, None, None, None),
-     ('nullable_date', None, None, None, None, None, None),
-     ('kind', None, None, None, None, None, None),
-     ('flag', None, None, None, None, None, None),
-     ('position', None, None, None, None, None, None),
-     ('description', None, None, None, None, None, None),
-     ('details', None, None, None, None, None, None))
+    (('name', 4, None, None, None, None, None),
+     ('date', 15, None, None, None, None, None),
+     ('datetime_tz', 11, None, None, None, None, None),
+     ('datetime_notz', 15, None, None, None, None, None),
+     ('nullable_datetime', 15, None, None, None, None, None),
+     ('nullable_date', 15, None, None, None, None, None),
+     ('kind', 4, None, None, None, None, None),
+     ('flag', 3, None, None, None, None, None),
+     ('position', 9, None, None, None, None, None),
+     ('description', 4, None, None, None, None, None),
+     ('details', (100, 12), None, None, None, None, None))
+
+The type codes correspond to the ``DataType`` enumeration; identifiers the
+client does not know pass through unchanged. ``ARRAY`` columns report their
+element type as a nested tuple, recursively for nested arrays:
+
+    >>> cursor.execute("select [[1, 2], [3]]")
+    >>> cursor.description
+    (('[[1, 2], [3]]', (100, (100, 9)), None, None, None, None, None),)
 
 Closing the Cursor
 ==================

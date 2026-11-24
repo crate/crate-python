@@ -113,6 +113,13 @@ def _convert_named_bulk_params(
     return converted_sql, bulk_args
 
 
+def _lists_to_tuples(value: t.Any) -> t.Any:
+    """Recursively convert lists to tuples."""
+    if isinstance(value, list):
+        return tuple(_lists_to_tuples(item) for item in value)
+    return value
+
+
 class Cursor:
     """
     not thread-safe by intention
@@ -305,14 +312,24 @@ class Cursor:
     @property
     def description(self):
         """
-        This read-only attribute is a sequence of 7-item sequences.
+        This read-only attribute is a sequence of 7-item sequences:
+        (name, type code, five unused fields). The type code is the raw
+        value CrateDB reports in ``col_types``, an integer for scalar
+        columns and a nested tuple for array columns, or ``None`` when
+        not reported.
         """
         if self._closed:
             return None
 
+        cols = self._result["cols"]
+        col_types = self._result.get("col_types") or []
+
         description = []
-        for col in self._result["cols"]:
-            description.append((col, None, None, None, None, None, None))
+        for i, name in enumerate(cols):
+            type_code = None
+            if i < len(col_types):
+                type_code = _lists_to_tuples(col_types[i])
+            description.append((name, type_code, None, None, None, None, None))
         return tuple(description)
 
     @property

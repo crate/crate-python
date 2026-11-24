@@ -83,6 +83,156 @@ def test_cursor_description(mocked_connection):
         assert cursor.description is None
 
 
+def test_cursor_description_type_codes(mocked_connection):
+    """Verify raw type codes pass through, arrays as nested lists."""
+    cursor = mocked_connection.cursor()
+    response = {
+        "col_types": [4, [100, 5]],
+        "cols": ["name", "addresses"],
+        "rows": [["foo", ["10.10.10.1"]]],
+        "rowcount": 1,
+        "duration": 123,
+    }
+    with mock.patch.object(
+        mocked_connection.client, "sql", return_value=response
+    ):
+        cursor.execute("")
+        assert [column[1] for column in cursor.description] == [4, (100, 5)]
+
+
+def test_cursor_description_nested_array_type(mocked_connection):
+    """Verify nested arrays pass through as nested tuples."""
+    cursor = mocked_connection.cursor()
+    response = {
+        "col_types": [[100, [100, 9]]],
+        "cols": ["matrix"],
+        "rows": [[[[1, 2], [3]]]],
+        "rowcount": 1,
+        "duration": 123,
+    }
+    with mock.patch.object(
+        mocked_connection.client, "sql", return_value=response
+    ):
+        cursor.execute("")
+        assert [column[1] for column in cursor.description] == [(100, (100, 9))]
+
+
+def test_cursor_description_extra_col_types(mocked_connection):
+    """Verify trailing entries beyond the column count are ignored."""
+    cursor = mocked_connection.cursor()
+    response = {
+        "col_types": [4, 5, 6],
+        "cols": ["name", "address"],
+        "rows": [["foo", "10.10.10.1"]],
+        "rowcount": 1,
+        "duration": 123,
+    }
+    with mock.patch.object(
+        mocked_connection.client, "sql", return_value=response
+    ):
+        cursor.execute("")
+        assert [column[1] for column in cursor.description] == [4, 5]
+
+
+def test_cursor_description_after_executemany(mocked_connection):
+    """Verify description is empty after executemany."""
+    cursor = mocked_connection.cursor()
+    response = {
+        "cols": [],
+        "duration": 123,
+        "results": [{"rowcount": 1}],
+    }
+    with mock.patch.object(
+        mocked_connection.client, "sql", return_value=response
+    ):
+        cursor.executemany("", [["foo"]])
+        assert cursor.description == ()
+
+
+@pytest.mark.parametrize(
+    "response, expected",
+    [
+        pytest.param(
+            {
+                "cols": ["name", "address"],
+                "rows": [["foo", "10.10.10.1"]],
+                "rowcount": 1,
+                "duration": 123,
+            },
+            [None, None],
+            id="col-types-absent",
+        ),
+        pytest.param(
+            {
+                "col_types": None,
+                "cols": ["name", "address"],
+                "rows": [["foo", "10.10.10.1"]],
+                "rowcount": 1,
+                "duration": 123,
+            },
+            [None, None],
+            id="col-types-null",
+        ),
+        pytest.param(
+            {
+                "col_types": [4],
+                "cols": ["name", "address"],
+                "rows": [["foo", "10.10.10.1"]],
+                "rowcount": 1,
+                "duration": 123,
+            },
+            [4, None],
+            id="col-types-short",
+        ),
+    ],
+)
+def test_cursor_description_degrades_type_codes(
+    mocked_connection, response, expected
+):
+    """Verify type codes degrade per-column to None, never raise."""
+    cursor = mocked_connection.cursor()
+    with mock.patch.object(
+        mocked_connection.client, "sql", return_value=response
+    ):
+        cursor.execute("")
+        assert [column[1] for column in cursor.description] == expected
+
+
+def test_cursor_description_unknown_type_code(mocked_connection):
+    """Verify type codes this client does not know pass through unchanged."""
+    cursor = mocked_connection.cursor()
+    response = {
+        "col_types": [999, 4],
+        "cols": ["foo", "name"],
+        "rows": [["n/a", "foo"]],
+        "rowcount": 1,
+        "duration": 123,
+    }
+    with mock.patch.object(
+        mocked_connection.client, "sql", return_value=response
+    ):
+        cursor.execute("")
+        assert [column[1] for column in cursor.description] == [999, 4]
+
+
+def test_cursor_description_is_hashable(mocked_connection):
+    """Verify cursor description is hashable."""
+    cursor = mocked_connection.cursor()
+    response = {
+        "col_types": [4, [100, 5], [100, [100, 9]]],
+        "cols": ["name", "addresses", "matrix"],
+        "rows": [["foo", ["10.10.10.1"], [[1, 2], [3]]]],
+        "rowcount": 1,
+        "duration": 123,
+    }
+    with mock.patch.object(
+        mocked_connection.client, "sql", return_value=response
+    ):
+        cursor.execute("")
+        for column in cursor.description:
+            hash(column)
+
+
 def test_cursor_rowcount(mocked_connection):
     """Verify the logic of cursor.rowcount"""
     cursor = mocked_connection.cursor()

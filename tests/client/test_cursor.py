@@ -1060,6 +1060,93 @@ def test_execute_with_named_params_non_identifier_keys(mocked_connection):
     assert args == [42, "Berlin"]
 
 
+@pytest.mark.parametrize(
+    "sql, parameters, expected_sql, expected_args",
+    [
+        ("SELECT 'a%%', %(a)s", {"a": 1}, "SELECT 'a%', $1", [1]),
+        ("SELECT 7 %% 3", {}, "SELECT 7 % 3", []),
+        ("SELECT '%%(a)s', %(a)s", {"a": 1}, "SELECT '%(a)s', $1", [1]),
+        ("SELECT '%%%%', %(a)s", {"a": 1}, "SELECT '%%', $1", [1]),
+        ("SELECT 7 % 3, %(a)s", {"a": 1}, "SELECT 7 % 3, $1", [1]),
+    ],
+)
+def test_execute_with_named_params_unescapes_percent(
+    mocked_connection, sql, parameters, expected_sql, expected_args
+):
+    """
+    A doubled percent sign is one percent sign when named parameters are
+    passed, an empty dict included, and a lone percent sign stays as it is.
+    """
+    cursor = mocked_connection.cursor()
+    cursor.execute(sql, parameters)
+    mocked_connection.client.sql.assert_called_once_with(
+        expected_sql, expected_args, None
+    )
+
+
+@pytest.mark.parametrize(
+    "sql, parameters, bulk_parameters",
+    [
+        ("SELECT 'a%%'", None, None),
+        ("SELECT 'a%%' WHERE x = ?", [1], None),
+        ("INSERT INTO t (a) VALUES (?) -- 100%%", None, [[1]]),
+    ],
+)
+def test_execute_without_named_params_keeps_doubled_percent(
+    mocked_connection, sql, parameters, bulk_parameters
+):
+    """
+    A doubled percent sign is sent unchanged when no named parameters are
+    involved.
+    """
+    cursor = mocked_connection.cursor()
+    cursor.execute(sql, parameters, bulk_parameters)
+    mocked_connection.client.sql.assert_called_once_with(
+        sql, parameters, bulk_parameters
+    )
+
+
+def test_execute_with_named_bulk_rows_unescapes_percent(mocked_connection):
+    """
+    A doubled percent sign is one percent sign when bulk_parameters are
+    positional rows and the SQL has named placeholders.
+    """
+    cursor = mocked_connection.cursor()
+    cursor.execute(
+        "INSERT INTO t (a) VALUES (%(a)s) -- 100%%",
+        bulk_parameters=[[1], [2]],
+    )
+    mocked_connection.client.sql.assert_called_once_with(
+        "INSERT INTO t (a) VALUES ($1) -- 100%", None, [[1], [2]]
+    )
+
+
+def test_executemany_with_named_params_unescapes_percent(
+    mocked_connection,
+):
+    """
+    A doubled percent sign is unescaped exactly once when executemany() gets
+    dict rows, and an escaped placeholder stays literal text.
+    """
+    response = {
+        "col_types": [],
+        "cols": [],
+        "duration": 123,
+        "results": [{"rowcount": 1}, {"rowcount": 1}],
+    }
+    with mock.patch.object(
+        mocked_connection.client, "sql", return_value=response
+    ):
+        cursor = mocked_connection.cursor()
+        cursor.executemany(
+            "INSERT INTO t (a, b) VALUES (%(a)s, '100%%%%(a)s')",
+            [{"a": 1}, {"a": 2}],
+        )
+        sql, _params, bulk_args = mocked_connection.client.sql.call_args[0]
+        assert sql == "INSERT INTO t (a, b) VALUES ($1, '100%%(a)s')"
+        assert bulk_args == [[1], [2]]
+
+
 def test_cursor_close(mocked_connection):
     """
     Verify that a cursor is not closed if not specifically closed.

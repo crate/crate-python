@@ -73,7 +73,8 @@ The same parameter name may appear multiple times in the query:
     ...     {"q": "Quasar"})
 
 The client converts the ``%(name)s`` placeholders to ``$N`` positional
-markers before sending the query to CrateDB.
+markers before sending the query to CrateDB. When named parameters are passed,
+write a literal percent sign as ``%%``; the client sends it as a single ``%``.
 
 Bulk inserts
 ------------

@@ -28,12 +28,18 @@ from .converter import Converter, DataType
 from .exceptions import ProgrammingError
 
 _NAMED_PARAM_RE = re.compile(r"%\(([^)]+)\)s")
+_PYFORMAT_TOKEN_RE = re.compile(r"%%|%\(([^)]+)\)s")
 
 
 def _rewrite_pyformat_sql(sql: str) -> str:
-    """Replace %(name)s placeholders with $N positional markers (1-indexed)."""
+    """Replace %(name)s placeholders with $N positional markers (1-indexed).
+
+    A doubled percent sign ``%%`` becomes a single ``%``.
+    """
     counter = count(1)
-    return _NAMED_PARAM_RE.sub(lambda _: f"${next(counter)}", sql)
+    return _PYFORMAT_TOKEN_RE.sub(
+        lambda m: "%" if m.group(1) is None else f"${next(counter)}", sql
+    )
 
 
 def _convert_named_to_positional(
@@ -46,6 +52,8 @@ def _convert_named_to_positional(
 
     The same name may appear multiple times; each occurrence appends the
     value to the positional list independently.
+
+    A doubled percent sign ``%%`` becomes a single ``%``.
 
     Raises ``ProgrammingError`` if a placeholder name is absent from ``params``.
     Extra keys in ``params`` are silently ignored.
@@ -66,6 +74,8 @@ def _convert_named_to_positional(
 
     def _replace(match: "re.Match[str]") -> str:
         name = match.group(1)
+        if name is None:
+            return "%"
         if name not in params:
             raise ProgrammingError(
                 f"Named parameter '{name}' not found in the parameters dict"
@@ -73,7 +83,7 @@ def _convert_named_to_positional(
         position = positions[name]
         return f"${position}"
 
-    converted_sql = _NAMED_PARAM_RE.sub(_replace, sql)
+    converted_sql = _PYFORMAT_TOKEN_RE.sub(_replace, sql)
     return converted_sql, new_params
 
 
@@ -168,16 +178,7 @@ class Cursor:
         """
         row_counts = []
         durations = []
-        bulk_parameters = seq_of_parameters
-        if (
-            bulk_parameters
-            and isinstance(bulk_parameters[0], dict)
-            and _NAMED_PARAM_RE.search(sql)
-        ):
-            sql, bulk_parameters = _convert_named_bulk_params(
-                sql, bulk_parameters
-            )
-        self.execute(sql, bulk_parameters=bulk_parameters)
+        self.execute(sql, bulk_parameters=seq_of_parameters)
 
         for result in self._result.get("results", []):
             if result.get("rowcount") > -1:

@@ -10,6 +10,8 @@ Unreleased
   stops CrateDB.
 - Testing: Fixed ``CrateLayer`` using the parent of the ``crate_config``
   directory as ``path.conf``, instead of the directory itself.
+- Fixed ``%%`` in a statement with named parameters (``pyformat``) reaching
+  CrateDB doubled. It is now sent as a single ``%``, as SQLAlchemy expects.
 
 2026/10/30 2.4.0
 ================
